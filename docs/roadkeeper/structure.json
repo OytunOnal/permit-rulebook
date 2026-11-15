@@ -9398,7 +9398,7 @@
     "exported": true
    },
    {
-    "name": "DataPageFacts",
+    "name": "DataPageContext",
     "kind": "type",
     "exported": false
    },
@@ -10624,5 +10624,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "49e2f526f3068d75fa3f436cb3c87c7ab035e078d8b7846a3751a45dd8cacbd9"
+ "digest": "a164183d2bf5c3dccc2fcd6208afd2f9a93fec86dc590cb26087fc43e802b2d2"
 }

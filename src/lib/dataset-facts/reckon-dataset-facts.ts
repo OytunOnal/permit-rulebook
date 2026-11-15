@@ -74,9 +74,9 @@ export function reckonDatasetFacts(dataset: Dataset, watchState: WatchState): Da
 
 /** `country`'s facts in `facts`. Throws, naming the country, where the reckoning holds none. */
 export function countryFactsOf(facts: DatasetFacts, country: Country): CountryFacts {
-  const own = facts.countries.get(country.code);
-  if (!own) throw new Error(`the dataset's facts hold nothing for ${country.code}`);
-  return own;
+  const countryFacts = facts.countries.get(country.code);
+  if (!countryFacts) throw new Error(`the dataset's facts hold nothing for ${country.code}`);
+  return countryFacts;
 }
 
 /** `route`'s facts in `facts`. Throws, naming the route, where the reckoning holds none. */
@@ -85,7 +85,7 @@ export function routeFactsOf(facts: DatasetFacts, route: Route): RouteFacts {
 }
 
 function routeFactsIn(routes: ReadonlyMap<string, RouteFacts>, route: Route): RouteFacts {
-  const own = routes.get(route.id);
-  if (!own) throw new Error(`the dataset's facts hold nothing for ${route.id}`);
-  return own;
+  const routeFacts = routes.get(route.id);
+  if (!routeFacts) throw new Error(`the dataset's facts hold nothing for ${route.id}`);
+  return routeFacts;
 }

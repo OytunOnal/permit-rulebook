@@ -142,14 +142,15 @@ function countryLedeHtml(country: Country, quotedOnlyCount: number): string {
  * sentence any of them prints was read (human amendment to decision 12,
  * 2026-09-08).
  */
-function countryMastheadHtml(country: Country, own: CountryFacts): string {
-  const headline = countryHeadline(phraseAtStartOf(country.code), own.counts.total, own.counts.scored);
+function countryMastheadHtml(country: Country, countryFacts: CountryFacts): string {
+  const { counts, stamp } = countryFacts;
+  const headline = countryHeadline(phraseAtStartOf(country.code), counts.total, counts.scored);
   return `<div class="masthead-with-stamps">
     <div>
       <h1>${esc(headline)} <em>${esc(TAGLINE)}</em></h1>
-      <p class="lede">${countryLedeHtml(country, own.counts.quotedOnly)}</p>
+      <p class="lede">${countryLedeHtml(country, counts.quotedOnly)}</p>
     </div>
-    ${rulesRead(own.stamp)}
+    ${rulesRead(stamp)}
   </div>`;
 }
 
@@ -200,10 +201,10 @@ function countryMainHtml(dataset: Dataset, facts: DatasetFacts, country: Country
 export function countryPage(dataset: Dataset, address: CountryAddress, state: WatchState = watchState): CountryPage {
   const { country, path } = address;
   const facts = reckonDatasetFacts(dataset, state);
-  const own = countryFactsOf(facts, country);
+  const countryFacts = countryFactsOf(facts, country);
   const title = countryPageTitle(phraseOf(country.code));
   const desc = description(country);
-  const content = `${countryMastheadHtml(country, own)}
+  const content = `${countryMastheadHtml(country, countryFacts)}
 
   ${countryMainHtml(dataset, facts, country)}`;
   const html = framedPageHtml(dataset, {

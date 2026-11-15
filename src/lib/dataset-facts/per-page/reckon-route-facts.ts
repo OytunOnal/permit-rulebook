@@ -55,14 +55,14 @@ export interface RouteFacts {
  * invariant caught it (`de-experienced-worker`, `es-blue-card`), which is what
  * the invariant is for.
  */
-function valuesUnder(c: Criterion): ProvenanceEntry[] {
+function valuesUnder(criterion: Criterion): ProvenanceEntry[] {
   const out: ProvenanceEntry[] = [];
-  forEachCriterion([c], (x) => out.push(...provenancedValuesOf(x)));
+  forEachCriterion([criterion], (x) => out.push(...provenancedValuesOf(x)));
   // One quote, one line: a disjunction whose condition source is restated on a
   // path says the same sentence twice.
   const seen = new Set<string>();
-  return out.filter((e) => {
-    const key = `${e.value.source_url}#${e.value.quote}#${e.label ?? ""}#${e.amount ?? ""}`;
+  return out.filter((entry) => {
+    const key = `${entry.value.source_url}#${entry.value.quote}#${entry.label ?? ""}#${entry.amount ?? ""}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -70,18 +70,19 @@ function valuesUnder(c: Criterion): ProvenanceEntry[] {
 }
 
 /** The quotes one rule card prints. */
-function cardValues(c: Criterion, notice?: Notice): ProvenanceEntry[] {
-  const values = valuesUnder(c);
+function cardQuotes(criterion: Criterion, notice?: Notice): ProvenanceEntry[] {
+  const quotes = valuesUnder(criterion);
   // A closure names the same field and makes the opposite claim, so it is not
   // the audience card and never borrows the free-movement notice's words.
-  const isAudience = "field" in c && c.field === "citizenship" && c.op !== "not-in";
-  const isUnquotedAudience = isAudience && values.length === 0;
-  if (isUnquotedAudience && notice) values.push({ value: notice.source });
-  return values;
+  const isAudience = "field" in criterion && criterion.field === "citizenship" && criterion.op !== "not-in";
+  const isUnquotedAudience = isAudience && quotes.length === 0;
+  if (isUnquotedAudience && notice) quotes.push({ value: notice.source });
+  return quotes;
 }
 
 /** A rule with no quote and no figure under it, its paths included. */
-const isUnquoted = (c: Criterion): boolean => valuesUnder(c).length === 0 && thresholdsUnder(c).length === 0;
+const isUnquoted = (criterion: Criterion): boolean =>
+  valuesUnder(criterion).length === 0 && thresholdsUnder(criterion).length === 0;
 
 /**
  * The unquoted rules inside a quoted card's disjunction, which the card lists
@@ -90,9 +91,9 @@ const isUnquoted = (c: Criterion): boolean => valuesUnder(c).length === 0 && thr
  * the shortage list's door belongs). A disjunction that carries its own quote
  * speaks for its paths, so nothing under it is unquoted.
  */
-function unquotedInPaths(c: Criterion): Criterion[] {
-  if (c.op !== "any" || c.source) return [];
-  return c.paths.flatMap((p) => p.criteria.flatMap((pc) => (isUnquoted(pc) ? [pc] : unquotedInPaths(pc))));
+function unquotedInPaths(criterion: Criterion): Criterion[] {
+  if (criterion.op !== "any" || criterion.source) return [];
+  return criterion.paths.flatMap((p) => p.criteria.flatMap((pc) => (isUnquoted(pc) ? [pc] : unquotedInPaths(pc))));
 }
 
 /**
@@ -105,15 +106,15 @@ function unquotedInPaths(c: Criterion): Criterion[] {
  */
 function ruleCriteria(dataset: Dataset, route: Route): Criterion[] {
   const order = deriveQuestions(dataset).map((q) => q.field);
-  const rank = (c: Criterion): number => {
-    const positions = referencedFields(c).map((f) => order.indexOf(f)).filter((i) => i >= 0);
+  const rank = (criterion: Criterion): number => {
+    const positions = referencedFields(criterion).map((f) => order.indexOf(f)).filter((i) => i >= 0);
     return positions.length ? Math.min(...positions) : order.length;
   };
   return route.criteria
     .filter((c) => !isLocalization(c))
-    .map((c, i) => ({ c, i, rank: rank(c) }))
-    .sort((a, b) => a.rank - b.rank || a.i - b.i)
-    .map((x) => x.c);
+    .map((criterion, index) => ({ criterion, index, rank: rank(criterion) }))
+    .sort((a, b) => a.rank - b.rank || a.index - b.index)
+    .map((ranked) => ranked.criterion);
 }
 
 /**
@@ -123,7 +124,7 @@ function ruleCriteria(dataset: Dataset, route: Route): Criterion[] {
  * unquoted rules inside its paths.
  */
 function printedCard(criterion: Criterion, notice?: Notice): PrintedCard {
-  const quotes = cardValues(criterion, notice);
+  const quotes = cardQuotes(criterion, notice);
   const isBare = quotes.length === 0 && thresholdsUnder(criterion).length === 0;
   return { criterion, quotes, unquoted: isBare ? [criterion] : unquotedInPaths(criterion) };
 }
@@ -178,8 +179,8 @@ function printedQuotesOf(dataset: Dataset, route: Route): PrintedQuotes {
  */
 function printedSources(route: Route, printed: PrintedQuotes): ProvenanceEntry["value"][] {
   const out = printed.cards.flatMap((card) => card.quotes).map((e) => e.value);
-  for (const s of routeStatements(route)) out.push(...statementSources(s));
-  for (const n of printed.notices) out.push(...noticeSources(n));
+  for (const statement of routeStatements(route)) out.push(...statementSources(statement));
+  for (const notice of printed.notices) out.push(...noticeSources(notice));
   return out;
 }
 
@@ -199,10 +200,10 @@ function printedSources(route: Route, printed: PrintedQuotes): ProvenanceEntry["
 export function reckonRouteFacts(dataset: Dataset, route: Route, unread: UnreadSource[]): RouteFacts {
   const printed = printedQuotesOf(dataset, route);
   const sources = printedSources(route, printed);
-  const own = new Set(sources.map((v) => v.source_url));
+  const printedUrls = new Set(sources.map((v) => v.source_url));
   return {
     printed,
     stamp: sources.map((v) => v.retrieved_at).sort().at(-1) ?? "",
-    unread: unread.filter((u) => own.has(u.url)),
+    unread: unread.filter((u) => printedUrls.has(u.url)),
   };
 }

@@ -53,7 +53,7 @@ const BAMF = "https://www.bamf.de/EN/Themen/MigrationAufenthalt/ZuwandererDritts
 const spain = { id: "es-uge-umbral-pdf", url: UMBRAL };
 const netherlands = { id: "nl-ind-orientation-year", url: ORIENTATION };
 /** The day the state's reading of a source was taken: the day a sentence about it unread names. */
-const readOn = (source: { id: string }): string => watchState.entries[source.id]!.retrieved_at;
+const stateReadingDayOf = (source: { id: string }): string => watchState.entries[source.id]!.retrieved_at;
 /** The footer of a page that hands the frame its facts on `state`. */
 const footerOn = (state: WatchState): string => footerIn(frameAlone(ds, { facts: reckonDatasetFacts(ds, state) }));
 
@@ -62,16 +62,16 @@ describe("what /data/ says on a day something went unread", () => {
     const html = dataPage(ds, watchStateAt("2026-09-15", [spain])).html;
     expect(readerSees(html)).toContain(
       "Every source is re-read daily — last run 2026-09-15. "
-      + `A Spanish source did not answer on the last run; the values it backs were read on ${readOn(spain)}.`);
+      + `A Spanish source did not answer on the last run; the values it backs were read on ${stateReadingDayOf(spain)}.`);
   });
 
   it("names the countries, never our own ids, and never the run's own date as the stale one", () => {
     // The staler reading is named first, and its day is the one the sentence gives.
-    expect(readOn(spain) < readOn(netherlands), "the state's Spanish reading is no longer the staler").toBe(true);
+    expect(stateReadingDayOf(spain) < stateReadingDayOf(netherlands), "the state's Spanish reading is no longer the staler").toBe(true);
     const html = dataPage(ds, watchStateAt("2026-09-15", [spain, netherlands])).html;
     const seen = readerSees(html);
     expect(seen).toContain(
-      `A Spanish and a Dutch source did not answer on the last run; the values they back were read on ${readOn(spain)}`);
+      `A Spanish and a Dutch source did not answer on the last run; the values they back were read on ${stateReadingDayOf(spain)}`);
     expect(seen).not.toContain("es-uge-umbral-pdf");
     expect(seen).not.toContain("were read on 2026-09-15");
   });
@@ -89,7 +89,7 @@ describe("what /data/ says on a day something went unread", () => {
     const state = watchStateAt("2026-09-15", [spain, { id: "es-uge-index", url: UGE_INDEX }]);
     expect(unreadSources(ds, state).map((u) => u.id)).toEqual(["es-uge-umbral-pdf"]);
     expect(readerSees(dataPage(ds, state).html)).toContain(
-      `A Spanish source did not answer on the last run; the values it backs were read on ${readOn(spain)}.`);
+      `A Spanish source did not answer on the last run; the values it backs were read on ${stateReadingDayOf(spain)}.`);
   });
 
   it("and on a clean day says exactly what it says today, with nothing added", () => {

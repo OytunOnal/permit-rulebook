@@ -55,8 +55,8 @@ export const DATASET_JSON_PATH = "/dataset.json";
 /** The country vocabulary the passport question is built from. */
 export const COUNTRIES_JSON_PATH = "/countries.json";
 
-/** What the data page's sections state: the dataset, its reckoned facts, and its prose counts. */
-interface DataPageFacts {
+/** What the data page's sections draw from: the dataset, its reckoned facts, and its prose counts. */
+interface DataPageContext {
   dataset: Dataset;
   facts: DatasetFacts;
   prose: ReturnType<typeof proseProvenance>;
@@ -69,8 +69,8 @@ interface DataPageFacts {
  * today. The footer's range ends on the same reckoned day, so the two cannot
  * disagree (#323, ruling 1).
  */
-function dataMastheadHtml(page: DataPageFacts): string {
-  const { facts: { counts, readRange } } = page;
+function dataMastheadHtml(context: DataPageContext): string {
+  const { facts: { counts, readRange } } = context;
   return `<div class="masthead-with-stamps">
     <div>
       <h1>${esc(DATA_HEADLINE)} <em>${esc(TAGLINE)}</em></h1>
@@ -122,8 +122,8 @@ function datesFactsHtml(dataset: Dataset, facts: DatasetFacts): string {
 }
 
 /** What the dataset holds today: its dates, then its counts. */
-function holdsSectionHtml(page: DataPageFacts): string {
-  const { dataset, facts, prose } = page;
+function holdsSectionHtml(context: DataPageContext): string {
+  const { dataset, facts, prose } = context;
   const { counts } = facts;
   return `<section class="answer" aria-labelledby="holds-h">
       <h2 class="label" id="holds-h">${esc(HOLDS_HEADING)}</h2>
@@ -156,8 +156,8 @@ function dailyCheckHtml(run: WatchRun): string {
 }
 
 /** What checks the dataset: the four gates, the counter, the translation policy and the daily check. */
-function checksSectionHtml(page: DataPageFacts): string {
-  const { facts, prose } = page;
+function checksSectionHtml(context: DataPageContext): string {
+  const { facts, prose } = context;
   return `<section class="rules" aria-labelledby="checks-h">
       <h2 class="label" id="checks-h">${esc(CHECKS_HEADING)}</h2>
       <p>${esc(GATES_LEAD)}</p>
@@ -185,8 +185,8 @@ function countryJsonLinksHtml(facts: DatasetFacts, country: Country): string {
 }
 
 /** Where to take the dataset: the downloads, the licence, and every route's own JSON. */
-function takeSectionHtml(page: DataPageFacts): string {
-  const { dataset, facts } = page;
+function takeSectionHtml(context: DataPageContext): string {
+  const { dataset, facts } = context;
   return `<section class="data" aria-labelledby="take-h">
       <h2 class="label" id="take-h">${esc(TAKE_HEADING)}</h2>
       <nav aria-label="${escAttr(DOWNLOADS_LABEL)}">
@@ -210,21 +210,21 @@ function takeSectionHtml(page: DataPageFacts): string {
 export function dataPage(dataset: Dataset, state: WatchState = watchState): DataPage {
   const facts = reckonDatasetFacts(dataset, state);
   const { counts } = facts;
-  const page: DataPageFacts = { dataset, facts, prose: proseProvenance(dataset) };
+  const context: DataPageContext = { dataset, facts, prose: proseProvenance(dataset) };
   const title = DATA_PAGE_TITLE;
   const desc = dataMetaDescription(counts.scored, counts.quotedOnly, counts.countries);
   // The one page that IS the dataset says so in the vocabulary a dataset
   // index reads. It is a data block, not a program — but the policy names it
   // anyway, so nothing in this site's head is unaccounted for.
   const ld = datasetLd(dataset, DATA_PATH, facts);
-  const content = `${dataMastheadHtml(page)}
+  const content = `${dataMastheadHtml(context)}
 
   <main>
-    ${holdsSectionHtml(page)}
+    ${holdsSectionHtml(context)}
 
-    ${checksSectionHtml(page)}
+    ${checksSectionHtml(context)}
 
-    ${takeSectionHtml(page)}
+    ${takeSectionHtml(context)}
   </main>`;
   const html = framedPageHtml(dataset, {
     title, meta: { description: desc, path: DATA_PATH, kind: "website" },

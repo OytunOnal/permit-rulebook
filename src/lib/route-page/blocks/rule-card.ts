@@ -135,18 +135,18 @@ function asksBlock(dataset: Dataset, criteria: Criterion[], seen: Glossary): str
  */
 export function ruleCard(page: RulePage, card: PrintedCard): string {
   const { dataset, seen, notice } = page;
-  const { criterion: c, quotes: values } = card;
-  const thresholds = thresholdsUnder(c);
+  const { criterion, quotes } = card;
+  const thresholds = thresholdsUnder(criterion);
   const year = thresholds.length ? thresholds[0].threshold.retrieved_at.slice(0, 4) : "";
   const asks = asksBlock(dataset, card.unquoted, seen);
   return `
       <article class="rule">
-        <div class="top"><h2>${esc(ruleHeading(dataset, c))}</h2><span class="kind">${
-    esc(ruleKind(c))}${year ? ` · ${esc(year)}` : ""}</span></div>
-        ${plainHtml(dataset, c, notice)}${
+        <div class="top"><h2>${esc(ruleHeading(dataset, criterion))}</h2><span class="kind">${
+    esc(ruleKind(criterion))}${year ? ` · ${esc(year)}` : ""}</span></div>
+        ${plainHtml(dataset, criterion, notice)}${
     thresholds.length ? `
       ${railHtml(page, thresholds[0])}` : ""}${asks}${
-    values.map((e) => `
-      ${quoteLineHtml(e.value, { amount: e.amount, label: e.label }, seen)}`).join("")}
+    quotes.map((quote) => `
+      ${quoteLineHtml(quote.value, { amount: quote.amount, label: quote.label }, seen)}`).join("")}
       </article>`;
 }

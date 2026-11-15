@@ -55,8 +55,8 @@ function quotedOn(line: QuoteLine, candidates: Quoted[]): Quoted {
 function linesWithoutTheirSource(html: string, candidates: Quoted[], where: string): string[] {
   return quoteLinesIn(html).flatMap((line) => {
     const { source_url } = quotedOn(line, candidates);
-    const own = line.href === escAttr(source_url) && line.text === `${esc(linkLabelOf(source_url))} &#8599;`;
-    return own ? [] : [`${where}: ${source_url} has ${line.href ?? "no link"}`];
+    const linksItsSource = line.href === escAttr(source_url) && line.text === `${esc(linkLabelOf(source_url))} &#8599;`;
+    return linksItsSource ? [] : [`${where}: ${source_url} has ${line.href ?? "no link"}`];
   });
 }
 

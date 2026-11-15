@@ -68,15 +68,15 @@ export function figuresOf(route: Route, printed: PrintedQuotes): { amounts: Thre
 export function routeFigure(dataset: Dataset, route: Route, printed: PrintedQuotes): RouteFigure {
   const { amounts, points } = figuresOf(route, printed);
   if (amounts.length) {
-    const own = amounts[0]!;
+    const lowest = amounts[0]!;
     // "Salary threshold" and "funds to show" are the two things money means on
     // these routes, and the field says which: one is what a job pays you, the
     // other is what you must be able to show you have.
-    const label = /funds/.test(own.field) ? "funds to show" : "salary threshold";
+    const label = /funds/.test(lowest.field) ? "funds to show" : "salary threshold";
     const from = amounts.length > 1 ? "from " : "";
     return {
       label,
-      value: `${from}${formatEURPer(own.threshold.amount, periodOf(dataset, own.field))}`,
+      value: `${from}${formatEURPer(lowest.threshold.amount, periodOf(dataset, lowest.field))}`,
     };
   }
   if (points) return { label: "points needed", value: String(points.required.value) };

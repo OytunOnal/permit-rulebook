@@ -157,13 +157,13 @@ export const readDateTime = (day: string): string => `<time datetime="${escAttr(
  * screen's cards, notices and closed rows: one line, so the two screens
  * cannot print a quote two ways again.
  */
-export function quoteLineHtml(value: QuotedValue, o: QuoteLineOptions = {}, seen: Glossary = new Set()): string {
-  const { lang, host, note } = quoteFrame(value, o.amount);
-  const { shown, trimmed } = o.trimLong ? trimmedQuote(value.quote) : { shown: value.quote, trimmed: false };
-  const citation = o.citation ?? (value.legal_basis ? glossed(value.legal_basis, seen) : "");
-  return `<div class="src${o.lineClass ? ` ${escAttr(o.lineClass)}` : ""}"${trimmed ? ` title="${escAttr(value.quote)}"` : ""}>
+export function quoteLineHtml(value: QuotedValue, options: QuoteLineOptions = {}, seen: Glossary = new Set()): string {
+  const { lang, host, note } = quoteFrame(value, options.amount);
+  const { shown, trimmed } = options.trimLong ? trimmedQuote(value.quote) : { shown: value.quote, trimmed: false };
+  const citation = options.citation ?? (value.legal_basis ? glossed(value.legal_basis, seen) : "");
+  return `<div class="src${options.lineClass ? ` ${escAttr(options.lineClass)}` : ""}"${trimmed ? ` title="${escAttr(value.quote)}"` : ""}>
         <span><q${lang ? ` lang="${escAttr(lang)}"` : ""}>${esc(shown)}</q> · ${esc(host)}${
-    o.label ? ` · ${esc(o.label)}` : ""}${o.afterLabelHtml ?? ""}${
+    options.label ? ` · ${esc(options.label)}` : ""}${options.afterLabelHtml ?? ""}${
     citation ? ` · ${esc(citation)}` : ""} · <b>${readDateTime(value.retrieved_at)}</b>${
     noteHtml(note)}</span>
         <a ${tapInline()} href="${escAttr(value.source_url)}" target="_blank" rel="noopener">${

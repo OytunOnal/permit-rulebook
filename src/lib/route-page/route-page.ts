@@ -125,10 +125,10 @@ function description(dataset: Dataset, address: RouteAddress, printed: PrintedQu
 export function routePage(dataset: Dataset, address: RouteAddress, state: WatchState = watchState): RoutePage {
   const facts = reckonDatasetFacts(dataset, state);
   const { country, route } = address;
-  const own = routeFactsOf(facts, route);
-  const read = own.stamp;
+  const routeFacts = routeFactsOf(facts, route);
+  const read = routeFacts.stamp;
   const title = `${route.name} · ${country.name} · ${PRODUCT_NAME}`;
-  const desc = description(dataset, address, own.printed);
+  const desc = description(dataset, address, routeFacts.printed);
   const path = address.path;
   const jsonPath = routeJsonPath(country, route);
   // One page, one memory of which abbreviations it has already expanded. The
@@ -138,11 +138,11 @@ export function routePage(dataset: Dataset, address: RouteAddress, state: WatchS
   // above it repeats the name for navigation and is not a use; a neighbouring
   // route's name is a cross-reference and keeps the short form.
   const seen: Glossary = new Set();
-  const page: RulePage = { dataset, country, route, seen, notice: own.printed.audienceNotice };
+  const page: RulePage = { dataset, country, route, seen, notice: routeFacts.printed.audienceNotice };
   const content = `${mastheadHtml(page, read)}
 
   <div class="page">
-  ${mainHtml(page, own)}
+  ${mainHtml(page, routeFacts)}
   ${asideHtml(page, jsonPath)}
   </div>`;
   const html = framedPageHtml(dataset, {
@@ -180,13 +180,13 @@ function mastheadHtml(page: RulePage, read: string): string {
 }
 
 /** The main column: what sits above the rules, then the rules and the blocks stated beside them. */
-function mainHtml(page: RulePage, own: RouteFacts): string {
+function mainHtml(page: RulePage, routeFacts: RouteFacts): string {
   const { route, seen } = page;
-  return `<main>${aboveTheRulesHtml(page, own)}
+  return `<main>${aboveTheRulesHtml(page, routeFacts)}
 
   <section class="rules" aria-labelledby="rules-h">
     <h2 class="visually-hidden" id="rules-h">${esc(RULES_HEADING)}</h2>${
-    own.printed.cards.map((card) => ruleCard(page, card)).join("")}${
+    routeFacts.printed.cards.map((card) => ruleCard(page, card)).join("")}${
     statedBlocks(route, seen)}
   </section>
 
@@ -199,13 +199,13 @@ function mainHtml(page: RulePage, own: RouteFacts): string {
  * answer block, the notices, the way into the checker and the scope; on one it
  * does not, the scope alone.
  */
-function aboveTheRulesHtml(page: RulePage, own: RouteFacts): string {
+function aboveTheRulesHtml(page: RulePage, routeFacts: RouteFacts): string {
   const { dataset, country, route, seen } = page;
   // The footer counts every unread source a reader is looking at (s11); the
   // sentence under the scope heading speaks for this page's own (s23, F3).
-  const missed = own.unread.length;
+  const missed = routeFacts.unread.length;
   return isScored(route) ? `
-${answerBlock(dataset, route, own.printed)}${own.printed.notices.map((n) => noticeSection(n, seen)).join("")}
+${answerBlock(dataset, route, routeFacts.printed)}${routeFacts.printed.notices.map((n) => noticeSection(n, seen)).join("")}
   <section class="cta" aria-labelledby="cta-h">
     <h2 class="visually-hidden" id="cta-h">${esc(CHECK_YOUR_OWN_SITUATION)}</h2>
     <p><strong>${esc(WHERE_DO_YOU_STAND)}</strong> ${esc(CHECK_ON_THIS_DEVICE)}</p>
