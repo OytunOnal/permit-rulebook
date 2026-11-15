@@ -136,6 +136,9 @@ export const COUNTRIES = "Countries";
 export const MENU = "Menu";
 export const MENU_CLOSE = "Close";
 
+/** The header's navigation, by the name a screen reader lists it under. */
+export const SITE_NAV_LABEL = "Site"; // the header nav's aria-label
+
 /** The footer's row under the address: what the page behind it is for. The
  * column's heading is already the word, so the row says the rest (critique F6,
  * 2026-09-16). */
@@ -163,3 +166,12 @@ export const readRangeHtml = (oldestHtml: string, newestHtml: string): string =>
 export const READ_DAILY = "re-read daily"; // the health line's promise, after the read range
 export const LAST_RUN = "last run"; // opens the health line's parenthesis, before the watch's day
 export const datasetVersionLabel = (version: string): string => `dataset ${version}`;
+
+/**
+ * The social card's own words: the question over the tagline, and its last
+ * line's promise, the last two words in bold. Its stamp says `RULES_READ` and
+ * its mark `SEAL_LETTERS`, as every page's pair does.
+ */
+export const CARD_HEADLINE = "Which work-permit routes could fit?"; // the card's h1, before the tagline
+export const CARD_PROMISE = "every value with its official sentence"; // the card's last line, before the bold words
+export const CHECKED_DAILY = "checked daily"; // the card's last line, in bold

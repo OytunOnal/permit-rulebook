@@ -2,6 +2,7 @@
 import type { Dataset } from "permit-rulebook-data";
 import type { DatasetFacts } from "./dataset-facts/reckon-dataset-facts.ts";
 import { esc } from "./reason.ts";
+import { CARD_HEADLINE, CARD_PROMISE, CHECKED_DAILY, RULES_READ, SEAL_LETTERS } from "./copy/frame.ts";
 
 /**
  * The social card, as facts and as a page.
@@ -41,8 +42,6 @@ export interface SocialCardFacts {
   tagline: string;
   product: string;
 }
-
-export const CARD_HEADLINE = "Which work-permit routes could fit?";
 
 /**
  * Everything on the card, read off the dataset, its reckoned `facts` and the
@@ -109,12 +108,12 @@ html, body { margin: 0; padding: 0; }
 </style><div class="og">
   <div class="row">
     <h1>${esc(facts.headline)} <em>${esc(facts.tagline)}</em></h1>
-    <span class="stamps"><span class="mark">PR</span><span class="stamp">Rules read<br>${esc(facts.read)}</span></span>
+    <span class="stamps"><span class="mark">${esc(SEAL_LETTERS)}</span><span class="stamp">${esc(RULES_READ)}<br>${esc(facts.read)}</span></span>
   </div>
   <div class="foot">
     <span>${esc(facts.countries.join(" · "))}</span>
     <span>${esc(facts.routesLine)}</span>
-    <span>every value with its official sentence · <b>checked daily</b></span>
+    <span>${esc(CARD_PROMISE)} · <b>${esc(CHECKED_DAILY)}</b></span>
   </div>
 </div>`;
 }

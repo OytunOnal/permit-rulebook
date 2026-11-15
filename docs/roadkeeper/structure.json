@@ -2086,6 +2086,11 @@
   },
   {
    "from": "src/lib/social-card.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/social-card.ts",
    "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "type-only"
   },
@@ -7897,6 +7902,11 @@
     "exported": true
    },
    {
+    "name": "SITE_NAV_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "FEEDBACK_FOOTER_ROW",
     "kind": "const",
     "exported": true
@@ -7969,6 +7979,21 @@
    {
     "name": "datasetVersionLabel",
     "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CARD_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CARD_PROMISE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CHECKED_DAILY",
+    "kind": "const",
     "exported": true
    }
   ],
@@ -9884,11 +9909,6 @@
     "exported": true
    },
    {
-    "name": "CARD_HEADLINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
     "name": "socialCardFacts",
     "kind": "fn",
     "exported": true
@@ -10169,5 +10189,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "7af6d515bea14e05a9dd83f179207355dda07cf149d24d4681b3ae3078275eda"
+ "digest": "6545917e3817bf780dea506a602652d1a0b0be187f5f4a923f748f19481ee16b"
 }
