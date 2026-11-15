@@ -65,14 +65,13 @@ export interface CountryPage {
 /**
  * What a link preview says about a country page: the routes it lists, by name,
  * capped so a description stays a description. The count is stated, so the
- * three names never read as the whole list.
+ * three names never read as the whole list; it is the reckoning's, `total`.
  */
-function description(country: Country): string {
-  const names = country.routes.map((r: Route) => r.name);
-  const shown = names.slice(0, 3);
-  const rest = names.length - shown.length;
+function description(country: Country, total: number): string {
+  const shown = country.routes.slice(0, 3).map((r: Route) => r.name);
+  const rest = total - shown.length;
   const listed = rest > 0 ? listedAndMore(joinAnd(shown), rest) : joinAnd(shown);
-  return countryPageDescription(names.length, phraseOf(country.code), listed);
+  return countryPageDescription(total, phraseOf(country.code), listed);
 }
 
 /** What every card on one country index shares: the dataset, its reckoned
@@ -154,8 +153,9 @@ function countryMastheadHtml(country: Country, countryFacts: CountryFacts): stri
   </div>`;
 }
 
-/** The section under the routes the checker asks about: the ones it does not. */
-function quotedOnlySectionHtml(context: CountryCardContext, quotedOnly: Route[], count: number): string {
+/** The section under the routes the checker asks about: the ones it does not, counted by the reckoning. */
+function quotedOnlySectionHtml(context: CountryCardContext, quotedOnly: Route[]): string {
+  const count = countryFactsOf(context.facts, context.country).counts.quotedOnly;
   return `<section class="quoted-only" aria-labelledby="quoted-only-h">
       <h2 class="label" id="quoted-only-h">${esc(QUOTED_ONLY_HEADING)}</h2>
       <p class="lede">${esc(notAskedLede(capitalise(countedWords(count, "route")), count))}</p>
@@ -187,7 +187,7 @@ function countryMainHtml(dataset: Dataset, facts: DatasetFacts, country: Country
     scored.map((route) => routeCard(cardContext, route)).join("")}
     </ul>${quotedOnlyCount ? `
 
-    ${quotedOnlySectionHtml(cardContext, quotedOnly, quotedOnlyCount)}` : ""}
+    ${quotedOnlySectionHtml(cardContext, quotedOnly)}` : ""}
 
     ${countryCtaHtml(country, quotedOnlyCount)}
   </main>`;
@@ -203,7 +203,7 @@ export function countryPage(dataset: Dataset, address: CountryAddress, state: Wa
   const facts = reckonDatasetFacts(dataset, state);
   const countryFacts = countryFactsOf(facts, country);
   const title = countryPageTitle(phraseOf(country.code));
-  const desc = description(country);
+  const desc = description(country, countryFacts.counts.total);
   const content = `${countryMastheadHtml(country, countryFacts)}
 
   ${countryMainHtml(dataset, facts, country)}`;
