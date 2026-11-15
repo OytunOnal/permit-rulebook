@@ -8,7 +8,6 @@ import { MENU, MENU_CLOSE, PRODUCT_NAME } from "../src/lib/copy/frame.js";
 import { NOT_FOUND_START, NOT_FOUND_START_NOTE } from "../src/lib/copy/not-found.js";
 import { ROUTE_DOOR } from "../src/lib/copy/verdict.js";
 import { ROUTE_TAGLINE } from "../src/lib/copy/route-page.js";
-import { interviewFrameOf } from "../src/lib/frame/framed-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { declarationHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
@@ -17,7 +16,7 @@ import { esc } from "../src/lib/reason.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 import { url } from "../src/lib/site.js";
-import { frameAlone, headerIn } from "./frame-alone.js";
+import { frameAlone, headerIn, interviewFrameAlone } from "./frame-alone.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, countryNamed, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, verdictFor,
 } from "./verdict-cards.js";
@@ -53,7 +52,7 @@ describe("1 — the menu button says what it does", () => {
     expect(MENU).toBe("Menu");
     expect(MENU_CLOSE).toBe("Close");
     const header = headerIn(frameAlone(ds));
-    const menuScript = interviewFrameOf(ds).menuScript;
+    const menuScript = interviewFrameAlone(ds).menuScript;
     const button = /<button class="menu[^"]*"([^>]*)>([^<]*)<\/button>/.exec(header);
     expect(button, "no menu button in the header").not.toBeNull();
     // Closed at rest, and says so.

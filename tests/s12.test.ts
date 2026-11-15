@@ -6,7 +6,6 @@ import { LAST_CHECKED, NEWEST_VALUE_CHANGED } from "../src/lib/copy/data-page.js
 import { datasetDay } from "../src/lib/copy/frame.js";
 import { watchState } from "../src/lib/site.js";
 import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
-import { siteReadDate } from "../src/lib/country-page.js";
 import { watchStateAt } from "./watch-state-at.js";
 
 /**
@@ -101,7 +100,7 @@ describe("what /data/ says about when a value changed", () => {
     notice!.source.retrieved_at = NOTICE_DAY;
 
     expect(NOTICE_DAY > factsOf(fake).newestValueChanged, "the bent date is not newer than every value").toBe(true);
-    expect(siteReadDate(fake), "the bent notice did not reach the stamp").toBe(NOTICE_DAY);
+    expect(factsOf(fake).readRange.newest, "the bent notice did not reach the stamp").toBe(NOTICE_DAY);
 
     const html = dataPage(fake, watchStateAt("2026-09-30")).html;
     expect(under(html, NEWEST_VALUE_CHANGED), "a re-read notice moved a row about values changing")
@@ -243,7 +242,7 @@ describe("what this slice does not touch", () => {
     expect(seen).toContain("Rules read");
     expect(seen).toContain("values read between");
     expect(html).toContain("<small>read ");
-    expect(stampedDate(html)).toBe(siteReadDate(ds));
+    expect(stampedDate(html)).toBe(factsOf(ds).readRange.newest);
   });
 
   /** And every fact that was in the list is still in it, once. */

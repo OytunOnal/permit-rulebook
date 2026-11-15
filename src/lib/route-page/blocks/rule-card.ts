@@ -1,9 +1,10 @@
 // @level presentation
 import {
-  criterionPhrase, deriveQuestions, fillRouteSlots, forEachCriterion, formatEURPer, isLocalization, joinAnd,
-  learnLinkOf, periodOf, provenancedValuesOf, referencedFields, shortLabelOf, subjectOf, thresholdsUnder,
+  criterionPhrase, fillRouteSlots, formatEURPer, joinAnd,
+  learnLinkOf, periodOf, referencedFields, shortLabelOf, subjectOf, thresholdsUnder,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
 } from "permit-rulebook-data";
+import { cardValues, valuesUnder } from "../../dataset-facts/reckon-dataset-facts.js";
 import { type Glossary, glossed } from "../../gloss.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
@@ -33,35 +34,6 @@ export const TAP_CLASSES = ["tap", "tap-min"] as const;
 
 export const tapMin = (extra = ""): string => `class="${escAttr(extra ? `${extra} ` : "")}tap-min"`;
 export const tapInline = (extra = ""): string => `class="${escAttr(extra ? `${extra} ` : "")}tap"`;
-
-// ---------------------------------------------------------------------------
-// Small helpers over the dataset
-// ---------------------------------------------------------------------------
-
-/**
- * Every provenanced value under one criterion, its paths included.
- *
- * `provenancedValuesOf` answers for a single criterion, and a disjunction's own
- * answer is only its condition source — so a card built on it alone printed the
- * `any` and dropped the two thresholds inside it. That is not a rendering
- * detail: the Spanish Blue Card states both of its salaries inside a
- * disjunction, and the page showed neither amount and neither quote. The
- * invariant caught it (`de-experienced-worker`, `es-blue-card`), which is what
- * the invariant is for.
- */
-function valuesUnder(c: Criterion): ProvenanceEntry[] {
-  const out: ProvenanceEntry[] = [];
-  forEachCriterion([c], (x) => out.push(...provenancedValuesOf(x)));
-  // One quote, one line: a disjunction whose condition source is restated on a
-  // path says the same sentence twice.
-  const seen = new Set<string>();
-  return out.filter((e) => {
-    const key = `${e.value.source_url}#${e.value.quote}#${e.label ?? ""}#${e.amount ?? ""}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
 
 // ---------------------------------------------------------------------------
 // The quote block
@@ -217,17 +189,6 @@ function unquotedInPaths(c: Criterion): Criterion[] {
   return c.paths.flatMap((p) => p.criteria.flatMap((pc) => (isUnquoted(pc) ? [pc] : unquotedInPaths(pc))));
 }
 
-/** The quotes one rule card prints. */
-export function cardValues(c: Criterion, notice?: Notice): ProvenanceEntry[] {
-  const values = valuesUnder(c);
-  // A closure names the same field and makes the opposite claim, so it is not
-  // the audience card and never borrows the free-movement notice's words.
-  const isAudience = "field" in c && c.field === "citizenship" && c.op !== "not-in";
-  const isUnquotedAudience = isAudience && values.length === 0;
-  if (isUnquotedAudience && notice) values.push({ value: notice.source });
-  return values;
-}
-
 export function ruleCard(page: RulePage, c: Criterion): string {
   const { dataset, seen, notice } = page;
   const values = cardValues(c, notice);
@@ -247,25 +208,4 @@ export function ruleCard(page: RulePage, c: Criterion): string {
     values.map((e) => `
       ${quoteBlock(e.value, { amount: e.amount, label: e.label }, seen)}`).join("")}
       </article>`;
-}
-
-/**
- * The rules, in the order the interview asks them.
- *
- * Two kinds of criterion never become a card. A criterion that only asks WHERE
- * a route applies is answered by the address of the page the reader is on, and
- * printing "Germany as your destination" as a rule on a German page tells a
- * stranger nothing. Anything else is a card.
- */
-export function ruleCriteria(dataset: Dataset, route: Route): Criterion[] {
-  const order = deriveQuestions(dataset).map((q) => q.field);
-  const rank = (c: Criterion): number => {
-    const positions = referencedFields(c).map((f) => order.indexOf(f)).filter((i) => i >= 0);
-    return positions.length ? Math.min(...positions) : order.length;
-  };
-  return route.criteria
-    .filter((c) => !isLocalization(c))
-    .map((c, i) => ({ c, i, rank: rank(c) }))
-    .sort((a, b) => a.rank - b.rank || a.i - b.i)
-    .map((x) => x.c);
 }

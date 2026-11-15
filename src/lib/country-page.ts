@@ -3,11 +3,14 @@
 // — and the dataset package spells it, so the site and the data cannot
 // disagree about what two is called (Standards review, 2026-09-08).
 import {
-  countedWords, phraseOf, phraseAtStartOf, datasetMeta, isScored, joinAnd, scopeLine,
-  type Country, type Dataset, type Route,
+  countedWords, phraseOf, phraseAtStartOf, isScored, joinAnd, scopeLine,
+  type Country, type Dataset, type Route, type WatchState,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { framedPageHtml } from "./frame/framed-page.js";
+import {
+  countryFactsOf, reckonDatasetFacts, type CountryFacts,
+} from "./dataset-facts/reckon-dataset-facts.js";
 import {
   audienceSentence, gist, pageStamp, routeFigure,
 } from "./route-page/route-page.js";
@@ -18,7 +21,7 @@ import {
   countryPageTitle, discretionLeftOutLine, notAskedBelowLine, notAskedLede, notAskedRoutesLabel,
 } from "./copy/country-page.js";
 import { readOn } from "./copy/quotes.js";
-import { EXCLUSIONS_URL, url } from "./site.js";
+import { EXCLUSIONS_URL, url, watchState } from "./site.js";
 import { countryCheckPath, countryPath, countrySlug, routePath } from "./slug.js";
 // One set of elements for the identity, and one memory of what a page has
 // already explained: a country page is a crawl landing page like any other
@@ -89,28 +92,6 @@ export interface CountryPage {
 }
 
 /**
- * The newest read date behind any of this country's routes — what the head of a
- * page a crawler reads says about when its content last moved. The pair in the
- * masthead stamps the site's own newest read date instead: this page quotes
- * nothing, and the promise it can honestly make is the one the interview's
- * question screens make (human amendment to decision 12, 2026-09-08).
- */
-export function countryReadDate(dataset: Dataset, country: Country): string {
-  return country.routes.map((r) => pageStamp(dataset, r)).sort().at(-1) ?? "";
-}
-
-/**
- * The date a site-wide page carries: the newest read date in the whole
- * dataset, the one the home page prints. `/data/` hands over every sentence,
- * the ones only the results card prints included, so its date is the
- * dataset's, not the newest route page's. The summary is absent only for a
- * dataset with no read value at all, where no page has a day to print either.
- */
-export function siteReadDate(dataset: Dataset): string {
-  return datasetMeta(dataset).newest_retrieved_at ?? "";
-}
-
-/**
  * What a link preview says about a country page: the routes it lists, by name,
  * capped so a description stays a description. The count is stated, so the
  * three names never read as the whole list.
@@ -176,29 +157,34 @@ function countryLedeHtml(country: Country, quotedOnlyCount: number): string {
 }
 
 /**
- * The masthead: the headline, the lede and the read stamp.
+ * The masthead: the headline, the lede and the read stamp, each count and the
+ * stamp from the country's own reckoned facts.
  *
  * The heading counts every route, then the ones the checker asks about: a
  * single total over a page whose last route has no verdict in it would promise
  * answers the page does not give. It counts in figures, as every label on the
  * product does; the ledes below it count in words, because they are sentences.
+ *
+ * The stamp is the newest of its route pages' stamps: the day the newest
+ * sentence any of them prints was read (human amendment to decision 12,
+ * 2026-09-08).
  */
-function countryMastheadHtml(dataset: Dataset, country: Country, routes: ListedRoutes): string {
-  const headline = countryHeadline(phraseAtStartOf(country.code), country.routes.length, routes.scored.length);
+function countryMastheadHtml(country: Country, own: CountryFacts): string {
+  const headline = countryHeadline(phraseAtStartOf(country.code), own.counts.total, own.counts.scored);
   return `<div class="masthead-with-stamps">
     <div>
       <h1>${esc(headline)} <em>${esc(TAGLINE)}</em></h1>
-      <p class="lede">${countryLedeHtml(country, routes.quotedOnly.length)}</p>
+      <p class="lede">${countryLedeHtml(country, own.counts.quotedOnly)}</p>
     </div>
-    ${rulesRead(countryReadDate(dataset, country))}
+    ${rulesRead(own.stamp)}
   </div>`;
 }
 
 /** The section under the routes the checker asks about: the ones it does not. */
-function quotedOnlySectionHtml(context: CountryCardContext, quotedOnly: Route[]): string {
+function quotedOnlySectionHtml(context: CountryCardContext, quotedOnly: Route[], count: number): string {
   return `<section class="quoted-only" aria-labelledby="quoted-only-h">
       <h2 class="label" id="quoted-only-h">${esc(QUOTED_ONLY_HEADING)}</h2>
-      <p class="lede">${esc(notAskedLede(capitalise(countedWords(quotedOnly.length, "route")), quotedOnly.length))}</p>
+      <p class="lede">${esc(notAskedLede(capitalise(countedWords(count, "route")), count))}</p>
       <ul class="routes" aria-label="${escAttr(notAskedRoutesLabel(phraseOf(context.country.code)))}">${
     quotedOnly.map((route) => routeCard(context, route)).join("")}
       </ul>
@@ -217,38 +203,45 @@ function countryCtaHtml(country: Country, quotedOnlyCount: number): string {
 }
 
 /** The page's main: the routes the checker asks about, the ones it does not, and the way on. */
-function countryMainHtml(dataset: Dataset, country: Country, routes: ListedRoutes): string {
-  const { scored, quotedOnly } = routes;
+function countryMainHtml(dataset: Dataset, country: Country, own: CountryFacts): string {
+  const { scored, quotedOnly } = listedRoutesOf(country);
+  const quotedOnlyCount = own.counts.quotedOnly;
   // One page, one memory of what it has already explained. A stranger meets
   // "§" here as readily as on a route page — this is a landing page too.
   const cardContext: CountryCardContext = { dataset, country, seen: new Set() };
   return `<main>
     <ul class="routes" aria-label="${escAttr(askedRoutesLabel(phraseOf(country.code)))}">${
     scored.map((route) => routeCard(cardContext, route)).join("")}
-    </ul>${quotedOnly.length ? `
+    </ul>${quotedOnlyCount ? `
 
-    ${quotedOnlySectionHtml(cardContext, quotedOnly)}` : ""}
+    ${quotedOnlySectionHtml(cardContext, quotedOnly, quotedOnlyCount)}` : ""}
 
-    ${countryCtaHtml(country, quotedOnly.length)}
+    ${countryCtaHtml(country, quotedOnlyCount)}
   </main>`;
 }
 
-export function countryPage(dataset: Dataset, address: CountryAddress): CountryPage {
+/**
+ * One country page. Its stamp and its counts come from `state`'s reckoning of
+ * the dataset's facts, which the footer prints too: the live state, which is
+ * what the build does, or a copy that carries another run.
+ */
+export function countryPage(dataset: Dataset, address: CountryAddress, state: WatchState = watchState): CountryPage {
   const { country, path } = address;
+  const facts = reckonDatasetFacts(dataset, state);
+  const own = countryFactsOf(facts, country);
   const title = countryPageTitle(phraseOf(country.code));
   const desc = description(country);
-  const routes = listedRoutesOf(country);
-  const content = `${countryMastheadHtml(dataset, country, routes)}
+  const content = `${countryMastheadHtml(country, own)}
 
-  ${countryMainHtml(dataset, country, routes)}`;
+  ${countryMainHtml(dataset, country, own)}`;
   const html = framedPageHtml(dataset, {
-    title, meta: { description: desc, path, kind: "website" }, css: COUNTRY_PAGE_RULES, content,
+    title, meta: { description: desc, path, kind: "website" }, css: COUNTRY_PAGE_RULES, facts, content,
     place: { countryPath: path, current: "page", checkPath: countryCheckPath(country) },
   });
   return { path, title, description: desc, html };
 }
 
 /** Every country page this dataset produces. */
-export function countryPages(dataset: Dataset): CountryPage[] {
-  return countryAddresses(dataset).map((address) => countryPage(dataset, address));
+export function countryPages(dataset: Dataset, state: WatchState = watchState): CountryPage[] {
+  return countryAddresses(dataset).map((address) => countryPage(dataset, address, state));
 }

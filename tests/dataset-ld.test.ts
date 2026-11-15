@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { datasetLd } from "../src/lib/dataset-ld.js";
-import { siteReadDate } from "../src/lib/country-page.js";
-import { DATA_PATH } from "../src/lib/site.js";
+import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
+import { DATA_PATH, watchState } from "../src/lib/site.js";
 import { FLAG_READ_WITHIN, FRESHNESS_HUMAN_HAND } from "../src/lib/copy/data-page.js";
 
 /**
@@ -69,7 +69,7 @@ describe("the data page's Dataset block", () => {
   });
 
   it("states the same day and the same version as the page", () => {
-    expect(ld.dateModified).toBe(siteReadDate(ds));
+    expect(ld.dateModified).toBe(reckonDatasetFacts(ds, watchState).readRange.newest);
     expect(ld.version).toBe(ds.dataset_version);
   });
 

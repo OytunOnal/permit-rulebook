@@ -15,7 +15,9 @@ import {
   DATA_LICENCE_FULL, DATA_LICENCE_NAME, FEEDBACK_PATH, REPO_DATA,
   absolute, url, watchState,
 } from "../site.js";
-import { reckonDatasetFacts } from "../dataset-facts/reckon-dataset-facts.js";
+import {
+  audienceNotice, ownUnread, pageStamp, printedNotices, reckonDatasetFacts, ruleCriteria,
+} from "../dataset-facts/reckon-dataset-facts.js";
 import {
   ROUTE_PAGE_ADDENDUM,
   NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, alsoInHeading, askedRouteDescription,
@@ -26,14 +28,16 @@ import { WRONG_DOOR_LABEL } from "../copy/feedback.js";
 import {
   countryCheckPath, countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress,
 } from "../slug.js";
-import { audienceNotice, noticeSection, ownUnread, pageStamp, printedNotices } from "./blocks/notices.js";
+import { noticeSection } from "./blocks/notices.js";
 import { answerBlock, gist } from "./blocks/route-figure.js";
-import { ruleCard, ruleCriteria, tapMin, type RulePage } from "./blocks/rule-card.js";
+import { ruleCard, tapMin, type RulePage } from "./blocks/rule-card.js";
 import { statedBlocks } from "./blocks/stated-blocks.js";
 import ROUTE_PAGE_RULES from "./route-page.css?raw";
 
 export { TAP_CLASSES } from "./blocks/rule-card.js";
-export { audienceNotice, noticesOn, ownUnread, pageStamp, routeSourceUrls } from "./blocks/notices.js";
+export {
+  audienceNotice, noticesOn, ownUnread, pageStamp, routeSourceUrls,
+} from "../dataset-facts/reckon-dataset-facts.js";
 export { gist, routeFigure, type RouteFigure } from "./blocks/route-figure.js";
 
 /**

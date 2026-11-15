@@ -88,6 +88,7 @@
     "src/lib/dataset-facts/dataset-wide/dataset-counts.ts",
     "src/lib/dataset-facts/dataset-wide/read-range.ts",
     "src/lib/dataset-facts/dataset-wide/watch-run.ts",
+    "src/lib/dataset-facts/per-page/printed-quotes.ts",
     "src/lib/dataset-facts/reckon-dataset-facts.ts"
    ]
   },
@@ -332,6 +333,7 @@
   "src/lib/dataset-facts/dataset-wide/dataset-counts.ts": "application",
   "src/lib/dataset-facts/dataset-wide/read-range.ts": "application",
   "src/lib/dataset-facts/dataset-wide/watch-run.ts": "application",
+  "src/lib/dataset-facts/per-page/printed-quotes.ts": "application",
   "src/lib/dataset-facts/reckon-dataset-facts.ts": "application",
   "src/lib/dataset-ld.ts": "presentation",
   "src/lib/feedback-page.ts": "presentation",
@@ -812,6 +814,11 @@
   },
   {
    "from": "scripts/main-render-assets.mjs",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-render-assets.mjs",
    "to": "src/lib/social-card.ts",
    "kind": "dependency"
   },
@@ -972,6 +979,11 @@
   },
   {
    "from": "src/lib/country-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
    "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
@@ -1107,11 +1119,6 @@
   },
   {
    "from": "src/lib/data-page.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/data-page.ts",
    "to": "src/lib/data-page.css",
    "kind": "dependency"
   },
@@ -1186,6 +1193,11 @@
    "kind": "type-only"
   },
   {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/per-page/printed-quotes.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/dataset-ld.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
@@ -1222,7 +1234,7 @@
   },
   {
    "from": "src/lib/feedback-page.ts",
-   "to": "src/lib/country-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -1337,8 +1349,13 @@
   },
   {
    "from": "src/lib/frame/framed-page.ts",
-   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/frame/framed-page.ts",
@@ -1378,6 +1395,11 @@
   {
    "from": "src/lib/frame/framed-page.ts",
    "to": "src/lib/frame/head/icon-links.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/identity.ts",
    "kind": "dependency"
   },
   {
@@ -1732,6 +1754,11 @@
   },
   {
    "from": "src/lib/not-found.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/not-found.ts",
    "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
@@ -1847,6 +1874,11 @@
   },
   {
    "from": "src/lib/route-page/blocks/route-figure.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/route-figure.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
@@ -1868,6 +1900,11 @@
   {
    "from": "src/lib/route-page/blocks/rule-card.ts",
    "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -2002,6 +2039,11 @@
   },
   {
    "from": "src/lib/sitemap.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/sitemap.ts",
    "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
@@ -2014,6 +2056,11 @@
    "from": "src/lib/sitemap.ts",
    "to": "src/lib/slug.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/social-card.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/social-card.ts",
@@ -2752,11 +2799,6 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
    "to": "src/lib/interview/start-interview.ts",
    "kind": "dependency"
   },
@@ -3417,12 +3459,12 @@
   },
   {
    "from": "tests/csp.test.ts",
-   "to": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/csp.test.ts",
-   "to": "src/lib/site.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -3472,7 +3514,7 @@
   },
   {
    "from": "tests/dataset-ld.test.ts",
-   "to": "src/lib/country-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -3502,6 +3544,11 @@
   },
   {
    "from": "tests/escaping.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/escaping.test.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
@@ -3513,6 +3560,11 @@
   {
    "from": "tests/escaping.test.ts",
    "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/escaping.test.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -3672,12 +3724,22 @@
   },
   {
    "from": "tests/frame-alone.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
    "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/frame-alone.ts",
    "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -3698,11 +3760,6 @@
   {
    "from": "tests/framed-page.test.ts",
    "to": "src/lib/feedback-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/framed-page.test.ts",
-   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -4152,7 +4209,52 @@
   },
   {
    "from": "tests/read-range.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
    "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/feedback-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/frame/framed-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/not-found.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -4482,11 +4584,6 @@
   },
   {
    "from": "tests/s12.test.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s12.test.ts",
    "to": "src/lib/data-page.ts",
    "kind": "dependency"
   },
@@ -4543,11 +4640,6 @@
   {
    "from": "tests/s13.test.ts",
    "to": "src/lib/first-paint.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
-   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -5018,11 +5110,6 @@
   {
    "from": "tests/s27.test.ts",
    "to": "src/lib/copy/verdict.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s27.test.ts",
-   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -5835,12 +5922,22 @@
   "src/lib/country-search/country-search.ts": [],
   "src/lib/dataset-facts/reckon-dataset-facts.ts": [
    {
+    "name": "CountryFacts",
+    "kind": "type",
+    "exported": true
+   },
+   {
     "name": "DatasetFacts",
     "kind": "type",
     "exported": true
    },
    {
     "name": "reckonDatasetFacts",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "countryFactsOf",
     "kind": "fn",
     "exported": true
    }
@@ -8662,16 +8759,6 @@
     "exported": true
    },
    {
-    "name": "countryReadDate",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "siteReadDate",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "description",
     "kind": "fn",
     "exported": false
@@ -9894,5 +9981,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "082d08aaaff2c684e852407e1ff976d31ec3c72413d3ccb56257749b05255281"
+ "digest": "e20abebc8c9195537c413cef84c9a31183fd2df91d2b4b840d5b7090842754e3"
 }
