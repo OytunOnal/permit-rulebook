@@ -68,8 +68,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-ink); font: va
  *
  * The text column stops at 37rem and the pair takes the space that is left,
  * centred in it (`margin: 0 auto`) rather than pushed against the edge, and
- * level with the middle of the text block. Below 760 px the column goes back to
- * its natural width and the pair sits right-aligned under it.
+ * level with the middle of the text block. On the narrow side the column goes
+ * back to its natural width and the pair sits right-aligned under it.
  */
 .masthead-with-stamps { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); }
 .masthead-with-stamps > :first-child { flex: 0 1 37rem; min-width: 0; }
@@ -108,10 +108,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-ink); font: va
 /* ---------------------------------------------------------------------------
    The site header: identity and navigation, one rule set for one markup.
 
-   Below 960 px the row folds behind a single Menu control. The band between
-   761 and 939 px had no state in the first revision of the mock — the row was
-   too wide to sit beside the wordmark and too early to fold — and the critique
-   read that as a defect (F1, 2026-09-08).
+   Below 960 px the row folds behind a single Menu control. The row is too wide
+   to sit beside the wordmark there, even on the wide side, so it folds before
+   the page turns narrow rather than with it.
    --------------------------------------------------------------------------- */
 .site-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding-bottom: var(--space-3); border-bottom: var(--rule-soft); flex-wrap: wrap; }
 .site-head .wordmark { font: 700 1.1rem/1 var(--font-serif); color: var(--color-ink); text-decoration: none; display: inline-flex; align-items: center; gap: .55rem; min-height: var(--tap-min); white-space: nowrap; }
@@ -188,7 +187,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-ink); font: va
    --------------------------------------------------------------------------- */
 .site-foot { border-top: var(--rule-heavy); margin-top: var(--space-6); padding-top: var(--space-4); color: var(--color-muted); }
 .site-foot .disclaimer { margin: 0 auto var(--space-4); text-align: center; max-width: 50rem; }
-/* Three columns, two below 760, one below 480 — the mock's own steps. `auto-fit`
+/* Three columns, two on the narrow side, one below 480 — the mock's own steps. `auto-fit`
    was tried and gave a different count per page, because the count then depends
    on how wide the page happens to be rather than on the design (Spec review,
    2026-09-08). */
