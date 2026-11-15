@@ -1,6 +1,8 @@
 // @level presentation
-import { isScored, type Dataset } from "permit-rulebook-data";
+import type { Dataset } from "permit-rulebook-data";
+import type { DatasetFacts } from "./dataset-facts/reckon-dataset-facts.ts";
 import { esc } from "./reason.ts";
+import { CARD_HEADLINE, CARD_PROMISE, CHECKED_DAILY, RULES_READ, SEAL_LETTERS } from "./copy/frame.ts";
 
 /**
  * The social card, as facts and as a page.
@@ -34,33 +36,34 @@ export interface SocialCardFacts {
    * a change to either.
    */
   routesLine: string;
-  /** The newest read date across every value — the stamp's own date. */
+  /** The end of the read range — the "Rules read" stamp's own date, as every site-wide page prints it. */
   read: string;
   headline: string;
   tagline: string;
   product: string;
 }
 
-export const CARD_HEADLINE = "Which work-permit routes could fit?";
-
 /**
- * Everything on the card, read off the dataset and the product's own words.
+ * Everything on the card, read off the dataset, its reckoned `facts` and the
+ * product's own words. The counts and the day are the reckoning's, so the card
+ * and `/data/` read one scored count rather than each filtering for it (#323,
+ * ruling 10).
  *
  * The render script is plain Node with no build step, and Node resolves a
- * specifier literally, so this module keeps its imports few: the words are
- * passed in rather than imported from the copy module (`lib/copy/`), and its
- * one relative import, `esc`, is named by its `.ts` specifier. That keeps it
- * readable by the script, the site and the suite alike.
+ * specifier literally, so this module keeps its imports few: the product's
+ * words are passed in, the card's own come from `copy/frame.ts`, which imports
+ * nothing, the facts are reckoned by the caller, and its relative imports name
+ * their `.ts` files.
+ * That keeps it readable by the script, the site and the suite alike.
  */
 export function socialCardFacts(
-  dataset: Dataset, newestReadDate: string,
+  dataset: Dataset, facts: DatasetFacts,
   words: { product: string; tagline: string; routesLineOf: (total: number, asked: number) => string },
 ): SocialCardFacts {
-  const routes = dataset.countries.flatMap((c) => c.routes);
   return {
     countries: dataset.countries.map((c) => c.name),
-    routesLine: words.routesLineOf(routes.length, routes.filter(isScored).length),
-    read: newestReadDate,
+    routesLine: words.routesLineOf(facts.counts.total, facts.counts.scored),
+    read: facts.readRange.newest,
     headline: CARD_HEADLINE,
     tagline: words.tagline,
     product: words.product,
@@ -106,12 +109,12 @@ html, body { margin: 0; padding: 0; }
 </style><div class="og">
   <div class="row">
     <h1>${esc(facts.headline)} <em>${esc(facts.tagline)}</em></h1>
-    <span class="stamps"><span class="mark">PR</span><span class="stamp">Rules read<br>${esc(facts.read)}</span></span>
+    <span class="stamps"><span class="mark">${esc(SEAL_LETTERS)}</span><span class="stamp">${esc(RULES_READ)}<br>${esc(facts.read)}</span></span>
   </div>
   <div class="foot">
     <span>${esc(facts.countries.join(" · "))}</span>
     <span>${esc(facts.routesLine)}</span>
-    <span>every value with its official sentence · <b>checked daily</b></span>
+    <span>${esc(CARD_PROMISE)} · <b>${esc(CHECKED_DAILY)}</b></span>
   </div>
 </div>`;
 }

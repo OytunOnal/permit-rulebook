@@ -7,16 +7,15 @@ import {
   FEEDBACK_LEDE, FEEDBACK_NOTE, FEEDBACK_OWN_APP, FEEDBACK_OWN_APP_LEAD, TRACKER_NEW_NEED, TRACKER_WRONG_VALUE,
   feedbackTemplateLine,
 } from "../src/lib/copy/feedback.js";
-import { COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW } from "../src/lib/copy/frame.js";
+import { CHECK_YOURS, COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW, THE_DATA } from "../src/lib/copy/frame.js";
 import { RESULT_FEEDBACK_ASK, resultFeedbackLine } from "../src/lib/copy/verdict.js";
 import {
   FEEDBACK_ADDRESS, FEEDBACK_PATH, GMAIL_COMPOSE_URL, NEW_NEED_URL, SPONSOR_URL, TRACKER_URL, absolute, url,
 } from "../src/lib/site.js";
-import { interviewFrameOf } from "../src/lib/frame/framed-page.js";
-import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
+import { FIRST_PAINT_SCRIPT, WIDE_FROM_PX } from "../src/lib/first-paint.js";
 import { COPY_SCRIPT } from "../src/lib/clipboard.js";
 import { feedbackGmail, feedbackMailto, feedbackPage } from "../src/lib/feedback-page.js";
-import { countryLinks } from "../src/lib/country-page.js";
+import { countryLinks } from "../src/lib/slug.js";
 import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
@@ -24,7 +23,7 @@ import { esc, escAttr } from "../src/lib/reason.js";
 import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { answerWith, openAtRest, withSite } from "./browser-walk.js";
-import { footerIn, frameAlone, headerIn } from "./frame-alone.js";
+import { footerIn, frameAlone, headerIn, interviewFrameAlone } from "./frame-alone.js";
 import { FALLBACK_STACK } from "./fallback-stack.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 
@@ -282,7 +281,7 @@ describe("the header: four countries under one word", () => {
     // four countries live INSIDE the disclosure and are not items of the row.
     const row = [...header.replace(/<div class="list">[\s\S]*?<\/div>/, "")
       .matchAll(/<(?:summary|a) class="tap-min[^"]*"[^>]*>([^<]*)</g)].map((m) => m[1]);
-    expect(row.slice(0, 4)).toEqual([COUNTRIES, "Check yours", "The data", FEEDBACK]);
+    expect(row.slice(0, 4)).toEqual([COUNTRIES, CHECK_YOURS, THE_DATA, FEEDBACK]);
   });
 
   it("on a country's page the word is that country, and its row is marked", () => {
@@ -307,18 +306,18 @@ describe("the header: four countries under one word", () => {
     expect(header).toContain(`<span class="group">${COUNTRIES}</span>`);
     const order = [...header.matchAll(/<(?:span class="group"|summary|a)[^>]*>([^<]+)</g)].map((m) => m[1]);
     const after = order.slice(order.lastIndexOf("Netherlands") + 1);
-    expect(after).toEqual(["Check yours", "The data", FEEDBACK]);
+    expect(after).toEqual([CHECK_YOURS, THE_DATA, FEEDBACK]);
   });
 
   it("no country name enters any inline script, and the scripts remember nothing", () => {
-    for (const script of [interviewFrameOf(ds).menuScript, FIRST_PAINT_SCRIPT, COPY_SCRIPT])
+    for (const script of [interviewFrameAlone(ds).menuScript, FIRST_PAINT_SCRIPT, COPY_SCRIPT])
       for (const link of countryLinks(ds))
         expect(script.includes(link.name), `an inline script names ${link.name}`).toBe(false);
     // The disclosure is not remembered: no storage key mentions it, and the
     // menu script writes nothing at all. The copy script likewise — and it
     // names no address either: the text it copies is the page's, read at the
     // click, and its "done" word is the button's own attribute.
-    for (const script of [interviewFrameOf(ds).menuScript, COPY_SCRIPT]) {
+    for (const script of [interviewFrameAlone(ds).menuScript, COPY_SCRIPT]) {
       expect(script).not.toContain("localStorage");
       expect(script).not.toContain("sessionStorage");
       expect(script).not.toContain("cookie");
@@ -570,9 +569,8 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
  * against every other item's box.
  *
  * NOT at 761 px, the width first named for it. Below 960 px the header
- * folds behind Menu (identity.css, 2026-09-08: "the band between 761 and
- * 939 px had no state in the first revision of the mock"), so at 761 there is
- * no row to measure — every item's box is 0 by 0, and the first draft of this
+ * folds behind Menu, since the row is too wide to sit beside the wordmark
+ * there even on the wide side, so at 761 there is no row to measure — every item's box is 0 by 0, and the first draft of this
  * case passed on exactly that. The row is measured at the narrowest width it
  * IS a row, 960 px, where the header's container is at its tightest; 761 is
  * asserted for what it actually is there, the folded header.
@@ -721,7 +719,9 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
     }
   }, 180000);
 
-  it("at 761 px the header is folded behind Menu, as it has been since 2026-09-08", async () => {
+  // On both sides of the narrow/wide breakpoint: the header folds below a wider width of its own.
+  for (const width of [WIDE_FROM_PX, WIDE_FROM_PX - 1])
+  it(`at ${width} px the header is folded behind Menu, as it has been since 2026-09-08`, async () => {
     const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
       await tab.goto(url("/"));
       await tab.evaluate(FALLBACK_STACK);
@@ -731,10 +731,10 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
         + ' navShown: getComputedStyle(document.querySelector(".site-head .nav")).display !== "none",'
         + ' overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth })',
       );
-    }, { viewport: { width: 761, height: 900 }, mobile: false }) as string) as
+    }, { viewport: { width, height: 900 }, mobile: false }) as string) as
       { menuShown: boolean; navShown: boolean; overflow: number };
-    expect(seen.menuShown, "no Menu control at 761").toBe(true);
-    expect(seen.navShown, "the row is showing at 761, where it folds").toBe(false);
+    expect(seen.menuShown, `no Menu control at ${width}`).toBe(true);
+    expect(seen.navShown, `the row is showing at ${width}, where it folds`).toBe(false);
     expect(seen.overflow).toBeLessThanOrEqual(0);
   }, 180000);
 
@@ -763,7 +763,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
     // heading is always the word.
     expect(seen.summaryShown, "the disclosure's word is shown twice on the phone").toBe(false);
     expect(seen.rows).toEqual([
-      ...countryLinks(ds).map((l) => l.name), "Check yours", "The data", FEEDBACK,
+      ...countryLinks(ds).map((l) => l.name), CHECK_YOURS, THE_DATA, FEEDBACK,
     ]);
     for (const [i, tap] of seen.taps.entries())
       expect(tap, `"${seen.rows[i]}" is ${tap} px`).toBeGreaterThanOrEqual(44);

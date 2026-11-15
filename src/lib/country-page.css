@@ -24,7 +24,7 @@
 .cta .note { color: var(--color-muted); }
 .cta.cta-country { flex-direction: column; align-items: center; text-align: center; }
 
-@media (max-width: 760px) {
+@media (--narrow) {
   /* The button goes full width on a phone, as every other button here
      does; only the text stays centred. */
   .cta.cta-country { align-items: stretch; }

@@ -5,7 +5,10 @@ import {
 import { type Glossary, glossed } from "../../gloss.js";
 import { esc, escAttr } from "../../reason.js";
 import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn } from "../../copy/quotes.js";
-import { quoteBlock } from "./rule-card.js";
+import {
+  ALSO_REQUIRED_HEADING, AUTHORITY_REQUIRES_HEADING, READINGS_HEADING, UNSOURCED_CAVEATS_HEADING, WHO_THIS_DOES_NOT_BIND,
+} from "../../copy/route-page.js";
+import { quoteLineHtml } from "../../quote.js";
 
 // ---------------------------------------------------------------------------
 // The blocks beside the rules
@@ -35,8 +38,8 @@ function unsourcedSaid(s: { unsourced?: UnsourcedReason }): string {
 function carveOutBlock(statement: { except?: StatementException }, seen: Glossary): string {
   const except = statement.except;
   if (!except) return "";
-  return `<div class="except"><b>Who this does not bind</b> ${
-    esc(glossed(except.text, seen))}${quoteBlock(except.source, {}, seen)}</div>`;
+  return `<div class="except"><b>${esc(WHO_THIS_DOES_NOT_BIND)}</b> ${
+    esc(glossed(except.text, seen))}${quoteLineHtml(except.source, {}, seen)}</div>`;
 }
 
 export function statedBlocks(route: Route, seen: Glossary): string {
@@ -57,19 +60,19 @@ export function statedBlocks(route: Route, seen: Glossary): string {
     // asks. A route the product does not score has no others, so on those five
     // pages the heading is what the section actually is: the authority's
     // requirements, all of them, none of them checked here (s9).
-    block("precond", isScored(route) ? "Also required — not checked here" : "What the authority requires",
+    block("precond", isScored(route) ? ALSO_REQUIRED_HEADING : AUTHORITY_REQUIRES_HEADING,
       preconditions.map((s) =>
-        esc(glossed(s.text, seen)) + (s.source ? quoteBlock(s.source, {}, seen) : "") + carveOutBlock(s, seen))),
+        esc(glossed(s.text, seen)) + (s.source ? quoteLineHtml(s.source, {}, seen) : "") + carveOutBlock(s, seen))),
     block("precond", PAGE_ALSO_SAYS, caveats.filter((s) => s.source).map((s) =>
-      esc(glossed(s.text, seen)) + quoteBlock(s.source!, {}, seen) + carveOutBlock(s, seen))),
+      esc(glossed(s.text, seen)) + quoteLineHtml(s.source!, {}, seen) + carveOutBlock(s, seen))),
     // A caveat we could not find the wording for is still a fact in the
     // reader's favour, so it stays — under a heading that says plainly that no
     // quote covers it, with the declared reason and the day we last looked.
     // Dropping it here while `statedNotAsked` still counted it was a page that
     // named fewer limbs than it claimed (Standards review, 2026-09-07).
-    block("precond", "Worth knowing — we have not found the official wording",
+    block("precond", UNSOURCED_CAVEATS_HEADING,
       caveats.filter((s) => !s.source).map((s) =>
         `${esc(glossed(s.text, seen))} <i>${esc(unsourcedSaid(s))}</i>` + carveOutBlock(s, seen))),
-    block("reading", "Our reading, not the authority's words", readings.map((r) => esc(glossed(r.text, seen)))),
+    block("reading", READINGS_HEADING, readings.map((r) => esc(glossed(r.text, seen)))),
   ].join("");
 }

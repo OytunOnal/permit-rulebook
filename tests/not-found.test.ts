@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { PRODUCT_NAME } from "../src/lib/copy/frame.js";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { notFoundPage } from "../src/lib/not-found.js";
-import { countryLinks } from "../src/lib/country-page.js";
+import { countryLinks } from "../src/lib/slug.js";
 import { url } from "../src/lib/site.js";
 import { frameAlone, styleIn } from "./frame-alone.js";
 
@@ -65,14 +66,14 @@ describe("a wrong URL lands on a page of this product's own", () => {
         .toBe(frameSheet.split(selector).length - 1);
     }
     // And it says the product's name where the mark stands.
-    expect(page.html).toContain('title="Permit Rulebook"');
+    expect(page.html).toContain(`title="${PRODUCT_NAME}"`);
   });
 
   it("says in one sentence that the page does not exist", () => {
     const text = page.html.replace(/<style>[\s\S]*?<\/style>/g, " ")
       .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
     expect(text).toContain("This page does not exist.");
-    expect(page.title).toContain("Permit Rulebook");
+    expect(page.title).toContain(PRODUCT_NAME);
     // A crawler is told not to index it, and it is not in the sitemap either
     // (`tests/site-index.test.ts`).
     expect(page.html).toContain('<meta name="robots" content="noindex">');

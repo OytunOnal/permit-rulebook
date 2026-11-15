@@ -5,7 +5,8 @@
  * Every word a reader reads lives in this folder, one file per screen or
  * part (CODING_STANDARDS.md, Rules).
  */
-import { PRODUCT_NAME } from "./frame.js";
+import type { DatasetCounts } from "../dataset-facts/reckon-dataset-facts.js";
+import { PRODUCT_NAME, THE_DATA } from "./frame.js";
 
 /** `/data/`'s label for a country's routes as JSON; `country` is its phrase. */
 export const countryAsJsonLabel = (country: string): string => `${country} as JSON`;
@@ -102,14 +103,6 @@ export const FRESHNESS_HUMAN_HAND =
   `A source that has moved raises a flag and a person reads it ${FLAG_READ_WITHIN}: the values on this site, and the dates beside `
   + "them, change when a person changes them, never on their own.";
 
-/** What the dataset's description counts: its routes, scored and quoted only, and its countries. */
-export interface DatasetCounts {
-  total: number;
-  scored: number;
-  quotedOnly: number;
-  countries: number;
-}
-
 /**
  * The Dataset block's description on `/data/`. A dataset index (Google's
  * Dataset Search) reads it, and a person reads it in that index's result, so
@@ -149,3 +142,65 @@ export const dataMetaDescription = (scored: number, quotedOnly: number, countrie
 export const proseProvenanceCounts = (sourced: number, ours: number, dated: number): string => [
   `${sourced} sourced`, `${ours} ours`, ...(dated ? [`${dated} kept on a dated reason`] : []),
 ].join(", ");
+
+/** `/data/`'s headline and title: the header's word for the page. */
+export const DATA_HEADLINE = `${THE_DATA}.`; // the h1, before the tagline
+export const DATA_PAGE_TITLE = `${THE_DATA} · ${PRODUCT_NAME}`; // the page's <title>
+
+/** What the dataset holds today: the section's heading, and the terms of its dates and counts. */
+export const HOLDS_HEADING = "What it holds today"; // the first section's heading
+export const DATASET_VERSION = "Dataset version"; // the dates list's first term
+export const SCHEMA_VERSION = "Schema version"; // the dates list's second term
+export const QUOTED_VALUES = "Quoted values"; // the counts list's first term
+export const quotedValuesCount = (count: number): string => `${count} with a source and a date`;
+export const SENTENCES_OF_OURS = "Sentences of ours"; // the counts list's second term
+export const ROUTES_TERM = "Routes"; // the wide list's one term
+export const routesCount = (scored: number, quotedOnly: number, countries: number): string =>
+  `${scored} scored, ${quotedOnly} quoted and dated but not scored, in ${countries} countries`;
+
+/** What checks the dataset: the section's heading, the four gates, each by its name and what it holds, and the counter. */
+export const CHECKS_HEADING = "What checks it"; // the second section's heading
+export const GATES_LEAD = "Four gates run on every change, and the build stops on any of them."; // the line over the gates
+export const SCHEMA_VALIDATION = "Schema validation"; // the first gate's name
+export const SCHEMA_VALIDATION_LINE = // what the first gate holds, after its name
+  "every value has a source URL, a verbatim quote and a read date, or the dataset does not build. This page exists, so this one passed.";
+export const QUOTE_FIDELITY = "Quote fidelity"; // the second gate's name
+export const QUOTE_FIDELITY_LINE = // what the second gate holds, after its name
+  "every sentence the dataset claims to have quoted is looked for again in a fresh snapshot of the page it cites. It runs where the snapshots live, in the data repository.";
+export const WATCH_COVERAGE = "Watch coverage"; // the third gate's name
+export const WATCH_COVERAGE_LINE = // what the third gate holds, after its name
+  "every source a value cites is on the watchlist, and every entry on the watchlist backs a value.";
+export const PROSE_PROVENANCE = "Prose provenance"; // the fourth gate's name
+/** What the fourth gate holds, after its name; `counts` is `proseProvenanceCounts`'s. */
+export const proseProvenanceLine = (counts: string): string =>
+  `anything in quotation marks carries the source it is quoting, and what is ours is declared ours: ${counts}.`;
+export const ANALYTICS_NOTE = // the line under the gates: what the counter records, and what it never does
+  "A cookieless counter (Cloudflare Web Analytics) records each page load: the page's address, where you came from, your country, and your browser and operating system versions; nothing you answer, nothing that identifies you, and nothing while you answer.";
+
+/** Where to take the dataset: the section's heading, its downloads, and the line over every route's own JSON. */
+export const TAKE_HEADING = "Take it"; // the third section's heading
+export const DOWNLOADS_LABEL = "Downloads"; // the downloads nav's aria-label
+export const WHOLE_DATASET_AS_JSON = "The whole dataset as JSON"; // the first download's link
+export const COUNTRIES_JSON_LINK = "countries.json — the passport vocabulary"; // the second download's link
+export const SERVED_ON_ITS_OWN = "Every route is also served on its own, with the day it was read:"; // after the licence line
+
+/**
+ * `/status`, the old address, in words: its title, its headline around the
+ * link to `/data/` (`linkHtml`, already HTML), its lede, and what a search
+ * result reads about it.
+ */
+export const STATUS_ALIAS_TITLE = `Moved to ${THE_DATA} · ${PRODUCT_NAME}`; // the old address's <title>
+export const movedHeadingHtml = (linkHtml: string): string => `This page is now ${linkHtml}.`;
+export const STATUS_ALIAS_LEDE = // the old address's lede
+  "Same page, a better name: what the dataset holds today, what checks it, and where to download it. Your browser should be on its way; if it is not, the link above is it.";
+export const statusAliasDescription = (address: string): string => `This page is now called ${THE_DATA}, at ${address}.`;
+
+/**
+ * The Dataset block's words beside its description: the dataset's name, its
+ * two downloads' names and its keywords, which a dataset index reads and a
+ * person meets in its result. `countries` is the countries' names, joined.
+ */
+export const datasetName = (countries: string): string => `${PRODUCT_NAME} — work-permit routes for ${countries}`;
+export const wholeDatasetDownloadName = (licenceName: string): string => `The whole dataset (${licenceName})`;
+export const COUNTRIES_DOWNLOAD_NAME = "The countries and their routes"; // the countries.json download's name
+export const DATASET_KEYWORDS = ["work permit", "residence permit", "immigration", "eligibility", "open data"]; // before the countries' names

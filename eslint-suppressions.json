@@ -106,16 +106,11 @@
   },
   "src/lib/site.ts": {
     "roadkeeper/constant-reason": {
-      "count": 2
+      "count": 1
     }
   },
   "src/lib/situations.ts": {
     "roadkeeper/named-condition": {
-      "count": 1
-    }
-  },
-  "src/lib/social-card.ts": {
-    "roadkeeper/constant-reason": {
       "count": 1
     }
   },
@@ -450,9 +445,14 @@
       "count": 2
     }
   },
-  "tests/s23.test.ts": {
+  "tests/s23-page-copy.test.ts": {
     "max-lines-per-function": {
-      "count": 3
+      "count": 1
+    }
+  },
+  "tests/s23-result-copy.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
     }
   },
   "tests/s24.test.ts": {

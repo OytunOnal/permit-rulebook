@@ -1,19 +1,22 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { forEachCriterion, formatEUR, isScored, type Dataset, type UnreadSource } from "permit-rulebook-data";
-import { audienceNotice, routeFigure, routePage, routePages } from "../src/lib/route-page/route-page.js";
-import { countryAddresses, countryPages } from "../src/lib/country-page.js";
+import { forEachCriterion, formatEUR, isScored, type Dataset, type Route } from "permit-rulebook-data";
+import { reckonDatasetFacts, routeFactsOf } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
+import { routePage, routePages } from "../src/lib/route-page/route-page.js";
+import { routeFigure } from "../src/lib/route-lines.js";
+import { countryPages } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { feedbackPage } from "../src/lib/feedback-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { datasetLd } from "../src/lib/dataset-ld.js";
 import { sitemapEntries } from "../src/lib/sitemap.js";
-import { ANSWER_SOURCED, dailyCheck } from "../src/lib/copy/route-page.js";
+import { ANSWER_SOURCED } from "../src/lib/copy/route-page.js";
 import { datasetDay } from "../src/lib/copy/frame.js";
-import { DATA_PATH, FEEDBACK_PATH } from "../src/lib/site.js";
-import { esc } from "../src/lib/reason.js";
-import { routeAddresses } from "../src/lib/slug.js";
+import { DATA_PATH, FEEDBACK_PATH, watchState } from "../src/lib/site.js";
+import { countryAddresses, routeAddresses } from "../src/lib/slug.js";
 import { textOf } from "./text-of.js";
+import { footerIn } from "./frame-alone.js";
+import { audienceNoticeOf } from "./audience-notice.js";
 
 /**
  * The dates a route page prints: its stamp, each figure's reading, the
@@ -77,18 +80,26 @@ const DATES_WHAT_IT_PRINTS = "a route page dates what it prints";
 // German Blue Card's IT path was read (#134), past the 2026-09-30 used before.
 const NEVER_PRINTED = "2026-11-30";
 const bent = structuredClone(ds);
-const audience = (bent.notices ?? []).find((n) => n.kind === "no-permit-needed");
-for (const value of audience?.sources ?? []) value.retrieved_at = NEVER_PRINTED;
+const audience = audienceNoticeOf(bent);
+for (const value of audience.sources ?? []) value.retrieved_at = NEVER_PRINTED;
 const bentPages = routeAddresses(bent).map((a) => ({ route: a.route, page: routePage(bent, a) }));
+
+/**
+ * A page without the footer every page shares. The footer's read range is the
+ * dataset's, every quoted sentence's (#323, rulings 1 and 6), so it ends on a
+ * day only the results card prints as readily as on one this page prints; the
+ * rest of the page dates only what it prints.
+ */
+const pageOwnHtml = (html: string): string => html.replace(footerIn(html), "");
 
 describe(DATES_WHAT_IT_PRINTS, () => {
   it("draws the stamp from no source the page leaves out", () => {
-    expect(audience?.sources?.length, "the notice no longer carries a source the page leaves out").toBeTruthy();
+    expect(audience.sources?.length, "the notice no longer carries a source the page leaves out").toBeTruthy();
     for (const { page } of bentPages) {
       expect(page.readDate, page.path).toBe(quoteDatesOf(page.html).sort().at(-1));
-      expect(page.html, page.path).not.toContain(NEVER_PRINTED);
+      expect(pageOwnHtml(page.html), page.path).not.toContain(NEVER_PRINTED);
     }
-    for (const page of countryPages(bent)) expect(page.html, page.path).not.toContain(NEVER_PRINTED);
+    for (const page of countryPages(bent)) expect(pageOwnHtml(page.html), page.path).not.toContain(NEVER_PRINTED);
   });
 
   it("a site-wide page dates the whole dataset, the sentences only the results card prints included", () => {
@@ -107,34 +118,16 @@ describe(DATES_WHAT_IT_PRINTS, () => {
   });
 
   it("a panel with no figure promises no sentence below it and dates nothing", () => {
-    const without = bentPages.filter(({ route }) => isScored(route) && !routeFigure(bent, route).value);
+    const bentFacts = reckonDatasetFacts(bent, watchState);
+    const figureOf = (route: Route): string => routeFigure(bent, route, routeFactsOf(bentFacts, route).printed).value;
+    const without = bentPages.filter(({ route }) => isScored(route) && !figureOf(route));
     expect(without.length, "no scored route is left without a figure").toBeGreaterThan(0);
     for (const { page } of without) {
       expect(answerOf(page.html), page.path).not.toContain(ANSWER_SOURCED);
       expect(answerOf(page.html), page.path).not.toContain("<time");
     }
     for (const { route, page } of bentPages)
-      if (routeFigure(bent, route).value) expect(answerOf(page.html), page.path).toContain(ANSWER_SOURCED);
-  });
-});
-
-describe(DATES_WHAT_IT_PRINTS, () => {
-  /**
-   * The liveness line and the stamp read one set of this page's sources. The
-   * citizenship card prints the audience notice's `source`, so a run that
-   * could not read it is a run that missed one of this page's sources.
-   */
-  it("qualifies its daily-check line when the run missed a sentence the page prints", () => {
-    const notice = audienceNotice(ds)!;
-    const unread: UnreadSource[] = [
-      { id: "audience", url: notice.source.source_url, last_read: notice.source.retrieved_at, countries: [] },
-    ];
-    const prints = (html: string): boolean => html.includes(esc(notice.source.quote));
-    const pagesWith = routeAddresses(ds).map((a) => routePage(ds, a, { lastRun: "2026-09-30", unread }));
-    expect(pagesWith.filter((p) => prints(p.html)).length, "no route page prints the notice's sentence")
-      .toBeGreaterThan(0);
-    for (const page of pagesWith)
-      expect(page.html.includes(esc(dailyCheck(1))), page.path).toBe(prints(page.html));
+      if (figureOf(route)) expect(answerOf(page.html), page.path).toContain(ANSWER_SOURCED);
   });
 });
 

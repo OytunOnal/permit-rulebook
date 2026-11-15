@@ -69,8 +69,8 @@ pull request.
 ## Rules
 
 - The site's health signal is the footer line on every page: the oldest and
-  newest day a value was read, the watch's last run, the sources it could not
-  read, and the dataset version.
+  newest day a quoted sentence was read (values and notices), the watch's last
+  run, the sources it could not read, and the dataset version.
 - Every user-facing string lives in the copy module (site) or in the dataset
   (data). The copy module is `src/lib/copy/`, one file per screen or part:
   `frame.ts` for the frame every page shares, `quotes.ts` for the words around

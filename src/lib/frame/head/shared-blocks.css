@@ -1,16 +1,6 @@
-/* The blocks several pages draw (the rules list, a quote, the call to action, the data door, the answer panel, a list of links, the footer), after identity.css. */
+/* The blocks several pages draw (the rules list, the call to action, the data door, the answer panel, a list of links, the footer), after identity.css; a quote line's look is quote-line.css, after this. */
 /* ---- the rules ---- */
 .rules { margin-top: var(--space-5); display: grid; gap: var(--gap-cards); }
-
-/* Source line: the quote is the proof, so it is framed — language tagged, the
-   separator difference explained once — and its link reaches 44 px. */
-.src { font: var(--text-source); color: var(--color-muted); border-top: var(--rule-dotted); padding-top: var(--space-2); margin-top: var(--space-3); display: flex; justify-content: space-between; gap: var(--space-3); align-items: flex-start; }
-.src q { font-style: italic; color: var(--color-ink); quotes: "\201C" "\201D"; }
-.src b { color: var(--color-met); font-weight: 600; }
-.src a { white-space: nowrap; display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 var(--space-2); margin: 0; }
-/* The note reads as part of the line it belongs to, separated the way the
-   rest of that line is (F2). */
-.src .note { display: inline; }
 
 /* ---- check yours ---- */
 .cta { margin: var(--space-5) 0 0; padding: var(--space-4); background: var(--color-card); border: var(--rule-soft); display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
@@ -50,9 +40,7 @@ footer { margin-top: var(--space-6); border-top: var(--rule-heavy); padding-top:
 footer .health { display: flex; justify-content: space-between; gap: var(--space-3); font: var(--text-source); margin-top: var(--space-3); flex-wrap: wrap; align-items: center; }
 footer .health a { display: inline-flex; align-items: center; min-height: var(--tap-min); }
 
-@media (max-width: 760px) {
-  .src { flex-direction: column; }
-  .src a { padding-left: 0; }
+@media (--narrow) {
   /* On a phone the button leads its own section: the sentence about privacy
      is worth reading, and worth reading second (2026-09-08). */
   .cta { flex-direction: column; align-items: stretch; }

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { SITUATION_FIELD, deriveQuestions, evaluate, isClosed, type Dataset, type Profile } from "permit-rulebook-data";
 import { INTRO_SUBLINE, SHORT_SUBLINE } from "../src/lib/copy/interview.js";
-import { answersCheckedLine, nearestLine } from "../src/lib/copy/verdict.js";
+import { NOTHING_OPEN_HEADLINE, answersCheckedLine, nearestLine } from "../src/lib/copy/verdict.js";
 import {
   EMPTY_INTERVIEW, interviewAfter, type Gesture, type InterviewState, type InterviewStep,
 } from "../src/lib/interview/start-interview.js";
@@ -10,6 +10,8 @@ import { questionMastheadOf } from "../src/lib/question.js";
 import type { Masthead } from "../src/lib/screen.js";
 import { verdictOf, type Verdict } from "../src/lib/verdict/verdict.js";
 import { stepsIn } from "./verdict-cards.js";
+import { PRIYA_EXPLORING_ALL } from "./personas.js";
+import { audienceNoticeOf } from "./audience-notice.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -66,13 +68,6 @@ const openOnto = (answers: Profile): InterviewStep =>
 const DUTCH_JOB_OFFER: Profile = {
   destination: "nl", citizenship: "IN", situation: "offer", situation_country: "nl", english: "b1", age_band: "u30",
   qualification: "none", experience_7y: "lt3", occupation_it: "yes", salary_eur_month: "band_0", nl_recent_grad: "yes",
-};
-/** An explorer of all four with no offer: nothing open, and steps that would change that (s23). */
-const PRIYA: Profile = {
-  destination: "all", citizenship: "IN", situation: "none", qualification: "degree", recognition_de: "unknown",
-  occupation_shortage: "unknown", experience_5y: "2plus", experience_7y: "3to5", german: "none", english: "c1",
-  nl_recent_grad: "no", top200_grad: "unknown", funds_eur_month: "band_1", age_band: "u30", de_stay6m: "no",
-  partner_ck: "no",
 };
 /** France with no offer: nothing open, and no step that changes it. */
 const FRANCE_NOTHING: Profile = { destination: "fr", situation: "none", citizenship: "IN" };
@@ -243,8 +238,8 @@ describe("the masthead has exactly one author", () => {
     // the one line the type exists to keep honest (review J2).
     const one = verdictOn(ds, FRANCE_NOTHING, 3).action.masthead;
     const several = verdictOn(twoCountriesNothingOpen(), { ...FRANCE_NOTHING, destination: "all" }, 3).action.masthead;
-    expect(one.headline).toBe("Nothing open on these answers.");
-    expect(several.headline).toBe("Nothing open on these answers.");
+    expect(one.headline).toBe(NOTHING_OPEN_HEADLINE);
+    expect(several.headline).toBe(NOTHING_OPEN_HEADLINE);
     expect(one.subline.startsWith(answersCheckedLine(3, routesChecked(FRANCE_NOTHING)))).toBe(true);
     expect(several.subline.startsWith(answersCheckedLine(3, routesChecked(FRANCE_NOTHING)))).toBe(true);
     // A single country has no country sections to send anyone to (F7).
@@ -253,7 +248,7 @@ describe("the masthead has exactly one author", () => {
   });
 
   it("a nearest near-miss and an explore hint never fight over the same sentence", () => {
-    const verdict = verdictOn(ds, PRIYA);
+    const verdict = verdictOn(ds, PRIYA_EXPLORING_ALL);
     const { subline } = verdict.action.masthead;
     const steps = stepsIn(verdict).map((s) => s.title);
     expect(steps.length, "precondition: the explorer is offered steps").toBeGreaterThan(0);
@@ -291,7 +286,7 @@ describe("the comparison has no subject called \"Code\" (s17)", () => {
       ["question, fresh", questionMastheadOf({ kind: "question", started: false })],
       ["question, started", questionMastheadOf({ kind: "question", started: true })],
       ["results, open", verdictOn(ds, DUTCH_JOB_OFFER).action.masthead],
-      ["results, nearest", verdictOn(ds, PRIYA).action.masthead],
+      ["results, nearest", verdictOn(ds, PRIYA_EXPLORING_ALL).action.masthead],
       ["results, explore", verdictOn(ds, FRANCE_NOTHING).action.masthead],
       ["notice", verdictOn(ds, EU_PASSPORT).action.masthead],
     ];
@@ -359,7 +354,7 @@ describe("the headline escapes what the dataset says (#25)", () => {
 
   it("a notice's title", () => {
     const data = wrecked();
-    data.notices!.find((n) => n.kind === "no-permit-needed")!.title = HOSTILE;
+    audienceNoticeOf(data).title = HOSTILE;
     const { action } = verdictOn(data, EU_PASSPORT);
     expect(action.kind).toBe("answered-outright");
     expect(tagIn(action.masthead.headline)).toBe(false);

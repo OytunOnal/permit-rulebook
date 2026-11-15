@@ -6,6 +6,7 @@
  * part (CODING_STANDARDS.md, Rules).
  */
 import { countedWords } from "permit-rulebook-data";
+import { ANSWERED_HERE_ONLY } from "./frame.js";
 
 /**
  * The route page says something narrower under its own name.
@@ -142,3 +143,72 @@ export const freshnessNote = (unread: number): string =>
  */
 export const EITHER_PATH = "Either path meets it:";
 export const ANY_PATH = "Any one of these paths meets it:";
+
+/**
+ * The masthead's lede after the route's summary: what every figure on the
+ * page is, said of its numbers on a route the checker asks about and of its
+ * conditions on one it does not.
+ */
+export const EVERY_NUMBER_SOURCED = // on a route the checker asks about
+  "Every number on this page is the authority's own sentence, with the page it came from and the day we read it.";
+export const EVERY_CONDITION_SOURCED = // on a route the checker does not ask about
+  "Every condition on this page is the authority's own sentence, with the page it came from and the day we read it.";
+
+/** What a search result says of a threshold, among a route's first conditions; `measure` is the field's own noun, lower-cased. */
+export const thresholdInDescription = (amount: string, measure: string): string => `the ${amount} ${measure}`;
+
+/** The headings over the page's parts, seen or for a screen reader only. */
+export const RULES_HEADING = "The rules of this route"; // the rules section's hidden heading
+export const ANSWER_HEADING = "What this route asks for"; // the answer block's heading
+export const ASKED_SCOPE_HEADING = "What the checker asks, and what it does not"; // over a scored route's scope statement
+
+/** The way into the checker on a route the checker asks about: its bold question, and the line after it. */
+export const WHERE_DO_YOU_STAND = "Where do you stand on this route?"; // the call to action's opening, in bold
+export const CHECK_ON_THIS_DEVICE = // the call to action's line after its question
+  `${ANSWERED_HERE_ONLY} You get each rule against what you declared, the gap if there is one, and which single change would open more routes.`;
+
+/** The scope statement's route half; `scopeHtml` is the scope line, already HTML, set in bold. */
+export const onThisRouteHtml = (scopeHtml: string): string => `On this route — <strong>${scopeHtml}</strong>.`;
+
+/** The aside: its name, its heading over the data's doors, and what the page is generated from. */
+export const BESIDE_THE_RULES = "Beside the rules"; // the aside's aria-label
+export const DATA_BEHIND_THIS_PAGE = "The data behind this page"; // the data section's heading and its nav's aria-label
+export const GENERATED_FROM_DATASET = // the data section's line, before the reuse line
+  "This page is generated from an open dataset: every number and quote above is a record in it, with its source and read date.";
+
+/**
+ * A rule card's words: its heading where it names who the rule shuts out, the
+ * kind beside the heading, its plain line, and the block that says what the
+ * checker asks where no quote covers a rule. `phrase` is the engine's phrase
+ * for what the rule asks; `amountHtml` and `subjectHtml` are already HTML.
+ */
+export const notOpenTo = (phrase: string): string => `Not open to ${phrase}`;
+export const THRESHOLD_KIND = "Threshold"; // a rule on a number
+export const POINTS_KIND = "Points"; // a rule on the points table
+export const NOT_FOR_KIND = "Who this is not for"; // a closure
+export const FOR_KIND = "Who this is for"; // a rule on the passport
+export const CONDITION_KIND = "Condition"; // any other rule
+export const asksAtLeastHtml = (amountHtml: string, subjectHtml: string): string =>
+  `This route asks for at least <span class="mono">${amountHtml}</span> — ${subjectHtml}.`;
+export const countsPointsLine = (points: number): string =>
+  `This route counts ${points} points from the official table. Every item below scores, and the table is quoted under it.`;
+export const asksFor = (phrase: string): string => `This route asks for ${phrase}.`;
+export const WHAT_THE_CHECKER_ASKS = "What the checker asks"; // the block's heading where a rule prints no quote
+export const FIND_OUT_YOURSELF = "You can find this out yourself:"; // before a learn link in that block
+
+/** The headings of the blocks stated beside the rules. */
+export const WHO_THIS_DOES_NOT_BIND = "Who this does not bind"; // a carve-out, under its condition
+export const ALSO_REQUIRED_HEADING = "Also required — not checked here"; // a scored route's preconditions
+export const AUTHORITY_REQUIRES_HEADING = "What the authority requires"; // an unscored route's preconditions
+export const UNSOURCED_CAVEATS_HEADING = "Worth knowing — we have not found the official wording"; // caveats with no quote
+export const READINGS_HEADING = "Our reading, not the authority's words"; // our readings of the rules
+
+/**
+ * The rail: its name, and what a row says beside its amount — this route's
+ * own (with the threshold's label where it has one), one other route by
+ * name, or how many others.
+ */
+export const RAIL_LABEL = "What this country asks on the same figure"; // the rail list's aria-label
+export const thisRouteRow = (label?: string): string => `this route${label ? ` — ${label}` : ""}`;
+export const anotherRouteRow = (routeName: string): string => `${routeName} — another route here`;
+export const otherRoutesRow = (count: number): string => `${count} other routes here`;

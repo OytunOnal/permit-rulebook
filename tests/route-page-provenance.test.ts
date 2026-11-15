@@ -1,16 +1,18 @@
 import { describe, expect, it } from "vitest";
+import { sameNumberNote } from "../src/lib/copy/quotes.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   forEachCriterion, formatEUR, formatEURPer, noticeSources, provenancedValuesOf, quoteLanguage,
-  routeStatements, statementSources, type Dataset, type Route,
+  routeStatements, statementSources, type Dataset, type Notice, type Route,
 } from "permit-rulebook-data";
-import { audienceNotice, noticesOn, routePage, routePages } from "../src/lib/route-page/route-page.js";
+import { routePage, routePages } from "../src/lib/route-page/route-page.js";
 import { esc } from "../src/lib/reason.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 // The frame round a quote lives with the quote, not with the page that shows
 // one: the results card puts the same words round the same sentence.
 import { separatorNote } from "../src/lib/quote.js";
 import { textOf } from "./text-of.js";
+import { audienceNoticeOf } from "./audience-notice.js";
 
 /**
  * A route page holds the dataset's figures and sentences, each as the dataset
@@ -19,6 +21,9 @@ import { textOf } from "./text-of.js";
 
 const ds = dataset as unknown as Dataset;
 const pages = routePages(ds);
+
+/** The notices the dataset says are about `route`. */
+const noticesOn = (d: Dataset, route: Route): Notice[] => (d.notices ?? []).filter((n) => (n.routes ?? []).includes(route.id));
 
 // The title these cases have always sat under; every block below repeats it, so each case keeps its id.
 const ONE_PAGE_PER_ROUTE = "s6 — one page per route, generated from the dataset";
@@ -105,12 +110,12 @@ describe(ONE_PAGE_PER_ROUTE, () => {
 
   it("says once where the source spells a number differently from the page", () => {
     expect(separatorNote(50700, "welches im Jahr 2026 50.700 Euro beträgt"))
-      .toBe("The source writes 50.700 where this page writes 50,700 — the same number.");
+      .toBe(sameNumberNote("50.700", "50,700"));
     // No note where the source agrees with the page, or never spells it.
     expect(separatorNote(50700, "at least 50,700 euro")).toBe("");
     expect(separatorNote(50700, "the general threshold applies")).toBe("");
     const de = pages.find((p) => p.path === "/germany/eu-blue-card-general")!;
-    expect(textOf(de.html)).toContain("The source writes 50.700 where this page writes 50,700");
+    expect(textOf(de.html)).toContain(sameNumberNote("50.700", "50,700"));
   });
 });
 
@@ -144,7 +149,7 @@ describe(ONE_PAGE_PER_ROUTE, () => {
         address.route.summary ?? "", address.route.scope.reason,
         ...routeStatements(address.route).flatMap((st) => [st.text, st.source?.quote ?? ""]),
         ...(address.route.readings ?? []).map((r) => r.text),
-        audienceNotice(ds)?.body ?? "", audienceNotice(ds)?.source.quote ?? "",
+        audienceNoticeOf(ds).body, audienceNoticeOf(ds).source.quote,
       ].join(" ");
       for (const amount of printed) {
         if (prose.includes(amount)) continue;
@@ -170,8 +175,7 @@ describe(ONE_PAGE_PER_ROUTE, () => {
       // with no reader shows both, so it holds both.
       for (const st of routeStatements(address.route))
         for (const value of statementSources(st)) held.add(esc(value.quote));
-      const notice = audienceNotice(ds);
-      if (notice) held.add(esc(notice.source.quote));
+      held.add(esc(audienceNoticeOf(ds).source.quote));
       // And every side of a notice the dataset says is about THIS route: the
       // Algerian talent question stands on two authorities disagreeing and on
       // the page that says what the reader gets instead, and all three are

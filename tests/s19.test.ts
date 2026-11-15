@@ -14,7 +14,8 @@ import { NOT_CHECKED_HEADING, READ_ITS_RULES, STATUS_LABEL } from "../src/lib/co
 import { READ_IT_HERE, notCheckedLine, notCheckedQuotedLine } from "../src/lib/copy/interview.js";
 import { countryHeadline } from "../src/lib/copy/country-page.js";
 import { verdictHtml, verdictOf } from "../src/lib/verdict/verdict.js";
-import { countryAddresses, countryPage } from "../src/lib/country-page.js";
+import { countryPage } from "../src/lib/country-page.js";
+import { countryAddresses } from "../src/lib/slug.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import { url } from "../src/lib/site.js";
@@ -23,6 +24,7 @@ import {
 } from "./verdict-cards.js";
 import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 import { marksOn, situationScreen, unscoredOf } from "./situation-marks.js";
+import { watchStateAt } from "./watch-state-at.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -256,7 +258,7 @@ describe("s19 — the quoted route, the counts and the data page follow", () => 
     const address = countryAddresses(ds).find((a) => a.country.code === "FR")!;
     const page = countryPage(ds, address);
     expect(page.html).toContain(`<h1>${esc(countryHeadline(phraseAtStartOf("FR"), 7, 5))}`);
-    const researcher = routePages(ds, { lastRun: "2026-09-16" }).find((p) => p.path === "/france/talent-researcher");
+    const researcher = routePages(ds, watchStateAt("2026-09-16")).find((p) => p.path === "/france/talent-researcher");
     expect(researcher).toBeDefined();
     expect(textOf(researcher!.html))
       .toContain(scopeWords("rules-quoted-nothing-asked", { stated: 0, noted: 0 }, { reader: "not-answered" }));

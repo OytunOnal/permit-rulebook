@@ -1,5 +1,6 @@
 // @level main
 import { configDefaults, defineConfig } from "vitest/config";
+import { breakpointWidthsStep } from "./src/lib/breakpoint-widths.js";
 
 /**
  * Vitest stubs CSS imports to empty by default, which would make the route
@@ -20,6 +21,9 @@ import { configDefaults, defineConfig } from "vitest/config";
  * does not fail in CI first.
  */
 export default defineConfig({
+  // The suite's sheets get the build's breakpoint widths, so a page drawn here
+  // carries what the reader gets (#388).
+  plugins: [breakpointWidthsStep()],
   test: {
     css: true,
     testTimeout: 60_000,

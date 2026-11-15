@@ -13,6 +13,7 @@ import {
   verdictHtml, type ArrangedLine, type CountrySection, type JobOfferLine, type Verdict, type VerdictGroup,
 } from "../src/lib/verdict/verdict.js";
 import { answerWordsOf, groupsIn, stepsIn, verdictFor, verdictOn } from "./verdict-cards.js";
+import { DENIZ, PRIYA_EXPLORING_ALL } from "./personas.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -26,20 +27,6 @@ const ds = dataset as unknown as Dataset;
  * checked — never that it would be met. The not-yet fold points up only at
  * something that stands above it.
  */
-
-/** Deniz: Turkish engineer with a Berlin offer (persona P1, s23). An offer-holder. */
-const DENIZ: Profile = {
-  destination: "de", citizenship: "TR", situation: "offer", situation_country: "de", qualification: "degree",
-  recognition_de: "unknown", occupation_shortage: "yes", occupation_it: "yes", experience_5y: "lt2", experience_7y: "3to5", german: "a1",
-  english: "c1", funds_eur_month: "band_1", salary_eur_year: "band_5", age_band: "a30to35",
-};
-
-/** Priya: Indian analyst exploring all four (persona P2, s23). No offer. */
-const PRIYA: Profile = {
-  destination: "all", citizenship: "IN", situation: "none", qualification: "degree", recognition_de: "unknown",
-  occupation_shortage: "unknown", experience_5y: "2plus", experience_7y: "3to5", german: "none", english: "c1", nl_recent_grad: "no",
-  top200_grad: "unknown", funds_eur_month: "band_1", age_band: "u30", de_stay6m: "no", partner_ck: "no",
-};
 
 /** The hostile walk's offer-holder in Spain with no qualification: nothing
  * open, and nothing but a hosting agreement would open anything. */
@@ -88,8 +75,8 @@ const nearestIn = (verdict: Verdict, titles: string[]): string | undefined =>
 
 describe("#175 — an arranged answer is never a step", () => {
   it("the explorer's steps, Nearest and tallies leave a transfer and a hosting agreement out", () => {
-    const verdict = verdictFor(PRIYA);
-    const arranged = arrangedTitles(PRIYA);
+    const verdict = verdictFor(PRIYA_EXPLORING_ALL);
+    const arranged = arrangedTitles(PRIYA_EXPLORING_ALL);
     expect(arranged.length, "the explorer no longer has an arranged answer that opens a route").toBeGreaterThan(0);
     const steps = stepsIn(verdict).map((s) => s.title);
     for (const title of arranged) expect(steps).not.toContain(title);
@@ -101,12 +88,12 @@ describe("#175 — an arranged answer is never a step", () => {
   });
 
   it("the arranged line stands in each country it opens a route in, naming only that country's routes", () => {
-    const verdict = verdictFor(PRIYA);
+    const verdict = verdictFor(PRIYA_EXPLORING_ALL);
     const sections = sectionsOf(verdict);
     expect(sections.length).toBeGreaterThan(1);
     let drawn = 0;
     for (const section of sections) {
-      const expected = arrangedIn(PRIYA, section.country);
+      const expected = arrangedIn(PRIYA_EXPLORING_ALL, section.country);
       const line = groupOf(section.groups, "arranged");
       if (!expected.length) { expect(line, section.country).toBeUndefined(); continue; }
       drawn++;
@@ -156,9 +143,9 @@ describe("#175 — where only an arranged answer would open something", () => {
 
 describe("#175 — the job offer line", () => {
   it("opens the explorer's steps block in each country an offer frees routes in", () => {
-    const freed = routesAJobOfferFrees(ds, PRIYA);
+    const freed = routesAJobOfferFrees(ds, PRIYA_EXPLORING_ALL);
     expect(freed.length, "an offer frees nothing for the explorer").toBeGreaterThan(0);
-    const verdict = verdictFor(PRIYA);
+    const verdict = verdictFor(PRIYA_EXPLORING_ALL);
     const html = verdictHtml(verdict);
     for (const section of sectionsOf(verdict)) {
       const here = freed.find((f) => f.country === section.country);
@@ -180,7 +167,7 @@ describe("#175 — the job offer line", () => {
 
   // A job offer line promises a check, never a verdict: no group's words (ruling 9 on #187).
   it("never says met or short on a figure, and is in neither the headline's count nor Nearest", () => {
-    const verdict = verdictFor(PRIYA);
+    const verdict = verdictFor(PRIYA_EXPLORING_ALL);
     const lines = sectionsOf(verdict).flatMap((s) => {
       const block = groupOf(s.groups, "steps");
       return block?.jobOfferLine ? [writeJobOfferLine(jobOfferWordsOf(block.jobOfferLine))] : [];
@@ -209,13 +196,13 @@ describe("#175 — the job offer line", () => {
   });
 
   it("a freed route's open field with no subject is refused, not named by its id", () => {
-    const [first] = routesAJobOfferFrees(ds, PRIYA);
+    const [first] = routesAJobOfferFrees(ds, PRIYA_EXPLORING_ALL);
     const field = first!.fieldsLeftOpen[0]!;
     // A dataset that breaks the contract: the field written without its subject.
     const withoutSubject = (f: Dataset["fields"][number]) =>
       f.id === field ? Object.fromEntries(Object.entries(f).filter(([key]) => key !== "subject")) : f;
     const unnamed = { ...ds, fields: ds.fields.map(withoutSubject) } as unknown as Dataset;
-    expect(() => verdictOn(unnamed, PRIYA)).toThrow(field);
+    expect(() => verdictOn(unnamed, PRIYA_EXPLORING_ALL)).toThrow(field);
   });
 
   it("an offer-holder never gets it", () => {
@@ -229,7 +216,7 @@ describe("#175 — the not-yet fold points up only at something above it", () =>
   /** Profiles drawing a fold of rows gated on a path answer, some with the
    * steps block, the job offer line or the arranged line above it, some with none. */
   const PROFILES: Profile[] = [
-    PRIYA, DENIZ, SPAIN_JOB_OFFER,
+    PRIYA_EXPLORING_ALL, DENIZ, SPAIN_JOB_OFFER,
     { destination: "fr", citizenship: "TR", situation: "none", qualification: "none" },
     { destination: "fr", citizenship: "TR", situation: "research", situation_country: "fr", qualification: "none" },
     { destination: "de", citizenship: "TR", situation: "ict", situation_country: "de", qualification: "none" },
@@ -267,7 +254,7 @@ describe("#175 — the not-yet fold points up only at something above it", () =>
 describe("Nearest names a step as its card titles it", () => {
   it("a folded ladder, by its lowest rung, '… or above'", () => {
     // Priya with no English: nothing is open, and the nearest step is German's ladder.
-    const answers: Profile = { ...PRIYA, english: "none" };
+    const answers: Profile = { ...PRIYA_EXPLORING_ALL, english: "none" };
     const lowest = unlocks(ds, answers).find((u) => u.field === "german")!;
     const verdict = verdictFor(answers);
     const nearest = nearestIn(verdict, stepsIn(verdict).map((s) => s.title));

@@ -77,6 +77,22 @@
    ]
   },
   {
+   "path": "src/lib/dataset-facts",
+   "entries": [
+    {
+     "file": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+     "level": "application"
+    }
+   ],
+   "files": [
+    "src/lib/dataset-facts/dataset-wide/dataset-counts.ts",
+    "src/lib/dataset-facts/dataset-wide/read-range.ts",
+    "src/lib/dataset-facts/dataset-wide/watch-run.ts",
+    "src/lib/dataset-facts/per-page/reckon-route-facts.ts",
+    "src/lib/dataset-facts/reckon-dataset-facts.ts"
+   ]
+  },
+  {
    "path": "src/lib/frame",
    "entries": [
     {
@@ -293,6 +309,7 @@
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure",
   "src/lib/arrival-line.ts": "presentation",
+  "src/lib/breakpoint-widths.ts": "presentation",
   "src/lib/browser-history.ts": "infrastructure",
   "src/lib/clipboard.ts": "presentation",
   "src/lib/copy/country-page.ts": "presentation",
@@ -313,6 +330,11 @@
   "src/lib/country-search/control/view.ts": "presentation",
   "src/lib/country-search/country-search.ts": "presentation",
   "src/lib/data-page.ts": "presentation",
+  "src/lib/dataset-facts/dataset-wide/dataset-counts.ts": "application",
+  "src/lib/dataset-facts/dataset-wide/read-range.ts": "application",
+  "src/lib/dataset-facts/dataset-wide/watch-run.ts": "application",
+  "src/lib/dataset-facts/per-page/reckon-route-facts.ts": "application",
+  "src/lib/dataset-facts/reckon-dataset-facts.ts": "application",
   "src/lib/dataset-ld.ts": "presentation",
   "src/lib/feedback-page.ts": "presentation",
   "src/lib/first-paint.ts": "presentation",
@@ -346,6 +368,7 @@
   "src/lib/quote.ts": "presentation",
   "src/lib/reason.ts": "presentation",
   "src/lib/record.ts": "application",
+  "src/lib/route-lines.ts": "presentation",
   "src/lib/route-page/blocks/notices.ts": "presentation",
   "src/lib/route-page/blocks/rail.ts": "presentation",
   "src/lib/route-page/blocks/route-figure.ts": "presentation",
@@ -359,6 +382,7 @@
   "src/lib/situations.ts": "application",
   "src/lib/slug.ts": "presentation",
   "src/lib/social-card.ts": "presentation",
+  "src/lib/tap.ts": "presentation",
   "src/lib/verdict/compose/answer-phrase.ts": "presentation",
   "src/lib/verdict/compose/card/blocks/card-screen.ts": "presentation",
   "src/lib/verdict/compose/card/blocks/path-line.ts": "presentation",
@@ -400,6 +424,11 @@
   "vitest.config.ts": "main"
  },
  "edges": [
+  {
+   "from": "astro.config.mjs",
+   "to": "src/lib/breakpoint-widths.ts",
+   "kind": "dependency"
+  },
   {
    "from": "eslint.config.mjs",
    "to": "roadkeeper-lint/lint.mjs",
@@ -787,6 +816,11 @@
   },
   {
    "from": "scripts/main-render-assets.mjs",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-render-assets.mjs",
    "to": "src/lib/social-card.ts",
    "kind": "dependency"
   },
@@ -891,6 +925,11 @@
    "kind": "type-only"
   },
   {
+   "from": "src/lib/breakpoint-widths.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/browser-history.ts",
    "to": "src/lib/interview-history/interview-history.ts",
    "kind": "type-only"
@@ -902,6 +941,21 @@
   },
   {
    "from": "src/lib/copy/data-page.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/copy/data-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/copy/not-found.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/copy/route-page.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
@@ -937,6 +991,11 @@
   },
   {
    "from": "src/lib/country-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
    "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
@@ -957,7 +1016,7 @@
   },
   {
    "from": "src/lib/country-page.ts",
-   "to": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/route-lines.ts",
    "kind": "dependency"
   },
   {
@@ -1072,12 +1131,12 @@
   },
   {
    "from": "src/lib/data-page.ts",
-   "to": "src/lib/country-page.ts",
+   "to": "src/lib/data-page.css",
    "kind": "dependency"
   },
   {
    "from": "src/lib/data-page.ts",
-   "to": "src/lib/data-page.css",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -1102,11 +1161,6 @@
   },
   {
    "from": "src/lib/data-page.ts",
-   "to": "src/lib/route-page/route-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/data-page.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
@@ -1114,6 +1168,51 @@
    "from": "src/lib/data-page.ts",
    "to": "src/lib/slug.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-facts/per-page/reckon-route-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/read-range.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/dataset-counts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/dataset-counts.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/read-range.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/read-range.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/watch-run.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/watch-run.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/per-page/reckon-route-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/per-page/reckon-route-facts.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/dataset-ld.ts",
@@ -1127,12 +1226,7 @@
   },
   {
    "from": "src/lib/dataset-ld.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/dataset-ld.ts",
-   "to": "src/lib/data-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -1157,7 +1251,7 @@
   },
   {
    "from": "src/lib/feedback-page.ts",
-   "to": "src/lib/country-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -1194,6 +1288,11 @@
    "from": "src/lib/frame/body/footer-facts.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/footer-facts.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/frame/body/footer-facts.ts",
@@ -1267,6 +1366,16 @@
   },
   {
    "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
    "to": "src/lib/frame/body/footer-facts.ts",
    "kind": "dependency"
   },
@@ -1303,6 +1412,11 @@
   {
    "from": "src/lib/frame/framed-page.ts",
    "to": "src/lib/frame/head/icon-links.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/identity.ts",
    "kind": "dependency"
   },
   {
@@ -1357,6 +1471,11 @@
   },
   {
    "from": "src/lib/frame/head/frame-sheet.ts",
+   "to": "src/lib/quote-line.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/frame-sheet.ts",
    "to": "tokens.css",
    "kind": "dependency"
   },
@@ -1368,6 +1487,11 @@
   {
    "from": "src/lib/frame/head/icon-links.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/gloss.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -1444,6 +1568,11 @@
    "from": "src/lib/interview/draw/screen/interview-page.ts",
    "to": "src/lib/interview/flow/interview-after.ts",
    "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/ledger.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/interview/draw/screen/ledger.ts",
@@ -1652,7 +1781,7 @@
   },
   {
    "from": "src/lib/not-found.ts",
-   "to": "src/lib/country-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -1673,6 +1802,11 @@
   {
    "from": "src/lib/not-found.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/not-found.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -1741,6 +1875,26 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/quote.ts",
+   "to": "src/lib/tap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-lines.ts",
+   "to": "src/lib/copy/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-lines.ts",
+   "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-lines.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "src/lib/route-page/blocks/notices.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
@@ -1757,7 +1911,12 @@
   },
   {
    "from": "src/lib/route-page/blocks/notices.ts",
-   "to": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/tap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/rail.ts",
+   "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -1772,12 +1931,22 @@
   },
   {
    "from": "src/lib/route-page/blocks/route-figure.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/route-page/blocks/route-figure.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/route-figure.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/route-page/blocks/route-figure.ts",
-   "to": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/route-lines.ts",
    "kind": "dependency"
   },
   {
@@ -1787,13 +1956,13 @@
   },
   {
    "from": "src/lib/route-page/blocks/rule-card.ts",
-   "to": "src/lib/copy/quotes.ts",
+   "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/route-page/blocks/rule-card.ts",
-   "to": "src/lib/copy/route-page.ts",
-   "kind": "dependency"
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/route-page/blocks/rule-card.ts",
@@ -1816,8 +1985,18 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/tap.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/route-page/blocks/stated-blocks.ts",
    "to": "src/lib/copy/quotes.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/stated-blocks.ts",
+   "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -1827,12 +2006,12 @@
   },
   {
    "from": "src/lib/route-page/blocks/stated-blocks.ts",
-   "to": "src/lib/reason.ts",
+   "to": "src/lib/quote.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/route-page/blocks/stated-blocks.ts",
-   "to": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
@@ -1848,6 +2027,11 @@
   {
    "from": "src/lib/route-page/route-page.ts",
    "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -1868,6 +2052,11 @@
   {
    "from": "src/lib/route-page/route-page.ts",
    "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/route-lines.ts",
    "kind": "dependency"
   },
   {
@@ -1906,6 +2095,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/tap.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/site.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
@@ -1917,12 +2111,7 @@
   },
   {
    "from": "src/lib/sitemap.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/sitemap.ts",
-   "to": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -1937,6 +2126,21 @@
   },
   {
    "from": "src/lib/social-card.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/social-card.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/social-card.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/tap.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
@@ -1969,11 +2173,6 @@
    "from": "src/lib/verdict/compose/card/blocks/path-line.ts",
    "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
    "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
-   "to": "src/lib/copy/quotes.ts",
-   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
@@ -2537,6 +2736,11 @@
   },
   {
    "from": "src/lib/verdict/verdict.ts",
+   "to": "src/lib/quote-line.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
@@ -2621,6 +2825,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/pages/[country]/index.astro",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/pages/countries.json.ts",
    "to": "src/lib/data-page.ts",
    "kind": "dependency"
@@ -2657,7 +2866,7 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/data-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -2668,11 +2877,6 @@
   {
    "from": "src/pages/index.astro",
    "to": "src/lib/frame/framed-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/identity.ts",
    "kind": "dependency"
   },
   {
@@ -2867,6 +3071,11 @@
   },
   {
    "from": "tests/base-path.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/base-path.test.ts",
    "to": "tests/workflow-text.ts",
    "kind": "dependency"
   },
@@ -2888,6 +3097,41 @@
   {
    "from": "tests/beat.test.ts",
    "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "src/lib/feedback-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -2943,6 +3187,11 @@
   {
    "from": "tests/card.test.ts",
    "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/card.test.ts",
+   "to": "tests/personas.ts",
    "kind": "dependency"
   },
   {
@@ -3202,12 +3451,12 @@
   },
   {
    "from": "tests/checked-words.test.ts",
-   "to": "src/lib/country-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/checked-words.test.ts",
-   "to": "src/lib/data-page.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -3292,12 +3541,12 @@
   },
   {
    "from": "tests/csp.test.ts",
-   "to": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/csp.test.ts",
-   "to": "src/lib/site.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -3347,7 +3596,7 @@
   },
   {
    "from": "tests/dataset-ld.test.ts",
-   "to": "src/lib/country-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -3377,6 +3626,11 @@
   },
   {
    "from": "tests/escaping.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/escaping.test.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
@@ -3388,6 +3642,11 @@
   {
    "from": "tests/escaping.test.ts",
    "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/escaping.test.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -3497,12 +3756,17 @@
   },
   {
    "from": "tests/footer.test.ts",
-   "to": "src/lib/country-page.ts",
+   "to": "src/lib/data-page.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/footer.test.ts",
-   "to": "src/lib/data-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "src/lib/first-paint.ts",
    "kind": "dependency"
   },
   {
@@ -3513,6 +3777,11 @@
   {
    "from": "tests/footer.test.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -3542,12 +3811,22 @@
   },
   {
    "from": "tests/frame-alone.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
    "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/frame-alone.ts",
    "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -3568,11 +3847,6 @@
   {
    "from": "tests/framed-page.test.ts",
    "to": "src/lib/feedback-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/framed-page.test.ts",
-   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -3712,6 +3986,26 @@
   },
   {
    "from": "tests/identity-on-both-screens.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-on-both-screens.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-on-both-screens.test.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-on-both-screens.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-on-both-screens.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
@@ -3723,6 +4017,11 @@
   {
    "from": "tests/identity-on-both-screens.test.ts",
    "to": "tests/seed-finished-record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-written-once.test.ts",
+   "to": "identity.css",
    "kind": "dependency"
   },
   {
@@ -3847,7 +4146,7 @@
   },
   {
    "from": "tests/not-found.test.ts",
-   "to": "src/lib/country-page.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -3858,6 +4157,11 @@
   {
    "from": "tests/not-found.test.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/not-found.test.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -3903,6 +4207,11 @@
   {
    "from": "tests/orientation.test.ts",
    "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -4011,13 +4320,78 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/reader-pages.test.ts",
-   "to": "scripts/browser/browser.mjs",
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/copy/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/feedback-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/frame/framed-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/not-found.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "tests/watch-state-at.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/reader-pages.test.ts",
-   "to": "src/lib/country-page.ts",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -4127,6 +4501,11 @@
   },
   {
    "from": "tests/route-page-dates.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/dataset-ld.ts",
    "kind": "dependency"
   },
@@ -4142,7 +4521,7 @@
   },
   {
    "from": "tests/route-page-dates.test.ts",
-   "to": "src/lib/reason.ts",
+   "to": "src/lib/route-lines.ts",
    "kind": "dependency"
   },
   {
@@ -4167,12 +4546,27 @@
   },
   {
    "from": "tests/route-page-dates.test.ts",
+   "to": "tests/audience-notice.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-dates.test.ts",
+   "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-dates.test.ts",
    "to": "tests/text-of.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/route-page-frame.test.ts",
    "to": "src/lib/copy/feedback.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-frame.test.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -4187,7 +4581,17 @@
   },
   {
    "from": "tests/route-page-frame.test.ts",
+   "to": "src/lib/tap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-frame.test.ts",
    "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
   },
   {
@@ -4212,12 +4616,32 @@
   },
   {
    "from": "tests/route-page-provenance.test.ts",
+   "to": "tests/audience-notice.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
    "to": "tests/text-of.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/route-page-reader-text.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
+   "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
    "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
+   "to": "src/lib/route-lines.ts",
    "kind": "dependency"
   },
   {
@@ -4292,6 +4716,11 @@
   },
   {
    "from": "tests/s11.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s11.test.ts",
    "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
@@ -4306,6 +4735,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s11.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s12.test.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
@@ -4317,17 +4751,27 @@
   },
   {
    "from": "tests/s12.test.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s12.test.ts",
    "to": "src/lib/data-page.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s12.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s12.test.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s12.test.ts",
+   "to": "tests/audience-notice.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s12.test.ts",
+   "to": "tests/watch-state-at.ts",
    "kind": "dependency"
   },
   {
@@ -4357,22 +4801,12 @@
   },
   {
    "from": "tests/s13.test.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
    "to": "src/lib/feedback-page.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s13.test.ts",
    "to": "src/lib/first-paint.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
-   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -4398,6 +4832,11 @@
   {
    "from": "tests/s13.test.ts",
    "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -4437,7 +4876,22 @@
   },
   {
    "from": "tests/s16.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s16.test.ts",
+   "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s16.test.ts",
    "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s16.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -4517,6 +4971,11 @@
   },
   {
    "from": "tests/s19.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
    "to": "src/lib/verdict/verdict.ts",
    "kind": "dependency"
   },
@@ -4533,6 +4992,11 @@
   {
    "from": "tests/s19.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "tests/watch-state-at.ts",
    "kind": "dependency"
   },
   {
@@ -4616,72 +5080,102 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
-   "to": "src/lib/copy/verdict.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/data-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
-   "to": "src/lib/record.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-page-copy.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-page-copy.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-result-copy.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-result-copy.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-result-copy.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-result-copy.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-result-copy.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-result-copy.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -4827,11 +5321,6 @@
   },
   {
    "from": "tests/s27.test.ts",
-   "to": "src/lib/frame/framed-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s27.test.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
@@ -4941,6 +5430,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s28.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s30.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -5047,6 +5541,11 @@
   },
   {
    "from": "tests/s6-edges.test.ts",
+   "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s6-edges.test.ts",
    "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
@@ -5058,6 +5557,16 @@
   {
    "from": "tests/s6-edges.test.ts",
    "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s6-edges.test.ts",
+   "to": "tests/audience-notice.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s7.test.ts",
+   "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -5073,6 +5582,11 @@
   {
    "from": "tests/s7.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s8.test.ts",
+   "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -5103,6 +5617,11 @@
   {
    "from": "tests/s9.test.ts",
    "to": "src/lib/copy/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s9.test.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -5141,6 +5660,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s9.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/screen.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
@@ -5168,6 +5692,16 @@
   {
    "from": "tests/screen.test.ts",
    "to": "src/lib/verdict/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
+   "to": "tests/audience-notice.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
+   "to": "tests/personas.ts",
    "kind": "dependency"
   },
   {
@@ -5246,8 +5780,18 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/shorthand.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/site-index.test.ts",
    "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -5476,6 +6020,31 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/verdict-short-on-a-figure.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
@@ -5517,6 +6086,11 @@
   },
   {
    "from": "tests/verdict-steps.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -5536,6 +6110,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/watch-state-at.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/widened-screen.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -5549,6 +6128,11 @@
    "from": "tests/wire.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "type-only"
+  },
+  {
+   "from": "vitest.config.ts",
+   "to": "src/lib/breakpoint-widths.ts",
+   "kind": "dependency"
   }
  ],
  "declarations": {
@@ -5613,6 +6197,38 @@
    }
   ],
   "src/lib/country-search/country-search.ts": [],
+  "src/lib/dataset-facts/reckon-dataset-facts.ts": [
+   {
+    "name": "CountryFacts",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "DatasetFacts",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "reckonDatasetFacts",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "countryFactsOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routeFactsOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routeFactsIn",
+    "kind": "fn",
+    "exported": false
+   }
+  ],
   "src/lib/frame/framed-page.ts": [
    {
     "name": "PagePlace",
@@ -5747,11 +6363,6 @@
    }
   ],
   "src/lib/route-page/route-page.ts": [
-   {
-    "name": "audienceSentence",
-    "kind": "fn",
-    "exported": true
-   },
    {
     "name": "neighbours",
     "kind": "fn",
@@ -7087,6 +7698,33 @@
     "exported": false
    }
   ],
+  "src/lib/breakpoint-widths.ts": [
+   {
+    "name": "QUERY_OF_NAME",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "withBreakpointWidths",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "SHEET_ID",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "SheetStep",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "breakpointWidthsStep",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "src/lib/browser-history.ts": [
    {
     "name": "browserHistoryOf",
@@ -7171,6 +7809,41 @@
     "name": "RESULT_NAMES_FITTING_ROUTES",
     "kind": "const",
     "exported": true
+   },
+   {
+    "name": "ANSWERED_ON_THIS_DEVICE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FUNDS_TO_SHOW",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SALARY_THRESHOLD",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "POINTS_NEEDED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NO_SALARY_THRESHOLD",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "LOWEST_OF_SEVERAL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "listedAndMore",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "src/lib/copy/data-page.ts": [
@@ -7235,11 +7908,6 @@
     "exported": true
    },
    {
-    "name": "DatasetCounts",
-    "kind": "type",
-    "exported": true
-   },
-   {
     "name": "datasetDescription",
     "kind": "fn",
     "exported": true
@@ -7252,6 +7920,176 @@
    {
     "name": "proseProvenanceCounts",
     "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "DATA_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_PAGE_TITLE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "HOLDS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATASET_VERSION",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SCHEMA_VERSION",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "QUOTED_VALUES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "quotedValuesCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "SENTENCES_OF_OURS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ROUTES_TERM",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "routesCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CHECKS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "GATES_LEAD",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SCHEMA_VALIDATION",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SCHEMA_VALIDATION_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "QUOTE_FIDELITY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "QUOTE_FIDELITY_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WATCH_COVERAGE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WATCH_COVERAGE_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "PROSE_PROVENANCE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "proseProvenanceLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ANALYTICS_NOTE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "TAKE_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DOWNLOADS_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WHOLE_DATASET_AS_JSON",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "COUNTRIES_JSON_LINK",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SERVED_ON_ITS_OWN",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "STATUS_ALIAS_TITLE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "movedHeadingHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "STATUS_ALIAS_LEDE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "statusAliasDescription",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "datasetName",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "wholeDatasetDownloadName",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "COUNTRIES_DOWNLOAD_NAME",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATASET_KEYWORDS",
+    "kind": "const",
     "exported": true
    }
   ],
@@ -7414,6 +8252,11 @@
     "exported": true
    },
    {
+    "name": "ABBREVIATION_WORDS",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "FEEDBACK",
     "kind": "const",
     "exported": true
@@ -7434,7 +8277,137 @@
     "exported": true
    },
    {
+    "name": "SITE_NAV_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "FEEDBACK_FOOTER_ROW",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CHECK_YOURS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "checkYoursFor",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ANSWERED_HERE_ONLY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CHECK_YOUR_OWN_SITUATION",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "THE_DATA",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_FOOTER_ROW",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ROUTE_AS_JSON",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "REPOSITORY_FOOTER_ROW",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "licenceFooterRow",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "SPONSOR_FOOTER_ROW",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "OWNER",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_LICENCE_NAME",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_LICENCE_FULL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATASET_ON_GITHUB",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "reuseUnder",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CODE_LICENCE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "dataLicence",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "copyrightNotice",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "readRangeHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "READ_DAILY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "LAST_RUN",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "datasetVersionLabel",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CARD_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CARD_PROMISE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CHECKED_DAILY",
     "kind": "const",
     "exported": true
    }
@@ -7502,6 +8475,21 @@
    },
    {
     "name": "START_OVER",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CHANGE_THIS_ANSWER",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "declarationCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "NOT_SURE",
     "kind": "const",
     "exported": true
    },
@@ -7663,6 +8651,31 @@
   ],
   "src/lib/copy/not-found.ts": [
    {
+    "name": "NOT_FOUND",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "NOT_FOUND_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOUND_TITLE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOUND_LEDE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOUND_COUNTRIES_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "NOT_FOUND_START",
     "kind": "const",
     "exported": true
@@ -7706,6 +8719,16 @@
    },
    {
     "name": "lastCheckedOn",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "languageNote",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "sameNumberNote",
     "kind": "fn",
     "exported": true
    }
@@ -7809,6 +8832,166 @@
    {
     "name": "ANY_PATH",
     "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "EVERY_NUMBER_SOURCED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "EVERY_CONDITION_SOURCED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "thresholdInDescription",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "RULES_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ANSWER_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ASKED_SCOPE_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WHERE_DO_YOU_STAND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CHECK_ON_THIS_DEVICE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "onThisRouteHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "BESIDE_THE_RULES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_BEHIND_THIS_PAGE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "GENERATED_FROM_DATASET",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "notOpenTo",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "THRESHOLD_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "POINTS_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOR_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FOR_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CONDITION_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "asksAtLeastHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "countsPointsLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "asksFor",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "WHAT_THE_CHECKER_ASKS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FIND_OUT_YOURSELF",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WHO_THIS_DOES_NOT_BIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ALSO_REQUIRED_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "AUTHORITY_REQUIRES_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "UNSOURCED_CAVEATS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "READINGS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "RAIL_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "thisRouteRow",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "anotherRouteRow",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "otherRoutesRow",
+    "kind": "fn",
     "exported": true
    }
   ],
@@ -8313,38 +9496,8 @@
   ],
   "src/lib/country-page.ts": [
    {
-    "name": "CountryAddress",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "countryAddresses",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "CountryLink",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "countryLinks",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "CountryPage",
     "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "countryReadDate",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "siteReadDate",
-    "kind": "fn",
     "exported": true
    },
    {
@@ -8430,22 +9583,7 @@
     "exported": true
    },
    {
-    "name": "quotedValues",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "RouteCounts",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "routeCounts",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "DataPageFacts",
+    "name": "DataPageContext",
     "kind": "type",
     "exported": false
    },
@@ -8819,11 +9957,6 @@
     "exported": true
    },
    {
-    "name": "declarationCount",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "renderStandInsOverQuestionOne",
     "kind": "fn",
     "exported": true
@@ -8879,6 +10012,31 @@
     "name": "noteHtml",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "QuotedValue",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "QuoteLineOptions",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "readDateTime",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "quoteLineHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "trimmedQuote",
+    "kind": "fn",
+    "exported": false
    }
   ],
   "src/lib/reason.ts": [
@@ -8971,6 +10129,38 @@
    },
    {
     "name": "loadRecord",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/route-lines.ts": [
+   {
+    "name": "audienceSentence",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "gist",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "RouteFigure",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "Points",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "figuresOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routeFigure",
     "kind": "fn",
     "exported": true
    }
@@ -9151,22 +10341,7 @@
     "exported": true
    },
    {
-    "name": "OWNER",
-    "kind": "const",
-    "exported": true
-   },
-   {
     "name": "DATA_LICENCE_URL",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "DATA_LICENCE_NAME",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "DATA_LICENCE_FULL",
     "kind": "const",
     "exported": true
    },
@@ -9181,33 +10356,8 @@
     "exported": true
    },
    {
-    "name": "readRange",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "lastWatchRun",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "watchState",
     "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "unreadSourcesAt",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "WatchRun",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "readWatchRun",
-    "kind": "fn",
     "exported": true
    }
   ],
@@ -9322,6 +10472,26 @@
     "exported": true
    },
    {
+    "name": "CountryAddress",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "countryAddresses",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CountryLink",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "countryLinks",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "routeJsonPath",
     "kind": "fn",
     "exported": true
@@ -9344,17 +10514,29 @@
     "exported": true
    },
    {
-    "name": "CARD_HEADLINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
     "name": "socialCardFacts",
     "kind": "fn",
     "exported": true
    },
    {
     "name": "socialCardHtml",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/tap.ts": [
+   {
+    "name": "TAP_CLASSES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "tapMin",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "tapInline",
     "kind": "fn",
     "exported": true
    }
@@ -9482,6 +10664,11 @@
     "exported": false
    },
    {
+    "name": "facts",
+    "kind": "const",
+    "exported": false
+   },
+   {
     "name": "frame",
     "kind": "const",
     "exported": false
@@ -9559,6 +10746,7 @@
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
   "src/lib/arrival-line.ts",
+  "src/lib/breakpoint-widths.ts",
   "src/lib/browser-history.ts",
   "src/lib/clipboard.ts",
   "src/lib/copy/country-page.ts",
@@ -9583,6 +10771,7 @@
   "src/lib/quote.ts",
   "src/lib/reason.ts",
   "src/lib/record.ts",
+  "src/lib/route-lines.ts",
   "src/lib/scope.ts",
   "src/lib/screen.ts",
   "src/lib/site.ts",
@@ -9590,6 +10779,7 @@
   "src/lib/situations.ts",
   "src/lib/slug.ts",
   "src/lib/social-card.ts",
+  "src/lib/tap.ts",
   "src/pages/404.astro",
   "src/pages/[country]/[route].astro",
   "src/pages/[country]/[route].json.ts",
@@ -9604,5 +10794,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "56008a20c3829dae42cf2a79c93a637295bd3b38b59538aa3cc4d1d32d07bc6d"
+ "digest": "3f4b5a58d00b06882df6c71aadaee0e95cfd8051f945b573e2ee187a827a0f71"
 }

@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { datasetMeta, type Dataset } from "permit-rulebook-data";
+import type { Dataset } from "permit-rulebook-data";
 import type { BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, openAtRest, skipReason, withSite } from "./browser-walk.js";
 import { FALLBACK_STACK } from "./fallback-stack.js";
 import { SEED_FINISHED_RECORD } from "./seed-finished-record.js";
+import { WIDE_FROM_PX } from "../src/lib/first-paint.js";
+import { RECORD_GENERATED, RULES_READ } from "../src/lib/copy/frame.js";
+import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
+import { watchState } from "../src/lib/site.js";
 
 /**
  * And the drawing lands in the same place on both screens. A shared stylesheet
@@ -136,7 +140,7 @@ async function readStampOnScreensOpenedBy(page: BrowserPage, openTheInterview: (
   await openTheInterview();
   const results = await read();
   // The words alone, with the masthead's own copy untouched.
-  await page.evaluate('document.getElementById("stamp-label").textContent = "Rules read"');
+  await page.evaluate(`document.getElementById("stamp-label").textContent = ${JSON.stringify(RULES_READ)}`);
   return { first, answered, results, swapped: await read() };
 }
 
@@ -176,7 +180,7 @@ async function measureBothScreens(
 
 /** Holds the pair's placement on one screen, `m` at `path`, to the rule at `width`. */
 function expectPlacementAt(width: number, path: string, m: Measure): void {
-  if (width > 760) {
+  if (width >= WIDE_FROM_PX) {
     // A row: the text column stops at 37rem and the pair is centred in
     // what is left, level with the middle of the text.
     expect(m.stack, path).toBe("row");
@@ -215,8 +219,8 @@ describe.skipIf(skipped !== null)(LANDS_IDENTICALLY, () => {
         expect(route[key], `${key} differs between the two screens`).toEqual(results[key]);
 
       // The text each stamp carries is its own, and stays its own.
-      expect(results.text).toMatch(/^Record generated[ ]+[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
-      expect(route.text).toMatch(/^Rules read[ ]+[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+      expect(results.text).toMatch(new RegExp(`^${RECORD_GENERATED}[ ]+[0-9]{4}-[0-9]{2}-[0-9]{2}$`));
+      expect(route.text).toMatch(new RegExp(`^${RULES_READ}[ ]+[0-9]{4}-[0-9]{2}-[0-9]{2}$`));
     }, 120000);
   }
 });
@@ -240,7 +244,7 @@ describe.skipIf(skipped !== null)(LANDS_IDENTICALLY, () => {
       for (const [path, m] of Object.entries(seen)) expectPlacementAt(width, path, m);
 
       // The same placement, not merely a correct one on each page.
-      const shared = width > 760
+      const shared = width >= WIDE_FROM_PX
         ? ["stack", "textWidth", "centreOffset"]
         : ["stack", "rightAlign", "belowText"];
       for (const key of shared)
@@ -269,13 +273,13 @@ describe.skipIf(skipped !== null)(LANDS_IDENTICALLY, () => {
       { viewport: { width: 1100, height: 1000 }, mobile: false },
     ) as Record<string, Measure>;
 
-    const newest = datasetMeta(dataset as unknown as Dataset).newest_retrieved_at;
-    // The questions stand on the dataset's own newest read date.
-    expect(seen.first.text).toBe(`Rules read ${newest}`);
+    const newest = reckonDatasetFacts(dataset as unknown as Dataset, watchState).readRange.newest;
+    // The questions stand on the end of the read range, the dataset's one newest read day (ruling 1 on #323).
+    expect(seen.first.text).toBe(`${RULES_READ} ${newest}`);
     expect(seen.first.datetime).toBe(newest);
-    expect(seen.answered.text).toBe(`Rules read ${newest}`);
+    expect(seen.answered.text).toBe(`${RULES_READ} ${newest}`);
     // The results stand on the day the record was made.
-    expect(seen.results.text).toMatch(/^Record generated [0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+    expect(seen.results.text).toMatch(new RegExp(`^${RECORD_GENERATED} [0-9]{4}-[0-9]{2}-[0-9]{2}$`));
     // The box is the same box on every screen, and swapping the words alone moves nothing at all.
     for (const state of ["answered", "results"])
       for (const key of ["left", "width", "height"])

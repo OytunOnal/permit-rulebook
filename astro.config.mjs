@@ -1,5 +1,6 @@
 // @level main
 import { defineConfig } from "astro/config";
+import { breakpointWidthsStep } from "./src/lib/breakpoint-widths.ts";
 
 /**
  * `site` is the one place the build learns where it will live. Every absolute
@@ -33,6 +34,9 @@ export default defineConfig({
    */
   trailingSlash: "always",
   vite: {
+    // The stylesheets name the narrow and the wide side; this writes the first
+    // paint's width in their place, as the suite's config does too (#388).
+    plugins: [breakpointWidthsStep()],
     ssr: {
       // Bundle permit-rulebook-data so its JSON imports (dataset, schema) go
       // Vite's pipeline during the static build.

@@ -1,8 +1,11 @@
 // @level presentation
 import { LANGUAGE_NAMES, formatEUR, hostKindOf, quoteLanguage } from "permit-rulebook-data";
-import { OFFICIAL_PAGE, consolidatedTextOn, learnLinkWithKind } from "./copy/quotes.js";
-import { esc } from "./reason.js";
+import {
+  OFFICIAL_PAGE, consolidatedTextOn, languageNote, learnLinkWithKind, readOn, sameNumberNote,
+} from "./copy/quotes.js";
+import { esc, escAttr } from "./reason.js";
 import { type Glossary, glossed } from "./gloss.js";
+import { tapInline } from "./tap.js";
 
 /**
  * How a quote is framed, wherever one is shown.
@@ -78,7 +81,7 @@ export function separatorNote(amount: number, quote: string): string {
     .replace(/\./g, ",")
     .replace(new RegExp(swap, "g"), ".");
   if (theirs === ours || !quote.includes(theirs) || quote.includes(ours)) return "";
-  return `The source writes ${theirs} where this page writes ${ours} — the same number.`;
+  return sameNumberNote(theirs, ours);
 }
 
 /** The frame for one quote: its language, its host and what needs saying. */
@@ -92,7 +95,7 @@ export function quoteFrame(
     lang,
     host: hostOf(value.source_url),
     note: [
-      languageName ? `${languageName}, from ${hostOf(value.source_url)}.` : "",
+      languageName ? languageNote(languageName, hostOf(value.source_url)) : "",
       amount !== undefined ? separatorNote(amount, value.quote) : "",
     ].filter(Boolean).join(" "),
   };
@@ -111,4 +114,73 @@ export const NOTE_SEPARATOR = " · ";
 
 export function noteHtml(note: string): string {
   return note ? `<span class="note">${NOTE_SEPARATOR}${esc(note)}</span>` : "";
+}
+
+// ---------------------------------------------------------------------------
+// The quote line
+// ---------------------------------------------------------------------------
+
+/** A sentence the site quotes: its words, its page, the day it was read and
+ * the provision it cites, where it cites one. */
+export interface QuotedValue {
+  quote: string;
+  source_url: string;
+  retrieved_at: string;
+  legal_basis?: string;
+}
+
+/** What a screen adds to a quote line, beside the quote's own frame. */
+export interface QuoteLineOptions {
+  /** The amount this quote is the proof of, where it is the proof of one. */
+  amount?: number;
+  /** What the value is called on its own line ("standard amount"). */
+  label?: string;
+  /** Markup said after the label: a card's period and its applies-to-you mark. */
+  afterLabelHtml?: string;
+  /** The citation as printed, where the screen glosses it itself; otherwise
+   * the value's legal basis, glossed on the screen's memory. */
+  citation?: string;
+  /** A class the line wears beside `src`: a card's ruled-out amount is "unapplied". */
+  lineClass?: string;
+  /** Whether a long quote shows its first sentence, its whole text on the line's title. */
+  trimLong?: boolean;
+}
+
+/** A read date as a quote and a headline figure both print it. */
+export const readDateTime = (day: string): string => `<time datetime="${escAttr(day)}">${esc(readOn(day))}</time>`;
+
+/**
+ * One quote line, wherever a quote is shown: the quote in its own language,
+ * its host, whatever the screen adds, its citation, the day it was read, the
+ * frame's note, and its own link to its source ↗ (#387). The route page's
+ * rules, its notices and its stated blocks draw it, and so do the results
+ * screen's cards, notices and closed rows: one line, so the two screens
+ * cannot print a quote two ways.
+ */
+export function quoteLineHtml(value: QuotedValue, options: QuoteLineOptions = {}, seen: Glossary = new Set()): string {
+  const { lang, host, note } = quoteFrame(value, options.amount);
+  const { shown, trimmed } = options.trimLong ? trimmedQuote(value.quote) : { shown: value.quote, trimmed: false };
+  const citation = options.citation ?? (value.legal_basis ? glossed(value.legal_basis, seen) : "");
+  return `<div class="src${options.lineClass ? ` ${escAttr(options.lineClass)}` : ""}"${trimmed ? ` title="${escAttr(value.quote)}"` : ""}>
+        <span><q${lang ? ` lang="${escAttr(lang)}"` : ""}>${esc(shown)}</q> · ${esc(host)}${
+    options.label ? ` · ${esc(options.label)}` : ""}${options.afterLabelHtml ?? ""}${
+    citation ? ` · ${esc(citation)}` : ""} · <b>${readDateTime(value.retrieved_at)}</b>${
+    noteHtml(note)}</span>
+        <a ${tapInline()} href="${escAttr(value.source_url)}" target="_blank" rel="noopener">${
+    esc(linkLabelOf(value.source_url))} &#8599;</a>
+      </div>`;
+}
+
+/**
+ * A quote long enough to bury the card is shown to its first sentence, with
+ * the whole passage on the element and its source a click away — the evidence
+ * stays complete, the card stays readable (tracker #5). The notice's quotes
+ * go through it as the cards' do: the Türkiye notice's runs to 640
+ * characters (Standards review, 2026-09-10).
+ */
+function trimmedQuote(quote: string): { shown: string; trimmed: boolean } {
+  if (quote.length <= 200) return { shown: quote, trimmed: false };
+  const end = quote.indexOf(". ");
+  if (end < 0 || end > 200) return { shown: quote.slice(0, 200).trimEnd() + "…", trimmed: true };
+  return { shown: quote.slice(0, end + 1) + " …", trimmed: true };
 }

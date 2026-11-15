@@ -1,13 +1,18 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { proseProvenance, type Dataset } from "permit-rulebook-data";
-import { dataPage, routeCounts } from "../src/lib/data-page.js";
+import { dataPage } from "../src/lib/data-page.js";
+import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import {
-  DATA_LEDE_CLOSE_TAIL, DATA_LEDE_OPEN, FRESHNESS_HUMAN_HAND, PROSE_OURS_TAIL, dataLedeClose, dataMetaDescription,
+  COUNTRIES_JSON_LINK, DAILY_CHECK_CLAIM, DATASET_VERSION, DATA_LEDE_CLOSE_TAIL, DATA_LEDE_OPEN, DOWNLOADS_LABEL,
+  FRESHNESS_HUMAN_HAND, NEWEST_VALUE_CHANGED, PROSE_OURS_TAIL, SENTENCES_OF_OURS, WHOLE_DATASET_AS_JSON, dataLedeClose,
+  dataMetaDescription,
 } from "../src/lib/copy/data-page.js";
+import { DATASET_ON_GITHUB, LAST_RUN, ROUTE_AS_JSON } from "../src/lib/copy/frame.js";
+import { DATA_BEHIND_THIS_PAGE } from "../src/lib/copy/route-page.js";
 import { FEEDBACK_DOORS, WRONG_DOOR_LABEL } from "../src/lib/copy/feedback.js";
-import { FEEDBACK_PATH, REPO_DATA, TRACKER_URL, url } from "../src/lib/site.js";
+import { FEEDBACK_PATH, REPO_DATA, TRACKER_URL, url, watchState } from "../src/lib/site.js";
 
 /**
  * s16 — `/data/` in the reader's words, and the last two tracker doors.
@@ -61,8 +66,8 @@ describe("/data/ in the reader's words", () => {
   it("counts our sentences in words that stand on their own", () => {
     // The number is derived, as it was; only the words beside it move.
     const ours = proseProvenance(ds).ours;
-    expect(facts(html)).toContainEqual(["Sentences of ours", `${ours}, ${PROSE_OURS_TAIL}`]);
-    expect(facts(html)).toContainEqual(["Sentences of ours", `${ours}, written by us and marked as ours`]);
+    expect(facts(html)).toContainEqual([SENTENCES_OF_OURS, `${ours}, ${PROSE_OURS_TAIL}`]);
+    expect(facts(html)).toContainEqual([SENTENCES_OF_OURS, `${ours}, written by us and marked as ours`]);
     expect(bodyText(html)).not.toContain("declared and shown as ours");
     // The gate's own line further down keeps its own vocabulary.
     expect(bodyText(html)).toContain("and what is ours is declared ours");
@@ -77,7 +82,8 @@ describe("/data/ in the reader's words", () => {
       + "them, change when a person changes them, never on their own.");
     // The exception clause before it is s11's and is untouched: the sentence
     // still opens with the claim and the run, on the same line.
-    expect(bodyText(html)).toMatch(/Every source is re-read daily — last run \d{4}-\d{2}-\d{2}\.( .*?)? A source that has moved raises a flag/);
+    expect(bodyText(html)).toMatch(new RegExp(
+      `${DAILY_CHECK_CLAIM} — ${LAST_RUN} \\d{4}-\\d{2}-\\d{2}\\.( .*?)? ${FRESHNESS_HUMAN_HAND.split(" ").slice(0, 7).join(" ")}`));
     expect(bodyText(html)).not.toContain("files an issue in the tracker");
     // Nowhere in the document, the head's descriptions included: the meta
     // description said "the downloads, the checks and the tracker" for a day
@@ -86,7 +92,7 @@ describe("/data/ in the reader's words", () => {
   });
 
   it("describes itself to a search result without the door it no longer offers", () => {
-    const { scored, quotedOnly } = routeCounts(ds);
+    const { scored, quotedOnly } = reckonDatasetFacts(ds, watchState).counts;
     const desc = dataMetaDescription(scored, quotedOnly, ds.countries.length);
     expect(desc).toBe(`What Permit Rulebook holds today: ${scored} routes scored against your answers and ${
       quotedOnly} quoted and dated but not scored, across ${ds.countries.length} countries, every value carrying `
@@ -101,7 +107,7 @@ describe("/data/ in the reader's words", () => {
   });
 
   it("Take it: the reader's door is the site's door, and the contributor's door stays", () => {
-    const doors = doorsOf(html, "Downloads");
+    const doors = doorsOf(html, DOWNLOADS_LABEL);
     const door = doors.find((d) => d.text === feedbackDoor.text);
     expect(door, `no "${feedbackDoor.text}" link in Take it`).toBeTruthy();
     expect(door!.href).toBe(feedbackDoor.href);
@@ -113,10 +119,10 @@ describe("/data/ in the reader's words", () => {
     expect(door!.tag).toMatch(/class="[^"]*\btap-min\b/);
     expect(doors.map((d) => d.text)).not.toContain("Report a wrong value");
     // The dataset on GitHub is the contributor's door and belongs here.
-    const repo = doors.find((d) => d.text === "The dataset on GitHub");
+    const repo = doors.find((d) => d.text === DATASET_ON_GITHUB);
     expect(repo?.href).toBe(REPO_DATA);
     expect(doors.map((d) => d.text)).toEqual([
-      "The whole dataset as JSON", "countries.json — the passport vocabulary", "The dataset on GitHub", feedbackDoor.text,
+      WHOLE_DATASET_AS_JSON, COUNTRIES_JSON_LINK, DATASET_ON_GITHUB, feedbackDoor.text,
     ]);
   });
 
@@ -149,8 +155,8 @@ describe("/data/ in the reader's words", () => {
 
   it("the two dates stay: Dataset version and Newest value changed are two facts that coincide today", () => {
     const terms = facts(html).map(([t]) => t);
-    expect(terms).toContain("Dataset version");
-    expect(terms).toContain("Newest value changed");
+    expect(terms).toContain(DATASET_VERSION);
+    expect(terms).toContain(NEWEST_VALUE_CHANGED);
   });
 });
 
@@ -160,8 +166,8 @@ describe("every route page's data door", () => {
   it("is the site's door, in the site's words, and never the tracker", () => {
     expect(pages.length).toBeGreaterThan(20);
     for (const page of pages) {
-      const doors = doorsOf(page.html, "The data behind this page");
-      expect(doors.map((d) => d.text), page.path).toEqual(["This route as JSON", "The dataset on GitHub", feedbackDoor.text]);
+      const doors = doorsOf(page.html, DATA_BEHIND_THIS_PAGE);
+      expect(doors.map((d) => d.text), page.path).toEqual([ROUTE_AS_JSON, DATASET_ON_GITHUB, feedbackDoor.text]);
       const door = doors[2]!;
       expect(door.href, page.path).toBe(feedbackDoor.href);
       expect(door.tag, page.path).not.toContain("target=");

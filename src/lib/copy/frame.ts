@@ -109,6 +109,24 @@ export function datasetDay(version: string): string {
 export const capitalise = (words: string): string => words.charAt(0).toUpperCase() + words.slice(1);
 
 /**
+ * The words that explain each abbreviation the first time a page uses it,
+ * by the abbreviation, in the order `gloss.ts` looks for them (#392; ruling
+ * 39 on #382). Every page that glosses its prose says them.
+ */
+export const ABBREVIATION_WORDS: Readonly<Record<string, string>> = { // read by gloss.ts, which holds the matching
+  AufenthG: "the Residence Act",
+  BeschV: "the Employment Ordinance",
+  TFEU: "the Treaty on the Functioning of the European Union",
+  UGE: "Spain's large-companies unit",
+  IND: "the Dutch immigration service",
+  "CNO-2011": "Spain's occupation classification",
+  MVV: "the Dutch entry visa",
+  IELTS: "an English-language test",
+  Schengen: "the EU's border-free travel area",
+  "ISCO-08": "the international occupation codes",
+};
+
+/**
  * The feedback door, in the one word that opens it.
  *
  * It is said in four places — the header's row, the footer column's heading,
@@ -136,7 +154,62 @@ export const COUNTRIES = "Countries";
 export const MENU = "Menu";
 export const MENU_CLOSE = "Close";
 
+/** The header's navigation, by the name a screen reader lists it under. */
+export const SITE_NAV_LABEL = "Site"; // the header nav's aria-label
+
 /** The footer's row under the address: what the page behind it is for. The
  * column's heading is already the word, so the row says the rest (critique F6,
  * 2026-09-16). */
 export const FEEDBACK_FOOTER_ROW = "How to write, and what happens";
+
+/**
+ * The footer's words: its columns' headings and rows, the licence line and
+ * the health line. The wording is #85's and #185's; the footer's template
+ * types none of it.
+ */
+export const CHECK_YOURS = "Check yours"; // the countries column's last row and the header's: where the interview starts
+/** A page's own button into the interview: "Check yours", then the places it is scoped to, joined. */
+export const checkYoursFor = (...places: string[]): string => `${CHECK_YOURS} — ${places.join(", ")}`;
+/** Where the answers stay, said once: under the 404's way in and a route page's (ruling 40 on #382). */
+export const ANSWERED_HERE_ONLY = "The questions are answered on this device only — nothing is sent anywhere."; // the line both build on
+/** The way into the interview, said as a heading or a button: the 404's and a route page's. */
+export const CHECK_YOUR_OWN_SITUATION = "Check your own situation"; // the 404's button and a route page's hidden heading
+export const THE_DATA = "The data"; // the data column's heading and the header's link to /data/
+export const DATA_FOOTER_ROW = "The data — status, versions, downloads"; // the data column's row to /data/
+export const ROUTE_AS_JSON = "This route as JSON"; // the link to the route's own JSON, in the footer and on the route page
+export const REPOSITORY_FOOTER_ROW = "The repository"; // the data column's row to the data repository
+export const licenceFooterRow = (licenceName: string): string => `Licence · ${licenceName}`;
+export const SPONSOR_FOOTER_ROW = "Sponsor this work"; // the feedback column's second row
+
+/** Whose copyright the footer states. The LICENSE file's own holder. */
+export const OWNER = "Oytun Onal";
+
+/** The dataset licence's name, beside the link to it. */
+export const DATA_LICENCE_NAME = "CC BY 4.0";
+/** The same licence, spelled out — no abbreviation goes unexplained on first
+ * use, and "CC BY 4.0" is one to a reader who is not a
+ * developer. The short form is fine everywhere after it. */
+export const DATA_LICENCE_FULL = "Creative Commons Attribution 4.0 (CC BY 4.0)";
+
+/** The open dataset's door and its terms, as `/data/` and every route page say them. */
+export const DATASET_ON_GITHUB = "The dataset on GitHub"; // the link to the data repository
+export const reuseUnder = (licenceName: string): string => `Reuse it under ${licenceName} — credit and link back.`;
+export const CODE_LICENCE = "code MIT"; // the licence line: the code's licence, beside the data's
+export const dataLicence = (licenceName: string): string => `data ${licenceName}`;
+export const copyrightNotice = (year: string, owner: string): string => `© ${year} ${owner}`;
+
+/** The health line's read range; each day is already markup, its `<time>` in bold. */
+export const readRangeHtml = (oldestHtml: string, newestHtml: string): string =>
+  `values read between ${oldestHtml} and ${newestHtml}`;
+export const READ_DAILY = "re-read daily"; // the health line's promise, after the read range
+export const LAST_RUN = "last run"; // opens the health line's parenthesis, before the watch's day
+export const datasetVersionLabel = (version: string): string => `dataset ${version}`;
+
+/**
+ * The social card's own words: the question over the tagline, and its last
+ * line's promise, the last two words in bold. Its stamp says `RULES_READ` and
+ * its mark `SEAL_LETTERS`, as every page's pair does.
+ */
+export const CARD_HEADLINE = "Which work-permit routes could fit?"; // the card's h1, before the tagline
+export const CARD_PROMISE = "every value with its official sentence"; // the card's last line, before the bold words
+export const CHECKED_DAILY = "checked daily"; // the card's last line, in bold

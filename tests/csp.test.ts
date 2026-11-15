@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
-import { interviewFrameOf } from "../src/lib/frame/framed-page.js";
+import { interviewFrameAlone } from "./frame-alone.js";
 import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
 import { COPY_SCRIPT } from "../src/lib/clipboard.js";
 import { ANALYTICS_BEACON, ANALYTICS_SCRIPT } from "../src/lib/site.js";
@@ -22,7 +22,7 @@ import { ANALYTICS_BEACON, ANALYTICS_SCRIPT } from "../src/lib/site.js";
  */
 
 /** The menu script, read through the frame's entry: the frame keeps it private. */
-const MENU_SCRIPT = interviewFrameOf(dataset as unknown as Dataset).menuScript;
+const MENU_SCRIPT = interviewFrameAlone(dataset as unknown as Dataset).menuScript;
 
 /** A script's hash as a policy names it: CSP's `'sha256-…'` source, over the script's UTF-8 bytes. */
 const sha256 = (source: string): string =>

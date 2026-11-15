@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  deriveBands, evaluate,
+  evaluate,
   type Criterion, type Dataset, type Profile, type Route,
 } from "permit-rulebook-data";
-import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn } from "../src/lib/copy/quotes.js";
+import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn, sameNumberNote } from "../src/lib/copy/quotes.js";
 import {
-  APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_OFFICIAL_WORDING_HEADING, WHAT_THIS_ROUTE_ASKS,
+  APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NOT_CHECKED_HEADING, NO_OFFICIAL_WORDING_HEADING, WHAT_THIS_ROUTE_ASKS,
 } from "../src/lib/copy/verdict.js";
 import { blocksIn, drawnRouteOn, everyDrawnRouteIn, standingOn, verdictOn } from "./verdict-cards.js";
+import { DUTCH_GRADUATE, bandFor } from "./personas.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -46,12 +47,6 @@ const withRoute = (route: Route): Dataset => {
 const amountsTheRailAsks = (answers: Profile, id: string): number[] =>
   standingOn(verdictOn(ds, answers), id).measuredOn?.thresholds.map((t) => t.criterion.threshold.amount) ?? [];
 
-function bandFor(field: string, amount: number): string {
-  return deriveBands(ds, field).find(
-    (b) => (b.min === undefined || amount >= b.min) && (b.max === undefined || amount < b.max),
-  )!.id;
-}
-
 /**
  * The orientation year used to test "you have no job offer yet" as a rule of
  * the route. It is not one — the Dutch immigration service's requirement list
@@ -72,7 +67,7 @@ describe("the orientation year, on the card", () => {
 
   it("states the condition the interview cannot ask, under the same heading as the rest", () => {
     const html = precondOf(blankDrawnRoute("nl-orientation-year"));
-    expect(html).toContain("Also required — not checked here");
+    expect(html).toContain(NOT_CHECKED_HEADING);
     expect(html).toMatch(/must not have previously held an orientation year permit/i);
     // Beside the plain lines, not in a block of its own. The deadline reads
     // as the immigration service states it since s5f — "in the three years
@@ -102,7 +97,8 @@ describe("the orientation year, on the card", () => {
       preconditions: ["<script>alert(1)</script>"],
       statements: [{
         id: "x", kind: "caveat", text: "a & b <em>c</em>",
-        source: { source_url: "https://example.org", quote: "quoted", retrieved_at: "2026-09-07" },
+        // On a listed host: a quote line labels its source link by the host's kind (#158, #387).
+        source: { source_url: "https://ind.nl/quoted", quote: "quoted", retrieved_at: "2026-09-07" },
       }],
     };
     const card = drawnRouteFor({}, route.id, withRoute(route));
@@ -117,30 +113,24 @@ describe("the orientation year, on the card", () => {
  * 2026" with his declared band under that line (human catch 2026-09-07).
  */
 describe("the rail names the threshold the reader was measured against", () => {
-  const dutchGraduate: Profile = {
-    destination: "nl", citizenship: "TR", situation: "offer", qualification: "degree",
-    age_band: "u30", nl_recent_grad: "yes", top200_grad: "no", occupation_it: "no",
-    salary_eur_month: bandFor("salary_eur_month", 3500),
-  };
-
   it("met through the reduced path: the rail says €3,122, and never labels €4,357", () => {
-    expect(evaluate(ds, dutchGraduate).find((r) => r.route.id === "nl-hsm-under30")!.status).toBe("met");
+    expect(evaluate(ds, DUTCH_GRADUATE).find((r) => r.route.id === "nl-hsm-under30")!.status).toBe("met");
     // The reckoning: the one amount the rail asks is the reduced path's, as
     // the route standing carries it (ruling 7 on #322).
-    expect(amountsTheRailAsks(dutchGraduate, "nl-hsm-under30")).toEqual([3122]);
+    expect(amountsTheRailAsks(DUTCH_GRADUATE, "nl-hsm-under30")).toEqual([3122]);
     // The words: the rail captions it with the reduced path's label alone.
-    const html = railOf(drawnRouteFor(dutchGraduate, "nl-hsm-under30"));
+    const html = railOf(drawnRouteFor(DUTCH_GRADUATE, "nl-hsm-under30"));
     expect(html).toContain("lower amount for a recent graduate");
     expect(html).not.toContain("under 30, 2026");
   });
 
   it("the caption under the number is the deciding path's own label", () => {
-    expect(railOf(drawnRouteFor(dutchGraduate, "nl-hsm-under30")))
+    expect(railOf(drawnRouteFor(DUTCH_GRADUATE, "nl-hsm-under30")))
       .toContain(`${WHAT_THIS_ROUTE_ASKS} — lower amount for a recent graduate, 2026 · `);
   });
 
   it("not met, with the reduced path out of reach: the rail says €4,357", () => {
-    const profile = { ...dutchGraduate, nl_recent_grad: "no" };
+    const profile = { ...DUTCH_GRADUATE, nl_recent_grad: "no" };
     expect(evaluate(ds, profile).find((r) => r.route.id === "nl-hsm-under30")!.status).toBe("near");
     expect(amountsTheRailAsks(profile, "nl-hsm-under30")).toEqual([4357]);
     expect(railOf(drawnRouteFor(profile, "nl-hsm-under30"))).toContain("under 30, 2026");
@@ -157,20 +147,14 @@ describe("the rail names the threshold the reader was measured against", () => {
 });
 
 describe("the source list says which quote applied to this reader", () => {
-  const dutchGraduate: Profile = {
-    destination: "nl", citizenship: "TR", situation: "offer", qualification: "degree",
-    age_band: "u30", nl_recent_grad: "yes", top200_grad: "no", occupation_it: "no",
-    salary_eur_month: bandFor("salary_eur_month", 3500),
-  };
-
   it("both quotes still render — the other threshold exists and the reader may want it", () => {
-    const html = sourcesOf(drawnRouteFor(dutchGraduate, "nl-hsm-under30"));
+    const html = sourcesOf(drawnRouteFor(DUTCH_GRADUATE, "nl-hsm-under30"));
     expect(html).toContain("€ 3,122.00");
     expect(html).toContain("€ 4,357.00");
   });
 
   it("exactly one of them is marked as theirs, and the other as not", () => {
-    const html = sourcesOf(drawnRouteFor(dutchGraduate, "nl-hsm-under30"));
+    const html = sourcesOf(drawnRouteFor(DUTCH_GRADUATE, "nl-hsm-under30"));
     const reduced = html.slice(html.indexOf("€ 3,122.00"), html.indexOf("€ 3,122.00") + 400);
     const full = html.slice(html.indexOf("€ 4,357.00"), html.indexOf("€ 4,357.00") + 400);
     expect(reduced).toContain(APPLIES_TO_YOU);
@@ -213,7 +197,7 @@ describe("the source list says which quote applied to this reader", () => {
       .find((c) => c.op === "gte" && c.field === "funds_eur_month")!;
     route.criteria.push({ op: "any", label: "living costs", paths: [{ label: "the living-costs threshold", criteria: [funds] }] });
 
-    const html = sourcesOf(drawnRouteFor(dutchGraduate, "nl-hsm-under30", twoChoices));
+    const html = sourcesOf(drawnRouteFor(DUTCH_GRADUATE, "nl-hsm-under30", twoChoices));
     const near = (needle: string) => html.slice(html.indexOf(needle), html.indexOf(needle) + 400);
     // The settled choice is still marked, both ways.
     expect(near("€ 3,122.00")).toContain(APPLIES_TO_YOU);
@@ -357,8 +341,9 @@ describe("a quote on the results card is framed the way it is on a route page", 
     const html = blueCardSources();
     expect(html, "no German quote reached the card").toContain("Mindestbruttojahresgehalt");
     expect(html).toMatch(/lang="de"/);
-    // Every quote on the card is tagged, not just the first.
-    const quotes = html.match(/<i[^>]*>/g) ?? [];
+    // Every quote on the card is tagged, not just the first: a `<q>`, as on a
+    // route page, since the card's line became the route page's (#387).
+    const quotes = html.match(/<q\b[^>]*>/g) ?? [];
     expect(quotes.length).toBeGreaterThan(1);
     for (const q of quotes) expect(q, q).toContain("lang=");
   });
@@ -377,7 +362,7 @@ describe("a quote on the results card is framed the way it is on a route page", 
   });
 
   it("and says so where the source spells a number its own way", () => {
-    expect(blueCardSources()).toContain("The source writes 50.700 where this page writes 50,700");
+    expect(blueCardSources()).toContain(sameNumberNote("50.700", "50,700"));
   });
 
   it("an English source is not labelled as anything else", () => {

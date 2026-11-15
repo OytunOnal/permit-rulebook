@@ -15,27 +15,25 @@ import { datasetMeta, remainingQuestions } from "permit-rulebook-data";
 // client alike, so "Start over" cannot leave a stale claim on question 1
 // (product-critique v0.7, B4).
 import {
-  declarationCount, declarationHtml, holdLineHtml, questionCardHtml, questionMastheadOf, renderStandInsOverQuestionOne,
+  declarationHtml, holdLineHtml, questionCardHtml, questionMastheadOf, renderStandInsOverQuestionOne,
 } from "../lib/question.js";
 // The three things the page must know about the reader before it paints, read
 // in <head>, and the rules that paint the shape the interview would have
 // chosen from them (s10, 2026-09-15).
 import { FIRST_PAINT_SCRIPT, FIRST_PAINT_STYLE } from "../lib/first-paint.js";
-// The seal, the icon links and the pair: one set of elements, four screens
-// (Standards review, 2026-09-08).
-import { stamps } from "../lib/identity.js";
 // The frame's pieces, the policy among them, computed where node:crypto
 // lives — never in the client bundle: the policy, the icon links, the header,
-// the footer and the menu script every other page wears (#142).
+// the footer and the menu script every other page wears (#142), and the pair,
+// its stamp on the dataset's newest read day (#384).
 import { interviewFrameOf } from "../lib/frame/framed-page.js";
 // The product's own words, in one place: the name, the tagline and the
 // disclaimer are said here, on 23 route pages and in both READMEs (decision 9).
 import {
-  HOME_DESCRIPTION, HOME_PREVIEW_TITLE, HOME_TITLE, promise, RULES_READ, TAGLINE,
+  HOME_DESCRIPTION, HOME_PREVIEW_TITLE, HOME_TITLE, promise, TAGLINE,
 } from "../lib/copy/frame.js";
-import { START_OVER, YOU_DECLARED } from "../lib/copy/interview.js";
-import { routeCounts } from "../lib/data-page.js";
-import { analyticsBeacon, headMeta } from "../lib/site.js";
+import { START_OVER, YOU_DECLARED, declarationCount } from "../lib/copy/interview.js";
+import { reckonDatasetFacts } from "../lib/dataset-facts/reckon-dataset-facts.js";
+import { analyticsBeacon, headMeta, watchState } from "../lib/site.js";
 
 // Boundary validation: an invalid dataset must kill the build, loudly.
 const dataset = assertValidDataset(rawDataset);
@@ -74,7 +72,9 @@ const firstStandIns = renderStandInsOverQuestionOne();
  * while the interview draws (s31).
  */
 const holdLine = holdLineHtml();
-const frame = interviewFrameOf(dataset);
+// The dataset's facts, reckoned once for the page: the stamp's, the footer's and the preview's.
+const facts = reckonDatasetFacts(dataset, watchState);
+const frame = interviewFrameOf(dataset, facts);
 console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundary", ...meta }));
 ---
 <!doctype html>
@@ -92,7 +92,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     description: HOME_DESCRIPTION,
     path: "/",
     kind: "website",
-    preview: promise(routeCounts(dataset)),
+    preview: promise(facts.counts),
   })} />
 </head>
 <body>
@@ -110,7 +110,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           fact the route page states — when the rules were last read — and on
           the results it becomes the record's own date (human, 2026-09-08).
           The box never moves: only the words and the date inside it change. */}
-      <Fragment set:html={stamps(RULES_READ, meta.newest_retrieved_at ?? "", { live: true })} />
+      <Fragment set:html={frame.stamp} />
     </header>
 
     <div id="app" class="cols" data-state="questions">

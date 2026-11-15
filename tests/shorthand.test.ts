@@ -7,6 +7,7 @@ import { questionCardHtml } from "../src/lib/question.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import type { PageOnSite } from "../scripts/browser/browser.mjs";
 import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { watchStateAt } from "./watch-state-at.js";
 
 /**
  * #156 (#151, ruling 8): shorthand is explained the first time each page uses
@@ -94,7 +95,7 @@ function findingsOn(page: Page): string[] {
 
 /** Every page the build draws from the shipped dataset with no reader on it. */
 const READERLESS: Page[] = [
-  ...routePages(ds, { lastRun: "1970-01-01", unread: [] }).map((p) => markupPage(p.path, p.html)),
+  ...routePages(ds, watchStateAt("1970-01-01")).map((p) => markupPage(p.path, p.html)),
   ...countryPages(ds).map((p) => markupPage(p.path, p.html)),
   ...deriveQuestions(ds).map((question) => markupPage(`question ${question.field}`, questionCardHtml({
     dataset: ds, question, answers: {}, asked: [], editing: null, total: 10, glossary: new Set(),

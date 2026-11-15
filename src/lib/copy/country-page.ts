@@ -52,3 +52,17 @@ export const countryLedeOpen = (country: string): string =>
 export const LISTED_WITH_THEIR_REASONS = "listed with their reasons";
 export const discretionLeftOutLine = (door: string): string => `Routes that turn on an official's discretion are ${door}, not here.`;
 export const RESULT_NAMES_FITTING_ROUTES = "The result names which of these routes fit.";
+export const ANSWERED_ON_THIS_DEVICE = "Answered on this device only."; // the note under the button, before what the result names
+/**
+ * A route card's figure label, by what the route turns on: what money means on
+ * it, as its field says, its points, or no number at all; and the word before
+ * the lowest of several amounts.
+ */
+export const FUNDS_TO_SHOW = "funds to show"; // a threshold on funds: what you must be able to show you have
+export const SALARY_THRESHOLD = "salary threshold"; // any other threshold: what a job pays you
+export const POINTS_NEEDED = "points needed"; // a points route's label
+export const NO_SALARY_THRESHOLD = "no salary threshold"; // a route that asks for no number
+export const LOWEST_OF_SEVERAL = "from "; // before the lowest of several amounts
+
+/** A link preview's list of routes, cut short: the first few, `listed`, and how many more. */
+export const listedAndMore = (listed: string, more: number): string => `${listed} and ${more} more`;

@@ -1,7 +1,10 @@
 // @level presentation
 import type { Dataset } from "permit-rulebook-data";
 import { esc } from "../reason.js";
-import { analyticsBeacon, headMeta, type WatchRun } from "../site.js";
+import type { DatasetFacts } from "../dataset-facts/reckon-dataset-facts.js";
+import { RULES_READ } from "../copy/frame.js";
+import { stamps } from "../identity.js";
+import { analyticsBeacon, headMeta } from "../site.js";
 import { contentSecurityPolicy } from "./head/csp.js";
 import { footerFacts } from "./body/footer-facts.js";
 import { FRAME_SHEET, withLineFeedEndings } from "./head/frame-sheet.js";
@@ -34,8 +37,8 @@ export interface PageInFrame {
   /** The page's own style rules, after the frame's. */
   css?: string;
   place?: PagePlace;
-  /** The watch run the footer reports; what it leaves out is read from the watch's state. */
-  run?: WatchRun;
+  /** The page's own reckoning of the dataset's facts, which the footer prints: the frame reckons none. */
+  facts: DatasetFacts;
   /** Everything between the header and the footer, the masthead included. */
   content: string;
   /** Inline scripts beyond the menu: feedback's copy script. */
@@ -57,17 +60,17 @@ function headOf(page: PageInFrame): string {
 }
 
 /** The header and the footer a page stands between, both marked for where it stands. */
-function headerAndFooterOf(dataset: Dataset, place: PagePlace, run?: WatchRun): { header: string; footer: string } {
+function headerAndFooterOf(dataset: Dataset, place: PagePlace, facts: DatasetFacts): { header: string; footer: string } {
   const countries = navCountries(dataset);
   return {
     header: siteHeader(countries, place),
-    footer: siteFooter(countries, footerFacts(dataset, run), place),
+    footer: siteFooter(countries, footerFacts(dataset, facts), place),
   };
 }
 
 /** The document's body: the page's content between the header and the footer, then the scripts. */
 function bodyOf(dataset: Dataset, page: PageInFrame): string {
-  const { header, footer } = headerAndFooterOf(dataset, page.place ?? {}, page.run);
+  const { header, footer } = headerAndFooterOf(dataset, page.place ?? {}, page.facts);
   const scripts = [MENU_SCRIPT, ...(page.scripts ?? [])].map((source) => `<script>${source}</script>\n`).join("");
   return `<div class="wrap">\n\n  ${header}\n\n  ${page.content}\n\n  ${footer}\n\n</div>\n${scripts}${analyticsBeacon()}`;
 }
@@ -84,15 +87,25 @@ export interface InterviewFrame {
   header: string;
   footer: string;
   menuScript: string;
+  /**
+   * The masthead's "Rules read" stamp, on the end of the read range, as every
+   * page that is not a route's or a country's prints it. It carries the ids
+   * the interview repaints it through as the reader moves.
+   */
+  stamp: string;
 }
 
-/** The interview page's frame: its policy, icon links, header, footer and menu script. */
-export function interviewFrameOf(dataset: Dataset): InterviewFrame {
+/**
+ * The interview page's frame: its policy, icon links, header, footer, menu
+ * script and stamp, from `facts`, the page's own reckoning.
+ */
+export function interviewFrameOf(dataset: Dataset, facts: DatasetFacts): InterviewFrame {
   return {
     policy: contentSecurityPolicy(),
     icons: iconLinks(),
     // The interview stands at the root, where "Check yours" leads.
-    ...headerAndFooterOf(dataset, { here: "/" }),
+    ...headerAndFooterOf(dataset, { here: "/" }, facts),
     menuScript: MENU_SCRIPT,
+    stamp: stamps(RULES_READ, facts.readRange.newest, { live: true }),
   };
 }

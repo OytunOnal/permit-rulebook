@@ -1,5 +1,9 @@
 // @level presentation
-import { FEEDBACK, FEEDBACK_FOOTER_ROW, PRODUCT_NAME, unreadLabel } from "../../copy/frame.js";
+import {
+  CHECK_YOURS, CODE_LICENCE, COUNTRIES, copyrightNotice, DATA_FOOTER_ROW, dataLicence, datasetVersionLabel,
+  FEEDBACK, FEEDBACK_FOOTER_ROW, LAST_RUN, licenceFooterRow, PRODUCT_NAME, READ_DAILY, readRangeHtml,
+  REPOSITORY_FOOTER_ROW, ROUTE_AS_JSON, SPONSOR_FOOTER_ROW, THE_DATA, unreadLabel,
+} from "../../copy/frame.js";
 import { seal } from "../../identity.js";
 import { esc, escAttr } from "../../reason.js";
 import { DATA_PATH, FEEDBACK_PATH, url } from "../../site.js";
@@ -26,7 +30,7 @@ export interface FooterPlace extends HeaderPlace {
 }
 
 export interface FooterFacts {
-  /** The span the values were read over, both ends. */
+  /** The read range, both ends: every quoted sentence's, notices included. */
   read: { oldest: string; newest: string };
   datasetVersion: string;
   /** The day the watch last ran — empty where it never has. */
@@ -88,31 +92,33 @@ function countryRowHtml(link: NavLink, place: FooterPlace): string {
 /** The rows of the footer's data column: the data page, the route's own JSON, the repository and the licence. */
 function dataRowsHtml(facts: FooterFacts, place: FooterPlace): string {
   return [
-    `<li><a class="tap-min" href="${escAttr(url(DATA_PATH))}">The data — status, versions, downloads</a></li>`,
+    `<li><a class="tap-min" href="${escAttr(url(DATA_PATH))}">${esc(DATA_FOOTER_ROW)}</a></li>`,
     // Only where there is a route to serve: the other pages render the column
     // without it rather than linking a file that is not theirs.
-    place.jsonPath ? `<li><a class="tap-min" href="${escAttr(url(place.jsonPath))}">This route as JSON</a></li>` : "",
-    `<li>${out(facts.repository, "The repository")}</li>`,
-    `<li>${out(facts.licenceUrl, `Licence · ${facts.licenceName}`)}</li>`,
+    place.jsonPath ? `<li><a class="tap-min" href="${escAttr(url(place.jsonPath))}">${esc(ROUTE_AS_JSON)}</a></li>` : "",
+    `<li>${out(facts.repository, REPOSITORY_FOOTER_ROW)}</li>`,
+    `<li>${out(facts.licenceUrl, licenceFooterRow(facts.licenceName))}</li>`,
   ].filter(Boolean).join("");
 }
 
 /** The watch's last run, in its held parenthesis, with the unread count where there is one; nothing where it never ran. */
 function lastRunHtml(facts: FooterFacts): string {
   if (!facts.lastRun) return "";
-  return ` <span class="keep">(last run <time datetime="${escAttr(facts.lastRun)}">${esc(facts.lastRun)}</time>${
+  return ` <span class="keep">(${esc(LAST_RUN)} <time datetime="${escAttr(facts.lastRun)}">${esc(facts.lastRun)}</time>${
     facts.unread ? `${SEP_BREAK}${esc(unreadLabel(facts.unread))}` : ""})</span>`;
 }
+
+/** One end of the read range: its day, in bold. */
+const readDayHtml = (day: string): string => `<b><time datetime="${escAttr(day)}">${esc(day)}</time></b>`;
 
 /** The footer's last line: the mark, the licences and the owner, then the health signal. */
 function footerLineHtml(facts: FooterFacts): string {
   return `<div class="line">
-      <span><a class="mark tap-min" href="${escAttr(url("/"))}">${seal()}${esc(PRODUCT_NAME)}</a>${SEP}<span class="keep">code MIT</span>${SEP}<span class="keep">data ${
-    esc(facts.licenceName)}</span>${SEP}<span class="keep">© ${esc(facts.year)} ${esc(facts.owner)}</span></span>
-      <span>values read between <b><time datetime="${
-    escAttr(facts.read.oldest)}">${esc(facts.read.oldest)}</time></b> and <b><time datetime="${
-    escAttr(facts.read.newest)}">${esc(facts.read.newest)}</time></b>${SEP}re-read daily${lastRunHtml(facts)}${SEP}<span class="keep">dataset ${
-    esc(facts.datasetVersion)}</span></span>
+      <span><a class="mark tap-min" href="${escAttr(url("/"))}">${seal()}${esc(PRODUCT_NAME)}</a>${SEP}<span class="keep">${
+    esc(CODE_LICENCE)}</span>${SEP}<span class="keep">${esc(dataLicence(facts.licenceName))}</span>${SEP}<span class="keep">${
+    esc(copyrightNotice(facts.year, facts.owner))}</span></span>
+      <span>${readRangeHtml(readDayHtml(facts.read.oldest), readDayHtml(facts.read.newest))}${SEP}${
+    esc(READ_DAILY)}${lastRunHtml(facts)}${SEP}<span class="keep">${esc(datasetVersionLabel(facts.datasetVersion))}</span></span>
     </div>`;
 }
 
@@ -123,21 +129,21 @@ export function siteFooter(
     <p class="disclaimer">${esc(facts.disclaimer)}</p>
     <div class="cols">
       <div class="col">
-        <h3>Countries</h3>
+        <h3>${esc(COUNTRIES)}</h3>
         <ul>${countries.map((link) => countryRowHtml(link, place)).join("")}
           <li class="act"><a class="tap-min" href="${
-    escAttr(url(place.checkPath ?? "/"))}">Check yours</a></li>
+    escAttr(url(place.checkPath ?? "/"))}">${esc(CHECK_YOURS)}</a></li>
         </ul>
       </div>
       <div class="col">
-        <h3>The data</h3>
+        <h3>${esc(THE_DATA)}</h3>
         <ul>${dataRowsHtml(facts, place)}</ul>
       </div>
       <div class="col">
         <h3>${esc(FEEDBACK)}</h3>
         <ul>
           <li><a class="tap-min" href="${escAttr(url(FEEDBACK_PATH))}">${esc(FEEDBACK_FOOTER_ROW)}</a></li>
-          <li>${out(facts.sponsor, "Sponsor this work")}</li>
+          <li>${out(facts.sponsor, SPONSOR_FOOTER_ROW)}</li>
         </ul>
       </div>
     </div>

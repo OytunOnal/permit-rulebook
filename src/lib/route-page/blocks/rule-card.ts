@@ -1,98 +1,27 @@
 // @level presentation
 import {
-  criterionPhrase, deriveQuestions, fillRouteSlots, forEachCriterion, formatEURPer, isLocalization, joinAnd,
-  learnLinkOf, periodOf, provenancedValuesOf, referencedFields, shortLabelOf, subjectOf, thresholdsUnder,
-  type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
+  criterionPhrase, fillRouteSlots, formatEURPer, joinAnd,
+  learnLinkOf, periodOf, referencedFields, shortLabelOf, subjectOf, thresholdsUnder,
+  type Country, type Criterion, type Dataset, type Notice, type Route,
 } from "permit-rulebook-data";
+import type { PrintedCard } from "../../dataset-facts/reckon-dataset-facts.js";
 import { type Glossary, glossed } from "../../gloss.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
-import { glossedLearnLinkText, linkLabelOf, noteHtml, quoteFrame } from "../../quote.js";
+import { glossedLearnLinkText, quoteLineHtml } from "../../quote.js";
 import { esc, escAttr } from "../../reason.js";
-import { ANY_PATH, EITHER_PATH } from "../../copy/route-page.js";
+import { tapInline } from "../../tap.js";
+import {
+  ANY_PATH, CONDITION_KIND, EITHER_PATH, FIND_OUT_YOURSELF, FOR_KIND, NOT_FOR_KIND, POINTS_KIND, THRESHOLD_KIND,
+  WHAT_THE_CHECKER_ASKS, asksAtLeastHtml, asksFor, countsPointsLine, notOpenTo,
+} from "../../copy/route-page.js";
 import { capitalise } from "../../copy/frame.js";
-import { readOn } from "../../copy/quotes.js";
 import { railHtml } from "./rail.js";
-
-// ---------------------------------------------------------------------------
-// The two ways an interactive element reaches the tap floor
-// ---------------------------------------------------------------------------
-
-/**
- * `tap-min` for anything that owns a box — a button, a crumb, a row in the
- * data door. `tap` for a link inside a sentence, where a taller line would
- * open a hole in the prose: it takes the height in vertical padding and gives
- * it back in negative margin.
- *
- * Every `<a>` and `<button>` on a generated page carries exactly one of them,
- * which is what makes the invariant checkable without a browser: the v0.7
- * critique measured 34/22/20 px controls, the token was written for it, and the
- * first mock designed afterwards broke it on seven of sixteen controls.
- */
-export const TAP_CLASSES = ["tap", "tap-min"] as const;
-
-export const tapMin = (extra = ""): string => `class="${escAttr(extra ? `${extra} ` : "")}tap-min"`;
-export const tapInline = (extra = ""): string => `class="${escAttr(extra ? `${extra} ` : "")}tap"`;
-
-// ---------------------------------------------------------------------------
-// Small helpers over the dataset
-// ---------------------------------------------------------------------------
-
-/**
- * Every provenanced value under one criterion, its paths included.
- *
- * `provenancedValuesOf` answers for a single criterion, and a disjunction's own
- * answer is only its condition source — so a card built on it alone printed the
- * `any` and dropped the two thresholds inside it. That is not a rendering
- * detail: the Spanish Blue Card states both of its salaries inside a
- * disjunction, and the page showed neither amount and neither quote. The
- * invariant caught it (`de-experienced-worker`, `es-blue-card`), which is what
- * the invariant is for.
- */
-function valuesUnder(c: Criterion): ProvenanceEntry[] {
-  const out: ProvenanceEntry[] = [];
-  forEachCriterion([c], (x) => out.push(...provenancedValuesOf(x)));
-  // One quote, one line: a disjunction whose condition source is restated on a
-  // path says the same sentence twice.
-  const seen = new Set<string>();
-  return out.filter((e) => {
-    const key = `${e.value.source_url}#${e.value.quote}#${e.label ?? ""}#${e.amount ?? ""}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-// ---------------------------------------------------------------------------
-// The quote block
-// ---------------------------------------------------------------------------
-
-interface QuoteOptions {
-  /** The amount this quote is the proof of, where it is the proof of one. */
-  amount?: number;
-  /** What the value is called on its own line ("standard amount"). */
-  label?: string;
-}
-
-/** A read date as a quote and a headline figure both print it. */
-export const readDateTime = (day: string): string => `<time datetime="${escAttr(day)}">${esc(readOn(day))}</time>`;
-
-export function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}, seen: Glossary = new Set()): string {
-  const { lang, host, note } = quoteFrame(value, o.amount);
-  return `<div class="src">
-        <span><q${lang ? ` lang="${escAttr(lang)}"` : ""}>${esc(value.quote)}</q> · ${esc(host)}${
-    o.label ? ` · ${esc(o.label)}` : ""}${
-    value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b>${readDateTime(value.retrieved_at)}</b>${
-    noteHtml(note)}</span>
-        <a ${tapInline()} href="${escAttr(value.source_url)}" target="_blank" rel="noopener">${
-    esc(linkLabelOf(value.source_url))} &#8599;</a>
-      </div>`;
-}
 
 /**
  * What every rule card on one route page shares: the dataset, the country and
  * route the page is about, the page's memory of what it has already explained,
- * and the free-movement notice the audience card may borrow its quote from.
+ * and the free-movement notice whose words the audience card borrows.
  */
 export interface RulePage {
   dataset: Dataset;
@@ -121,7 +50,7 @@ function ruleHeading(dataset: Dataset, c: Criterion): string {
   if (thresholds.length) return capitalise(shortLabelOf(dataset, thresholds[0].field));
   // Named by who it shuts out, said as the answer they gave: "Algeria" is a
   // country and "an Algerian passport" is the thing this rule reads.
-  if (c.op === "not-in") return `Not open to ${criterionPhrase(dataset, c)}`;
+  if (c.op === "not-in") return notOpenTo(criterionPhrase(dataset, c));
   // A choice of paths is named by its own label: the body lists the paths, and
   // its phrase may be a short_reason written for a verdict line, not a heading.
   if (c.op === "any") return capitalise(c.label);
@@ -129,15 +58,15 @@ function ruleHeading(dataset: Dataset, c: Criterion): string {
 }
 
 function ruleKind(c: Criterion): string {
-  if (thresholdsUnder(c).length) return "Threshold";
-  if (c.op === "points") return "Points";
+  if (thresholdsUnder(c).length) return THRESHOLD_KIND;
+  if (c.op === "points") return POINTS_KIND;
   // A closure is the opposite claim from the criterion beside it, and the two
   // sit on the same page: one says who the permit is for, the other who the
   // authority does not open it to. Reading them under one label would make the
   // page say the second is a condition the reader could meet (s8).
-  if (c.op === "not-in") return "Who this is not for";
-  if ("field" in c && c.field === "citizenship") return "Who this is for";
-  return "Condition";
+  if (c.op === "not-in") return NOT_FOR_KIND;
+  if ("field" in c && c.field === "citizenship") return FOR_KIND;
+  return CONDITION_KIND;
 }
 
 function rulePlain(dataset: Dataset, c: Criterion, notice?: Notice): string {
@@ -150,19 +79,17 @@ function rulePlain(dataset: Dataset, c: Criterion, notice?: Notice): string {
     // its id: "The offer must pay at least ..." is true of a salary and false
     // of the funds a job-search stay asks you to evidence.
     const period = periodOf(dataset, c.field);
-    return `This route asks for at least <span class="mono">${
-      esc(formatEURPer(c.threshold.amount, period))}</span> — ${
-      esc(subjectOf(dataset, c.field))}.`;
+    return asksAtLeastHtml(esc(formatEURPer(c.threshold.amount, period)), esc(subjectOf(dataset, c.field)));
   }
   if (c.op === "points")
-    return `This route counts ${c.required.value} points from the official table. Every item below scores, and the table is quoted under it.`;
+    return esc(countsPointsLine(c.required.value));
   if ("field" in c && c.field === "citizenship")
     // The lede has already said who the page is for, three lines above; saying
     // it again word for word at the top of the first rule reads as a stutter.
     // What this card adds is the authority's own answer for everyone else, in
     // its words, with its quote below.
-    return notice ? esc(notice.body) : `This route asks for ${esc(criterionPhrase(dataset, c))}.`;
-  return `This route asks for ${esc(criterionPhrase(dataset, c))}.`;
+    return notice ? esc(notice.body) : esc(asksFor(criterionPhrase(dataset, c)));
+  return esc(asksFor(criterionPhrase(dataset, c)));
 }
 
 /**
@@ -195,77 +122,31 @@ function asksBlock(dataset: Dataset, criteria: Criterion[], seen: Glossary): str
   // A question's words with any route they name said in full (#159).
   const learn = fields.flatMap((f) => learnLinkOf(dataset, f.id) ?? []);
   return `
-        <div class="asks"><b>What the checker asks</b><ul>${
+        <div class="asks"><b>${esc(WHAT_THE_CHECKER_ASKS)}</b><ul>${
     fields.map((f) => `<li>${esc(glossed(fillRouteSlots(f.label, dataset), seen))}</li>`).join("")}</ul>${
-    learn.map((l) => `<p>You can find this out yourself: <a ${tapInline()} href="${
+    learn.map((l) => `<p>${esc(FIND_OUT_YOURSELF)} <a ${tapInline()} href="${
       escAttr(l.url)}" target="_blank" rel="noopener">${
       esc(glossedLearnLinkText(l, seen))} &#8599;</a></p>`).join("")}</div>`;
 }
 
-/** A rule with no quote and no figure under it, its paths included. */
-const isUnquoted = (c: Criterion): boolean => valuesUnder(c).length === 0 && thresholdsUnder(c).length === 0;
-
 /**
- * The unquoted rules inside a quoted card's disjunction, which the asks block
- * lists as it lists an unquoted card's own: a quote on one path (the shortage
- * Blue Card's IT path) does not quote the rules of another (its degree path,
- * where the shortage list's door belongs). A disjunction that carries its own
- * quote speaks for its paths, so nothing under it is unquoted.
+ * One rule card, drawn from the reckoning's answer: its quotes, and the rules
+ * on it that print none, for which it says what the interview will ask.
  */
-function unquotedInPaths(c: Criterion): Criterion[] {
-  if (c.op !== "any" || c.source) return [];
-  return c.paths.flatMap((p) => p.criteria.flatMap((pc) => (isUnquoted(pc) ? [pc] : unquotedInPaths(pc))));
-}
-
-/** The quotes one rule card prints. */
-export function cardValues(c: Criterion, notice?: Notice): ProvenanceEntry[] {
-  const values = valuesUnder(c);
-  // A closure names the same field and makes the opposite claim, so it is not
-  // the audience card and never borrows the free-movement notice's words.
-  const isAudience = "field" in c && c.field === "citizenship" && c.op !== "not-in";
-  const isUnquotedAudience = isAudience && values.length === 0;
-  if (isUnquotedAudience && notice) values.push({ value: notice.source });
-  return values;
-}
-
-export function ruleCard(page: RulePage, c: Criterion): string {
+export function ruleCard(page: RulePage, card: PrintedCard): string {
   const { dataset, seen, notice } = page;
-  const values = cardValues(c, notice);
-  const thresholds = thresholdsUnder(c);
+  const { criterion, quotes } = card;
+  const thresholds = thresholdsUnder(criterion);
   const year = thresholds.length ? thresholds[0].threshold.retrieved_at.slice(0, 4) : "";
-  // A card with no evidence and no scale is one sentence restating its own
-  // heading; it says instead what the interview will ask. A quoted card says
-  // it for the unquoted rules inside its paths.
-  const asks = asksBlock(dataset, values.length === 0 && thresholds.length === 0 ? [c] : unquotedInPaths(c), seen);
+  const asks = asksBlock(dataset, card.unquoted, seen);
   return `
       <article class="rule">
-        <div class="top"><h2>${esc(ruleHeading(dataset, c))}</h2><span class="kind">${
-    esc(ruleKind(c))}${year ? ` · ${esc(year)}` : ""}</span></div>
-        ${plainHtml(dataset, c, notice)}${
+        <div class="top"><h2>${esc(ruleHeading(dataset, criterion))}</h2><span class="kind">${
+    esc(ruleKind(criterion))}${year ? ` · ${esc(year)}` : ""}</span></div>
+        ${plainHtml(dataset, criterion, notice)}${
     thresholds.length ? `
       ${railHtml(page, thresholds[0])}` : ""}${asks}${
-    values.map((e) => `
-      ${quoteBlock(e.value, { amount: e.amount, label: e.label }, seen)}`).join("")}
+    quotes.map((quote) => `
+      ${quoteLineHtml(quote.value, { amount: quote.amount, label: quote.label }, seen)}`).join("")}
       </article>`;
-}
-
-/**
- * The rules, in the order the interview asks them.
- *
- * Two kinds of criterion never become a card. A criterion that only asks WHERE
- * a route applies is answered by the address of the page the reader is on, and
- * printing "Germany as your destination" as a rule on a German page tells a
- * stranger nothing. Anything else is a card.
- */
-export function ruleCriteria(dataset: Dataset, route: Route): Criterion[] {
-  const order = deriveQuestions(dataset).map((q) => q.field);
-  const rank = (c: Criterion): number => {
-    const positions = referencedFields(c).map((f) => order.indexOf(f)).filter((i) => i >= 0);
-    return positions.length ? Math.min(...positions) : order.length;
-  };
-  return route.criteria
-    .filter((c) => !isLocalization(c))
-    .map((c, i) => ({ c, i, rank: rank(c) }))
-    .sort((a, b) => a.rank - b.rank || a.i - b.i)
-    .map((x) => x.c);
 }

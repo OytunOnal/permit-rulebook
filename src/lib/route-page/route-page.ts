@@ -2,7 +2,7 @@
 import {
   scopeLine, phraseOf, possessiveAtStartOf, criterionPhrase, formatEURPer, forEachCriterion,
   isScored, joinAnd, periodOf, shortLabelOf,
-  type Country, type Dataset, type Route, type UnreadSource,
+  type Country, type Dataset, type Route, type WatchState,
 } from "permit-rulebook-data";
 // One module explains an abbreviation, so the route page and the results card
 // say the same words for the same token (2026-09-08).
@@ -12,28 +12,34 @@ import { rulesRead } from "../identity.js";
 import { framedPageHtml } from "../frame/framed-page.js";
 import { esc, escAttr } from "../reason.js";
 import {
-  DATA_LICENCE_FULL, DATA_LICENCE_NAME, FEEDBACK_PATH, REPO_DATA,
-  absolute, readWatchRun, url, type WatchRun,
+  FEEDBACK_PATH, REPO_DATA, absolute, url, watchState,
 } from "../site.js";
 import {
+  reckonDatasetFacts, routeFactsOf, type PrintedQuotes, type RouteFacts,
+} from "../dataset-facts/reckon-dataset-facts.js";
+import {
   ROUTE_PAGE_ADDENDUM,
-  NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, alsoInHeading, askedRouteDescription,
-  audienceLine, dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription,
+  ASKED_SCOPE_HEADING, BESIDE_THE_RULES, CHECK_ON_THIS_DEVICE, DATA_BEHIND_THIS_PAGE, EVERY_CONDITION_SOURCED,
+  EVERY_NUMBER_SOURCED, GENERATED_FROM_DATASET,
+  NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, RULES_HEADING, WHERE_DO_YOU_STAND,
+  alsoInHeading, askedRouteDescription, dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription,
+  onThisRouteHtml, thresholdInDescription,
 } from "../copy/route-page.js";
-import { PRODUCT_NAME } from "../copy/frame.js";
+import {
+  CHECK_YOUR_OWN_SITUATION, DATASET_ON_GITHUB, DATA_LICENCE_FULL, DATA_LICENCE_NAME, PRODUCT_NAME, ROUTE_AS_JSON,
+  checkYoursFor, reuseUnder,
+} from "../copy/frame.js";
 import { WRONG_DOOR_LABEL } from "../copy/feedback.js";
 import {
   countryCheckPath, countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress,
 } from "../slug.js";
-import { audienceNotice, noticeSection, ownUnread, pageStamp, printedNotices } from "./blocks/notices.js";
-import { answerBlock, gist } from "./blocks/route-figure.js";
-import { ruleCard, ruleCriteria, tapMin, type RulePage } from "./blocks/rule-card.js";
+import { audienceSentence, gist } from "../route-lines.js";
+import { noticeSection } from "./blocks/notices.js";
+import { answerBlock } from "./blocks/route-figure.js";
+import { ruleCard, type RulePage } from "./blocks/rule-card.js";
 import { statedBlocks } from "./blocks/stated-blocks.js";
+import { tapMin } from "../tap.js";
 import ROUTE_PAGE_RULES from "./route-page.css?raw";
-
-export { TAP_CLASSES } from "./blocks/rule-card.js";
-export { audienceNotice, noticesOn, ownUnread, pageStamp, routeSourceUrls } from "./blocks/notices.js";
-export { gist, routeFigure, type RouteFigure } from "./blocks/route-figure.js";
 
 /**
  * One page per route, generated from the dataset and never typed.
@@ -53,14 +59,6 @@ export { gist, routeFigure, type RouteFigure } from "./blocks/route-figure.js";
  * their language tagged and a note where the source's notation differs from the
  * page's (F1/F5), and one date format throughout (F3).
  */
-
-/**
- * Who the page is for, said before the first rule. An Irish reader who lands on
- * a German route page from a search is told here, not after seven rules and a
- * refusal (`tests/s6-edges.test.ts`), and the call to action below leads to the notice
- * that answers her rather than to a rejection.
- */
-export const audienceSentence = (country: Country): string => audienceLine(phraseOf(country.code));
 
 function neighbours(country: Country, route: Route, seen: Glossary): string {
   const others = country.routes.filter((r) => r !== route);
@@ -91,7 +89,8 @@ export interface RoutePage {
   json: Record<string, unknown>;
 }
 
-function description(dataset: Dataset, country: Country, route: Route): string {
+function description(dataset: Dataset, address: RouteAddress, printed: PrintedQuotes): string {
+  const { country, route } = address;
   // A route the checker does not ask about has no criteria to describe, and
   // the other routes' sentence would come out as the country's name, the
   // route's name and an empty list. What a search result should promise is
@@ -100,10 +99,10 @@ function description(dataset: Dataset, country: Country, route: Route): string {
   const bits: string[] = [];
   forEachCriterion(route.criteria, (c) => {
     if (c.op === "gte")
-      bits.push(`the ${formatEURPer(c.threshold.amount, periodOf(dataset, c.field))} ${
-        shortLabelOf(dataset, c.field).toLowerCase()}`);
+      bits.push(thresholdInDescription(formatEURPer(c.threshold.amount, periodOf(dataset, c.field)),
+        shortLabelOf(dataset, c.field).toLowerCase()));
   });
-  for (const c of ruleCriteria(dataset, route)) {
+  for (const { criterion: c } of printed.cards) {
     if (bits.length >= 3) break;
     const isThresholdOrCitizenship = c.op === "gte" || ("field" in c && c.field === "citizenship");
     if (isThresholdOrCitizenship) continue;
@@ -115,21 +114,22 @@ function description(dataset: Dataset, country: Country, route: Route): string {
 /**
  * One route page.
  *
- * `run.lastRun` is the day the watch last re-read every source — the single
- * value on this page that moves without anyone editing anything. It is an
- * argument rather than a read inside the footer so that a render over a frozen
- * dataset is genuinely frozen: the fingerprint case hashed a page that changed
- * by itself, and failed the first build a data change ever reached through the
- * dispatch (CI 2026-09-09). What that run could not read, `run.unread`, moves
- * with it, and is read the same way, for the same reason. Either one left out
- * is read from the watch's state.
+ * The day the watch last re-read every source is the single value on this
+ * page that moves without anyone editing anything, and what that run could not
+ * read moves with it. Both come from `state`, the watch's state the page is
+ * built on, an argument rather than a read inside the footer so that a render
+ * over a frozen dataset is genuinely frozen: the fingerprint case hashed a page
+ * that changed by itself, and failed the first build a data change ever
+ * reached through the dispatch (CI 2026-09-09). A render about another run is
+ * handed a copy of the state that carries that run.
  */
-export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun = {}): RoutePage {
-  const watch = readWatchRun(dataset, run);
+export function routePage(dataset: Dataset, address: RouteAddress, state: WatchState = watchState): RoutePage {
+  const facts = reckonDatasetFacts(dataset, state);
   const { country, route } = address;
-  const read = pageStamp(dataset, route);
+  const routeFacts = routeFactsOf(facts, route);
+  const read = routeFacts.stamp;
   const title = `${route.name} · ${country.name} · ${PRODUCT_NAME}`;
-  const desc = description(dataset, country, route);
+  const desc = description(dataset, address, routeFacts.printed);
   const path = address.path;
   const jsonPath = routeJsonPath(country, route);
   // One page, one memory of which abbreviations it has already expanded. The
@@ -139,23 +139,23 @@ export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun
   // above it repeats the name for navigation and is not a use; a neighbouring
   // route's name is a cross-reference and keeps the short form.
   const seen: Glossary = new Set();
-  const page: RulePage = { dataset, country, route, seen, notice: audienceNotice(dataset) };
+  const page: RulePage = { dataset, country, route, seen, notice: routeFacts.printed.audienceNotice };
   const content = `${mastheadHtml(page, read)}
 
   <div class="page">
-  ${mainHtml(page, watch.unread)}
+  ${mainHtml(page, routeFacts)}
   ${asideHtml(page, jsonPath)}
   </div>`;
   const html = framedPageHtml(dataset, {
-    title, meta: { description: desc, path, kind: "article" }, css: ROUTE_PAGE_RULES, run: watch, content,
+    title, meta: { description: desc, path, kind: "article" }, css: ROUTE_PAGE_RULES, facts, content,
     place: { countryPath: countryPath(country), current: "true", jsonPath, checkPath: countryCheckPath(country) },
   });
   return { path, jsonPath, title, description: desc, readDate: read, html, json: routeRecord(dataset, address, read) };
 }
 
 /** Every route page this dataset produces. 23 at launch. */
-export function routePages(dataset: Dataset, run: WatchRun = {}): RoutePage[] {
-  return routeAddresses(dataset).map((a) => routePage(dataset, a, run));
+export function routePages(dataset: Dataset, state: WatchState = watchState): RoutePage[] {
+  return routeAddresses(dataset).map((a) => routePage(dataset, a, state));
 }
 
 /** The masthead: the route's name, the tagline, the lede and the read stamp. */
@@ -173,8 +173,7 @@ function mastheadHtml(page: RulePage, read: string): string {
     <div>
       <h1>${esc(heading)}</h1>
       <p class="tagline">${esc(ROUTE_TAGLINE)}</p>
-      <p class="lede">${route.summary ? `${esc(glossed(route.summary, seen))} ` : ""}Every ${
-    scored ? "number" : "condition"} on this page is the authority's own sentence, with the page it came from and the day we read it. ${
+      <p class="lede">${route.summary ? `${esc(glossed(route.summary, seen))} ` : ""}${esc(scored ? EVERY_NUMBER_SOURCED : EVERY_CONDITION_SOURCED)} ${
     esc(audienceSentence(country))} ${esc(scored ? ROUTE_PAGE_ADDENDUM : ROUTE_PAGE_UNSCORED_ADDENDUM)}</p>
     </div>
     ${rulesRead(read)}
@@ -182,16 +181,13 @@ function mastheadHtml(page: RulePage, read: string): string {
 }
 
 /** The main column: what sits above the rules, then the rules and the blocks stated beside them. */
-function mainHtml(page: RulePage, unread: UnreadSource[]): string {
-  const { dataset, route, seen } = page;
-  // The footer counts every unread source a reader is looking at (s11); the
-  // sentence under the scope heading speaks for this page's own (s23, F3).
-  const missed = ownUnread(dataset, route, unread).length;
-  return `<main>${aboveTheRulesHtml(page, missed)}
+function mainHtml(page: RulePage, routeFacts: RouteFacts): string {
+  const { route, seen } = page;
+  return `<main>${aboveTheRulesHtml(page, routeFacts)}
 
   <section class="rules" aria-labelledby="rules-h">
-    <h2 class="visually-hidden" id="rules-h">The rules of this route</h2>${
-    ruleCriteria(dataset, route).map((c) => ruleCard(page, c)).join("")}${
+    <h2 class="visually-hidden" id="rules-h">${esc(RULES_HEADING)}</h2>${
+    routeFacts.printed.cards.map((card) => ruleCard(page, card)).join("")}${
     statedBlocks(route, seen)}
   </section>
 
@@ -204,21 +200,23 @@ function mainHtml(page: RulePage, unread: UnreadSource[]): string {
  * answer block, the notices, the way into the checker and the scope; on one it
  * does not, the scope alone.
  */
-function aboveTheRulesHtml(page: RulePage, missed: number): string {
+function aboveTheRulesHtml(page: RulePage, routeFacts: RouteFacts): string {
   const { dataset, country, route, seen } = page;
+  // The footer counts every unread source a reader is looking at (s11); the
+  // sentence under the scope heading speaks for this page's own (s23, F3).
+  const missed = routeFacts.unread.length;
   return isScored(route) ? `
-${answerBlock(dataset, route)}${printedNotices(dataset, route).map((n) => noticeSection(n, seen)).join("")}
+${answerBlock(dataset, route, routeFacts.printed)}${routeFacts.printed.notices.map((n) => noticeSection(n, seen)).join("")}
   <section class="cta" aria-labelledby="cta-h">
-    <h2 class="visually-hidden" id="cta-h">Check your own situation</h2>
-    <p><strong>Where do you stand on this route?</strong> The questions are answered on this device only — nothing is sent anywhere. You get each rule against what you declared, the gap if there is one, and which single change would open more routes.</p>
-    <a ${tapMin("btn")} href="${escAttr(`${url("/")}?route=${route.id}`)}">Check yours — ${esc(country.name)}, ${
-    esc(route.name)}</a>
+    <h2 class="visually-hidden" id="cta-h">${esc(CHECK_YOUR_OWN_SITUATION)}</h2>
+    <p><strong>${esc(WHERE_DO_YOU_STAND)}</strong> ${esc(CHECK_ON_THIS_DEVICE)}</p>
+    <a ${tapMin("btn")} href="${escAttr(`${url("/")}?route=${route.id}`)}">${esc(checkYoursFor(country.name, route.name))}</a>
   </section>
 
   <section class="scope" aria-labelledby="scope-h">
-    <b id="scope-h">What the checker asks, and what it does not</b>
-    <p>${esc(everyNumberQuoted(dailyCheck(missed)))} On this route — <strong>${
-    esc(scopeLine(route, { reader: "not-answered" }))}</strong>. ${esc(route.scope.reason)}</p>
+    <b id="scope-h">${esc(ASKED_SCOPE_HEADING)}</b>
+    <p>${esc(everyNumberQuoted(dailyCheck(missed)))} ${
+    onThisRouteHtml(esc(scopeLine(route, { reader: "not-answered" })))} ${esc(route.scope.reason)}</p>
   </section>` : `
   <section class="scope" aria-labelledby="scope-h">
     <b id="scope-h">${esc(NOT_ASKED_SCOPE_HEADING)}</b>
@@ -229,14 +227,13 @@ ${answerBlock(dataset, route)}${printedNotices(dataset, route).map((n) => notice
 /** The aside: the data behind the page, and the country's other routes. */
 function asideHtml(page: RulePage, jsonPath: string): string {
   const { country, route, seen } = page;
-  return `<aside aria-label="Beside the rules">
+  return `<aside aria-label="${escAttr(BESIDE_THE_RULES)}">
   <section class="data" aria-labelledby="data-h">
-    <h2 class="label" id="data-h">The data behind this page</h2>
-    <p>This page is generated from an open dataset: every number and quote above is a record in it, with its source and read date. Reuse it under ${
-    esc(DATA_LICENCE_FULL)} — credit and link back.</p>
-    <nav aria-label="The data behind this page">
-      <a ${tapMin()} href="${escAttr(url(jsonPath))}">This route as JSON</a>
-      <a ${tapMin()} href="${escAttr(REPO_DATA)}" target="_blank" rel="noopener">The dataset on GitHub</a>
+    <h2 class="label" id="data-h">${esc(DATA_BEHIND_THIS_PAGE)}</h2>
+    <p>${esc(GENERATED_FROM_DATASET)} ${esc(reuseUnder(DATA_LICENCE_FULL))}</p>
+    <nav aria-label="${escAttr(DATA_BEHIND_THIS_PAGE)}">
+      <a ${tapMin()} href="${escAttr(url(jsonPath))}">${esc(ROUTE_AS_JSON)}</a>
+      <a ${tapMin()} href="${escAttr(REPO_DATA)}" target="_blank" rel="noopener">${esc(DATASET_ON_GITHUB)}</a>
       <a ${tapMin()} href="${escAttr(url(FEEDBACK_PATH))}">${esc(WRONG_DOOR_LABEL)}</a>
     </nav>
   </section>

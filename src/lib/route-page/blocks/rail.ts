@@ -2,7 +2,8 @@
 import {
   forEachCriterion, formatEURPer, periodOf, type Country, type Dataset, type Route, type ThresholdCriterion,
 } from "permit-rulebook-data";
-import { esc } from "../../reason.js";
+import { esc, escAttr } from "../../reason.js";
+import { RAIL_LABEL, anotherRouteRow, otherRoutesRow, thisRouteRow } from "../../copy/route-page.js";
 
 // ---------------------------------------------------------------------------
 // The rail
@@ -39,10 +40,10 @@ function railRows(country: Country, route: Route, own: ThresholdCriterion): Rail
  * the card was built from.
  */
 function railRowText(entry: { routes: Route[]; label?: string }, route: Route): string {
-  if (entry.routes.includes(route)) return `this route${entry.label ? ` — ${entry.label}` : ""}`;
+  if (entry.routes.includes(route)) return thisRouteRow(entry.label);
   const others = entry.routes.filter((r) => r !== route);
-  if (others.length === 1) return `${others[0].name} — another route here`;
-  return `${others.length} other routes here`;
+  if (others.length === 1) return anotherRouteRow(others[0].name);
+  return otherRoutesRow(others.length);
 }
 
 /** What a rail is drawn against: the dataset, and the country and route the page is about. */
@@ -63,7 +64,7 @@ export function railHtml(page: RailPage, own: ThresholdCriterion): string {
   return `<div class="rail" aria-hidden="true">${
     rows.map((r) => `<span class="tick" style="left:${pct(r.amount).toFixed(1)}%"></span>`).join("")
   }</div>
-      <ul class="rail-list" aria-label="What this country asks on the same figure">${
+      <ul class="rail-list" aria-label="${escAttr(RAIL_LABEL)}">${
     rows.map((r) => `<li><span>${r.own ? "<strong>" : ""}${esc(formatEURPer(r.amount, period))}${
       r.own ? "</strong>" : ""}</span><span>${esc(r.text)}</span></li>`).join("")
   }</ul>`;

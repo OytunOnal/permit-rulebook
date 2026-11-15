@@ -6,13 +6,13 @@ import {
   DESTINATION_FIELD, phraseAtStartOf, evaluate, isClosed, isScored, scopeLine, scopeWords,
   type Dataset, type Profile,
 } from "permit-rulebook-data";
-import { countryAddresses } from "../src/lib/country-page.js";
-import { routeAddresses } from "../src/lib/slug.js";
+import { countryAddresses, routeAddresses } from "../src/lib/slug.js";
 import { PRODUCT_NAME, TAGLINE, promise, routesCheckerAsksAbout } from "../src/lib/copy/frame.js";
 import { answersCheckedLine } from "../src/lib/copy/verdict.js";
 import { countryHeadline } from "../src/lib/copy/country-page.js";
 import { dataLedeOpen, dataMetaDescription, datasetDescription } from "../src/lib/copy/data-page.js";
-import { routeCounts } from "../src/lib/data-page.js";
+import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
+import { watchState } from "../src/lib/site.js";
 import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
 import { DESK } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
@@ -89,7 +89,7 @@ describe("the walk's own precondition", () => {
 });
 
 describe("the social card counts routes as the checker does", () => {
-  const facts = socialCardFacts(ds, "2026-10-21", {
+  const facts = socialCardFacts(ds, reckonDatasetFacts(ds, watchState), {
     product: PRODUCT_NAME, tagline: TAGLINE, routesLineOf: routesCheckerAsksAbout,
   });
 
@@ -137,12 +137,13 @@ describe.skipIf(noBuild !== null)("every page the build draws", () => {
     }
     // Unchanged: each place reads what /data/'s own words compose from the
     // dataset's counts, in the model's terms, which #151 leaves as they were.
-    const { scored, quotedOnly, total } = routeCounts(ds);
+    const counts = reckonDatasetFacts(ds, watchState).counts;
+    const { scored, quotedOnly } = counts;
     const countries = ds.countries.length;
     expect(plainTextOf(places.lede!)).toContain(dataLedeOpen(scored, quotedOnly, countries));
     expect(plainTextOf(places.meta!)).toBe(dataMetaDescription(scored, quotedOnly, countries));
     expect((JSON.parse(places.ld!) as { description: string }).description)
-      .toBe(datasetDescription({ total, scored, quotedOnly, countries }));
+      .toBe(datasetDescription(counts));
     expect(plainTextOf(places.routes!)).toMatch(new RegExp(`^${scored} scored, ${quotedOnly} quoted\\b`));
   });
 

@@ -1,11 +1,14 @@
 // @level presentation
-import type { Dataset } from "permit-rulebook-data";
+import type { Dataset, WatchState } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { framedPageHtml } from "./frame/framed-page.js";
-import { countryLinks, siteReadDate } from "./country-page.js";
-import { NOT_FOUND_START, NOT_FOUND_START_NOTE } from "./copy/not-found.js";
-import { PRODUCT_NAME, TAGLINE } from "./copy/frame.js";
-import { url } from "./site.js";
+import { countryLinks } from "./slug.js";
+import { reckonDatasetFacts } from "./dataset-facts/reckon-dataset-facts.js";
+import {
+  NOT_FOUND_COUNTRIES_HEADING, NOT_FOUND_HEADLINE, NOT_FOUND_LEDE, NOT_FOUND_START, NOT_FOUND_START_NOTE, NOT_FOUND_TITLE,
+} from "./copy/not-found.js";
+import { CHECK_YOUR_OWN_SITUATION, TAGLINE } from "./copy/frame.js";
+import { url, watchState } from "./site.js";
 // One set of elements for the identity the shared CSS places (2026-09-08).
 import { rulesRead } from "./identity.js";
 
@@ -42,22 +45,24 @@ export interface NotFoundPage {
   html: string;
 }
 
-export function notFoundPage(dataset: Dataset): NotFoundPage {
-  const title = `This page does not exist · ${PRODUCT_NAME}`;
-  const read = siteReadDate(dataset);
+/** The 404, its stamp and its footer from `state`'s reckoning of the dataset's facts. */
+export function notFoundPage(dataset: Dataset, state: WatchState = watchState): NotFoundPage {
+  const facts = reckonDatasetFacts(dataset, state);
+  const title = NOT_FOUND_TITLE;
+  const read = facts.readRange.newest;
   const countries = countryLinks(dataset);
 
   const content = `<header class="masthead masthead-with-stamps">
     <div>
-      <h1>This page does not exist. <em>${esc(TAGLINE)}</em></h1>
-      <p class="lede">Nothing is published at that address — a link may have lost a character, or a page may have been renamed since it was shared.</p>
+      <h1>${esc(NOT_FOUND_HEADLINE)} <em>${esc(TAGLINE)}</em></h1>
+      <p class="lede">${esc(NOT_FOUND_LEDE)}</p>
     </div>
     ${rulesRead(read)}
   </header>
 
   <main>
     <nav class="neighbours" aria-labelledby="countries-h">
-      <h2 class="label" id="countries-h">Every country we hold rules for</h2>
+      <h2 class="label" id="countries-h">${esc(NOT_FOUND_COUNTRIES_HEADING)}</h2>
       <ul>${countries.map((link) => `
         <li><a class="tap-min" href="${escAttr(url(link.path))}">${esc(link.name)}</a></li>`).join("")}
       </ul>
@@ -68,10 +73,12 @@ export function notFoundPage(dataset: Dataset): NotFoundPage {
         <h2 id="cta-h">${esc(NOT_FOUND_START)}</h2>
         <p>${esc(NOT_FOUND_START_NOTE)}</p>
       </div>
-      <a class="btn tap-min" href="${escAttr(url("/"))}">Check your own situation</a>
+      <a class="btn tap-min" href="${escAttr(url("/"))}">${esc(CHECK_YOUR_OWN_SITUATION)}</a>
     </section>
   </main>`;
 
-  const html = framedPageHtml(dataset, { title, headTags: ['<meta name="robots" content="noindex">'], content });
+  const html = framedPageHtml(dataset, {
+    title, headTags: ['<meta name="robots" content="noindex">'], facts, content,
+  });
   return { path: "/404", title, html };
 }

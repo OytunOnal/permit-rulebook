@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { DATA_LICENCE_FULL, DATA_LICENCE_NAME, DISCLAIMER, PRODUCT_NAME } from "../src/lib/copy/frame.js";
+import { ROUTE_PAGE_ADDENDUM, ROUTE_PAGE_UNSCORED_ADDENDUM } from "../src/lib/copy/route-page.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { scopeLine, isScored, type Dataset } from "permit-rulebook-data";
-import { audienceSentence, routePage, routePages } from "../src/lib/route-page/route-page.js";
+import { routePage, routePages } from "../src/lib/route-page/route-page.js";
+import { audienceSentence } from "../src/lib/route-lines.js";
 import { esc } from "../src/lib/reason.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { stringPagesSheet, styleIn } from "./frame-alone.js";
@@ -145,16 +148,14 @@ describe(ONE_PAGE_PER_ROUTE, () => {
   it("the disclaimer is one sentence, from one source, on every page", () => {
     for (const page of pages) {
       const text = textOf(page.html);
-      expect(text, page.path).toContain(
-        "Permit Rulebook makes no immigration decision and no authority is bound by these results",
-      );
+      expect(text, page.path).toContain(DISCLAIMER);
       // Each page carries the addendum written for what it is: the scored
       // pages say they describe rather than decide, and the ones the checker
       // does not ask about say it never rules on them at all (s9).
       expect(text, page.path).toContain(
         unscoredPaths.has(page.path)
-          ? "This route is one the checker does not ask about"
-          : "This page describes the rules; it does not decide on you.",
+          ? ROUTE_PAGE_UNSCORED_ADDENDUM
+          : ROUTE_PAGE_ADDENDUM,
       );
     }
   });
@@ -235,14 +236,14 @@ describe(ONE_PAGE_PER_ROUTE, () => {
     ]) {
       const page = pages.find((x) => x.path === path)!;
       const said = textOf(page.html);
-      expect(said, path).toContain("Creative Commons Attribution 4.0 (CC BY 4.0)");
-      expect(said.indexOf("Creative Commons Attribution 4.0"), path)
-        .toBeLessThan(said.lastIndexOf("CC BY 4.0"));
+      expect(said, path).toContain(DATA_LICENCE_FULL);
+      expect(said.indexOf(DATA_LICENCE_FULL), path)
+        .toBeLessThan(said.lastIndexOf(DATA_LICENCE_NAME));
     }
     // And the seal says what it stands for.
     for (const page of pages) {
-      expect(page.html, page.path).toContain('title="Permit Rulebook"');
-      expect(page.html, page.path).toContain('aria-label="Permit Rulebook"');
+      expect(page.html, page.path).toContain(`title="${PRODUCT_NAME}"`);
+      expect(page.html, page.path).toContain(`aria-label="${PRODUCT_NAME}"`);
     }
   });
 });

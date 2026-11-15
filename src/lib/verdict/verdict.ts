@@ -23,7 +23,9 @@ import { bodyHtml } from "./compose/html.js";
 import { comparedMastheadOf, noticeMastheadOf } from "./compose/masthead.js";
 import type { InterviewSoFar, Verdict, VerdictScreen } from "./compose/types.js";
 // The verdict's look travels with its markup: the page that paints a verdict
-// links this stylesheet in its <head>.
+// links these stylesheets in its <head>. A quote line's look comes first, from
+// the one file the pages built as strings inline too (#387, ruling 36 on #382).
+import "../quote-line.css";
 import "./verdict.css";
 
 export type { InterviewSoFar, Verdict, VerdictAction } from "./compose/types.js";

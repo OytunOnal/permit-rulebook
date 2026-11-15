@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { DISCLAIMER } from "../src/lib/copy/frame.js";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
-import { countryAddresses, countryLinks, countryPage, countryPages } from "../src/lib/country-page.js";
+import { countryPage, countryPages } from "../src/lib/country-page.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import { builtPaths, indexedPaths, robotsTxt, sitemapXml } from "../src/lib/sitemap.js";
 import { DATA_PATH, FEEDBACK_PATH, SITE_URL, absolute, url } from "../src/lib/site.js";
-import { countryPath } from "../src/lib/slug.js";
+import { countryAddresses, countryLinks, countryPath } from "../src/lib/slug.js";
 import { frameAlone, styleIn } from "./frame-alone.js";
 
 /**
@@ -232,7 +233,7 @@ describe("the site can be crawled and browsed", () => {
       expect(page.html, page.path).not.toContain('class="crumbs');
       expect(page.html, page.path).toContain('aria-current="page"');
       expect(page.html, page.path).toContain(`href="${url("/")}"`);
-      expect(text, page.path).toContain("Permit Rulebook makes no immigration decision");
+      expect(text, page.path).toContain(DISCLAIMER);
       // The page's stylesheet opens with the frame's, not a second copy of it.
       expect(page.html, page.path).toContain(`<style>${styleIn(frameAlone(ds))}`);
     }

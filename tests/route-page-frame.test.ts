@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { PRODUCT_NAME } from "../src/lib/copy/frame.js";
 import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
-import { TAP_CLASSES, routePages } from "../src/lib/route-page/route-page.js";
+import { routePages } from "../src/lib/route-page/route-page.js";
+import { TAP_CLASSES } from "../src/lib/tap.js";
 import { WRONG_DOOR_LABEL } from "../src/lib/copy/feedback.js";
 import { FEEDBACK_PATH, url } from "../src/lib/site.js";
 import { stringPagesSheet, styleIn } from "./frame-alone.js";
@@ -70,7 +72,7 @@ describe(ONE_PAGE_PER_ROUTE, () => {
         'property="og:url"', 'name="twitter:card"', 'rel="canonical"', 'rel="icon"',
       ]) expect(page.html, `${page.path}: ${tag}`).toContain(tag);
       expect(page.html, page.path).toContain("/social-card.png");
-      expect(page.title, page.path).toContain("Permit Rulebook");
+      expect(page.title, page.path).toContain(PRODUCT_NAME);
     }
   });
 
