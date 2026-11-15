@@ -2,7 +2,7 @@
 import { formatEURPer, periodOf, type Dataset, type Route } from "permit-rulebook-data";
 import { esc } from "../../reason.js";
 import {
-  ANSWER_SOURCED, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, pointsFigure,
+  ANSWER_HEADING, ANSWER_SOURCED, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, pointsFigure,
 } from "../../copy/route-page.js";
 import type { PrintedQuotes } from "../../dataset-facts/reckon-dataset-facts.js";
 import { figuresOf } from "../../route-lines.js";
@@ -33,7 +33,7 @@ export function answerBlock(dataset: Dataset, route: Route, printed: PrintedQuot
   const figures = headlineFigures(dataset, route, printed);
   return `
   <section class="answer" aria-labelledby="answer-h">
-    <h2 class="label" id="answer-h">What this route asks for</h2>${figures ? `
+    <h2 class="label" id="answer-h">${esc(ANSWER_HEADING)}</h2>${figures ? `
     <p class="answer-figure">${figures}</p>
     <p class="answer-read">${esc(ANSWER_SOURCED)}</p>` : `
     <p class="answer-figure"><b>${esc(NO_FIGURE)}</b> <span class="answer-label">${esc(NO_FIGURE_LABEL)}</span></p>`}

@@ -24,23 +24,13 @@
  * One module, so every page explains a symbol the same way, and each page
  * keeps its own memory of what it has already said.
  */
+import { ABBREVIATION_WORDS } from "./copy/frame.js";
 
 /** One page's memory of which abbreviations it has already explained. */
 export type Glossary = Set<string>;
 
-/** Each abbreviation, and the words that explain it. */
-export const ABBREVIATIONS: ReadonlyArray<readonly [token: string, words: string]> = [
-  ["AufenthG", "the Residence Act"],
-  ["BeschV", "the Employment Ordinance"],
-  ["TFEU", "the Treaty on the Functioning of the European Union"],
-  ["UGE", "Spain's large-companies unit"],
-  ["IND", "the Dutch immigration service"],
-  ["CNO-2011", "Spain's occupation classification"],
-  ["MVV", "the Dutch entry visa"],
-  ["IELTS", "an English-language test"],
-  ["Schengen", "the EU's border-free travel area"],
-  ["ISCO-08", "the international occupation codes"],
-];
+/** Each abbreviation, and the words that explain it: the copy's, in its order. */
+export const ABBREVIATIONS: ReadonlyArray<readonly [token: string, words: string]> = Object.entries(ABBREVIATION_WORDS);
 
 /** Where an abbreviation stands as a word of its own. */
 const tokenPattern = (token: string): RegExp => new RegExp(`\\b${token}\\b`);

@@ -1,5 +1,7 @@
 // @level presentation
-import { CHECK_YOURS, COUNTRIES, FEEDBACK, MENU, MENU_CLOSE, PRODUCT_NAME, THE_DATA } from "../../copy/frame.js";
+import {
+  CHECK_YOURS, COUNTRIES, FEEDBACK, MENU, MENU_CLOSE, PRODUCT_NAME, SITE_NAV_LABEL, THE_DATA,
+} from "../../copy/frame.js";
 import { seal } from "../../identity.js";
 import { esc, escAttr } from "../../reason.js";
 import { DATA_PATH, FEEDBACK_PATH, url } from "../../site.js";
@@ -104,6 +106,6 @@ export function siteHeader(countries: NavLink[], place: HeaderPlace = {}): strin
       <a class="wordmark tap-min" href="${escAttr(url("/"))}">${seal()}${esc(PRODUCT_NAME)}</a>
       <button class="menu tap-min" type="button" aria-expanded="false" aria-controls="site-nav" data-word-closed="${
     escAttr(MENU)}" data-word-open="${escAttr(MENU_CLOSE)}">${esc(MENU)}</button>
-      <nav class="nav" id="site-nav" aria-label="Site">${links}</nav>
+      <nav class="nav" id="site-nav" aria-label="${escAttr(SITE_NAV_LABEL)}">${links}</nav>
     </header>`;
 }

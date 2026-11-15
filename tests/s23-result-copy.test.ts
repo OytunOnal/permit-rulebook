@@ -12,7 +12,7 @@ import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, hintsIn, paintedAsComposedScript, placed, standingOn, stepsIn, verdictFor,
 } from "./verdict-cards.js";
 import { withSite } from "./browser-walk.js";
-import { PRIYA_EXPLORING_ALL } from "./personas.js";
+import { DENIZ, PRIYA_EXPLORING_ALL } from "./personas.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -29,13 +29,6 @@ const textOf = (html: string): string =>
  * sentence that contradicted the reader, named what they could not see,
  * repeated itself, or spoke the model's language.
  */
-
-/** Deniz: Turkish engineer with a Berlin offer (persona P1). An offer-holder. */
-const DENIZ: Profile = {
-  destination: "de", citizenship: "TR", situation: "offer", situation_country: "de", qualification: "degree",
-  recognition_de: "unknown", occupation_shortage: "yes", occupation_it: "yes", experience_5y: "lt2", experience_7y: "3to5", german: "a1",
-  english: "c1", funds_eur_month: "band_1", salary_eur_year: "band_5", age_band: "a30to35",
-};
 
 const fieldKind = (id: string) => ds.fields.find((f) => f.id === id)?.kind;
 

@@ -1,7 +1,8 @@
 // @level presentation
 /**
  * The words around a quote, wherever one is shown: whose page a source link
- * opens, the day it was read, and the heading over what a page also says.
+ * opens, the day it was read, the note under it, and the heading over what a
+ * page also says.
  *
  * Every word a reader reads lives in this folder, one file per screen or
  * part (CODING_STANDARDS.md, Rules).
@@ -44,3 +45,12 @@ export const UNSOURCED_REASON_SAID: Record<UnsourcedReasonWord, string> = {
 };
 /** The day we last went looking for the wording, closing that sentence. */
 export const lastCheckedOn = (day: string): string => `Last checked ${day}.`;
+
+/**
+ * The note under a quote: the language it is in and whose page it came from,
+ * and, where the source spells its number another way, that the two
+ * spellings are one number.
+ */
+export const languageNote = (languageName: string, host: string): string => `${languageName}, from ${host}.`;
+export const sameNumberNote = (theirs: string, ours: string): string =>
+  `The source writes ${theirs} where this page writes ${ours} — the same number.`;

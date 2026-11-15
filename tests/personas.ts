@@ -41,6 +41,13 @@ export const PRIYA_EXPLORING_ALL: Profile = {
   top200_grad: "unknown", funds_eur_month: "band_1", age_band: "u30", de_stay6m: "no", partner_ck: "no",
 };
 
+/** Deniz: Turkish engineer with a Berlin offer (persona P1, s23). An offer-holder. */
+export const DENIZ: Profile = {
+  destination: "de", citizenship: "TR", situation: "offer", situation_country: "de", qualification: "degree",
+  recognition_de: "unknown", occupation_shortage: "yes", occupation_it: "yes", experience_5y: "lt2", experience_7y: "3to5", german: "a1",
+  english: "c1", funds_eur_month: "band_1", salary_eur_year: "band_5", age_band: "a30to35",
+};
+
 /** The Algerian reader with a French offer, on €50,700–€59,373. */
 export const ALGERIAN: Profile = {
   destination: "fr", citizenship: "DZ", situation: "offer", situation_country: "fr",

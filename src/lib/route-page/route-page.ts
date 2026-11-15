@@ -20,10 +20,14 @@ import {
 } from "../dataset-facts/reckon-dataset-facts.js";
 import {
   ROUTE_PAGE_ADDENDUM,
-  NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, alsoInHeading, askedRouteDescription,
-  dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription,
+  ASKED_SCOPE_HEADING, BESIDE_THE_RULES, CHECK_ON_THIS_DEVICE, DATA_BEHIND_THIS_PAGE, GENERATED_FROM_DATASET,
+  NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, RULES_HEADING, WHERE_DO_YOU_STAND,
+  alsoInHeading, askedRouteDescription, dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription,
+  onThisRouteHtml, sourcedOnThisPage, thresholdInDescription,
 } from "../copy/route-page.js";
-import { PRODUCT_NAME, ROUTE_AS_JSON } from "../copy/frame.js";
+import {
+  CHECK_YOUR_OWN_SITUATION, DATASET_ON_GITHUB, PRODUCT_NAME, ROUTE_AS_JSON, checkYoursFor, reuseUnder,
+} from "../copy/frame.js";
 import { WRONG_DOOR_LABEL } from "../copy/feedback.js";
 import {
   countryCheckPath, countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress,
@@ -94,8 +98,8 @@ function description(dataset: Dataset, address: RouteAddress, printed: PrintedQu
   const bits: string[] = [];
   forEachCriterion(route.criteria, (c) => {
     if (c.op === "gte")
-      bits.push(`the ${formatEURPer(c.threshold.amount, periodOf(dataset, c.field))} ${
-        shortLabelOf(dataset, c.field).toLowerCase()}`);
+      bits.push(thresholdInDescription(formatEURPer(c.threshold.amount, periodOf(dataset, c.field)),
+        shortLabelOf(dataset, c.field).toLowerCase()));
   });
   for (const { criterion: c } of printed.rules) {
     if (bits.length >= 3) break;
@@ -168,8 +172,7 @@ function mastheadHtml(page: RulePage, read: string): string {
     <div>
       <h1>${esc(heading)}</h1>
       <p class="tagline">${esc(ROUTE_TAGLINE)}</p>
-      <p class="lede">${route.summary ? `${esc(glossed(route.summary, seen))} ` : ""}Every ${
-    scored ? "number" : "condition"} on this page is the authority's own sentence, with the page it came from and the day we read it. ${
+      <p class="lede">${route.summary ? `${esc(glossed(route.summary, seen))} ` : ""}${esc(sourcedOnThisPage(scored))} ${
     esc(audienceSentence(country))} ${esc(scored ? ROUTE_PAGE_ADDENDUM : ROUTE_PAGE_UNSCORED_ADDENDUM)}</p>
     </div>
     ${rulesRead(read)}
@@ -182,7 +185,7 @@ function mainHtml(page: RulePage, own: RouteFacts): string {
   return `<main>${aboveTheRulesHtml(page, own)}
 
   <section class="rules" aria-labelledby="rules-h">
-    <h2 class="visually-hidden" id="rules-h">The rules of this route</h2>${
+    <h2 class="visually-hidden" id="rules-h">${esc(RULES_HEADING)}</h2>${
     own.printed.rules.map((rule) => ruleCard(page, rule)).join("")}${
     statedBlocks(route, seen)}
   </section>
@@ -204,16 +207,15 @@ function aboveTheRulesHtml(page: RulePage, own: RouteFacts): string {
   return isScored(route) ? `
 ${answerBlock(dataset, route, own.printed)}${own.printed.notices.map((n) => noticeSection(n, seen)).join("")}
   <section class="cta" aria-labelledby="cta-h">
-    <h2 class="visually-hidden" id="cta-h">Check your own situation</h2>
-    <p><strong>Where do you stand on this route?</strong> The questions are answered on this device only — nothing is sent anywhere. You get each rule against what you declared, the gap if there is one, and which single change would open more routes.</p>
-    <a ${tapMin("btn")} href="${escAttr(`${url("/")}?route=${route.id}`)}">Check yours — ${esc(country.name)}, ${
-    esc(route.name)}</a>
+    <h2 class="visually-hidden" id="cta-h">${esc(CHECK_YOUR_OWN_SITUATION)}</h2>
+    <p><strong>${esc(WHERE_DO_YOU_STAND)}</strong> ${esc(CHECK_ON_THIS_DEVICE)}</p>
+    <a ${tapMin("btn")} href="${escAttr(`${url("/")}?route=${route.id}`)}">${esc(checkYoursFor(country.name, route.name))}</a>
   </section>
 
   <section class="scope" aria-labelledby="scope-h">
-    <b id="scope-h">What the checker asks, and what it does not</b>
-    <p>${esc(everyNumberQuoted(dailyCheck(missed)))} On this route — <strong>${
-    esc(scopeLine(route, { reader: "not-answered" }))}</strong>. ${esc(route.scope.reason)}</p>
+    <b id="scope-h">${esc(ASKED_SCOPE_HEADING)}</b>
+    <p>${esc(everyNumberQuoted(dailyCheck(missed)))} ${
+    onThisRouteHtml(esc(scopeLine(route, { reader: "not-answered" })))} ${esc(route.scope.reason)}</p>
   </section>` : `
   <section class="scope" aria-labelledby="scope-h">
     <b id="scope-h">${esc(NOT_ASKED_SCOPE_HEADING)}</b>
@@ -224,14 +226,13 @@ ${answerBlock(dataset, route, own.printed)}${own.printed.notices.map((n) => noti
 /** The aside: the data behind the page, and the country's other routes. */
 function asideHtml(page: RulePage, jsonPath: string): string {
   const { country, route, seen } = page;
-  return `<aside aria-label="Beside the rules">
+  return `<aside aria-label="${escAttr(BESIDE_THE_RULES)}">
   <section class="data" aria-labelledby="data-h">
-    <h2 class="label" id="data-h">The data behind this page</h2>
-    <p>This page is generated from an open dataset: every number and quote above is a record in it, with its source and read date. Reuse it under ${
-    esc(DATA_LICENCE_FULL)} — credit and link back.</p>
-    <nav aria-label="The data behind this page">
+    <h2 class="label" id="data-h">${esc(DATA_BEHIND_THIS_PAGE)}</h2>
+    <p>${esc(GENERATED_FROM_DATASET)} ${esc(reuseUnder(DATA_LICENCE_FULL))}</p>
+    <nav aria-label="${escAttr(DATA_BEHIND_THIS_PAGE)}">
       <a ${tapMin()} href="${escAttr(url(jsonPath))}">${esc(ROUTE_AS_JSON)}</a>
-      <a ${tapMin()} href="${escAttr(REPO_DATA)}" target="_blank" rel="noopener">The dataset on GitHub</a>
+      <a ${tapMin()} href="${escAttr(REPO_DATA)}" target="_blank" rel="noopener">${esc(DATASET_ON_GITHUB)}</a>
       <a ${tapMin()} href="${escAttr(url(FEEDBACK_PATH))}">${esc(WRONG_DOOR_LABEL)}</a>
     </nav>
   </section>

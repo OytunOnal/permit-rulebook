@@ -52,3 +52,6 @@ export const countryLedeOpen = (country: string): string =>
 export const LISTED_WITH_THEIR_REASONS = "listed with their reasons";
 export const discretionLeftOutLine = (door: string): string => `Routes that turn on an official's discretion are ${door}, not here.`;
 export const RESULT_NAMES_FITTING_ROUTES = "The result names which of these routes fit.";
+export const ANSWERED_ON_THIS_DEVICE = "Answered on this device only."; // the note under the button, before what the result names
+/** A link preview's list of routes, cut short: the first few, `listed`, and how many more. */
+export const listedAndMore = (listed: string, more: number): string => `${listed} and ${more} more`;

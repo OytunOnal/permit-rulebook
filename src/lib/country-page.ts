@@ -14,9 +14,9 @@ import {
 import {
   audienceSentence, gist, routeFigure,
 } from "./route-lines.js";
-import { TAGLINE, capitalise } from "./copy/frame.js";
+import { TAGLINE, capitalise, checkYoursFor } from "./copy/frame.js";
 import {
-  LISTED_WITH_THEIR_REASONS, LISTED_WITH_THE_REASONS, QUOTED_ONLY_HEADING, RESULT_NAMES_ASKED_ROUTES,
+  ANSWERED_ON_THIS_DEVICE, LISTED_WITH_THEIR_REASONS, listedAndMore, LISTED_WITH_THE_REASONS, QUOTED_ONLY_HEADING, RESULT_NAMES_ASKED_ROUTES,
   RESULT_NAMES_FITTING_ROUTES, askedRoutesLabel, countryHeadline, countryLedeOpen, countryPageDescription,
   countryPageTitle, discretionLeftOutLine, notAskedBelowLine, notAskedLede, notAskedRoutesLabel,
 } from "./copy/country-page.js";
@@ -71,7 +71,7 @@ function description(country: Country): string {
   const names = country.routes.map((r: Route) => r.name);
   const shown = names.slice(0, 3);
   const rest = names.length - shown.length;
-  const listed = rest > 0 ? `${joinAnd(shown)} and ${rest} more` : joinAnd(shown);
+  const listed = rest > 0 ? listedAndMore(joinAnd(shown), rest) : joinAnd(shown);
   return countryPageDescription(names.length, phraseOf(country.code), listed);
 }
 
@@ -167,9 +167,8 @@ function quotedOnlySectionHtml(context: CountryCardContext, quotedOnly: Route[],
 /** The way on: the interview, scoped to this country, and what its result names. */
 function countryCtaHtml(country: Country, quotedOnlyCount: number): string {
   return `<div class="cta cta-country">
-      <a class="btn tap-min" href="${escAttr(url(countryCheckPath(country)))}">Check yours — ${
-    esc(country.name)}</a>
-      <span class="note">Answered on this device only. ${quotedOnlyCount
+      <a class="btn tap-min" href="${escAttr(url(countryCheckPath(country)))}">${esc(checkYoursFor(country.name))}</a>
+      <span class="note">${esc(ANSWERED_ON_THIS_DEVICE)} ${quotedOnlyCount
     ? RESULT_NAMES_ASKED_ROUTES
     : RESULT_NAMES_FITTING_ROUTES}</span>
     </div>`;

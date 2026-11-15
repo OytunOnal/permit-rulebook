@@ -950,6 +950,16 @@
    "kind": "type-only"
   },
   {
+   "from": "src/lib/copy/not-found.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/copy/route-page.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/copy/verdict.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
@@ -1202,11 +1212,6 @@
   {
    "from": "src/lib/dataset-ld.ts",
    "to": "src/lib/copy/data-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/dataset-ld.ts",
-   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -1475,6 +1480,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/gloss.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/identity.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
@@ -1548,6 +1558,11 @@
    "from": "src/lib/interview/draw/screen/interview-page.ts",
    "to": "src/lib/interview/flow/interview-after.ts",
    "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/ledger.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/interview/draw/screen/ledger.ts",
@@ -1886,6 +1901,11 @@
   },
   {
    "from": "src/lib/route-page/blocks/rail.ts",
+   "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/rail.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
@@ -1957,6 +1977,11 @@
   {
    "from": "src/lib/route-page/blocks/stated-blocks.ts",
    "to": "src/lib/copy/quotes.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/stated-blocks.ts",
+   "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -2082,6 +2107,11 @@
   {
    "from": "src/lib/sitemap.ts",
    "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/social-card.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -7639,6 +7669,16 @@
     "name": "RESULT_NAMES_FITTING_ROUTES",
     "kind": "const",
     "exported": true
+   },
+   {
+    "name": "ANSWERED_ON_THIS_DEVICE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "listedAndMore",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "src/lib/copy/data-page.ts": [
@@ -7715,6 +7755,176 @@
    {
     "name": "proseProvenanceCounts",
     "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "DATA_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_PAGE_TITLE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "HOLDS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATASET_VERSION",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SCHEMA_VERSION",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "QUOTED_VALUES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "quotedValuesCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "SENTENCES_OF_OURS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ROUTES_TERM",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "routesCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CHECKS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "GATES_LEAD",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SCHEMA_VALIDATION",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SCHEMA_VALIDATION_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "QUOTE_FIDELITY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "QUOTE_FIDELITY_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WATCH_COVERAGE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WATCH_COVERAGE_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "PROSE_PROVENANCE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "proseProvenanceLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ANALYTICS_NOTE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "TAKE_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DOWNLOADS_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WHOLE_DATASET_AS_JSON",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "COUNTRIES_JSON_LINK",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SERVED_ON_ITS_OWN",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "STATUS_ALIAS_TITLE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "movedHeadingHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "STATUS_ALIAS_LEDE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "statusAliasDescription",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "datasetName",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "wholeDatasetDownloadName",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "COUNTRIES_DOWNLOAD_NAME",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATASET_KEYWORDS",
+    "kind": "const",
     "exported": true
    }
   ],
@@ -7877,6 +8087,11 @@
     "exported": true
    },
    {
+    "name": "ABBREVIATION_WORDS",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "FEEDBACK",
     "kind": "const",
     "exported": true
@@ -7897,12 +8112,32 @@
     "exported": true
    },
    {
+    "name": "SITE_NAV_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "FEEDBACK_FOOTER_ROW",
     "kind": "const",
     "exported": true
    },
    {
     "name": "CHECK_YOURS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "checkYoursFor",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ANSWERED_HERE_ONLY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CHECK_YOUR_OWN_SITUATION",
     "kind": "const",
     "exported": true
    },
@@ -7934,6 +8169,16 @@
    {
     "name": "SPONSOR_FOOTER_ROW",
     "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATASET_ON_GITHUB",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "reuseUnder",
+    "kind": "fn",
     "exported": true
    },
    {
@@ -7969,6 +8214,21 @@
    {
     "name": "datasetVersionLabel",
     "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CARD_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CARD_PROMISE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CHECKED_DAILY",
+    "kind": "const",
     "exported": true
    }
   ],
@@ -8035,6 +8295,21 @@
    },
    {
     "name": "START_OVER",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CHANGE_THIS_ANSWER",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "declarationCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "NOT_SURE",
     "kind": "const",
     "exported": true
    },
@@ -8196,6 +8471,31 @@
   ],
   "src/lib/copy/not-found.ts": [
    {
+    "name": "NOT_FOUND",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "NOT_FOUND_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOUND_TITLE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOUND_LEDE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOUND_COUNTRIES_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "NOT_FOUND_START",
     "kind": "const",
     "exported": true
@@ -8239,6 +8539,16 @@
    },
    {
     "name": "lastCheckedOn",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "languageNote",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "sameNumberNote",
     "kind": "fn",
     "exported": true
    }
@@ -8342,6 +8652,161 @@
    {
     "name": "ANY_PATH",
     "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "sourcedOnThisPage",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "thresholdInDescription",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "RULES_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ANSWER_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ASKED_SCOPE_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WHERE_DO_YOU_STAND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CHECK_ON_THIS_DEVICE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "onThisRouteHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "BESIDE_THE_RULES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_BEHIND_THIS_PAGE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "GENERATED_FROM_DATASET",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "notOpenTo",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "THRESHOLD_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "POINTS_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOR_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FOR_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CONDITION_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "asksAtLeastHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "countsPointsLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "asksFor",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "WHAT_THE_CHECKER_ASKS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FIND_OUT_YOURSELF",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WHO_THIS_DOES_NOT_BIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ALSO_REQUIRED_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "AUTHORITY_REQUIRES_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "UNSOURCED_CAVEATS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "READINGS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "RAIL_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "thisRouteRow",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "anotherRouteRow",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "otherRoutesRow",
+    "kind": "fn",
     "exported": true
    }
   ],
@@ -9307,11 +9772,6 @@
     "exported": true
    },
    {
-    "name": "declarationCount",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "renderStandInsOverQuestionOne",
     "kind": "fn",
     "exported": true
@@ -9884,11 +10344,6 @@
     "exported": true
    },
    {
-    "name": "CARD_HEADLINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
     "name": "socialCardFacts",
     "kind": "fn",
     "exported": true
@@ -10169,5 +10624,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "7af6d515bea14e05a9dd83f179207355dda07cf149d24d4681b3ae3078275eda"
+ "digest": "67b2923895922e204377513a168a7bde1b77d6613795be2c1f8933730f3d1988"
 }

@@ -6,10 +6,16 @@ import {
 import { esc, escAttr } from "./reason.js";
 import { framedPageHtml } from "./frame/framed-page.js";
 import {
-  DAILY_CHECK_CLAIM, DATA_LEDE_CLOSE_TAIL, FRESHNESS_HUMAN_HAND, LAST_CHECKED, NEWEST_VALUE_CHANGED, PROSE_OURS_TAIL,
-  TRANSLATION_POLICY, countryAsJsonLabel, dataLedeClose, dataLedeOpen, dataMetaDescription, proseProvenanceCounts,
+  ANALYTICS_NOTE, CHECKS_HEADING, COUNTRIES_JSON_LINK, DAILY_CHECK_CLAIM, DATASET_VERSION, DATA_HEADLINE,
+  DATA_LEDE_CLOSE_TAIL, DATA_PAGE_TITLE, DOWNLOADS_LABEL, FRESHNESS_HUMAN_HAND, GATES_LEAD, HOLDS_HEADING,
+  LAST_CHECKED, NEWEST_VALUE_CHANGED, PROSE_OURS_TAIL, PROSE_PROVENANCE, QUOTED_VALUES, QUOTE_FIDELITY,
+  QUOTE_FIDELITY_LINE, ROUTES_TERM, SCHEMA_VALIDATION, SCHEMA_VALIDATION_LINE, SCHEMA_VERSION, SENTENCES_OF_OURS,
+  SERVED_ON_ITS_OWN, STATUS_ALIAS_LEDE, STATUS_ALIAS_TITLE, TAKE_HEADING, TRANSLATION_POLICY, WATCH_COVERAGE,
+  WATCH_COVERAGE_LINE, WHOLE_DATASET_AS_JSON, countryAsJsonLabel, dataLedeClose, dataLedeOpen, dataMetaDescription,
+  movedHeadingHtml, proseProvenanceCounts, proseProvenanceLine, quotedValuesCount, routesCount,
+  statusAliasDescription,
 } from "./copy/data-page.js";
-import { PRODUCT_NAME, TAGLINE, datasetDay } from "./copy/frame.js";
+import { DATASET_ON_GITHUB, LAST_RUN, TAGLINE, THE_DATA, datasetDay, reuseUnder } from "./copy/frame.js";
 import { WRONG_DOOR_LABEL } from "./copy/feedback.js";
 import { readOn } from "./copy/quotes.js";
 import {
@@ -67,7 +73,7 @@ function dataMastheadHtml(page: DataPageFacts): string {
   const { facts: { counts, readRange } } = page;
   return `<div class="masthead-with-stamps">
     <div>
-      <h1>The data. <em>${esc(TAGLINE)}</em></h1>
+      <h1>${esc(DATA_HEADLINE)} <em>${esc(TAGLINE)}</em></h1>
       <p class="lede">${esc(dataLedeOpen(counts.scored, counts.quotedOnly, counts.countries))} ${
     // The last words are the door, in the page's inline link style: the lede
     // is prose, so `tap` and not the button's `tap-min` (human's walk of the
@@ -102,8 +108,8 @@ const dayFactHtml = (term: string, day: string): string =>
 function datesFactsHtml(dataset: Dataset, facts: DatasetFacts): string {
   const { newestValueChanged: changed, watchRun: { lastRun } } = facts;
   return `<dl class="facts facts-dates">
-        ${dayFactHtml("Dataset version", datasetDay(dataset.dataset_version))}
-        <div><dt>Schema version</dt><dd>${esc(dataset.schema_version)}</dd></div>
+        ${dayFactHtml(DATASET_VERSION, datasetDay(dataset.dataset_version))}
+        <div><dt>${esc(SCHEMA_VERSION)}</dt><dd>${esc(dataset.schema_version)}</dd></div>
         ${dayFactHtml(NEWEST_VALUE_CHANGED, changed)}${
     // The run, stated as its own fact beside the one it is not — and taken
     // from the same `lastRun` the sentence below prints, so no render can show
@@ -120,15 +126,14 @@ function holdsSectionHtml(page: DataPageFacts): string {
   const { dataset, facts, prose } = page;
   const { counts } = facts;
   return `<section class="answer" aria-labelledby="holds-h">
-      <h2 class="label" id="holds-h">What it holds today</h2>
+      <h2 class="label" id="holds-h">${esc(HOLDS_HEADING)}</h2>
       ${datesFactsHtml(dataset, facts)}
       <dl class="facts facts-counts">
-        <div><dt>Quoted values</dt><dd>${counts.quotedValues} with a source and a date</dd></div>
-        <div><dt>Sentences of ours</dt><dd>${prose.ours}, ${esc(PROSE_OURS_TAIL)}</dd></div>
+        <div><dt>${esc(QUOTED_VALUES)}</dt><dd>${esc(quotedValuesCount(counts.quotedValues))}</dd></div>
+        <div><dt>${esc(SENTENCES_OF_OURS)}</dt><dd>${prose.ours}, ${esc(PROSE_OURS_TAIL)}</dd></div>
       </dl>
       <dl class="facts facts-wide">
-        <div><dt>Routes</dt><dd>${counts.scored} scored, ${counts.quotedOnly} quoted and dated but not scored, in ${
-    counts.countries} countries</dd></div>
+        <div><dt>${esc(ROUTES_TERM)}</dt><dd>${esc(routesCount(counts.scored, counts.quotedOnly, counts.countries))}</dd></div>
       </dl>
     </section>`;
 }
@@ -138,7 +143,7 @@ function dailyCheckHtml(run: WatchRun): string {
   const { lastRun } = run;
   const clause = unreadClause(run.unread);
   return `${esc(DAILY_CHECK_CLAIM)}${
-    lastRun ? ` — last run <b><time datetime="${escAttr(lastRun)}">${esc(lastRun)}</time></b>` : ""
+    lastRun ? ` — ${esc(LAST_RUN)} <b><time datetime="${escAttr(lastRun)}">${esc(lastRun)}</time></b>` : ""
   }.${
     // The exception, on the day there is one and on no other. The claim was
     // true of 42 sources and false of two for five days in September, and the
@@ -154,16 +159,16 @@ function dailyCheckHtml(run: WatchRun): string {
 function checksSectionHtml(page: DataPageFacts): string {
   const { facts, prose } = page;
   return `<section class="rules" aria-labelledby="checks-h">
-      <h2 class="label" id="checks-h">What checks it</h2>
-      <p>Four gates run on every change, and the build stops on any of them.</p>
+      <h2 class="label" id="checks-h">${esc(CHECKS_HEADING)}</h2>
+      <p>${esc(GATES_LEAD)}</p>
       <ul class="checks">
-        <li><b>Schema validation</b> — every value has a source URL, a verbatim quote and a read date, or the dataset does not build. This page exists, so this one passed.</li>
-        <li><b>Quote fidelity</b> — every sentence the dataset claims to have quoted is looked for again in a fresh snapshot of the page it cites. It runs where the snapshots live, in the data repository.</li>
-        <li><b>Watch coverage</b> — every source a value cites is on the watchlist, and every entry on the watchlist backs a value.</li>
-        <li><b>Prose provenance</b> — anything in quotation marks carries the source it is quoting, and what is ours is declared ours: ${
-    esc(proseProvenanceCounts(prose.with_provenance, prose.ours, prose.declared_unsourced))}.</li>
+        <li><b>${esc(SCHEMA_VALIDATION)}</b> — ${esc(SCHEMA_VALIDATION_LINE)}</li>
+        <li><b>${esc(QUOTE_FIDELITY)}</b> — ${esc(QUOTE_FIDELITY_LINE)}</li>
+        <li><b>${esc(WATCH_COVERAGE)}</b> — ${esc(WATCH_COVERAGE_LINE)}</li>
+        <li><b>${esc(PROSE_PROVENANCE)}</b> — ${
+    esc(proseProvenanceLine(proseProvenanceCounts(prose.with_provenance, prose.ours, prose.declared_unsourced)))}</li>
       </ul>
-      <p class="lede">A cookieless counter (Cloudflare Web Analytics) records each page load: the page's address, where you came from, your country, and your browser and operating system versions; nothing you answer, nothing that identifies you, and nothing while you answer.</p>
+      <p class="lede">${esc(ANALYTICS_NOTE)}</p>
       <p class="lede">${esc(TRANSLATION_POLICY)}</p>
       <p class="lede">${dailyCheckHtml(facts.watchRun)}</p>
     </section>`;
@@ -183,14 +188,14 @@ function countryJsonLinksHtml(facts: DatasetFacts, country: Country): string {
 function takeSectionHtml(page: DataPageFacts): string {
   const { dataset, facts } = page;
   return `<section class="data" aria-labelledby="take-h">
-      <h2 class="label" id="take-h">Take it</h2>
-      <nav aria-label="Downloads">
-        <a class="tap-min" href="${escAttr(url(DATASET_JSON_PATH))}">The whole dataset as JSON</a>
-        <a class="tap-min" href="${escAttr(url(COUNTRIES_JSON_PATH))}">countries.json — the passport vocabulary</a>
-        <a class="tap-min" href="${escAttr(REPO_DATA)}" target="_blank" rel="noopener">The dataset on GitHub</a>
+      <h2 class="label" id="take-h">${esc(TAKE_HEADING)}</h2>
+      <nav aria-label="${escAttr(DOWNLOADS_LABEL)}">
+        <a class="tap-min" href="${escAttr(url(DATASET_JSON_PATH))}">${esc(WHOLE_DATASET_AS_JSON)}</a>
+        <a class="tap-min" href="${escAttr(url(COUNTRIES_JSON_PATH))}">${esc(COUNTRIES_JSON_LINK)}</a>
+        <a class="tap-min" href="${escAttr(REPO_DATA)}" target="_blank" rel="noopener">${esc(DATASET_ON_GITHUB)}</a>
         <a class="tap-min" href="${escAttr(url(FEEDBACK_PATH))}">${esc(WRONG_DOOR_LABEL)}</a>
       </nav>
-      <p class="lede">Reuse it under ${esc(DATA_LICENCE_FULL)} — credit and link back. Every route is also served on its own, with the day it was read:</p>
+      <p class="lede">${esc(reuseUnder(DATA_LICENCE_FULL))} ${esc(SERVED_ON_ITS_OWN)}</p>
       ${dataset.countries.map((country) => countryJsonLinksHtml(facts, country)).join("")}
     </section>`;
 }
@@ -206,7 +211,7 @@ export function dataPage(dataset: Dataset, state: WatchState = watchState): Data
   const facts = reckonDatasetFacts(dataset, state);
   const { counts } = facts;
   const page: DataPageFacts = { dataset, facts, prose: proseProvenance(dataset) };
-  const title = `The data · ${PRODUCT_NAME}`;
+  const title = DATA_PAGE_TITLE;
   const desc = dataMetaDescription(counts.scored, counts.quotedOnly, counts.countries);
   // The one page that IS the dataset says so in the vocabulary a dataset
   // index reads. It is a data block, not a program — but the policy names it
@@ -242,11 +247,11 @@ export function dataPage(dataset: Dataset, state: WatchState = watchState): Data
 export function statusAlias(dataset: Dataset, state: WatchState = watchState): DataPage {
   const facts = reckonDatasetFacts(dataset, state);
   const target = url(DATA_PATH);
-  const title = `Moved to The data · ${PRODUCT_NAME}`;
+  const title = STATUS_ALIAS_TITLE;
   const content = `<header class="masthead masthead-with-stamps">
     <div>
-      <h1>This page is now <a class="tap" href="${escAttr(target)}">The data</a>. <em>${esc(TAGLINE)}</em></h1>
-      <p class="lede">Same page, a better name: what the dataset holds today, what checks it, and where to download it. Your browser should be on its way; if it is not, the link above is it.</p>
+      <h1>${movedHeadingHtml(`<a class="tap" href="${escAttr(target)}">${esc(THE_DATA)}</a>`)} <em>${esc(TAGLINE)}</em></h1>
+      <p class="lede">${esc(STATUS_ALIAS_LEDE)}</p>
     </div>
     ${rulesRead(facts.readRange.newest)}
   </header>`;
@@ -258,7 +263,7 @@ export function statusAlias(dataset: Dataset, state: WatchState = watchState): D
   return {
     path: "/status",
     title,
-    description: `This page is now called The data, at ${absolute(DATA_PATH)}.`,
+    description: statusAliasDescription(absolute(DATA_PATH)),
     html: framedPageHtml(dataset, { title, headTags, facts, content }),
   };
 }

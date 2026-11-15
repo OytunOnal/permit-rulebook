@@ -2,6 +2,7 @@
 import type { Dataset } from "permit-rulebook-data";
 import type { DatasetFacts } from "./dataset-facts/reckon-dataset-facts.ts";
 import { esc } from "./reason.ts";
+import { CARD_HEADLINE, CARD_PROMISE, CHECKED_DAILY, RULES_READ, SEAL_LETTERS } from "./copy/frame.ts";
 
 /**
  * The social card, as facts and as a page.
@@ -42,8 +43,6 @@ export interface SocialCardFacts {
   product: string;
 }
 
-export const CARD_HEADLINE = "Which work-permit routes could fit?";
-
 /**
  * Everything on the card, read off the dataset, its reckoned `facts` and the
  * product's own words. The counts and the day are the reckoning's, so the card
@@ -51,9 +50,10 @@ export const CARD_HEADLINE = "Which work-permit routes could fit?";
  * ruling 10).
  *
  * The render script is plain Node with no build step, and Node resolves a
- * specifier literally, so this module keeps its imports few: the words are
- * passed in rather than imported from the copy module (`lib/copy/`), the facts
- * are reckoned by the caller, and its relative imports name their `.ts` files.
+ * specifier literally, so this module keeps its imports few: the product's
+ * words are passed in, the card's own come from `copy/frame.ts`, which imports
+ * nothing, the facts are reckoned by the caller, and its relative imports name
+ * their `.ts` files.
  * That keeps it readable by the script, the site and the suite alike.
  */
 export function socialCardFacts(
@@ -109,12 +109,12 @@ html, body { margin: 0; padding: 0; }
 </style><div class="og">
   <div class="row">
     <h1>${esc(facts.headline)} <em>${esc(facts.tagline)}</em></h1>
-    <span class="stamps"><span class="mark">PR</span><span class="stamp">Rules read<br>${esc(facts.read)}</span></span>
+    <span class="stamps"><span class="mark">${esc(SEAL_LETTERS)}</span><span class="stamp">${esc(RULES_READ)}<br>${esc(facts.read)}</span></span>
   </div>
   <div class="foot">
     <span>${esc(facts.countries.join(" · "))}</span>
     <span>${esc(facts.routesLine)}</span>
-    <span>every value with its official sentence · <b>checked daily</b></span>
+    <span>${esc(CARD_PROMISE)} · <b>${esc(CHECKED_DAILY)}</b></span>
   </div>
 </div>`;
 }
