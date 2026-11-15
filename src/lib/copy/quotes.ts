@@ -44,3 +44,12 @@ export const UNSOURCED_REASON_SAID: Record<UnsourcedReasonWord, string> = {
 };
 /** The day we last went looking for the wording, closing that sentence. */
 export const lastCheckedOn = (day: string): string => `Last checked ${day}.`;
+
+/**
+ * The note under a quote: the language it is in and whose page it came from,
+ * and, where the source spells its number another way, that the two
+ * spellings are one number.
+ */
+export const languageNote = (languageName: string, host: string): string => `${languageName}, from ${host}.`;
+export const sameNumberNote = (theirs: string, ours: string): string =>
+  `The source writes ${theirs} where this page writes ${ours} — the same number.`;

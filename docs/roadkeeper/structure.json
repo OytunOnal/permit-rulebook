@@ -8501,6 +8501,16 @@
     "name": "lastCheckedOn",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "languageNote",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "sameNumberNote",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "src/lib/copy/route-page.ts": [
@@ -10579,5 +10589,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "124615bbb0b7699ff9b15c36f7de2a2e2c513eac0f039beaed1a6e84b33e5da2"
+ "digest": "a905f2092a4bfe506fa7b13beb195bbae783f41c2dc2c39258c2816333d969aa"
 }

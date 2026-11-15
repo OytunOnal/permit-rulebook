@@ -1,6 +1,8 @@
 // @level presentation
 import { LANGUAGE_NAMES, formatEUR, hostKindOf, quoteLanguage } from "permit-rulebook-data";
-import { OFFICIAL_PAGE, consolidatedTextOn, learnLinkWithKind, readOn } from "./copy/quotes.js";
+import {
+  OFFICIAL_PAGE, consolidatedTextOn, languageNote, learnLinkWithKind, readOn, sameNumberNote,
+} from "./copy/quotes.js";
 import { esc, escAttr } from "./reason.js";
 import { type Glossary, glossed } from "./gloss.js";
 import { tapInline } from "./tap.js";
@@ -79,7 +81,7 @@ export function separatorNote(amount: number, quote: string): string {
     .replace(/\./g, ",")
     .replace(new RegExp(swap, "g"), ".");
   if (theirs === ours || !quote.includes(theirs) || quote.includes(ours)) return "";
-  return `The source writes ${theirs} where this page writes ${ours} — the same number.`;
+  return sameNumberNote(theirs, ours);
 }
 
 /** The frame for one quote: its language, its host and what needs saying. */
@@ -93,7 +95,7 @@ export function quoteFrame(
     lang,
     host: hostOf(value.source_url),
     note: [
-      languageName ? `${languageName}, from ${hostOf(value.source_url)}.` : "",
+      languageName ? languageNote(languageName, hostOf(value.source_url)) : "",
       amount !== undefined ? separatorNote(amount, value.quote) : "",
     ].filter(Boolean).join(" "),
   };
