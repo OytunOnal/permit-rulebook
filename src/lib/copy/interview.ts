@@ -85,6 +85,17 @@ export const resumedLine = (kept: number): string =>
 /** The ledger's heading, and its one control, which takes the record away. */
 export const YOU_DECLARED = "You declared";
 export const START_OVER = "Start over";
+export const CHANGE_THIS_ANSWER = "Change this answer"; // an answered row's title: a tap on it reopens its question
+
+/** On a phone the ledger collapses to this one line; on a wide screen the
+ * summary is hidden and the panel is always open. */
+export const declarationCount = (answered: number): string =>
+  answered
+    ? `${answered} answer${answered === 1 ? "" : "s"} — tap to review or change`
+    : "nothing yet";
+
+/** Before a question's own learn link: the reader who does not know the answer is shown where to find it. */
+export const NOT_SURE = "Not sure?"; // the learn link's lead-in
 
 /**
  * The asked-for line's words (#139; GLOSSARY.md, *Asked-for line*): on a

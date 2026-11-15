@@ -1551,6 +1551,11 @@
   },
   {
    "from": "src/lib/interview/draw/screen/ledger.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/ledger.ts",
    "to": "src/lib/interview/draw/screen/interview-page.ts",
    "kind": "type-only"
   },
@@ -8274,6 +8279,21 @@
     "exported": true
    },
    {
+    "name": "CHANGE_THIS_ANSWER",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "declarationCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "NOT_SURE",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "ASKED_FOR",
     "kind": "const",
     "exported": true
@@ -9732,11 +9752,6 @@
     "exported": true
    },
    {
-    "name": "declarationCount",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "renderStandInsOverQuestionOne",
     "kind": "fn",
     "exported": true
@@ -10589,5 +10604,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a905f2092a4bfe506fa7b13beb195bbae783f41c2dc2c39258c2816333d969aa"
+ "digest": "033b636976653e57e1bac63d8d9ace5aeb18dd2a33a2b69d21aa6e4d8f6cdf0b"
 }

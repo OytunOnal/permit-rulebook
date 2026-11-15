@@ -15,7 +15,7 @@ import { datasetMeta, remainingQuestions } from "permit-rulebook-data";
 // client alike, so "Start over" cannot leave a stale claim on question 1
 // (product-critique v0.7, B4).
 import {
-  declarationCount, declarationHtml, holdLineHtml, questionCardHtml, questionMastheadOf, renderStandInsOverQuestionOne,
+  declarationHtml, holdLineHtml, questionCardHtml, questionMastheadOf, renderStandInsOverQuestionOne,
 } from "../lib/question.js";
 // The three things the page must know about the reader before it paints, read
 // in <head>, and the rules that paint the shape the interview would have
@@ -31,7 +31,7 @@ import { interviewFrameOf } from "../lib/frame/framed-page.js";
 import {
   HOME_DESCRIPTION, HOME_PREVIEW_TITLE, HOME_TITLE, promise, TAGLINE,
 } from "../lib/copy/frame.js";
-import { START_OVER, YOU_DECLARED } from "../lib/copy/interview.js";
+import { START_OVER, YOU_DECLARED, declarationCount } from "../lib/copy/interview.js";
 import { reckonDatasetFacts } from "../lib/dataset-facts/reckon-dataset-facts.js";
 import { analyticsBeacon, headMeta, watchState } from "../lib/site.js";
 

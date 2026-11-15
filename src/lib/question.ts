@@ -4,7 +4,7 @@ import {
   type Dataset, type OpenRoute, type Profile, type Question,
 } from "permit-rulebook-data";
 import {
-  ASKED_FOR, ASKED_FOR_COUNTS_JOIN, EDIT_LINE, INTRO_HEADLINE, INTRO_SUBLINE, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE,
+  ASKED_FOR, ASKED_FOR_COUNTS_JOIN, CHANGE_THIS_ANSWER, EDIT_LINE, INTRO_HEADLINE, NOT_SURE, INTRO_SUBLINE, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE,
   READ_IT_HERE, RETURNING_LINE, SHORT_SUBLINE, askedForFirstCount, askedForNextCount, askedForRouteHtml, backToLine,
   justRecordedLineHtml, keepNextLine, keepToResultLine, notCheckedLine, notCheckedQuotedLine, questionCounter,
   resumedLine, setAsideLead, setAsideLineHtml,
@@ -189,7 +189,7 @@ export function questionCardHtml(screen: QuestionScreen): string {
             // (#158). Any route it names is said in full (#159).
             const learn = learnLinkOf(dataset, q.field);
             return learn
-              ? `<p class="qlearn">Not sure? <a href="${escAttr(learn.url)}" target="_blank" rel="noopener">${
+              ? `<p class="qlearn">${esc(NOT_SURE)} <a href="${escAttr(learn.url)}" target="_blank" rel="noopener">${
                 esc(glossedLearnLinkText(learn, glossary))}</a></p>`
               : "";
           })()}
@@ -274,7 +274,7 @@ export function declarationHtml(dataset: Dataset, progress: InterviewProgress): 
   return fields.map((f) => {
     const opt = offered.get(f)?.find((o) => o.value === answers[f]);
     return opt
-      ? `<div class="done" data-field="${escAttr(f)}" role="button" tabindex="0" title="Change this answer"><dt>${esc(shortLabelOf(dataset, f))}</dt><dd>${esc(opt.label)}&nbsp;<span class="pen" aria-hidden="true">✎</span></dd></div>`
+      ? `<div class="done" data-field="${escAttr(f)}" role="button" tabindex="0" title="${escAttr(CHANGE_THIS_ANSWER)}"><dt>${esc(shortLabelOf(dataset, f))}</dt><dd>${esc(opt.label)}&nbsp;<span class="pen" aria-hidden="true">✎</span></dd></div>`
       : `<div><dt>${esc(shortLabelOf(dataset, f))}</dt><dd class="pending">—</dd></div>`;
   }).join("");
 }
@@ -291,13 +291,6 @@ export function setAsideHtml(dataset: Dataset, setAside: readonly string[]): str
   const names = setAside.map((f) => `<b data-set-aside="${escAttr(f)}">${esc(shortLabelOf(dataset, f))}</b>`);
   return `<span class="set-aside">${setAsideLineHtml(esc(setAsideLead(setAside.length)), joinAnd(names))}</span>`;
 }
-
-/** On a phone the ledger collapses to this one line; on a wide screen the
- * summary is hidden and the panel is always open. */
-export const declarationCount = (answered: number): string =>
-  answered
-    ? `${answered} answer${answered === 1 ? "" : "s"} — tap to review or change`
-    : "nothing yet";
 
 /**
  * The two lines that stand in the box for a reader whose first screen is not
