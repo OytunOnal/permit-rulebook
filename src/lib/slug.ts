@@ -73,6 +73,35 @@ export const countryPath = (country: Country): string => `/${countrySlug(country
 /** The interview's address scoped to this country: where "Check yours" leads from its pages. */
 export const countryCheckPath = (country: Country): string => `/?country=${country.code.toLowerCase()}`;
 
+export interface CountryAddress {
+  country: Country;
+  slug: string;
+  path: string;
+}
+
+/** Every country page this dataset produces. Four at launch. */
+export function countryAddresses(dataset: Dataset): CountryAddress[] {
+  return dataset.countries.map((country) => ({
+    country,
+    slug: countrySlug(country),
+    path: countryPath(country),
+  }));
+}
+
+/**
+ * The four links the home page's footer carries — the first of the two clicks
+ * that reach every route page. Generated here rather than written into the
+ * template, so a fifth country is linked the day it lands in the dataset.
+ */
+export interface CountryLink {
+  path: string;
+  name: string;
+}
+
+export function countryLinks(dataset: Dataset): CountryLink[] {
+  return countryAddresses(dataset).map(({ country, path }) => ({ path, name: country.name }));
+}
+
 /** The data door: this one route, as the dataset holds it. */
 export const routeJsonPath = (country: Country, route: Route): string =>
   `${routePath(country, route)}.json`;

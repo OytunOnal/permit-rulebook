@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { noticeSources, routeProvenance, type Dataset } from "permit-rulebook-data";
 import { dataPage, statusAlias } from "../src/lib/data-page.js";
-import { countryAddresses, countryPage } from "../src/lib/country-page.js";
+import { countryPage } from "../src/lib/country-page.js";
 import { feedbackPage } from "../src/lib/feedback-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { sitemapEntries } from "../src/lib/sitemap.js";
@@ -11,7 +11,7 @@ import { routePage } from "../src/lib/route-page/route-page.js";
 import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { NEWEST_VALUE_CHANGED } from "../src/lib/copy/data-page.js";
 import { DATA_PATH, FEEDBACK_PATH } from "../src/lib/site.js";
-import { routeAddresses } from "../src/lib/slug.js";
+import { countryAddresses, routeAddresses } from "../src/lib/slug.js";
 import { footerIn } from "./frame-alone.js";
 import { watchStateAt } from "./watch-state-at.js";
 

@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { notFoundPage } from "../src/lib/not-found.js";
-import { countryLinks } from "../src/lib/country-page.js";
+import { countryLinks } from "../src/lib/slug.js";
 import { url } from "../src/lib/site.js";
 import { frameAlone, styleIn } from "./frame-alone.js";
 
