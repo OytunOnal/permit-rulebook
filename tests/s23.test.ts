@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   SITUATION_FIELD, deriveBands, evaluate, fieldOptions, forEachCriterion, unlockTitleOf, unlocks,
-  type Dataset, type Profile, type UnreadSource,
+  type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { EITHER_PATH, dailyCheck } from "../src/lib/copy/route-page.js";
@@ -16,7 +16,9 @@ import { glossSection, glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { routePage, routePages, routeSourceUrls } from "../src/lib/route-page/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
-import { lastWatchRun, watchState } from "../src/lib/site.js";
+import { watchState } from "../src/lib/site.js";
+import { watchStateAt } from "./watch-state-at.js";
+import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, hintsIn, paintedAsComposedScript, placed, standingOn, stepsIn, verdictFor,
@@ -253,7 +255,7 @@ describe("the not-yet Opportunity Card prints its tally, and the CEFR rungs are 
 });
 
 describe("the route page's liveness line names its own source or stays silent", () => {
-  const run = lastWatchRun();
+  const run = reckonDatasetFacts(ds, watchState).watchRun.lastRun;
   const address = (id: string) => routeAddresses(ds).find((a) => a.route.id === id)!;
   /**
    * An unread source of the Opportunity Card's own: its points table's page.
@@ -265,14 +267,15 @@ describe("the route page's liveness line names its own source or stays silent", 
     if (c.op === "points") pointsTables.push(c.required.source_url);
   });
   const ownUrl = pointsTables[0]!;
-  const own: UnreadSource = { id: "own", url: ownUrl, last_read: "2026-09-07", countries: ["DE"] };
-  const other: UnreadSource = {
-    id: "es-uge-umbral-pdf", last_read: "2026-09-07", countries: ["ES"],
+  // As the watchlist names it, so the state's own reading of it stands behind the page.
+  const own = { id: "buzer-anlage-aufenthg", url: ownUrl };
+  const other = {
+    id: "es-uge-umbral-pdf",
     url: "https://www.inclusion.gob.es/documents/d/unidadgrandesempresas/umbral-salarial.pdf",
   };
 
   it("a route whose own source went unread says so, and says the values still show their read day", () => {
-    const html = routePage(ds, address("de-chancenkarte"), { lastRun: run, unread: [own] }).html;
+    const html = routePage(ds, address("de-chancenkarte"), watchStateAt(run, [own])).html;
     expect(textOf(html)).toContain(
       "a daily check re-reads every source; the last run did not reach one of this route's sources; "
       + "its values still show the day they were read.");
@@ -285,19 +288,19 @@ describe("the route page's liveness line names its own source or stays silent", 
   });
 
   it("a route none of whose sources went unread prints the plain line, whatever went unread elsewhere", () => {
-    const html = routePage(ds, address("fr-talent-blue-card"), { lastRun: run, unread: [own, other] }).html;
+    const html = routePage(ds, address("fr-talent-blue-card"), watchStateAt(run, [own, other])).html;
     expect(textOf(html)).toContain("a daily check re-reads every source. ");
     expect(textOf(html)).not.toContain("did not reach");
     expect(dailyCheck(0)).toBe("a daily check re-reads every source");
   });
 
   it("the footer's short form still counts every unread source the reader is looking at (s11)", () => {
-    const html = routePage(ds, address("fr-talent-blue-card"), { lastRun: run, unread: [own, other] }).html;
+    const html = routePage(ds, address("fr-talent-blue-card"), watchStateAt(run, [own, other])).html;
     expect(textOf(html)).toContain(`re-read daily (last run ${run} · 2 sources unread)`);
   });
 
   it("over every route: only the pages citing the unread source carry the clause", () => {
-    const pages = routePages(ds, { lastRun: run, unread: [own] });
+    const pages = routePages(ds, watchStateAt(run, [own]));
     const citing = new Set(routeAddresses(ds).filter((a) => routeSourceUrls(ds, a.route).has(ownUrl)).map((a) => a.path));
     expect(citing.size).toBeGreaterThan(0);
     expect(citing.size).toBeLessThan(pages.length);
@@ -306,8 +309,9 @@ describe("the route page's liveness line names its own source or stays silent", 
   });
 
   it("/data/ keeps s11's sentence", () => {
-    const html = dataPage(ds, { lastRun: watchState.last_run!, unread: [{ ...own, id: "bamf-hochschulabsolvent" }] }).html;
-    expect(textOf(html)).toContain("A German source did not answer on the last run; the values it backs were read on 2026-09-07");
+    const html = dataPage(ds, watchStateAt(run, [own])).html;
+    const since = watchState.entries[own.id]!.retrieved_at;
+    expect(textOf(html)).toContain(`A German source did not answer on the last run; the values it backs were read on ${since}`);
   });
 });
 

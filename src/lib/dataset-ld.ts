@@ -1,8 +1,7 @@
 // @level presentation
 import type { Dataset } from "permit-rulebook-data";
-import { siteReadDate } from "./country-page.js";
-import { routeCounts } from "./data-page.js";
-import { DATA_LICENCE_NAME, OWNER, REPO_DATA, absolute } from "./site.js";
+import { reckonDatasetFacts, type DatasetFacts } from "./dataset-facts/reckon-dataset-facts.js";
+import { DATA_LICENCE_NAME, OWNER, REPO_DATA, absolute, watchState } from "./site.js";
 import { PRODUCT_NAME } from "./copy/frame.js";
 import { datasetDescription } from "./copy/data-page.js";
 
@@ -18,7 +17,7 @@ import { datasetDescription } from "./copy/data-page.js";
  *
  * Every field below is a fact this repository already holds — the licence the
  * LICENSE file grants, the countries in the dataset, the version it carries,
- * the day its newest value was read, and the two endpoints the build actually
+ * the dataset's newest read day, and the two endpoints the build actually
  * emits. Nothing is asserted for the crawler's benefit that a reader could not
  * check on the same page.
  *
@@ -59,14 +58,22 @@ function datasetDownloads(): Record<string, string>[] {
   ];
 }
 
-export function datasetLd(dataset: Dataset, path: string): string {
-  const read = siteReadDate(dataset);
+/**
+ * The Dataset block of the page at `path`. `facts` is that page's own
+ * reckoning of the dataset's facts, so the block and the page print one day
+ * and one count.
+ */
+export function datasetLd(
+  dataset: Dataset, path: string, facts: DatasetFacts = reckonDatasetFacts(dataset, watchState),
+): string {
+  // The end of the read range: the day the page's "Rules read" stamp prints.
+  const read = facts.readRange.newest;
   const countries = dataset.countries.map((c) => c.name);
   // Both numbers, for the same reason the page above prints both: a route the
   // product scores and a route it quotes without scoring are two different
   // things to anyone consuming this, and one total would let the second pass
   // as the first (s9).
-  const counts = routeCounts(dataset);
+  const { counts } = facts;
   const ld = {
     "@context": "https://schema.org",
     "@type": "Dataset",
@@ -74,7 +81,7 @@ export function datasetLd(dataset: Dataset, path: string): string {
     // Words, so the copy module's: a person reads them in the index's result,
     // and the last sentence is the page's own promise of when a flag is read
     // (#62).
-    description: datasetDescription({ ...counts, countries: countries.length }),
+    description: datasetDescription(counts),
     url: absolute(path),
     sameAs: REPO_DATA,
     version: dataset.dataset_version,

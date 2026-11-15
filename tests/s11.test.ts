@@ -2,14 +2,16 @@ import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { unreadSentence, unreadSources, type Dataset, type Route, type UnreadSource, type WatchState } from "permit-rulebook-data";
+import { unreadSentence, unreadSources, type Dataset, type Route, type WatchState } from "permit-rulebook-data";
 import { DAILY_CHECK_CLAIM } from "../src/lib/copy/data-page.js";
 import { dailyCheck } from "../src/lib/copy/route-page.js";
 import { unreadLabel } from "../src/lib/copy/frame.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { ownUnread, routePages, type RoutePage } from "../src/lib/route-page/route-page.js";
-import { lastWatchRun, unreadSourcesAt, watchState, type WatchRun } from "../src/lib/site.js";
+import { watchState } from "../src/lib/site.js";
+import { reckonDatasetFacts, type WatchRun } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { footerIn, frameAlone } from "./frame-alone.js";
+import { watchStateAt } from "./watch-state-at.js";
 
 /**
  * s11 — a partial run says so.
@@ -33,6 +35,8 @@ import { footerIn, frameAlone } from "./frame-alone.js";
  */
 
 const ds = dataset as unknown as Dataset;
+/** The run the watch's state records, and what it left unread. */
+const stateRun = (): WatchRun => reckonDatasetFacts(ds, watchState).watchRun;
 const readerSees = (html: string): string =>
   html.replace(/<[^>]*>/g, "").split(/\s+/).join(" ").split(String.fromCharCode(160)).join(" ").trim();
 
@@ -44,25 +48,28 @@ const ORIENTATION = "https://ind.nl/en/residence-permits/work/residence-permit-f
 /** BAMF's graduate page: the first source a real run left unread (2026-09-16). */
 const BAMF = "https://www.bamf.de/EN/Themen/MigrationAufenthalt/ZuwandererDrittstaaten/Arbeit/Hochschulabsolvent/hochschulabsolvent-node.html";
 
-const spain: UnreadSource = {
-  id: "es-uge-umbral-pdf", url: UMBRAL, last_read: "2026-09-07", countries: ["ES"],
-};
-const netherlands: UnreadSource = {
-  id: "nl-ind-orientation-year", url: ORIENTATION, last_read: "2026-09-11", countries: ["NL"],
-};
+const spain = { id: "es-uge-umbral-pdf", url: UMBRAL };
+const netherlands = { id: "nl-ind-orientation-year", url: ORIENTATION };
+/** The day the state's reading of a source was taken: the day a sentence about it unread names. */
+const readOn = (source: { id: string }): string => watchState.entries[source.id]!.retrieved_at;
+/** The footer of a page that hands the frame its facts on `state`. */
+const footerOn = (state: WatchState): string => footerIn(frameAlone(ds, { facts: reckonDatasetFacts(ds, state) }));
 
 describe("what /data/ says on a day something went unread", () => {
   it("carries the qualification, in the human's words", () => {
-    const html = dataPage(ds, { lastRun: "2026-09-15", unread: [spain] }).html;
+    const html = dataPage(ds, watchStateAt("2026-09-15", [spain])).html;
     expect(readerSees(html)).toContain(
       "Every source is re-read daily — last run 2026-09-15. "
-      + "A Spanish source did not answer on the last run; the values it backs were read on 2026-09-07.");
+      + `A Spanish source did not answer on the last run; the values it backs were read on ${readOn(spain)}.`);
   });
 
   it("names the countries, never our own ids, and never the run's own date as the stale one", () => {
-    const html = dataPage(ds, { lastRun: "2026-09-15", unread: [spain, netherlands] }).html;
+    // The staler reading is named first, and its day is the one the sentence gives.
+    expect(readOn(spain) < readOn(netherlands), "the state's Spanish reading is no longer the staler").toBe(true);
+    const html = dataPage(ds, watchStateAt("2026-09-15", [spain, netherlands])).html;
     const seen = readerSees(html);
-    expect(seen).toContain("A Spanish and a Dutch source did not answer on the last run; the values they back were read on 2026-09-07");
+    expect(seen).toContain(
+      `A Spanish and a Dutch source did not answer on the last run; the values they back were read on ${readOn(spain)}`);
     expect(seen).not.toContain("es-uge-umbral-pdf");
     expect(seen).not.toContain("were read on 2026-09-15");
   });
@@ -77,25 +84,18 @@ describe("what /data/ says on a day something went unread", () => {
    * values, so the sentence is about the PDF, and its date is 2026-09-07.
    */
   it("the run of 2026-09-15, as it would now be recorded", () => {
-    const unread = unreadSources(ds, {
-      entries: {
-        "es-uge-umbral-pdf": { hash: "h", retrieved_at: "2026-09-07", history: [] },
-        "es-uge-index": { hash: "h", retrieved_at: "2026-09-02", history: [] },
-      },
-      last_run: "2026-09-15",
-      unread: [{ id: "es-uge-umbral-pdf", url: UMBRAL }, { id: "es-uge-index", url: UGE_INDEX }],
-    });
-    expect(unread.map((u) => u.id)).toEqual(["es-uge-umbral-pdf"]);
-    expect(readerSees(dataPage(ds, { lastRun: "2026-09-15", unread }).html)).toContain(
-      "A Spanish source did not answer on the last run; the values it backs were read on 2026-09-07.");
+    const state = watchStateAt("2026-09-15", [spain, { id: "es-uge-index", url: UGE_INDEX }]);
+    expect(unreadSources(ds, state).map((u) => u.id)).toEqual(["es-uge-umbral-pdf"]);
+    expect(readerSees(dataPage(ds, state).html)).toContain(
+      `A Spanish source did not answer on the last run; the values it backs were read on ${readOn(spain)}.`);
   });
 
   it("and on a clean day says exactly what it says today, with nothing added", () => {
     // "Today" was the clean day this case was written on; the list is empty
     // by name, not by the state's luck (the first unread day, 2026-09-16, run
     // 35098352421).
-    const clean = dataPage(ds, { lastRun: lastWatchRun(), unread: [] }).html;
-    expect(readerSees(clean)).toContain(`Every source is re-read daily — last run ${lastWatchRun()}.`);
+    const clean = dataPage(ds, watchStateAt(stateRun().lastRun)).html;
+    expect(readerSees(clean)).toContain(`Every source is re-read daily — last run ${stateRun().lastRun}.`);
     expect(clean).not.toContain("did not answer on the last run");
     expect(clean).not.toContain("unread");
   });
@@ -103,20 +103,20 @@ describe("what /data/ says on a day something went unread", () => {
 
 describe("the footer's short form", () => {
   it("names the count beside the run, in figures, inside the same parenthesis", () => {
-    const footer = footerIn(frameAlone(ds, { run: { lastRun: "2026-09-15", unread: [spain, netherlands] } }));
+    const footer = footerOn(watchStateAt("2026-09-15", [spain, netherlands]));
     expect(readerSees(footer)).toContain("re-read daily (last run 2026-09-15 · 2 sources unread)");
   });
 
   it("counts one in the singular", () => {
-    const footer = footerIn(frameAlone(ds, { run: { lastRun: "2026-09-15", unread: [spain] } }));
+    const footer = footerOn(watchStateAt("2026-09-15", [spain]));
     expect(readerSees(footer)).toContain("re-read daily (last run 2026-09-15 · 1 source unread)");
   });
 
   it("says nothing at all when every source answered", () => {
     // The empty list is passed, not read: the default is the real state, and
     // the real state stopped being clean on 2026-09-16 (s15, run 35098352421).
-    const footer = footerIn(frameAlone(ds, { run: { lastRun: lastWatchRun(), unread: [] } }));
-    expect(readerSees(footer)).toContain(`re-read daily (last run ${lastWatchRun()})`);
+    const footer = footerOn(watchStateAt(stateRun().lastRun));
+    expect(readerSees(footer)).toContain(`re-read daily (last run ${stateRun().lastRun})`);
     expect(footer).not.toContain("unread");
   });
 });
@@ -146,14 +146,13 @@ describe("the state this site is built against", () => {
     expect(unread.map((u) => u.id)).toEqual(["es-uge-umbral-pdf"]);
     const since = watchState.entries["es-uge-umbral-pdf"]!.retrieved_at;
     expect(since, "the shipped state has lost the reading the sentence dates from").toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(readerSees(dataPage(ds, { lastRun: watchState.last_run!, unread }).html)).toContain(
+    expect(readerSees(dataPage(ds, AS_RECORDED).html)).toContain(
       `A Spanish source did not answer on the last run; the values it backs were read on ${since}.`);
   });
 
   it("and the date it names is marked up like every other date on the site", () => {
-    const unread = unreadSources(ds, AS_RECORDED);
     const since = watchState.entries["es-uge-umbral-pdf"]!.retrieved_at;
-    expect(dataPage(ds, { lastRun: watchState.last_run!, unread }).html)
+    expect(dataPage(ds, AS_RECORDED).html)
       .toContain(`were read on <b><time datetime="${since}">${since}</time></b>.`);
   });
 
@@ -173,15 +172,15 @@ describe("the state this site is built against", () => {
   it("no surface asserts the unqualified claim in the footer while a source is unread; the route sentence names its own", () => {
     const unread = unreadSources(ds, AS_RECORDED);
     const run = watchState.last_run!;
-    const routes = routePages(ds, { lastRun: run, unread });
+    const routes = routePages(ds, AS_RECORDED);
     const pages = [
       ...routes.map((p) => ({ path: p.path, html: p.html })),
-      { path: "/data/", html: dataPage(ds, { lastRun: run, unread }).html },
+      { path: "/data/", html: dataPage(ds, AS_RECORDED).html },
     ];
     expect(pages.length).toBeGreaterThan(20);
     for (const page of pages)
       expect(readerSees(page.html), page.path).toContain("re-read daily (last run " + run + " · 1 source unread)");
-    expect(readerSees(dataPage(ds, { lastRun: run, unread }).html)).not.toContain("a daily check re-reads every source.");
+    expect(readerSees(dataPage(ds, AS_RECORDED).html)).not.toContain("a daily check re-reads every source.");
     const citing = routes.filter((p) => ownUnread(ds, p.json.route as Route, unread).length);
     expect(citing.map((p) => p.path).every((x) => x.startsWith("/spain/")), "the UGE PDF backs Spanish values").toBe(true);
     expect(citing.length).toBeGreaterThan(0);
@@ -201,13 +200,13 @@ describe("the state this site is built against", () => {
     // Rendered over an empty list on purpose: the render with no list reads
     // the real state, and the first unread day (2026-09-16, run 35098352421)
     // showed this case had been measuring the state's luck, not a clean day.
-    const run = lastWatchRun();
-    for (const page of routePages(ds, { lastRun: run, unread: [] })) {
+    const run = stateRun().lastRun;
+    for (const page of routePages(ds, watchStateAt(run))) {
       const seen = readerSees(page.html);
       expect(seen, page.path).toContain("a daily check re-reads every source.");
       expect(seen, page.path).not.toContain("unread");
     }
-    expect(readerSees(dataPage(ds, { lastRun: run, unread: [] }).html)).toContain(`Every source is re-read daily — last run ${run}.`);
+    expect(readerSees(dataPage(ds, watchStateAt(run)).html)).toContain(`Every source is re-read daily — last run ${run}.`);
   });
 
   /**
@@ -247,16 +246,14 @@ describe("the state this site is built against", () => {
    * with no arguments is the one the build ships, so it is the one asked.
    */
   it("every surface says what the state says today — clean or not", () => {
-    const run = lastWatchRun();
-    everySurfaceSays({ lastRun: run, unread: unreadSourcesAt(ds, run) }, routePages(ds), dataPage(ds).html);
+    everySurfaceSays(stateRun(), routePages(ds), dataPage(ds).html);
   });
 
   it("a fabricated clean run: the plain thing on every surface", () => {
-    const run = watchState.last_run!;
-    const unread = unreadSources(ds, { ...watchState, unread: [] });
-    expect(unread).toEqual([]);
-    const watch = { lastRun: run, unread };
-    everySurfaceSays(watch, routePages(ds, watch), dataPage(ds, watch).html);
+    const state = watchStateAt(watchState.last_run!);
+    const watch = reckonDatasetFacts(ds, state).watchRun;
+    expect(watch.unread).toEqual([]);
+    everySurfaceSays(watch, routePages(ds, state), dataPage(ds, state).html);
   });
 
   /**
@@ -267,26 +264,25 @@ describe("the state this site is built against", () => {
    */
   it("a fabricated run that missed one German source: the short form and the clause", () => {
     const run = watchState.last_run!;
-    const unread = unreadSources(ds, { ...watchState, unread: [{ id: "bamf-hochschulabsolvent", url: BAMF }] });
-    expect(unread.map((u) => [u.id, u.countries])).toEqual([["bamf-hochschulabsolvent", ["DE"]]]);
+    const state = watchStateAt(run, [{ id: "bamf-hochschulabsolvent", url: BAMF }]);
+    const watch = reckonDatasetFacts(ds, state).watchRun;
+    expect(watch.unread.map((u) => [u.id, u.countries])).toEqual([["bamf-hochschulabsolvent", ["DE"]]]);
     const since = watchState.entries["bamf-hochschulabsolvent"]!.retrieved_at;
-    const watch = { lastRun: run, unread };
-    everySurfaceSays(watch, routePages(ds, watch), dataPage(ds, watch).html);
-    expect(readerSees(dataPage(ds, watch).html)).toContain(
+    everySurfaceSays(watch, routePages(ds, state), dataPage(ds, state).html);
+    expect(readerSees(dataPage(ds, state).html)).toContain(
       `A German source did not answer on the last run; the values it backs were read on ${since}.`);
-    expect(readerSees(footerIn(frameAlone(ds, { run: watch }))))
+    expect(readerSees(footerOn(state)))
       .toContain(`re-read daily (last run ${run} · 1 source unread)`);
   });
 
   /**
    * The fingerprint's own freeze. A route page renders the footer, and the
-   * footer now carries a fact that moves by itself — so the unread list is
-   * read for the run the state belongs to and for no other. The frozen
-   * fingerprint asks about 1970-01-01, and gets silence whatever today's watch
-   * did.
+   * footer carries a fact that moves by itself — so the frozen fingerprint is
+   * handed a copy of the state that carries a run on 1970-01-01 and names no
+   * unread source, and gets silence whatever today's watch did.
    */
   it("a render asked about another run carries no count, so the frozen build cannot move", () => {
-    for (const page of routePages(ds, { lastRun: "1970-01-01" })) expect(page.html).not.toContain("unread");
+    for (const page of routePages(ds, watchStateAt("1970-01-01"))) expect(page.html).not.toContain("unread");
   });
 
   /**
@@ -307,7 +303,7 @@ describe("the state this site is built against", () => {
     const fixture = JSON.parse(readFileSync(new URL("fixtures/data-page-clean.json", import.meta.url), "utf8")) as
       { run: string; occurrences: number; sha256: string };
     const frozen = JSON.parse(readFileSync(new URL("fixtures/frozen-dataset.json", import.meta.url), "utf8")) as Dataset;
-    const html = dataPage(frozen, { lastRun: fixture.run, unread: [] }).html;
+    const html = dataPage(frozen, watchStateAt(fixture.run)).html;
     expect(html.split(fixture.run).length - 1, "the page stopped printing the run where it did").toBe(fixture.occurrences);
     expect(createHash("sha256").update(html).digest("hex"),
       "/data/ changed on a clean day — regenerate the fixture only on purpose").toBe(fixture.sha256);

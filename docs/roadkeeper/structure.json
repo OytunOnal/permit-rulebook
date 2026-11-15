@@ -77,6 +77,21 @@
    ]
   },
   {
+   "path": "src/lib/dataset-facts",
+   "entries": [
+    {
+     "file": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+     "level": "application"
+    }
+   ],
+   "files": [
+    "src/lib/dataset-facts/dataset-wide/dataset-counts.ts",
+    "src/lib/dataset-facts/dataset-wide/read-range.ts",
+    "src/lib/dataset-facts/dataset-wide/watch-run.ts",
+    "src/lib/dataset-facts/reckon-dataset-facts.ts"
+   ]
+  },
+  {
    "path": "src/lib/frame",
    "entries": [
     {
@@ -314,6 +329,10 @@
   "src/lib/country-search/control/view.ts": "presentation",
   "src/lib/country-search/country-search.ts": "presentation",
   "src/lib/data-page.ts": "presentation",
+  "src/lib/dataset-facts/dataset-wide/dataset-counts.ts": "application",
+  "src/lib/dataset-facts/dataset-wide/read-range.ts": "application",
+  "src/lib/dataset-facts/dataset-wide/watch-run.ts": "application",
+  "src/lib/dataset-facts/reckon-dataset-facts.ts": "application",
   "src/lib/dataset-ld.ts": "presentation",
   "src/lib/feedback-page.ts": "presentation",
   "src/lib/first-paint.ts": "presentation",
@@ -917,6 +936,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/copy/data-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "src/lib/copy/verdict.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
@@ -1093,6 +1117,11 @@
   },
   {
    "from": "src/lib/data-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
    "to": "src/lib/dataset-ld.ts",
    "kind": "dependency"
   },
@@ -1127,6 +1156,36 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/dataset-counts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/dataset-counts.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/read-range.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/read-range.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/watch-run.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/watch-run.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "src/lib/dataset-ld.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
@@ -1138,12 +1197,7 @@
   },
   {
    "from": "src/lib/dataset-ld.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/dataset-ld.ts",
-   "to": "src/lib/data-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -1205,6 +1259,11 @@
    "from": "src/lib/frame/body/footer-facts.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/footer-facts.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/frame/body/footer-facts.ts",
@@ -1274,6 +1333,11 @@
   {
    "from": "src/lib/frame/body/site-header.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -1859,6 +1923,11 @@
   {
    "from": "src/lib/route-page/route-page.ts",
    "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -2668,7 +2737,7 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/data-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -2874,6 +2943,11 @@
   {
    "from": "tests/base-path.test.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/base-path.test.ts",
+   "to": "tests/watch-state-at.ts",
    "kind": "dependency"
   },
   {
@@ -3253,7 +3327,12 @@
   },
   {
    "from": "tests/checked-words.test.ts",
-   "to": "src/lib/data-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/checked-words.test.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -3549,6 +3628,11 @@
   {
    "from": "tests/footer.test.ts",
    "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -4062,6 +4146,26 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/copy/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/reader-pages.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -4193,11 +4297,6 @@
   },
   {
    "from": "tests/route-page-dates.test.ts",
-   "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
@@ -4214,6 +4313,11 @@
   {
    "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-dates.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -4343,6 +4447,11 @@
   },
   {
    "from": "tests/s11.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s11.test.ts",
    "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
@@ -4354,6 +4463,11 @@
   {
    "from": "tests/s11.test.ts",
    "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s11.test.ts",
+   "to": "tests/watch-state-at.ts",
    "kind": "dependency"
   },
   {
@@ -4378,7 +4492,17 @@
   },
   {
    "from": "tests/s12.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s12.test.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s12.test.ts",
+   "to": "tests/watch-state-at.ts",
    "kind": "dependency"
   },
   {
@@ -4493,6 +4617,11 @@
   },
   {
    "from": "tests/s16.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s16.test.ts",
    "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
@@ -4584,6 +4713,11 @@
   {
    "from": "tests/s19.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "tests/watch-state-at.ts",
    "kind": "dependency"
   },
   {
@@ -4698,6 +4832,11 @@
   },
   {
    "from": "tests/s23.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
@@ -4734,6 +4873,11 @@
   {
    "from": "tests/s23.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "tests/watch-state-at.ts",
    "kind": "dependency"
   },
   {
@@ -4992,6 +5136,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s28.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s30.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -5192,6 +5341,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s9.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/screen.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
@@ -5294,6 +5448,11 @@
   {
    "from": "tests/shorthand.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/shorthand.test.ts",
+   "to": "tests/watch-state-at.ts",
    "kind": "dependency"
   },
   {
@@ -5587,6 +5746,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/watch-state-at.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/widened-screen.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -5669,6 +5833,18 @@
    }
   ],
   "src/lib/country-search/country-search.ts": [],
+  "src/lib/dataset-facts/reckon-dataset-facts.ts": [
+   {
+    "name": "DatasetFacts",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "reckonDatasetFacts",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "src/lib/frame/framed-page.ts": [
    {
     "name": "PagePlace",
@@ -7318,11 +7494,6 @@
     "exported": true
    },
    {
-    "name": "DatasetCounts",
-    "kind": "type",
-    "exported": true
-   },
-   {
     "name": "datasetDescription",
     "kind": "fn",
     "exported": true
@@ -8513,21 +8684,6 @@
     "exported": true
    },
    {
-    "name": "quotedValues",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "RouteCounts",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "routeCounts",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "DataPageFacts",
     "kind": "type",
     "exported": false
@@ -9264,33 +9420,8 @@
     "exported": true
    },
    {
-    "name": "readRange",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "lastWatchRun",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "watchState",
     "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "unreadSourcesAt",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "WatchRun",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "readWatchRun",
-    "kind": "fn",
     "exported": true
    }
   ],
@@ -9565,6 +9696,11 @@
     "exported": false
    },
    {
+    "name": "facts",
+    "kind": "const",
+    "exported": false
+   },
+   {
     "name": "frame",
     "kind": "const",
     "exported": false
@@ -9688,5 +9824,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "02174142222c5b6aa6262f7451b6e604a0f7c80498d4568d060694d9df72bb7b"
+ "digest": "314fe4a25d963922d7e2f5ae0b4650f9e9934afa9290aea79f4b39080ddeb723"
 }

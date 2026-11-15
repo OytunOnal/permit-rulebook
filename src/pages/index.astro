@@ -34,8 +34,8 @@ import {
   HOME_DESCRIPTION, HOME_PREVIEW_TITLE, HOME_TITLE, promise, RULES_READ, TAGLINE,
 } from "../lib/copy/frame.js";
 import { START_OVER, YOU_DECLARED } from "../lib/copy/interview.js";
-import { routeCounts } from "../lib/data-page.js";
-import { analyticsBeacon, headMeta } from "../lib/site.js";
+import { reckonDatasetFacts } from "../lib/dataset-facts/reckon-dataset-facts.js";
+import { analyticsBeacon, headMeta, watchState } from "../lib/site.js";
 
 // Boundary validation: an invalid dataset must kill the build, loudly.
 const dataset = assertValidDataset(rawDataset);
@@ -74,7 +74,9 @@ const firstStandIns = renderStandInsOverQuestionOne();
  * while the interview draws (s31).
  */
 const holdLine = holdLineHtml();
-const frame = interviewFrameOf(dataset);
+// The dataset's facts, reckoned once for the page: the footer's and the preview's.
+const facts = reckonDatasetFacts(dataset, watchState);
+const frame = interviewFrameOf(dataset, facts);
 console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundary", ...meta }));
 ---
 <!doctype html>
@@ -92,7 +94,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     description: HOME_DESCRIPTION,
     path: "/",
     kind: "website",
-    preview: promise(routeCounts(dataset)),
+    preview: promise(facts.counts),
   })} />
 </head>
 <body>
