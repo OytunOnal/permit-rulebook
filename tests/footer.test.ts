@@ -11,6 +11,7 @@ import {
   DATA_PATH, FEEDBACK_PATH, NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, url, watchState,
 } from "../src/lib/site.js";
 import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
+import { WIDE_FROM_PX } from "../src/lib/first-paint.js";
 import type { Dataset } from "permit-rulebook-data";
 import { PHONE, chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { withSite } from "./browser-walk.js";
@@ -228,7 +229,7 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
   // The mock's own steps: three columns, two on the narrow side, one below 480. Measured
   // per page, because a count that depends on how wide the page happens to be
   // is not a design (Spec review, 2026-09-08).
-  for (const [width, columns] of [[1100, 3], [761, 3], [760, 2], [600, 2], [481, 2], [390, 1]] as const)
+  for (const [width, columns] of [[1100, 3], [WIDE_FROM_PX, 3], [WIDE_FROM_PX - 1, 2], [600, 2], [481, 2], [390, 1]] as const)
     it(`${columns} column${columns === 1 ? "" : "s"} at ${width} px`, async () => {
       const seen = await withSite(async ({ page, url: addressOf }) => {
         const at: Record<string, unknown> = {};

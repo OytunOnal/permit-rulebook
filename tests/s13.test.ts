@@ -12,7 +12,7 @@ import { RESULT_FEEDBACK_ASK, resultFeedbackLine } from "../src/lib/copy/verdict
 import {
   FEEDBACK_ADDRESS, FEEDBACK_PATH, GMAIL_COMPOSE_URL, NEW_NEED_URL, SPONSOR_URL, TRACKER_URL, absolute, url,
 } from "../src/lib/site.js";
-import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
+import { FIRST_PAINT_SCRIPT, WIDE_FROM_PX } from "../src/lib/first-paint.js";
 import { COPY_SCRIPT } from "../src/lib/clipboard.js";
 import { feedbackGmail, feedbackMailto, feedbackPage } from "../src/lib/feedback-page.js";
 import { countryLinks } from "../src/lib/slug.js";
@@ -719,7 +719,9 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
     }
   }, 180000);
 
-  it("at 761 px the header is folded behind Menu, as it has been since 2026-09-08", async () => {
+  // On both sides of the narrow/wide breakpoint: the header folds below a wider width of its own.
+  for (const width of [WIDE_FROM_PX, WIDE_FROM_PX - 1])
+  it(`at ${width} px the header is folded behind Menu, as it has been since 2026-09-08`, async () => {
     const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
       await tab.goto(url("/"));
       await tab.evaluate(FALLBACK_STACK);
@@ -729,10 +731,10 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
         + ' navShown: getComputedStyle(document.querySelector(".site-head .nav")).display !== "none",'
         + ' overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth })',
       );
-    }, { viewport: { width: 761, height: 900 }, mobile: false }) as string) as
+    }, { viewport: { width, height: 900 }, mobile: false }) as string) as
       { menuShown: boolean; navShown: boolean; overflow: number };
-    expect(seen.menuShown, "no Menu control at 761").toBe(true);
-    expect(seen.navShown, "the row is showing at 761, where it folds").toBe(false);
+    expect(seen.menuShown, `no Menu control at ${width}`).toBe(true);
+    expect(seen.navShown, `the row is showing at ${width}, where it folds`).toBe(false);
     expect(seen.overflow).toBeLessThanOrEqual(0);
   }, 180000);
 
