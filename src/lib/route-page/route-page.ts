@@ -12,8 +12,7 @@ import { rulesRead } from "../identity.js";
 import { framedPageHtml } from "../frame/framed-page.js";
 import { esc, escAttr } from "../reason.js";
 import {
-  DATA_LICENCE_FULL, DATA_LICENCE_NAME, FEEDBACK_PATH, REPO_DATA,
-  absolute, url, watchState,
+  FEEDBACK_PATH, REPO_DATA, absolute, url, watchState,
 } from "../site.js";
 import {
   reckonDatasetFacts, routeFactsOf, type PrintedQuotes, type RouteFacts,
@@ -27,7 +26,8 @@ import {
   onThisRouteHtml, thresholdInDescription,
 } from "../copy/route-page.js";
 import {
-  CHECK_YOUR_OWN_SITUATION, DATASET_ON_GITHUB, PRODUCT_NAME, ROUTE_AS_JSON, checkYoursFor, reuseUnder,
+  CHECK_YOUR_OWN_SITUATION, DATASET_ON_GITHUB, DATA_LICENCE_FULL, DATA_LICENCE_NAME, PRODUCT_NAME, ROUTE_AS_JSON,
+  checkYoursFor, reuseUnder,
 } from "../copy/frame.js";
 import { WRONG_DOOR_LABEL } from "../copy/feedback.js";
 import {

@@ -1221,6 +1221,11 @@
   },
   {
    "from": "src/lib/dataset-ld.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-ld.ts",
    "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
@@ -3761,6 +3766,11 @@
   },
   {
    "from": "tests/footer.test.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
    "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
@@ -3973,6 +3983,21 @@
    "from": "tests/identity-on-both-screens.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "type-only"
+  },
+  {
+   "from": "tests/identity-on-both-screens.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-on-both-screens.test.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-on-both-screens.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
   },
   {
    "from": "tests/identity-on-both-screens.test.ts",
@@ -8242,6 +8267,21 @@
     "exported": true
    },
    {
+    "name": "OWNER",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_LICENCE_NAME",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_LICENCE_FULL",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "DATASET_ON_GITHUB",
     "kind": "const",
     "exported": true
@@ -10231,22 +10271,7 @@
     "exported": true
    },
    {
-    "name": "OWNER",
-    "kind": "const",
-    "exported": true
-   },
-   {
     "name": "DATA_LICENCE_URL",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "DATA_LICENCE_NAME",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "DATA_LICENCE_FULL",
     "kind": "const",
     "exported": true
    },
@@ -10699,5 +10724,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a22472eb7dcb4df34d840499b67a3b951b965e99c6d6f1bcf692ff6d42925eec"
+ "digest": "3f4b5a58d00b06882df6c71aadaee0e95cfd8051f945b573e2ee187a827a0f71"
 }

@@ -1,13 +1,13 @@
 // @level presentation
 import type { Dataset } from "permit-rulebook-data";
-import { DISCLAIMER, datasetDay } from "../../copy/frame.js";
+import { DATA_LICENCE_NAME, DISCLAIMER, OWNER, datasetDay } from "../../copy/frame.js";
 import type { DatasetFacts } from "../../dataset-facts/reckon-dataset-facts.js";
-import { DATA_LICENCE_NAME, DATA_LICENCE_URL, OWNER, REPO_DATA, SPONSOR_URL } from "../../site.js";
+import { DATA_LICENCE_URL, REPO_DATA, SPONSOR_URL } from "../../site.js";
 import type { FooterFacts } from "./site-footer.js";
 
 /**
  * What the shared footer states, from the page's reckoning of the dataset's
- * facts and from `site.ts` — never typed into a page. It lives apart from the
+ * facts, from `site.ts` and from the copy — never typed into a page. It lives apart from the
  * footer because it needs the dataset and the footer must not:
  * `site-footer.ts` knows markup, not data.
  */

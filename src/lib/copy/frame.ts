@@ -181,6 +181,16 @@ export const REPOSITORY_FOOTER_ROW = "The repository"; // the data column's row 
 export const licenceFooterRow = (licenceName: string): string => `Licence · ${licenceName}`;
 export const SPONSOR_FOOTER_ROW = "Sponsor this work"; // the feedback column's second row
 
+/** Whose copyright the footer states. The LICENSE file's own holder. */
+export const OWNER = "Oytun Onal";
+
+/** The dataset licence's name, beside the link to it. */
+export const DATA_LICENCE_NAME = "CC BY 4.0";
+/** The same licence, spelled out — no abbreviation goes unexplained on first
+ * use, and "CC BY 4.0" is one to a reader who is not a
+ * developer. The short form is fine everywhere after it. */
+export const DATA_LICENCE_FULL = "Creative Commons Attribution 4.0 (CC BY 4.0)";
+
 /** The open dataset's door and its terms, as `/data/` and every route page say them. */
 export const DATASET_ON_GITHUB = "The dataset on GitHub"; // the link to the data repository
 export const reuseUnder = (licenceName: string): string => `Reuse it under ${licenceName} — credit and link back.`;

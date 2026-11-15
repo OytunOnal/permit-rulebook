@@ -178,17 +178,9 @@ export const analyticsBeacon = (): string =>
   `<script type="module" src="${escAttr(ANALYTICS_SCRIPT)}" data-cf-beacon='${
     escAttr(JSON.stringify({ token: ANALYTICS_TOKEN, spa: false }))}'></script>`;
 
-/** Whose copyright the footer states. The LICENSE file's own holder. */
-export const OWNER = "Oytun Onal";
-
 /** The dataset licence, linked rather than stated as unlinked text (the mock's
  * P4: a door with no handle). */
 export const DATA_LICENCE_URL = `${REPO_DATA}/blob/master/data/LICENSE`;
-export const DATA_LICENCE_NAME = "CC BY 4.0";
-/** The same licence, spelled out — no abbreviation goes unexplained on first
- * use, and "CC BY 4.0" is one to a reader who is not a
- * developer. The short form is fine everywhere after it. */
-export const DATA_LICENCE_FULL = "Creative Commons Attribution 4.0 (CC BY 4.0)";
 
 /** The social card, rendered at 1200×630 and committed under `public/`. */
 export const SOCIAL_CARD_PATH = "/social-card.png";

@@ -1,7 +1,8 @@
 // @level presentation
 import type { Dataset } from "permit-rulebook-data";
 import { reckonDatasetFacts, type DatasetFacts } from "./dataset-facts/reckon-dataset-facts.js";
-import { DATA_LICENCE_NAME, OWNER, REPO_DATA, absolute, watchState } from "./site.js";
+import { REPO_DATA, absolute, watchState } from "./site.js";
+import { DATA_LICENCE_NAME, OWNER } from "./copy/frame.js";
 import {
   COUNTRIES_DOWNLOAD_NAME, DATASET_KEYWORDS, datasetDescription, datasetName, wholeDatasetDownloadName,
 } from "./copy/data-page.js";

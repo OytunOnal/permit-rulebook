@@ -15,11 +15,13 @@ import {
   movedHeadingHtml, proseProvenanceCounts, proseProvenanceLine, quotedValuesCount, routesCount,
   statusAliasDescription,
 } from "./copy/data-page.js";
-import { DATASET_ON_GITHUB, LAST_RUN, TAGLINE, THE_DATA, datasetDay, reuseUnder } from "./copy/frame.js";
+import {
+  DATASET_ON_GITHUB, DATA_LICENCE_FULL, LAST_RUN, TAGLINE, THE_DATA, datasetDay, reuseUnder,
+} from "./copy/frame.js";
 import { WRONG_DOOR_LABEL } from "./copy/feedback.js";
 import { readOn } from "./copy/quotes.js";
 import {
-  DATA_LICENCE_FULL, DATA_PATH, FEEDBACK_PATH, REPO_DATA, absolute, url, watchState,
+  DATA_PATH, FEEDBACK_PATH, REPO_DATA, absolute, url, watchState,
 } from "./site.js";
 import {
   reckonDatasetFacts, routeFactsOf, type DatasetFacts, type WatchRun,
