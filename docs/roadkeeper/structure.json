@@ -88,7 +88,7 @@
     "src/lib/dataset-facts/dataset-wide/dataset-counts.ts",
     "src/lib/dataset-facts/dataset-wide/read-range.ts",
     "src/lib/dataset-facts/dataset-wide/watch-run.ts",
-    "src/lib/dataset-facts/per-page/printed-quotes.ts",
+    "src/lib/dataset-facts/per-page/reckon-route-facts.ts",
     "src/lib/dataset-facts/reckon-dataset-facts.ts"
    ]
   },
@@ -333,7 +333,7 @@
   "src/lib/dataset-facts/dataset-wide/dataset-counts.ts": "application",
   "src/lib/dataset-facts/dataset-wide/read-range.ts": "application",
   "src/lib/dataset-facts/dataset-wide/watch-run.ts": "application",
-  "src/lib/dataset-facts/per-page/printed-quotes.ts": "application",
+  "src/lib/dataset-facts/per-page/reckon-route-facts.ts": "application",
   "src/lib/dataset-facts/reckon-dataset-facts.ts": "application",
   "src/lib/dataset-ld.ts": "presentation",
   "src/lib/feedback-page.ts": "presentation",
@@ -1201,12 +1201,12 @@
   },
   {
    "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
-   "to": "src/lib/dataset-facts/per-page/printed-quotes.ts",
+   "to": "src/lib/dataset-facts/per-page/reckon-route-facts.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
-   "to": "src/lib/dataset-facts/per-page/printed-quotes.ts",
+   "to": "src/lib/dataset-facts/per-page/reckon-route-facts.ts",
    "kind": "type-only"
   },
   {
@@ -10624,5 +10624,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "67b2923895922e204377513a168a7bde1b77d6613795be2c1f8933730f3d1988"
+ "digest": "b792f9fe2026776f3f6bb2f63db0575191a175acb8928e6f1d288f807b55f297"
 }

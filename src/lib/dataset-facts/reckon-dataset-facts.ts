@@ -20,12 +20,12 @@ import {
 } from "./dataset-wide/dataset-counts.ts";
 import { newestValueChangedOf, readRangeOf, type ReadRange } from "./dataset-wide/read-range.ts";
 import { watchRunOf, type WatchRun } from "./dataset-wide/watch-run.ts";
-import { reckonRouteFacts, type RouteFacts } from "./per-page/printed-quotes.ts";
+import { reckonRouteFacts, type RouteFacts } from "./per-page/reckon-route-facts.ts";
 
 export type { DatasetCounts, RouteCounts } from "./dataset-wide/dataset-counts.ts";
 export type { ReadRange } from "./dataset-wide/read-range.ts";
 export type { WatchRun } from "./dataset-wide/watch-run.ts";
-export type { PrintedQuotes, PrintedRule, RouteFacts } from "./per-page/printed-quotes.ts";
+export type { PrintedQuotes, PrintedRule, RouteFacts } from "./per-page/reckon-route-facts.ts";
 
 /** What a country page prints about its country. */
 export interface CountryFacts {
