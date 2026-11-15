@@ -4893,83 +4893,88 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
-   "to": "src/lib/copy/verdict.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/data-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
-   "to": "src/lib/record.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
-   "to": "tests/browser-walk.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s23.test.ts",
+   "from": "tests/s23-page-copy.test.ts",
    "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-result-copy.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-result-copy.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-result-copy.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-result-copy.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-result-copy.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
