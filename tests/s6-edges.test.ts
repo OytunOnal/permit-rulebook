@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { evaluate, notices, type Dataset, type Profile } from "permit-rulebook-data";
 import { arrivalOf, scopedFirst } from "../src/lib/scope.js";
-import { audienceNotice, routePage } from "../src/lib/route-page/route-page.js";
+import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { datasetDay, isoDay } from "../src/lib/copy/frame.js";
 
@@ -21,7 +21,7 @@ describe("s6 step 10 — the Irish reader on a German page", () => {
   it("the page says who it is for before the first rule, in the authority's words", () => {
     const address = routeAddresses(ds).find((a) => a.route.id === "de-blue-card-general")!;
     const page = routePage(ds, address);
-    const notice = audienceNotice(ds)!;
+    const notice = (ds.notices ?? []).find((n) => n.kind === "no-permit-needed")!;
     // The notice is a dataset value like any other: quote, source, read date.
     expect(notice.kind).toBe("no-permit-needed");
     expect(page.html.indexOf("This page is for people who need a permit to work in Germany."))

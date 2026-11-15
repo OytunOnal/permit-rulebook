@@ -2,7 +2,7 @@
 import {
   scopeLine, phraseOf, possessiveAtStartOf, criterionPhrase, formatEURPer, forEachCriterion,
   isScored, joinAnd, periodOf, shortLabelOf,
-  type Country, type Dataset, type Route, type UnreadSource, type WatchState,
+  type Country, type Dataset, type Route, type WatchState,
 } from "permit-rulebook-data";
 // One module explains an abbreviation, so the route page and the results card
 // say the same words for the same token (2026-09-08).
@@ -16,7 +16,7 @@ import {
   absolute, url, watchState,
 } from "../site.js";
 import {
-  audienceNotice, ownUnread, pageStamp, printedNotices, reckonDatasetFacts, ruleCriteria,
+  reckonDatasetFacts, routeFactsOf, type PrintedQuotes, type RouteFacts,
 } from "../dataset-facts/reckon-dataset-facts.js";
 import {
   ROUTE_PAGE_ADDENDUM,
@@ -35,9 +35,6 @@ import { statedBlocks } from "./blocks/stated-blocks.js";
 import ROUTE_PAGE_RULES from "./route-page.css?raw";
 
 export { TAP_CLASSES } from "./blocks/rule-card.js";
-export {
-  audienceNotice, noticesOn, ownUnread, pageStamp, routeSourceUrls,
-} from "../dataset-facts/reckon-dataset-facts.js";
 export { gist, routeFigure, type RouteFigure } from "./blocks/route-figure.js";
 
 /**
@@ -96,7 +93,8 @@ export interface RoutePage {
   json: Record<string, unknown>;
 }
 
-function description(dataset: Dataset, country: Country, route: Route): string {
+function description(dataset: Dataset, address: RouteAddress, printed: PrintedQuotes): string {
+  const { country, route } = address;
   // A route the checker does not ask about has no criteria to describe, and
   // the other routes' sentence would come out as the country's name, the
   // route's name and an empty list. What a search result should promise is
@@ -108,7 +106,7 @@ function description(dataset: Dataset, country: Country, route: Route): string {
       bits.push(`the ${formatEURPer(c.threshold.amount, periodOf(dataset, c.field))} ${
         shortLabelOf(dataset, c.field).toLowerCase()}`);
   });
-  for (const c of ruleCriteria(dataset, route)) {
+  for (const { criterion: c } of printed.rules) {
     if (bits.length >= 3) break;
     const isThresholdOrCitizenship = c.op === "gte" || ("field" in c && c.field === "citizenship");
     if (isThresholdOrCitizenship) continue;
@@ -131,11 +129,11 @@ function description(dataset: Dataset, country: Country, route: Route): string {
  */
 export function routePage(dataset: Dataset, address: RouteAddress, state: WatchState = watchState): RoutePage {
   const facts = reckonDatasetFacts(dataset, state);
-  const watch = facts.watchRun;
   const { country, route } = address;
-  const read = pageStamp(dataset, route);
+  const own = routeFactsOf(facts, route);
+  const read = own.stamp;
   const title = `${route.name} · ${country.name} · ${PRODUCT_NAME}`;
-  const desc = description(dataset, country, route);
+  const desc = description(dataset, address, own.printed);
   const path = address.path;
   const jsonPath = routeJsonPath(country, route);
   // One page, one memory of which abbreviations it has already expanded. The
@@ -145,11 +143,11 @@ export function routePage(dataset: Dataset, address: RouteAddress, state: WatchS
   // above it repeats the name for navigation and is not a use; a neighbouring
   // route's name is a cross-reference and keeps the short form.
   const seen: Glossary = new Set();
-  const page: RulePage = { dataset, country, route, seen, notice: audienceNotice(dataset) };
+  const page: RulePage = { dataset, country, route, seen, notice: own.printed.audienceNotice };
   const content = `${mastheadHtml(page, read)}
 
   <div class="page">
-  ${mainHtml(page, watch.unread)}
+  ${mainHtml(page, own)}
   ${asideHtml(page, jsonPath)}
   </div>`;
   const html = framedPageHtml(dataset, {
@@ -188,16 +186,13 @@ function mastheadHtml(page: RulePage, read: string): string {
 }
 
 /** The main column: what sits above the rules, then the rules and the blocks stated beside them. */
-function mainHtml(page: RulePage, unread: UnreadSource[]): string {
-  const { dataset, route, seen } = page;
-  // The footer counts every unread source a reader is looking at (s11); the
-  // sentence under the scope heading speaks for this page's own (s23, F3).
-  const missed = ownUnread(dataset, route, unread).length;
-  return `<main>${aboveTheRulesHtml(page, missed)}
+function mainHtml(page: RulePage, own: RouteFacts): string {
+  const { route, seen } = page;
+  return `<main>${aboveTheRulesHtml(page, own)}
 
   <section class="rules" aria-labelledby="rules-h">
     <h2 class="visually-hidden" id="rules-h">The rules of this route</h2>${
-    ruleCriteria(dataset, route).map((c) => ruleCard(page, c)).join("")}${
+    own.printed.rules.map((rule) => ruleCard(page, rule)).join("")}${
     statedBlocks(route, seen)}
   </section>
 
@@ -210,10 +205,13 @@ function mainHtml(page: RulePage, unread: UnreadSource[]): string {
  * answer block, the notices, the way into the checker and the scope; on one it
  * does not, the scope alone.
  */
-function aboveTheRulesHtml(page: RulePage, missed: number): string {
+function aboveTheRulesHtml(page: RulePage, own: RouteFacts): string {
   const { dataset, country, route, seen } = page;
+  // The footer counts every unread source a reader is looking at (s11); the
+  // sentence under the scope heading speaks for this page's own (s23, F3).
+  const missed = own.unread.length;
   return isScored(route) ? `
-${answerBlock(dataset, route)}${printedNotices(dataset, route).map((n) => noticeSection(n, seen)).join("")}
+${answerBlock(dataset, route, own.printed)}${own.printed.notices.map((n) => noticeSection(n, seen)).join("")}
   <section class="cta" aria-labelledby="cta-h">
     <h2 class="visually-hidden" id="cta-h">Check your own situation</h2>
     <p><strong>Where do you stand on this route?</strong> The questions are answered on this device only — nothing is sent anywhere. You get each rule against what you declared, the gap if there is one, and which single change would open more routes.</p>

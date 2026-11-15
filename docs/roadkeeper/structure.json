@@ -1149,11 +1149,6 @@
   },
   {
    "from": "src/lib/data-page.ts",
-   "to": "src/lib/route-page/route-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/data-page.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
@@ -1196,6 +1191,11 @@
    "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "to": "src/lib/dataset-facts/per-page/printed-quotes.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/per-page/printed-quotes.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/dataset-ld.ts",
@@ -1875,7 +1875,7 @@
   {
    "from": "src/lib/route-page/blocks/route-figure.ts",
    "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/lib/route-page/blocks/route-figure.ts",
@@ -1905,7 +1905,7 @@
   {
    "from": "src/lib/route-page/blocks/rule-card.ts",
    "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/lib/route-page/blocks/rule-card.ts",
@@ -2040,11 +2040,6 @@
   {
    "from": "src/lib/sitemap.ts",
    "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/sitemap.ts",
-   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -4384,6 +4379,11 @@
   },
   {
    "from": "tests/route-page-dates.test.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/dataset-ld.ts",
    "kind": "dependency"
   },
@@ -5940,6 +5940,16 @@
     "name": "countryFactsOf",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "routeFactsOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routeFactsIn",
+    "kind": "fn",
+    "exported": false
    }
   ],
   "src/lib/frame/framed-page.ts": [
@@ -9981,5 +9991,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "e20abebc8c9195537c413cef84c9a31183fd2df91d2b4b840d5b7090842754e3"
+ "digest": "d89647407facf9afcbbd3f18a23e316de3f61e510789f7e46746352cf728226c"
 }

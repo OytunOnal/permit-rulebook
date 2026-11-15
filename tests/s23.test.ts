@@ -14,11 +14,11 @@ import { proseProvenanceCounts } from "../src/lib/copy/data-page.js";
 import { questionCounter } from "../src/lib/copy/interview.js";
 import { glossSection, glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import { routePage, routePages, routeSourceUrls } from "../src/lib/route-page/route-page.js";
+import { routePage, routePages } from "../src/lib/route-page/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { watchState } from "../src/lib/site.js";
 import { watchStateAt } from "./watch-state-at.js";
-import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
+import { reckonDatasetFacts, routeFactsOf } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, hintsIn, paintedAsComposedScript, placed, standingOn, stepsIn, verdictFor,
@@ -300,8 +300,8 @@ describe("the route page's liveness line names its own source or stays silent", 
   });
 
   it("over every route: only the pages citing the unread source carry the clause", () => {
-    const pages = routePages(ds, watchStateAt(run, [own]));
-    const citing = new Set(routeAddresses(ds).filter((a) => routeSourceUrls(ds, a.route).has(ownUrl)).map((a) => a.path));
+    const pages = routePages(ds, watchStateAt(run, [own])), facts = reckonDatasetFacts(ds, watchStateAt(run, [own]));
+    const citing = new Set(routeAddresses(ds).filter((a) => routeFactsOf(facts, a.route).unread.length).map((a) => a.path));
     expect(citing.size).toBeGreaterThan(0);
     expect(citing.size).toBeLessThan(pages.length);
     for (const page of pages)
