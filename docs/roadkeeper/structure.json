@@ -1170,6 +1170,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/dataset-facts/per-page/reckon-route-facts.ts",
+   "to": "src/lib/dataset-facts/dataset-wide/read-range.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "to": "src/lib/dataset-facts/dataset-wide/dataset-counts.ts",
    "kind": "dependency"
@@ -10629,5 +10634,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "c16d87455e821eab79e2c51369ba73f2de4caf179b15789bc26acf0d1169cee1"
+ "digest": "7545f70e3775ad72a8366136c076f7161cc40408037582d346d664d9e6769161"
 }

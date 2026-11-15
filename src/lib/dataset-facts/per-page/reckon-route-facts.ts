@@ -10,6 +10,7 @@ import {
   routeStatements, statementSources, thresholdsUnder,
   type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route, type UnreadSource,
 } from "permit-rulebook-data";
+import { newestDayOf } from "../dataset-wide/read-range.ts";
 
 /** One rule card a route page prints. */
 export interface PrintedCard {
@@ -203,7 +204,7 @@ export function reckonRouteFacts(dataset: Dataset, route: Route, unread: UnreadS
   const printedUrls = new Set(sources.map((v) => v.source_url));
   return {
     printed,
-    stamp: sources.map((v) => v.retrieved_at).sort().at(-1) ?? "",
+    stamp: newestDayOf(sources.map((v) => v.retrieved_at)),
     unread: unread.filter((u) => printedUrls.has(u.url)),
   };
 }

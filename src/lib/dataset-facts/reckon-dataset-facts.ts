@@ -18,7 +18,7 @@ import type { Country, Dataset, Route, WatchState } from "permit-rulebook-data";
 import {
   datasetCountsOf, routeCountsOf, type DatasetCounts, type RouteCounts,
 } from "./dataset-wide/dataset-counts.ts";
-import { newestValueChangedOf, readRangeOf, type ReadRange } from "./dataset-wide/read-range.ts";
+import { newestDayOf, newestValueChangedOf, readRangeOf, type ReadRange } from "./dataset-wide/read-range.ts";
 import { watchRunOf, type WatchRun } from "./dataset-wide/watch-run.ts";
 import { reckonRouteFacts, type RouteFacts } from "./per-page/reckon-route-facts.ts";
 
@@ -65,7 +65,7 @@ export function reckonDatasetFacts(dataset: Dataset, watchState: WatchState): Da
     watchRun,
     counts: datasetCountsOf(dataset),
     countries: new Map(dataset.countries.map((country) => [country.code, {
-      stamp: country.routes.map(stampOf).sort().at(-1) ?? "",
+      stamp: newestDayOf(country.routes.map(stampOf)),
       counts: routeCountsOf(country.routes),
     }])),
     routes,

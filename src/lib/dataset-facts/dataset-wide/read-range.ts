@@ -35,10 +35,15 @@ function quotedSentenceReadDays(dataset: Dataset): string[] {
   return days.sort();
 }
 
+/** The newest of `days`, ISO dates, or empty where there are none. */
+export function newestDayOf(days: readonly string[]): string {
+  return [...days].sort().at(-1) ?? "";
+}
+
 /** The read range: the oldest and the newest day a quoted sentence was read on. */
 export function readRangeOf(dataset: Dataset): ReadRange {
   const days = quotedSentenceReadDays(dataset);
-  return { oldest: days[0] ?? "", newest: days[days.length - 1] ?? "" };
+  return { oldest: days[0] ?? "", newest: newestDayOf(days) };
 }
 
 /**
@@ -47,5 +52,5 @@ export function readRangeOf(dataset: Dataset): ReadRange {
  * (Spec review, 2026-09-15).
  */
 export function newestValueChangedOf(dataset: Dataset): string {
-  return valueReadDays(dataset).at(-1) ?? "";
+  return newestDayOf(valueReadDays(dataset));
 }
