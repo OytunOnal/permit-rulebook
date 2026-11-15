@@ -4,7 +4,7 @@
  * the breakpoints it reads at the moment of a gesture, the beat, and the
  * hands a drawn control gives its gesture to.
  */
-import { datasetMeta, type Dataset, type Question } from "permit-rulebook-data";
+import type { Dataset, Question } from "permit-rulebook-data";
 import { WIDE_QUERY } from "../../../first-paint.js";
 import type { Gesture } from "../../flow/interview-after.js";
 import { beatOf, type Beat } from "./beat.js";
@@ -43,7 +43,7 @@ export interface InterviewPage {
   ds: Dataset;
   questions: Question[];
   els: PageElements;
-  /** The dataset's newest read date, which the stamp says on the questions. */
+  /** The dataset's newest read date, the end of its read range, which the stamp says on the questions. */
   rulesRead: string;
   /** The width the ledger stops being a disclosure at, said once (`first-paint.ts`). */
   wide: MediaQueryList;
@@ -79,7 +79,10 @@ export function interviewPageOf(ds: Dataset, questions: Question[], hands: Gestu
   const els = pageElementsOf();
   return {
     ds, questions, els, hands,
-    rulesRead: datasetMeta(ds).newest_retrieved_at ?? "",
+    // The day the build's stamp printed, from the page's one reckoning of the
+    // dataset's facts (#384), read before any screen repaints it. Reckoning it
+    // again here would ship the watch's whole state to the browser.
+    rulesRead: els.stampTime.getAttribute("datetime") ?? "",
     wide: window.matchMedia(WIDE_QUERY),
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)"),
     beat: beatOf(els.main),

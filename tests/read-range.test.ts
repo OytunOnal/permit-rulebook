@@ -1,8 +1,17 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { noticeSources, routeProvenance, type Dataset } from "permit-rulebook-data";
-import { dataPage } from "../src/lib/data-page.js";
+import { dataPage, statusAlias } from "../src/lib/data-page.js";
+import { countryAddresses, countryPage } from "../src/lib/country-page.js";
+import { feedbackPage } from "../src/lib/feedback-page.js";
+import { notFoundPage } from "../src/lib/not-found.js";
+import { sitemapEntries } from "../src/lib/sitemap.js";
+import { interviewFrameOf } from "../src/lib/frame/framed-page.js";
+import { routePage } from "../src/lib/route-page/route-page.js";
+import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { NEWEST_VALUE_CHANGED } from "../src/lib/copy/data-page.js";
+import { DATA_PATH, FEEDBACK_PATH } from "../src/lib/site.js";
+import { routeAddresses } from "../src/lib/slug.js";
 import { footerIn } from "./frame-alone.js";
 import { watchStateAt } from "./watch-state-at.js";
 
@@ -89,6 +98,44 @@ describe("a notice re-read after every value", () => {
     const ld = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html);
     expect(ld, "the page carries no Dataset block").not.toBeNull();
     expect((JSON.parse(ld![1]!) as { dateModified: string }).dateModified).toBe(NOTICE_DAY);
+  });
+});
+
+/**
+ * Every other page prints the same newest read day, from the same reckoning
+ * (#384; #323, rulings 1 and 7).
+ */
+describe("a notice re-read after every value, on every other page", () => {
+  const NOTICE_DAY = shifted(quotedDays(ds).at(-1)!, 1);
+  const copy = withNoticeReadOn(NOTICE_DAY);
+
+  it("is the day the feedback page's, the 404's and /status's Rules read stamps print", () => {
+    expect(stampedDay(feedbackPage(copy, RUN).html), "/feedback/").toBe(NOTICE_DAY);
+    expect(stampedDay(notFoundPage(copy, RUN).html), "404").toBe(NOTICE_DAY);
+    expect(stampedDay(statusAlias(copy, RUN).html), "/status").toBe(NOTICE_DAY);
+  });
+
+  it("is the day the sitemap dates the interview, /data/ and /feedback/ by", () => {
+    const lastmod = new Map(sitemapEntries(copy, RUN).map((e) => [e.path, e.lastmod]));
+    for (const path of ["/", DATA_PATH, FEEDBACK_PATH]) expect(lastmod.get(path), path).toBe(NOTICE_DAY);
+  });
+
+  it("is the day the interview page's Rules read stamp prints", () => {
+    const stamp = interviewFrameOf(copy, reckonDatasetFacts(copy, RUN)).stamp;
+    const day = /<div class="stamps"[\s\S]*?<time id="stamp-time" datetime="([^"]*)"/.exec(stamp);
+    expect(day, "the interview's frame draws no live stamp").not.toBeNull();
+    expect(day![1]).toBe(NOTICE_DAY);
+  });
+
+  it("dates each country page and its sitemap entry by the newest of its route pages' stamps", () => {
+    for (const address of countryAddresses(copy)) {
+      const routeStamps = routeAddresses(copy).filter((a) => a.country === address.country)
+        .map((a) => routePage(copy, a, RUN).readDate);
+      const newest = routeStamps.sort().at(-1);
+      expect(stampedDay(countryPage(copy, address, RUN).html), address.path).toBe(newest);
+      const entry = sitemapEntries(copy, RUN).find((e) => e.path === address.path);
+      expect(entry?.lastmod, address.path).toBe(newest);
+    }
   });
 });
 

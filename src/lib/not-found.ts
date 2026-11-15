@@ -1,11 +1,12 @@
 // @level presentation
-import type { Dataset } from "permit-rulebook-data";
+import type { Dataset, WatchState } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { framedPageHtml } from "./frame/framed-page.js";
-import { countryLinks, siteReadDate } from "./country-page.js";
+import { countryLinks } from "./country-page.js";
+import { reckonDatasetFacts } from "./dataset-facts/reckon-dataset-facts.js";
 import { NOT_FOUND_START, NOT_FOUND_START_NOTE } from "./copy/not-found.js";
 import { PRODUCT_NAME, TAGLINE } from "./copy/frame.js";
-import { url } from "./site.js";
+import { url, watchState } from "./site.js";
 // One set of elements for the identity the shared CSS places (2026-09-08).
 import { rulesRead } from "./identity.js";
 
@@ -42,9 +43,11 @@ export interface NotFoundPage {
   html: string;
 }
 
-export function notFoundPage(dataset: Dataset): NotFoundPage {
+/** The 404, its stamp and its footer from `state`'s reckoning of the dataset's facts. */
+export function notFoundPage(dataset: Dataset, state: WatchState = watchState): NotFoundPage {
+  const facts = reckonDatasetFacts(dataset, state);
   const title = `This page does not exist · ${PRODUCT_NAME}`;
-  const read = siteReadDate(dataset);
+  const read = facts.readRange.newest;
   const countries = countryLinks(dataset);
 
   const content = `<header class="masthead masthead-with-stamps">
@@ -72,6 +75,8 @@ export function notFoundPage(dataset: Dataset): NotFoundPage {
     </section>
   </main>`;
 
-  const html = framedPageHtml(dataset, { title, headTags: ['<meta name="robots" content="noindex">'], content });
+  const html = framedPageHtml(dataset, {
+    title, headTags: ['<meta name="robots" content="noindex">'], facts, content,
+  });
   return { path: "/404", title, html };
 }

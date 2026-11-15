@@ -1,8 +1,12 @@
 import type { Dataset } from "permit-rulebook-data";
 import { countryPages } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
-import { framedPageHtml, type PageInFrame } from "../src/lib/frame/framed-page.js";
+import {
+  framedPageHtml, interviewFrameOf, type InterviewFrame, type PageInFrame,
+} from "../src/lib/frame/framed-page.js";
+import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
+import { watchState } from "../src/lib/site.js";
 import { routeAddresses } from "../src/lib/slug.js";
 
 /**
@@ -11,9 +15,16 @@ import { routeAddresses } from "../src/lib/slug.js";
  * a page the frame draws (#142).
  */
 
-/** A page with nothing of its own in the frame, but for what `page` hands it: the frame alone, as a document. */
+/**
+ * A page with nothing of its own in the frame, but for what `page` hands it: the frame alone, as a document.
+ * Its facts are the dataset's on the watch's live state, unless `page` hands its own.
+ */
 export const frameAlone = (dataset: Dataset, page: Partial<PageInFrame> = {}): string =>
-  framedPageHtml(dataset, { title: "", content: "", ...page });
+  framedPageHtml(dataset, { title: "", content: "", facts: reckonDatasetFacts(dataset, watchState), ...page });
+
+/** The interview page's frame, on the dataset's facts on the watch's live state. */
+export const interviewFrameAlone = (dataset: Dataset): InterviewFrame =>
+  interviewFrameOf(dataset, reckonDatasetFacts(dataset, watchState));
 
 /** The part of `html` from `open` to the end of the first `close` after it. Throws, naming the tag, where either is missing. */
 function partOf(html: string, open: string, close: string): string {

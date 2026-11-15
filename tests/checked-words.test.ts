@@ -90,7 +90,7 @@ describe("the walk's own precondition", () => {
 });
 
 describe("the social card counts routes as the checker does", () => {
-  const facts = socialCardFacts(ds, "2026-10-21", {
+  const facts = socialCardFacts(ds, reckonDatasetFacts(ds, watchState), {
     product: PRODUCT_NAME, tagline: TAGLINE, routesLineOf: routesCheckerAsksAbout,
   });
 

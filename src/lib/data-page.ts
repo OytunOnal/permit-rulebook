@@ -6,7 +6,6 @@ import {
 import { esc, escAttr } from "./reason.js";
 import { framedPageHtml } from "./frame/framed-page.js";
 import { pageStamp } from "./route-page/route-page.js";
-import { siteReadDate } from "./country-page.js";
 import {
   DAILY_CHECK_CLAIM, DATA_LEDE_CLOSE_TAIL, FRESHNESS_HUMAN_HAND, LAST_CHECKED, NEWEST_VALUE_CHANGED, PROSE_OURS_TAIL,
   TRANSLATION_POLICY, countryAsJsonLabel, dataLedeClose, dataLedeOpen, dataMetaDescription, proseProvenanceCounts,
@@ -237,9 +236,11 @@ export function dataPage(dataset: Dataset, state: WatchState = watchState): Data
  * is a promise: it now says where the page went, links there, and sends a
  * browser after it. A static host has no redirect to offer, so the page is the
  * redirect — and it names its destination in words, for a reader whose browser
- * ignores the refresh.
+ * ignores the refresh. Its stamp and its footer come from `state`'s reckoning
+ * of the dataset's facts, the page's it points to.
  */
-export function statusAlias(dataset: Dataset): DataPage {
+export function statusAlias(dataset: Dataset, state: WatchState = watchState): DataPage {
+  const facts = reckonDatasetFacts(dataset, state);
   const target = url(DATA_PATH);
   const title = `Moved to The data · ${PRODUCT_NAME}`;
   const content = `<header class="masthead masthead-with-stamps">
@@ -247,7 +248,7 @@ export function statusAlias(dataset: Dataset): DataPage {
       <h1>This page is now <a class="tap" href="${escAttr(target)}">The data</a>. <em>${esc(TAGLINE)}</em></h1>
       <p class="lede">Same page, a better name: what the dataset holds today, what checks it, and where to download it. Your browser should be on its way; if it is not, the link above is it.</p>
     </div>
-    ${rulesRead(siteReadDate(dataset))}
+    ${rulesRead(facts.readRange.newest)}
   </header>`;
   const headTags = [
     `<meta http-equiv="refresh" content="0; url=${escAttr(target)}">`,
@@ -258,7 +259,7 @@ export function statusAlias(dataset: Dataset): DataPage {
     path: "/status",
     title,
     description: `This page is now called The data, at ${absolute(DATA_PATH)}.`,
-    html: framedPageHtml(dataset, { title, headTags, content }),
+    html: framedPageHtml(dataset, { title, headTags, facts, content }),
   };
 }
 

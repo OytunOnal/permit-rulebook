@@ -1,8 +1,14 @@
 // @level application
+/**
+ * Which quotes a route page prints, rule by rule, and the stamps reckoned on
+ * them: each route page's, and each country page's from its routes'. The
+ * route page's blocks still read the choices through the entry until the
+ * route page draws its cards from `DatasetFacts` (#385).
+ */
 import {
   deriveQuestions, forEachCriterion, isLocalization, isScored, noticeSources, provenancedValuesOf, referencedFields,
   routeStatements, statementSources,
-  type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route, type UnreadSource,
+  type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route, type UnreadSource,
 } from "permit-rulebook-data";
 
 // ---------------------------------------------------------------------------
@@ -130,6 +136,15 @@ function printedSources(dataset: Dataset, route: Route): ProvenanceEntry["value"
  */
 export function pageStamp(dataset: Dataset, route: Route): string {
   return printedSources(dataset, route).map((v) => v.retrieved_at).sort().at(-1) ?? "";
+}
+
+/**
+ * The stamp one country page carries: the newest of its route pages' stamps,
+ * what the head of a page a crawler reads says about when its content last
+ * moved. The country page and the sitemap both print it (#323, ruling 7).
+ */
+export function countryStamp(dataset: Dataset, country: Country): string {
+  return country.routes.map((r) => pageStamp(dataset, r)).sort().at(-1) ?? "";
 }
 
 /**

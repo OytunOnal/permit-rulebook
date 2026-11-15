@@ -1,8 +1,8 @@
 // @level presentation
-import type { Dataset } from "permit-rulebook-data";
+import type { Dataset, WatchState } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { framedPageHtml } from "./frame/framed-page.js";
-import { siteReadDate } from "./country-page.js";
+import { reckonDatasetFacts } from "./dataset-facts/reckon-dataset-facts.js";
 import {
   COPIED, COPY_ADDRESS_LABEL, FEEDBACK_DOORS, FEEDBACK_EYEBROW, FEEDBACK_GITHUB_HEADING, FEEDBACK_GITHUB_LINE,
   FEEDBACK_LEDE, FEEDBACK_META_DESCRIPTION, FEEDBACK_NOTE, FEEDBACK_OWN_APP, FEEDBACK_OWN_APP_LEAD, TRACKER_NEW_NEED,
@@ -10,7 +10,7 @@ import {
 } from "./copy/feedback.js";
 import { FEEDBACK, PRODUCT_NAME } from "./copy/frame.js";
 import {
-  FEEDBACK_ADDRESS, FEEDBACK_PATH, GMAIL_COMPOSE_URL, NEW_NEED_URL, TRACKER_URL,
+  FEEDBACK_ADDRESS, FEEDBACK_PATH, GMAIL_COMPOSE_URL, NEW_NEED_URL, TRACKER_URL, watchState,
 } from "./site.js";
 import { rulesRead } from "./identity.js";
 import { COPY_SCRIPT } from "./clipboard.js";
@@ -100,10 +100,12 @@ const out = (href: string, label: string): string =>
  * the header lists the four countries the dataset holds, the footer states the
  * span the values were read over, and the stamp in the masthead says the day
  * the rules were last read — the same three things every other built page
- * takes from it. Nothing else about a reader's answers or the routes reaches
+ * takes from it, the last two from one reckoning of its facts on the watch's
+ * `state`. Nothing else about a reader's answers or the routes reaches
  * this render, which is what keeps the mail links constants.
  */
-export function feedbackPage(dataset: Dataset): FeedbackPage {
+export function feedbackPage(dataset: Dataset, state: WatchState = watchState): FeedbackPage {
+  const facts = reckonDatasetFacts(dataset, state);
   const title = `${FEEDBACK} · ${PRODUCT_NAME}`;
   const desc = FEEDBACK_META_DESCRIPTION;
   const content = `<div class="masthead-with-stamps">
@@ -112,7 +114,7 @@ export function feedbackPage(dataset: Dataset): FeedbackPage {
       <h1>${esc(FEEDBACK)}</h1>
       <p class="lede">${esc(FEEDBACK_LEDE)}</p>
     </div>
-    ${rulesRead(siteReadDate(dataset))}
+    ${rulesRead(facts.readRange.newest)}
   </div>
 
   <main class="fb">
@@ -133,7 +135,7 @@ export function feedbackPage(dataset: Dataset): FeedbackPage {
 
   const html = framedPageHtml(dataset, {
     title, meta: { description: desc, path: FEEDBACK_PATH, kind: "website" }, css: FEEDBACK_PAGE_RULES,
-    place: { here: FEEDBACK_PATH }, content, scripts: [COPY_SCRIPT],
+    place: { here: FEEDBACK_PATH }, facts, content, scripts: [COPY_SCRIPT],
   });
   return { path: FEEDBACK_PATH, title, description: desc, html };
 }

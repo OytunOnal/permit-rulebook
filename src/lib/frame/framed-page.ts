@@ -1,8 +1,10 @@
 // @level presentation
 import type { Dataset } from "permit-rulebook-data";
 import { esc } from "../reason.js";
-import { reckonDatasetFacts, type DatasetFacts } from "../dataset-facts/reckon-dataset-facts.js";
-import { analyticsBeacon, headMeta, watchState } from "../site.js";
+import type { DatasetFacts } from "../dataset-facts/reckon-dataset-facts.js";
+import { RULES_READ } from "../copy/frame.js";
+import { stamps } from "../identity.js";
+import { analyticsBeacon, headMeta } from "../site.js";
 import { contentSecurityPolicy } from "./head/csp.js";
 import { footerFacts } from "./body/footer-facts.js";
 import { FRAME_SHEET, withLineFeedEndings } from "./head/frame-sheet.js";
@@ -35,11 +37,8 @@ export interface PageInFrame {
   /** The page's own style rules, after the frame's. */
   css?: string;
   place?: PagePlace;
-  /**
-   * The page's own reckoning of the dataset's facts, which the footer prints.
-   * A page that hands none in has the frame reckon them on the watch's state.
-   */
-  facts?: DatasetFacts;
+  /** The page's own reckoning of the dataset's facts, which the footer prints: the frame reckons none. */
+  facts: DatasetFacts;
   /** Everything between the header and the footer, the masthead included. */
   content: string;
   /** Inline scripts beyond the menu: feedback's copy script. */
@@ -71,8 +70,7 @@ function headerAndFooterOf(dataset: Dataset, place: PagePlace, facts: DatasetFac
 
 /** The document's body: the page's content between the header and the footer, then the scripts. */
 function bodyOf(dataset: Dataset, page: PageInFrame): string {
-  const facts = page.facts ?? reckonDatasetFacts(dataset, watchState);
-  const { header, footer } = headerAndFooterOf(dataset, page.place ?? {}, facts);
+  const { header, footer } = headerAndFooterOf(dataset, page.place ?? {}, page.facts);
   const scripts = [MENU_SCRIPT, ...(page.scripts ?? [])].map((source) => `<script>${source}</script>\n`).join("");
   return `<div class="wrap">\n\n  ${header}\n\n  ${page.content}\n\n  ${footer}\n\n</div>\n${scripts}${analyticsBeacon()}`;
 }
@@ -89,20 +87,25 @@ export interface InterviewFrame {
   header: string;
   footer: string;
   menuScript: string;
+  /**
+   * The masthead's "Rules read" stamp, on the end of the read range, as every
+   * page that is not a route's or a country's prints it. It carries the ids
+   * the interview repaints it through as the reader moves.
+   */
+  stamp: string;
 }
 
 /**
- * The interview page's frame: its policy, icon links, header, footer and menu
- * script. `facts` is the page's own reckoning, where it has one.
+ * The interview page's frame: its policy, icon links, header, footer, menu
+ * script and stamp, from `facts`, the page's own reckoning.
  */
-export function interviewFrameOf(
-  dataset: Dataset, facts: DatasetFacts = reckonDatasetFacts(dataset, watchState),
-): InterviewFrame {
+export function interviewFrameOf(dataset: Dataset, facts: DatasetFacts): InterviewFrame {
   return {
     policy: contentSecurityPolicy(),
     icons: iconLinks(),
     // The interview stands at the root, where "Check yours" leads.
     ...headerAndFooterOf(dataset, { here: "/" }, facts),
     menuScript: MENU_SCRIPT,
+    stamp: stamps(RULES_READ, facts.readRange.newest, { live: true }),
   };
 }

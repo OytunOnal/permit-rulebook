@@ -9,6 +9,8 @@ import { questionCardHtml, setAsideHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
+import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
+import { watchState } from "../src/lib/site.js";
 import {
   deriveBands, deriveQuestions, forEachCriterion, shortLabelOf, type Dataset, type Profile,
 } from "permit-rulebook-data";
@@ -265,7 +267,7 @@ describe("nothing from the dataset reaches the social card's markup (#25)", () =
   it("a country's name with a tag in it is drawn as text", () => {
     const wrecked = JSON.parse(JSON.stringify(ds)) as Dataset;
     wrecked.countries[0]!.name = "<img src=https://example.org/x>";
-    const html = socialCardHtml(socialCardFacts(wrecked, "2026-10-19", {
+    const html = socialCardHtml(socialCardFacts(wrecked, reckonDatasetFacts(wrecked, watchState), {
       product: "P", tagline: "T", routesLineOf: (total, asked) => `${total} ${asked}`,
     }), "");
     expect(html).not.toContain("<img");

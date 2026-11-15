@@ -1,5 +1,6 @@
 // @level presentation
-import { isScored, type Dataset } from "permit-rulebook-data";
+import type { Dataset } from "permit-rulebook-data";
+import type { DatasetFacts } from "./dataset-facts/reckon-dataset-facts.ts";
 import { esc } from "./reason.ts";
 
 /**
@@ -34,7 +35,7 @@ export interface SocialCardFacts {
    * a change to either.
    */
   routesLine: string;
-  /** The newest read date across every value — the stamp's own date. */
+  /** The end of the read range — the "Rules read" stamp's own date, as every site-wide page prints it. */
   read: string;
   headline: string;
   tagline: string;
@@ -44,23 +45,25 @@ export interface SocialCardFacts {
 export const CARD_HEADLINE = "Which work-permit routes could fit?";
 
 /**
- * Everything on the card, read off the dataset and the product's own words.
+ * Everything on the card, read off the dataset, its reckoned `facts` and the
+ * product's own words. The counts and the day are the reckoning's, so the card
+ * and `/data/` read one scored count rather than each filtering for it (#323,
+ * ruling 10).
  *
  * The render script is plain Node with no build step, and Node resolves a
  * specifier literally, so this module keeps its imports few: the words are
- * passed in rather than imported from the copy module (`lib/copy/`), and its
- * one relative import, `esc`, is named by its `.ts` specifier. That keeps it
- * readable by the script, the site and the suite alike.
+ * passed in rather than imported from the copy module (`lib/copy/`), the facts
+ * are reckoned by the caller, and its relative imports name their `.ts` files.
+ * That keeps it readable by the script, the site and the suite alike.
  */
 export function socialCardFacts(
-  dataset: Dataset, newestReadDate: string,
+  dataset: Dataset, facts: DatasetFacts,
   words: { product: string; tagline: string; routesLineOf: (total: number, asked: number) => string },
 ): SocialCardFacts {
-  const routes = dataset.countries.flatMap((c) => c.routes);
   return {
     countries: dataset.countries.map((c) => c.name),
-    routesLine: words.routesLineOf(routes.length, routes.filter(isScored).length),
-    read: newestReadDate,
+    routesLine: words.routesLineOf(facts.counts.total, facts.counts.scored),
+    read: facts.readRange.newest,
     headline: CARD_HEADLINE,
     tagline: words.tagline,
     product: words.product,

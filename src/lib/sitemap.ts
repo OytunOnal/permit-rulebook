@@ -1,8 +1,9 @@
 // @level presentation
-import type { Dataset } from "permit-rulebook-data";
+import type { Dataset, WatchState } from "permit-rulebook-data";
 import { pageStamp } from "./route-page/route-page.js";
-import { countryAddresses, countryReadDate, siteReadDate } from "./country-page.js";
-import { DATA_PATH, FEEDBACK_PATH, absolute } from "./site.js";
+import { countryAddresses } from "./country-page.js";
+import { countryFactsOf, reckonDatasetFacts } from "./dataset-facts/reckon-dataset-facts.js";
+import { DATA_PATH, FEEDBACK_PATH, absolute, watchState } from "./site.js";
 import { routeAddresses } from "./slug.js";
 
 /**
@@ -44,8 +45,14 @@ export interface SitemapEntry {
   lastmod: string;
 }
 
-export function sitemapEntries(dataset: Dataset): SitemapEntry[] {
-  const newest = siteReadDate(dataset);
+/**
+ * Every page a crawler is offered, with its date: the site's pages on the end
+ * of the read range and each country page on its own stamp, from `state`'s
+ * reckoning of the dataset's facts, as the pages themselves print them.
+ */
+export function sitemapEntries(dataset: Dataset, state: WatchState = watchState): SitemapEntry[] {
+  const facts = reckonDatasetFacts(dataset, state);
+  const newest = facts.readRange.newest;
   return [
     { path: "/", lastmod: newest },
     // The data page carries the same date the pages do, because what it
@@ -57,7 +64,7 @@ export function sitemapEntries(dataset: Dataset): SitemapEntry[] {
     { path: FEEDBACK_PATH, lastmod: newest },
     ...countryAddresses(dataset).map(({ country, path }) => ({
       path,
-      lastmod: countryReadDate(dataset, country),
+      lastmod: countryFactsOf(facts, country).stamp,
     })),
     ...routeAddresses(dataset).map(({ route, path }) => ({
       path,
