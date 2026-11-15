@@ -50,7 +50,7 @@ footer { margin-top: var(--space-6); border-top: var(--rule-heavy); padding-top:
 footer .health { display: flex; justify-content: space-between; gap: var(--space-3); font: var(--text-source); margin-top: var(--space-3); flex-wrap: wrap; align-items: center; }
 footer .health a { display: inline-flex; align-items: center; min-height: var(--tap-min); }
 
-@media (max-width: 760px) {
+@media (--narrow) {
   .src { flex-direction: column; }
   .src a { padding-left: 0; }
   /* On a phone the button leads its own section: the sentence about privacy

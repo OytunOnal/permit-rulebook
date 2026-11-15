@@ -3,6 +3,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
+import IDENTITY_AS_BUILT from "../identity.css?raw";
 import { frameAlone, styleIn } from "./frame-alone.js";
 
 /**
@@ -22,7 +23,8 @@ import { frameAlone, styleIn } from "./frame-alone.js";
 const root = (p: string) => fileURLToPath(new URL(`../${p}`, import.meta.url));
 const read = (p: string) => readFileSync(root(p), "utf8").split("\r\n").join("\n");
 
-const identity = read("identity.css");
+// `identity.css` as the build reads it: its breakpoint names written as the first paint's width (#388).
+const identity = IDENTITY_AS_BUILT.split("\r\n").join("\n");
 
 /** Every stylesheet the built interview page links, as the browser receives them: the page's
  * own (the tokens, the identity), the interview's and the verdict's, minified together. */

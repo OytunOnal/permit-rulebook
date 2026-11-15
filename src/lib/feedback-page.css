@@ -3,7 +3,7 @@
    here rather than in the shared sheet, so no other page's bytes move for
    them — the same reason /data/ keeps its own two rules. */
 .fb .doors { display: grid; gap: var(--gap-cards); margin: var(--space-4) 0; }
-@media (min-width: 761px) { .fb .doors { grid-template-columns: 1fr 1fr 1fr; } }
+@media (--wide) { .fb .doors { grid-template-columns: 1fr 1fr 1fr; } }
 .door { background: var(--color-card); border: var(--rule-soft); border-left: 3px solid var(--color-ink); padding: var(--pad-card); }
 .door h3 { font: var(--text-route); margin: 0 0 var(--space-1); }
 .door p { margin: 0 0 var(--space-3); color: var(--color-muted); }

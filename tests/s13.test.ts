@@ -570,9 +570,8 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
  * against every other item's box.
  *
  * NOT at 761 px, the width first named for it. Below 960 px the header
- * folds behind Menu (identity.css, 2026-09-08: "the band between 761 and
- * 939 px had no state in the first revision of the mock"), so at 761 there is
- * no row to measure — every item's box is 0 by 0, and the first draft of this
+ * folds behind Menu, since the row is too wide to sit beside the wordmark
+ * there even on the wide side, so at 761 there is no row to measure — every item's box is 0 by 0, and the first draft of this
  * case passed on exactly that. The row is measured at the narrowest width it
  * IS a row, 960 px, where the header's container is at its tightest; 761 is
  * asserted for what it actually is there, the folded header.

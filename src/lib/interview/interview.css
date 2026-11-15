@@ -146,7 +146,7 @@ footer p{margin:0}
 .health{margin-top:.6rem;padding-top:.55rem;border-top:var(--rule-dotted);font:var(--text-source);
   display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem 1.5rem}
 
-@media (max-width:760px){
+@media (--narrow){
   .cols{grid-template-columns:1fr}
   /* The question card comes first; "You declared" follows it, collapsed to
      one line that expands on tap (F8) — for a reader with nothing declared.
@@ -173,7 +173,7 @@ footer p{margin:0}
 /* Wide: the ledger is a fixed panel, so its disclosure control is not a
    control at all — it stays the panel heading, and the script keeps the
    panel open. */
-@media (min-width:761px){
+@media (--wide){
   .decl > summary{cursor:default;pointer-events:none;min-height:0}
   .decl-count{display:none}
 }
