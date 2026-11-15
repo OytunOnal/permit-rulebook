@@ -170,6 +170,8 @@ export const FEEDBACK_FOOTER_ROW = "How to write, and what happens";
 export const CHECK_YOURS = "Check yours"; // the countries column's last row and the header's: where the interview starts
 /** A page's own button into the interview: "Check yours", then the places it is scoped to, joined. */
 export const checkYoursFor = (...places: string[]): string => `${CHECK_YOURS} — ${places.join(", ")}`;
+/** Where the answers stay, said once: under the 404's way in and a route page's (ruling 40 on #382). */
+export const ANSWERED_HERE_ONLY = "The questions are answered on this device only — nothing is sent anywhere."; // the line both build on
 /** The way into the interview, said as a heading or a button: the 404's and a route page's. */
 export const CHECK_YOUR_OWN_SITUATION = "Check your own situation"; // the 404's button and a route page's hidden heading
 export const THE_DATA = "The data"; // the data column's heading and the header's link to /data/

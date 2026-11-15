@@ -5,7 +5,7 @@
  * Every word a reader reads lives in this folder, one file per screen or
  * part (CODING_STANDARDS.md, Rules).
  */
-import { PRODUCT_NAME } from "./frame.js";
+import { ANSWERED_HERE_ONLY, PRODUCT_NAME } from "./frame.js";
 
 /** What the page says it is, as its headline and its title say it, and the line under the headline. */
 const NOT_FOUND = "This page does not exist"; // the headline's words and the title's
@@ -28,4 +28,4 @@ export const NOT_FOUND_COUNTRIES_HEADING = "Every country we hold rules for"; //
 export const NOT_FOUND_START = "Or start from your own situation.";
 
 /** The line that runs on after it: where the answers stay. */
-export const NOT_FOUND_START_NOTE = "The questions are answered on this device only — nothing is sent anywhere.";
+export const NOT_FOUND_START_NOTE = ANSWERED_HERE_ONLY;

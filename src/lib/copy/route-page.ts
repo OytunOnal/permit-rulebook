@@ -6,6 +6,7 @@
  * part (CODING_STANDARDS.md, Rules).
  */
 import { countedWords } from "permit-rulebook-data";
+import { ANSWERED_HERE_ONLY } from "./frame.js";
 
 /**
  * The route page says something narrower under its own name.
@@ -162,7 +163,7 @@ export const ASKED_SCOPE_HEADING = "What the checker asks, and what it does not"
 /** The way into the checker on a route the checker asks about: its bold question, and the line after it. */
 export const WHERE_DO_YOU_STAND = "Where do you stand on this route?"; // the call to action's opening, in bold
 export const CHECK_ON_THIS_DEVICE = // the call to action's line after its question
-  "The questions are answered on this device only — nothing is sent anywhere. You get each rule against what you declared, the gap if there is one, and which single change would open more routes.";
+  `${ANSWERED_HERE_ONLY} You get each rule against what you declared, the gap if there is one, and which single change would open more routes.`;
 
 /** The scope statement's route half; `scopeHtml` is the scope line, already HTML, set in bold. */
 export const onThisRouteHtml = (scopeHtml: string): string => `On this route — <strong>${scopeHtml}</strong>.`;
