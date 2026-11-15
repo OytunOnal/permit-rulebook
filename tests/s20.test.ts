@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { remainingQuestions, type Dataset, type Profile } from "permit-rulebook-data";
-import { resumedLine } from "../src/lib/copy/interview.js";
+import { START_OVER, resumedLine } from "../src/lib/copy/interview.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
@@ -269,7 +269,7 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
     // not what was stored (France never asks situation_country).
     const kept = replayRecord(ds, halfDone, Object.keys(halfDone)).order.length;
     expect(kept).toBe(3);
-    expect(seen.resumed.resumed).toBe(`${resumedLine(kept)} Start over`);
+    expect(seen.resumed.resumed).toBe(`${resumedLine(kept)} ${START_OVER}`);
     expect(seen.resumed.resumedRestart, "Start over is not in the line, or not shown").toBe(true);
     expect(seen.resumed.restartsOnPage, "a second Start over control").toBe(1);
     // The first paint does not take the focus: the reader has not acted.
