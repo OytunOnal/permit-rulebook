@@ -138,12 +138,13 @@ describe.skipIf(noBuild !== null)("every page the build draws", () => {
     }
     // Unchanged: each place reads what /data/'s own words compose from the
     // dataset's counts, in the model's terms, which #151 leaves as they were.
-    const { scored, quotedOnly, total } = reckonDatasetFacts(ds, watchState).counts;
+    const counts = reckonDatasetFacts(ds, watchState).counts;
+    const { scored, quotedOnly } = counts;
     const countries = ds.countries.length;
     expect(plainTextOf(places.lede!)).toContain(dataLedeOpen(scored, quotedOnly, countries));
     expect(plainTextOf(places.meta!)).toBe(dataMetaDescription(scored, quotedOnly, countries));
     expect((JSON.parse(places.ld!) as { description: string }).description)
-      .toBe(datasetDescription({ total, scored, quotedOnly, countries }));
+      .toBe(datasetDescription(counts));
     expect(plainTextOf(places.routes!)).toMatch(new RegExp(`^${scored} scored, ${quotedOnly} quoted\\b`));
   });
 

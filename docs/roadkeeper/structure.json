@@ -936,6 +936,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/copy/data-page.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "src/lib/copy/verdict.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
@@ -7444,11 +7449,6 @@
     "exported": true
    },
    {
-    "name": "DatasetCounts",
-    "kind": "type",
-    "exported": true
-   },
-   {
     "name": "datasetDescription",
     "kind": "fn",
     "exported": true
@@ -9779,5 +9779,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "1b16efca6bce4a299e39139139508781ec0e6ef9b3c71b0534b5636ae173b815"
+ "digest": "968d1b7bb8e43c88b79d09595d3368234be754969877e0787814754af201b3d3"
 }

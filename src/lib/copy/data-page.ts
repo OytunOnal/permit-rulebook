@@ -5,6 +5,7 @@
  * Every word a reader reads lives in this folder, one file per screen or
  * part (CODING_STANDARDS.md, Rules).
  */
+import type { DatasetCounts } from "../dataset-facts/reckon-dataset-facts.js";
 import { PRODUCT_NAME } from "./frame.js";
 
 /** `/data/`'s label for a country's routes as JSON; `country` is its phrase. */
@@ -101,14 +102,6 @@ export const FLAG_READ_WITHIN = "within two days";
 export const FRESHNESS_HUMAN_HAND =
   `A source that has moved raises a flag and a person reads it ${FLAG_READ_WITHIN}: the values on this site, and the dates beside `
   + "them, change when a person changes them, never on their own.";
-
-/** What the dataset's description counts: its routes, scored and quoted only, and its countries. */
-export interface DatasetCounts {
-  total: number;
-  scored: number;
-  quotedOnly: number;
-  countries: number;
-}
 
 /**
  * The Dataset block's description on `/data/`. A dataset index (Google's
