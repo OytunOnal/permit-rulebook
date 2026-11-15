@@ -7,7 +7,7 @@ import { esc } from "../../reason.js";
 import {
   ANSWER_SOURCED, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, pointsFigure,
 } from "../../copy/route-page.js";
-import { ruleCriteria } from "../../dataset-facts/reckon-dataset-facts.js";
+import type { PrintedQuotes } from "../../dataset-facts/reckon-dataset-facts.js";
 import { readDateTime } from "./rule-card.js";
 
 /**
@@ -34,19 +34,19 @@ type Points = Extract<Criterion, { op: "points" }>;
 
 /**
  * The figures a route turns on, which the headline panel and the country card
- * both print: its thresholds, one per amount and lowest first, or failing
- * those its points total.
+ * both print: its rule cards' thresholds, one per amount and lowest first, or
+ * failing those its points total.
  */
-function figuresOf(dataset: Dataset, route: Route): { amounts: ThresholdCriterion[]; points?: Points } {
+function figuresOf(route: Route, printed: PrintedQuotes): { amounts: ThresholdCriterion[]; points?: Points } {
   const seen = new Set<number>();
-  const amounts = ruleCriteria(dataset, route).flatMap(thresholdsUnder)
+  const amounts = printed.rules.map((r) => r.criterion).flatMap(thresholdsUnder)
     .filter((c) => (seen.has(c.threshold.amount) ? false : seen.add(c.threshold.amount)))
     .sort((a, b) => a.threshold.amount - b.threshold.amount);
   return { amounts, points: route.criteria.find((c): c is Points => c.op === "points") };
 }
 
-export function routeFigure(dataset: Dataset, route: Route): RouteFigure {
-  const { amounts, points } = figuresOf(dataset, route);
+export function routeFigure(dataset: Dataset, route: Route, printed: PrintedQuotes): RouteFigure {
+  const { amounts, points } = figuresOf(route, printed);
   if (amounts.length) {
     const own = amounts[0]!;
     // "Salary threshold" and "funds to show" are the two things money means on
@@ -76,8 +76,8 @@ export function gist(route: Route): string {
  * The headline figures, each with the day its own page was read, which is the
  * day its quote below prints. Empty where the route asks for no number.
  */
-function headlineFigures(dataset: Dataset, route: Route): string {
-  const { amounts, points } = figuresOf(dataset, route);
+function headlineFigures(dataset: Dataset, route: Route, printed: PrintedQuotes): string {
+  const { amounts, points } = figuresOf(route, printed);
   if (amounts.length)
     return amounts.map((c) => `<b>${esc(formatEURPer(c.threshold.amount, periodOf(dataset, c.field)))}</b>${
       c.threshold_label ? ` <span class="answer-label">— ${esc(c.threshold_label)}</span>` : ""} · ${
@@ -93,8 +93,8 @@ function headlineFigures(dataset: Dataset, route: Route): string {
  * for no money says so in the same place, since the absence is an answer to
  * "what is the threshold"; no sentence states an absence, so it points to none.
  */
-export function answerBlock(dataset: Dataset, route: Route): string {
-  const figures = headlineFigures(dataset, route);
+export function answerBlock(dataset: Dataset, route: Route, printed: PrintedQuotes): string {
+  const figures = headlineFigures(dataset, route, printed);
   return `
   <section class="answer" aria-labelledby="answer-h">
     <h2 class="label" id="answer-h">What this route asks for</h2>${figures ? `

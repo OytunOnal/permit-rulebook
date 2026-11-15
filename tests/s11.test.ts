@@ -7,9 +7,11 @@ import { DAILY_CHECK_CLAIM } from "../src/lib/copy/data-page.js";
 import { dailyCheck } from "../src/lib/copy/route-page.js";
 import { unreadLabel } from "../src/lib/copy/frame.js";
 import { dataPage } from "../src/lib/data-page.js";
-import { ownUnread, routePages, type RoutePage } from "../src/lib/route-page/route-page.js";
+import { routePages, type RoutePage } from "../src/lib/route-page/route-page.js";
 import { watchState } from "../src/lib/site.js";
-import { reckonDatasetFacts, type WatchRun } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
+import {
+  reckonDatasetFacts, routeFactsOf, type DatasetFacts, type WatchRun,
+} from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { footerIn, frameAlone } from "./frame-alone.js";
 import { watchStateAt } from "./watch-state-at.js";
 
@@ -170,7 +172,7 @@ describe("the state this site is built against", () => {
    * cast doubt on sources that were read fine).
    */
   it("no surface asserts the unqualified claim in the footer while a source is unread; the route sentence names its own", () => {
-    const unread = unreadSources(ds, AS_RECORDED);
+    const facts = reckonDatasetFacts(ds, AS_RECORDED);
     const run = watchState.last_run!;
     const routes = routePages(ds, AS_RECORDED);
     const pages = [
@@ -181,7 +183,7 @@ describe("the state this site is built against", () => {
     for (const page of pages)
       expect(readerSees(page.html), page.path).toContain("re-read daily (last run " + run + " · 1 source unread)");
     expect(readerSees(dataPage(ds, AS_RECORDED).html)).not.toContain("a daily check re-reads every source.");
-    const citing = routes.filter((p) => ownUnread(ds, p.json.route as Route, unread).length);
+    const citing = routes.filter((p) => routeFactsOf(facts, p.json.route as Route).unread.length);
     expect(citing.map((p) => p.path).every((x) => x.startsWith("/spain/")), "the UGE PDF backs Spanish values").toBe(true);
     expect(citing.length).toBeGreaterThan(0);
     for (const page of routes) {
@@ -221,8 +223,8 @@ describe("the state this site is built against", () => {
    * words themselves, on lists they chose. The route sentence is asked with
    * the page's own count (s23, F3) and the footer with the whole list (s11).
    */
-  function everySurfaceSays(watch: Required<WatchRun>, routes: RoutePage[], data: string): void {
-    const { lastRun: run, unread } = watch;
+  function everySurfaceSays(facts: DatasetFacts, routes: RoutePage[], data: string): void {
+    const { lastRun: run, unread } = facts.watchRun;
     const day = unread.length
       ? `an unread day, ${run}: ${unread.map((u) => u.id).join(", ")}`
       : `a clean day, ${run}`;
@@ -230,7 +232,7 @@ describe("the state this site is built against", () => {
     expect(routes.length, day).toBeGreaterThan(20);
     for (const page of routes) {
       const seen = readerSees(page.html);
-      expect(seen, `${page.path} on ${day}`).toContain(`${dailyCheck(ownUnread(ds, page.json.route as Route, unread).length)}.`);
+      expect(seen, `${page.path} on ${day}`).toContain(`${dailyCheck(routeFactsOf(facts, page.json.route as Route).unread.length)}.`);
       expect(seen, `${page.path} on ${day}`).toContain(parenthesis);
       if (!unread.length) expect(seen, `${page.path} on ${day}`).not.toContain("unread");
     }
@@ -246,14 +248,14 @@ describe("the state this site is built against", () => {
    * with no arguments is the one the build ships, so it is the one asked.
    */
   it("every surface says what the state says today — clean or not", () => {
-    everySurfaceSays(stateRun(), routePages(ds), dataPage(ds).html);
+    everySurfaceSays(reckonDatasetFacts(ds, watchState), routePages(ds), dataPage(ds).html);
   });
 
   it("a fabricated clean run: the plain thing on every surface", () => {
     const state = watchStateAt(watchState.last_run!);
-    const watch = reckonDatasetFacts(ds, state).watchRun;
-    expect(watch.unread).toEqual([]);
-    everySurfaceSays(watch, routePages(ds, state), dataPage(ds, state).html);
+    const facts = reckonDatasetFacts(ds, state);
+    expect(facts.watchRun.unread).toEqual([]);
+    everySurfaceSays(facts, routePages(ds, state), dataPage(ds, state).html);
   });
 
   /**
@@ -265,10 +267,10 @@ describe("the state this site is built against", () => {
   it("a fabricated run that missed one German source: the short form and the clause", () => {
     const run = watchState.last_run!;
     const state = watchStateAt(run, [{ id: "bamf-hochschulabsolvent", url: BAMF }]);
-    const watch = reckonDatasetFacts(ds, state).watchRun;
-    expect(watch.unread.map((u) => [u.id, u.countries])).toEqual([["bamf-hochschulabsolvent", ["DE"]]]);
+    const facts = reckonDatasetFacts(ds, state);
+    expect(facts.watchRun.unread.map((u) => [u.id, u.countries])).toEqual([["bamf-hochschulabsolvent", ["DE"]]]);
     const since = watchState.entries["bamf-hochschulabsolvent"]!.retrieved_at;
-    everySurfaceSays(watch, routePages(ds, state), dataPage(ds, state).html);
+    everySurfaceSays(facts, routePages(ds, state), dataPage(ds, state).html);
     expect(readerSees(dataPage(ds, state).html)).toContain(
       `A German source did not answer on the last run; the values it backs were read on ${since}.`);
     expect(readerSees(footerOn(state)))

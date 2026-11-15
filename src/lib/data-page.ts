@@ -5,7 +5,6 @@ import {
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { framedPageHtml } from "./frame/framed-page.js";
-import { pageStamp } from "./route-page/route-page.js";
 import {
   DAILY_CHECK_CLAIM, DATA_LEDE_CLOSE_TAIL, FRESHNESS_HUMAN_HAND, LAST_CHECKED, NEWEST_VALUE_CHANGED, PROSE_OURS_TAIL,
   TRANSLATION_POLICY, countryAsJsonLabel, dataLedeClose, dataLedeOpen, dataMetaDescription, proseProvenanceCounts,
@@ -17,7 +16,7 @@ import {
   DATA_LICENCE_FULL, DATA_PATH, FEEDBACK_PATH, REPO_DATA, absolute, url, watchState,
 } from "./site.js";
 import {
-  reckonDatasetFacts, type DatasetFacts, type WatchRun,
+  reckonDatasetFacts, routeFactsOf, type DatasetFacts, type WatchRun,
 } from "./dataset-facts/reckon-dataset-facts.js";
 import { rulesRead } from "./identity.js";
 import { routeJsonPath } from "./slug.js";
@@ -170,18 +169,19 @@ function checksSectionHtml(page: DataPageFacts): string {
     </section>`;
 }
 
-/** One country's routes, each as its own JSON with the day it was read. */
-function countryJsonLinksHtml(dataset: Dataset, country: Country): string {
+/** One country's routes, each as its own JSON with its route page's stamp. */
+function countryJsonLinksHtml(facts: DatasetFacts, country: Country): string {
   return `
       <nav class="jsonlinks" aria-label="${escAttr(countryAsJsonLabel(phraseOf(country.code)))}">
         <b class="label">${esc(phraseOf(country.code))}</b>${country.routes.map((route) => `
         <a class="tap-min" href="${escAttr(url(routeJsonPath(country, route)))}">${esc(route.name)}<small>${
-    esc(readOn(pageStamp(dataset, route)))}</small></a>`).join("")}
+    esc(readOn(routeFactsOf(facts, route).stamp))}</small></a>`).join("")}
       </nav>`;
 }
 
 /** Where to take the dataset: the downloads, the licence, and every route's own JSON. */
-function takeSectionHtml(dataset: Dataset): string {
+function takeSectionHtml(page: DataPageFacts): string {
+  const { dataset, facts } = page;
   return `<section class="data" aria-labelledby="take-h">
       <h2 class="label" id="take-h">Take it</h2>
       <nav aria-label="Downloads">
@@ -191,7 +191,7 @@ function takeSectionHtml(dataset: Dataset): string {
         <a class="tap-min" href="${escAttr(url(FEEDBACK_PATH))}">${esc(WRONG_DOOR_LABEL)}</a>
       </nav>
       <p class="lede">Reuse it under ${esc(DATA_LICENCE_FULL)} — credit and link back. Every route is also served on its own, with the day it was read:</p>
-      ${dataset.countries.map((country) => countryJsonLinksHtml(dataset, country)).join("")}
+      ${dataset.countries.map((country) => countryJsonLinksHtml(facts, country)).join("")}
     </section>`;
 }
 
@@ -219,7 +219,7 @@ export function dataPage(dataset: Dataset, state: WatchState = watchState): Data
 
     ${checksSectionHtml(page)}
 
-    ${takeSectionHtml(dataset)}
+    ${takeSectionHtml(page)}
   </main>`;
   const html = framedPageHtml(dataset, {
     title, meta: { description: desc, path: DATA_PATH, kind: "website" },

@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   forEachCriterion, formatEUR, formatEURPer, noticeSources, provenancedValuesOf, quoteLanguage,
-  routeStatements, statementSources, type Dataset, type Route,
+  routeStatements, statementSources, type Dataset, type Notice, type Route,
 } from "permit-rulebook-data";
-import { audienceNotice, noticesOn, routePage, routePages } from "../src/lib/route-page/route-page.js";
+import { routePage, routePages } from "../src/lib/route-page/route-page.js";
 import { esc } from "../src/lib/reason.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 // The frame round a quote lives with the quote, not with the page that shows
@@ -19,6 +19,11 @@ import { textOf } from "./text-of.js";
 
 const ds = dataset as unknown as Dataset;
 const pages = routePages(ds);
+
+/** The dataset's notice that says who a route page is not for. */
+const audienceNotice = (d: Dataset): Notice | undefined => (d.notices ?? []).find((n) => n.kind === "no-permit-needed");
+/** The notices the dataset says are about `route`. */
+const noticesOn = (d: Dataset, route: Route): Notice[] => (d.notices ?? []).filter((n) => (n.routes ?? []).includes(route.id));
 
 // The title these cases have always sat under; every block below repeats it, so each case keeps its id.
 const ONE_PAGE_PER_ROUTE = "s6 — one page per route, generated from the dataset";

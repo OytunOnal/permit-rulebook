@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { forEachCriterion, formatEUR, isScored, type Dataset } from "permit-rulebook-data";
+import { forEachCriterion, formatEUR, isScored, type Dataset, type Route } from "permit-rulebook-data";
+import { reckonDatasetFacts, routeFactsOf } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { routeFigure, routePage, routePages } from "../src/lib/route-page/route-page.js";
 import { countryAddresses, countryPages } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
@@ -10,7 +11,7 @@ import { datasetLd } from "../src/lib/dataset-ld.js";
 import { sitemapEntries } from "../src/lib/sitemap.js";
 import { ANSWER_SOURCED } from "../src/lib/copy/route-page.js";
 import { datasetDay } from "../src/lib/copy/frame.js";
-import { DATA_PATH, FEEDBACK_PATH } from "../src/lib/site.js";
+import { DATA_PATH, FEEDBACK_PATH, watchState } from "../src/lib/site.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { textOf } from "./text-of.js";
 import { footerIn } from "./frame-alone.js";
@@ -115,14 +116,16 @@ describe(DATES_WHAT_IT_PRINTS, () => {
   });
 
   it("a panel with no figure promises no sentence below it and dates nothing", () => {
-    const without = bentPages.filter(({ route }) => isScored(route) && !routeFigure(bent, route).value);
+    const bentFacts = reckonDatasetFacts(bent, watchState);
+    const figureOf = (route: Route): string => routeFigure(bent, route, routeFactsOf(bentFacts, route).printed).value;
+    const without = bentPages.filter(({ route }) => isScored(route) && !figureOf(route));
     expect(without.length, "no scored route is left without a figure").toBeGreaterThan(0);
     for (const { page } of without) {
       expect(answerOf(page.html), page.path).not.toContain(ANSWER_SOURCED);
       expect(answerOf(page.html), page.path).not.toContain("<time");
     }
     for (const { route, page } of bentPages)
-      if (routeFigure(bent, route).value) expect(answerOf(page.html), page.path).toContain(ANSWER_SOURCED);
+      if (figureOf(route)) expect(answerOf(page.html), page.path).toContain(ANSWER_SOURCED);
   });
 });
 

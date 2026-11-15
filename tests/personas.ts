@@ -32,6 +32,15 @@ export const PRIYA: Profile = {
   salary_eur_month: "band_4", nl_recent_grad: "no", top200_grad: "unknown",
 };
 
+/** Priya exploring all four countries (persona P2, s23): an Indian passport, no
+ * offer, a degree whose recognition she does not know, one point short of the
+ * Opportunity Card. Nothing is open, and there are steps that would change that. */
+export const PRIYA_EXPLORING_ALL: Profile = {
+  destination: "all", citizenship: "IN", situation: "none", qualification: "degree", recognition_de: "unknown",
+  occupation_shortage: "unknown", experience_5y: "2plus", experience_7y: "3to5", german: "none", english: "c1", nl_recent_grad: "no",
+  top200_grad: "unknown", funds_eur_month: "band_1", age_band: "u30", de_stay6m: "no", partner_ck: "no",
+};
+
 /** The Algerian reader with a French offer, on €50,700–€59,373. */
 export const ALGERIAN: Profile = {
   destination: "fr", citizenship: "DZ", situation: "offer", situation_country: "fr",

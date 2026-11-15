@@ -9,10 +9,10 @@ import {
 import { esc, escAttr } from "./reason.js";
 import { framedPageHtml } from "./frame/framed-page.js";
 import {
-  countryFactsOf, reckonDatasetFacts, type CountryFacts,
+  countryFactsOf, reckonDatasetFacts, routeFactsOf, type CountryFacts, type DatasetFacts,
 } from "./dataset-facts/reckon-dataset-facts.js";
 import {
-  audienceSentence, gist, pageStamp, routeFigure,
+  audienceSentence, gist, routeFigure,
 } from "./route-page/route-page.js";
 import { TAGLINE, capitalise } from "./copy/frame.js";
 import {
@@ -104,10 +104,11 @@ function description(country: Country): string {
   return countryPageDescription(names.length, phraseOf(country.code), listed);
 }
 
-/** What every card on one country index shares: the dataset, the country,
- * and the page's memory of what it has already explained. */
+/** What every card on one country index shares: the dataset, its reckoned
+ * facts, the country, and the page's memory of what it has already explained. */
 interface CountryCardContext {
   dataset: Dataset;
+  facts: DatasetFacts;
   country: Country;
   seen: Glossary;
 }
@@ -120,14 +121,15 @@ interface CountryCardContext {
  * about the route something that is a fact about our dataset (s9).
  */
 function routeCard(context: CountryCardContext, route: Route): string {
-  const { dataset, country, seen } = context;
-  const figure = isScored(route) ? routeFigure(dataset, route) : undefined;
+  const { dataset, facts, country, seen } = context;
+  const { printed, stamp } = routeFactsOf(facts, route);
+  const figure = isScored(route) ? routeFigure(dataset, route, printed) : undefined;
   return `
       <li><a class="card tap-min" href="${escAttr(url(routePath(country, route)))}"><span class="name">${
     esc(glossSection(route.name, seen))}</span><p class="gist">${esc(glossed(gist(route), seen))}</p><p class="meta">${
     figure ? `<span>${esc(figure.label)}${figure.value ? ` <b>${esc(figure.value)}</b>` : ""}</span>` : ""}<span>${
     esc(scopeLine(route, { reader: "not-answered" }))}</span><span class="read"><time datetime="${
-    escAttr(pageStamp(dataset, route))}">${esc(readOn(pageStamp(dataset, route)))}</time></span></p></a></li>`;
+    escAttr(stamp)}">${esc(readOn(stamp))}</time></span></p></a></li>`;
 }
 
 /**
@@ -203,12 +205,12 @@ function countryCtaHtml(country: Country, quotedOnlyCount: number): string {
 }
 
 /** The page's main: the routes the checker asks about, the ones it does not, and the way on. */
-function countryMainHtml(dataset: Dataset, country: Country, own: CountryFacts): string {
+function countryMainHtml(dataset: Dataset, facts: DatasetFacts, country: Country): string {
   const { scored, quotedOnly } = listedRoutesOf(country);
-  const quotedOnlyCount = own.counts.quotedOnly;
+  const quotedOnlyCount = countryFactsOf(facts, country).counts.quotedOnly;
   // One page, one memory of what it has already explained. A stranger meets
   // "§" here as readily as on a route page — this is a landing page too.
-  const cardContext: CountryCardContext = { dataset, country, seen: new Set() };
+  const cardContext: CountryCardContext = { dataset, facts, country, seen: new Set() };
   return `<main>
     <ul class="routes" aria-label="${escAttr(askedRoutesLabel(phraseOf(country.code)))}">${
     scored.map((route) => routeCard(cardContext, route)).join("")}
@@ -233,7 +235,7 @@ export function countryPage(dataset: Dataset, address: CountryAddress, state: Wa
   const desc = description(country);
   const content = `${countryMastheadHtml(country, own)}
 
-  ${countryMainHtml(dataset, country, own)}`;
+  ${countryMainHtml(dataset, facts, country)}`;
   const html = framedPageHtml(dataset, {
     title, meta: { description: desc, path, kind: "website" }, css: COUNTRY_PAGE_RULES, facts, content,
     place: { countryPath: path, current: "page", checkPath: countryCheckPath(country) },

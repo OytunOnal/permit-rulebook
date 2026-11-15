@@ -10,6 +10,7 @@ import { questionMastheadOf } from "../src/lib/question.js";
 import type { Masthead } from "../src/lib/screen.js";
 import { verdictOf, type Verdict } from "../src/lib/verdict/verdict.js";
 import { stepsIn } from "./verdict-cards.js";
+import { PRIYA_EXPLORING_ALL } from "./personas.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -66,13 +67,6 @@ const openOnto = (answers: Profile): InterviewStep =>
 const DUTCH_JOB_OFFER: Profile = {
   destination: "nl", citizenship: "IN", situation: "offer", situation_country: "nl", english: "b1", age_band: "u30",
   qualification: "none", experience_7y: "lt3", occupation_it: "yes", salary_eur_month: "band_0", nl_recent_grad: "yes",
-};
-/** An explorer of all four with no offer: nothing open, and steps that would change that (s23). */
-const PRIYA: Profile = {
-  destination: "all", citizenship: "IN", situation: "none", qualification: "degree", recognition_de: "unknown",
-  occupation_shortage: "unknown", experience_5y: "2plus", experience_7y: "3to5", german: "none", english: "c1",
-  nl_recent_grad: "no", top200_grad: "unknown", funds_eur_month: "band_1", age_band: "u30", de_stay6m: "no",
-  partner_ck: "no",
 };
 /** France with no offer: nothing open, and no step that changes it. */
 const FRANCE_NOTHING: Profile = { destination: "fr", situation: "none", citizenship: "IN" };
@@ -253,7 +247,7 @@ describe("the masthead has exactly one author", () => {
   });
 
   it("a nearest near-miss and an explore hint never fight over the same sentence", () => {
-    const verdict = verdictOn(ds, PRIYA);
+    const verdict = verdictOn(ds, PRIYA_EXPLORING_ALL);
     const { subline } = verdict.action.masthead;
     const steps = stepsIn(verdict).map((s) => s.title);
     expect(steps.length, "precondition: the explorer is offered steps").toBeGreaterThan(0);
@@ -291,7 +285,7 @@ describe("the comparison has no subject called \"Code\" (s17)", () => {
       ["question, fresh", questionMastheadOf({ kind: "question", started: false })],
       ["question, started", questionMastheadOf({ kind: "question", started: true })],
       ["results, open", verdictOn(ds, DUTCH_JOB_OFFER).action.masthead],
-      ["results, nearest", verdictOn(ds, PRIYA).action.masthead],
+      ["results, nearest", verdictOn(ds, PRIYA_EXPLORING_ALL).action.masthead],
       ["results, explore", verdictOn(ds, FRANCE_NOTHING).action.masthead],
       ["notice", verdictOn(ds, EU_PASSPORT).action.masthead],
     ];

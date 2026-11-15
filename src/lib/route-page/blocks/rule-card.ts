@@ -4,7 +4,7 @@ import {
   learnLinkOf, periodOf, referencedFields, shortLabelOf, subjectOf, thresholdsUnder,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
 } from "permit-rulebook-data";
-import { cardValues, valuesUnder } from "../../dataset-facts/reckon-dataset-facts.js";
+import type { PrintedRule } from "../../dataset-facts/reckon-dataset-facts.js";
 import { type Glossary, glossed } from "../../gloss.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
@@ -64,7 +64,7 @@ export function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}
 /**
  * What every rule card on one route page shares: the dataset, the country and
  * route the page is about, the page's memory of what it has already explained,
- * and the free-movement notice the audience card may borrow its quote from.
+ * and the free-movement notice whose words the audience card borrows.
  */
 export interface RulePage {
   dataset: Dataset;
@@ -174,30 +174,16 @@ function asksBlock(dataset: Dataset, criteria: Criterion[], seen: Glossary): str
       esc(glossedLearnLinkText(l, seen))} &#8599;</a></p>`).join("")}</div>`;
 }
 
-/** A rule with no quote and no figure under it, its paths included. */
-const isUnquoted = (c: Criterion): boolean => valuesUnder(c).length === 0 && thresholdsUnder(c).length === 0;
-
 /**
- * The unquoted rules inside a quoted card's disjunction, which the asks block
- * lists as it lists an unquoted card's own: a quote on one path (the shortage
- * Blue Card's IT path) does not quote the rules of another (its degree path,
- * where the shortage list's door belongs). A disjunction that carries its own
- * quote speaks for its paths, so nothing under it is unquoted.
+ * One rule card, drawn from the reckoning's answer: its quotes, and the rules
+ * on it that print none, for which it says what the interview will ask.
  */
-function unquotedInPaths(c: Criterion): Criterion[] {
-  if (c.op !== "any" || c.source) return [];
-  return c.paths.flatMap((p) => p.criteria.flatMap((pc) => (isUnquoted(pc) ? [pc] : unquotedInPaths(pc))));
-}
-
-export function ruleCard(page: RulePage, c: Criterion): string {
+export function ruleCard(page: RulePage, rule: PrintedRule): string {
   const { dataset, seen, notice } = page;
-  const values = cardValues(c, notice);
+  const { criterion: c, quotes: values } = rule;
   const thresholds = thresholdsUnder(c);
   const year = thresholds.length ? thresholds[0].threshold.retrieved_at.slice(0, 4) : "";
-  // A card with no evidence and no scale is one sentence restating its own
-  // heading; it says instead what the interview will ask. A quoted card says
-  // it for the unquoted rules inside its paths.
-  const asks = asksBlock(dataset, values.length === 0 && thresholds.length === 0 ? [c] : unquotedInPaths(c), seen);
+  const asks = asksBlock(dataset, rule.unquoted, seen);
   return `
       <article class="rule">
         <div class="top"><h2>${esc(ruleHeading(dataset, c))}</h2><span class="kind">${

@@ -1,8 +1,7 @@
 // @level presentation
 import type { Dataset, WatchState } from "permit-rulebook-data";
-import { pageStamp } from "./route-page/route-page.js";
 import { countryAddresses } from "./country-page.js";
-import { countryFactsOf, reckonDatasetFacts } from "./dataset-facts/reckon-dataset-facts.js";
+import { countryFactsOf, reckonDatasetFacts, routeFactsOf } from "./dataset-facts/reckon-dataset-facts.js";
 import { DATA_PATH, FEEDBACK_PATH, absolute, watchState } from "./site.js";
 import { routeAddresses } from "./slug.js";
 
@@ -47,8 +46,9 @@ export interface SitemapEntry {
 
 /**
  * Every page a crawler is offered, with its date: the site's pages on the end
- * of the read range and each country page on its own stamp, from `state`'s
- * reckoning of the dataset's facts, as the pages themselves print them.
+ * of the read range and each country and route page on its own stamp, from
+ * `state`'s reckoning of the dataset's facts, as the pages themselves print
+ * them.
  */
 export function sitemapEntries(dataset: Dataset, state: WatchState = watchState): SitemapEntry[] {
   const facts = reckonDatasetFacts(dataset, state);
@@ -68,7 +68,7 @@ export function sitemapEntries(dataset: Dataset, state: WatchState = watchState)
     })),
     ...routeAddresses(dataset).map(({ route, path }) => ({
       path,
-      lastmod: pageStamp(dataset, route),
+      lastmod: routeFactsOf(facts, route).stamp,
     })),
   ];
 }
