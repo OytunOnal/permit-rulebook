@@ -1,4 +1,5 @@
-import type { Profile } from "permit-rulebook-data";
+import dataset from "permit-rulebook-data/data/dataset.json";
+import { deriveBands, type Dataset, type Profile } from "permit-rulebook-data";
 
 /**
  * The readers the verdict's tests walk, each written once: the v1.2.2
@@ -7,6 +8,13 @@ import type { Profile } from "permit-rulebook-data";
 
 /** The money answer that is not an amount: "Doesn't apply to me, or I don't know". */
 export const NO_AMOUNT = "unknown";
+
+/** The id of the shipped dataset's band of `field` that holds `amount`. */
+export function bandFor(field: string, amount: number): string {
+  return deriveBands(dataset as unknown as Dataset, field).find(
+    (b) => (b.min === undefined || amount >= b.min) && (b.max === undefined || amount < b.max),
+  )!.id;
+}
 
 /** Persona A of the v1.2.2 critique (W1): a Turkish passport, a German offer,
  * a degree not yet assessed, IT, five years in seven, on the shortage list,
@@ -46,6 +54,15 @@ export const DENIZ: Profile = {
   destination: "de", citizenship: "TR", situation: "offer", situation_country: "de", qualification: "degree",
   recognition_de: "unknown", occupation_shortage: "yes", occupation_it: "yes", experience_5y: "lt2", experience_7y: "3to5", german: "a1",
   english: "c1", funds_eur_month: "band_1", salary_eur_year: "band_5", age_band: "a30to35",
+};
+
+/** The Dutch graduate under 30 with a Turkish passport and a Dutch offer at
+ * €3,500/month, not from a top-200 university: their under-30 card settles one
+ * of its two amounts, the graduate's. */
+export const DUTCH_GRADUATE: Profile = {
+  destination: "nl", citizenship: "TR", situation: "offer", qualification: "degree",
+  age_band: "u30", nl_recent_grad: "yes", top200_grad: "no", occupation_it: "no",
+  salary_eur_month: bandFor("salary_eur_month", 3500),
 };
 
 /** The Algerian reader with a French offer, on €50,700–€59,373. */

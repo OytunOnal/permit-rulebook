@@ -7,7 +7,7 @@ import {
 import { esc, escAttr } from "../src/lib/reason.js";
 import { linkLabelOf } from "../src/lib/quote.js";
 import { APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, perPeriod } from "../src/lib/copy/verdict.js";
-import { ALGERIAN, PRIYA_EXPLORING_ALL } from "./personas.js";
+import { ALGERIAN, DUTCH_GRADUATE, PRIYA_EXPLORING_ALL } from "./personas.js";
 import { blocksIn, drawnRouteOn, everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
@@ -122,13 +122,6 @@ describe(LINKED, () => {
     expect(linesWithoutTheirSource(row, quoted, "fr-ict")).toEqual([]);
   });
 });
-
-/** The Dutch graduate whose card settles one of two amounts (card.test.ts). */
-const DUTCH_GRADUATE: Profile = {
-  destination: "nl", citizenship: "TR", situation: "offer", qualification: "degree",
-  age_band: "u30", nl_recent_grad: "yes", top200_grad: "no", occupation_it: "no",
-  salary_eur_month: deriveBands(ds, "salary_eur_month").find((b) => (b.min ?? 0) <= 3500 && 3500 < (b.max ?? Infinity))!.id,
-};
 
 /** The line on the graduate's under-30 card that quotes this amount. */
 function graduateLineQuoting(amount: string): QuoteLine {

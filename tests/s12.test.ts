@@ -7,6 +7,7 @@ import { datasetDay } from "../src/lib/copy/frame.js";
 import { watchState } from "../src/lib/site.js";
 import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { watchStateAt } from "./watch-state-at.js";
+import { audienceNoticeOf } from "./audience-notice.js";
 
 /**
  * s12 — two labels that mean what they say.
@@ -95,9 +96,7 @@ describe("what /data/ says about when a value changed", () => {
     // this case bent to before.
     const NOTICE_DAY = "2026-11-30";
     const fake = structuredClone(ds);
-    const notice = (fake.notices ?? []).find((n) => n.kind === "no-permit-needed");
-    expect(notice, "the dataset no longer carries the notice this case bends").toBeDefined();
-    notice!.source.retrieved_at = NOTICE_DAY;
+    audienceNoticeOf(fake).source.retrieved_at = NOTICE_DAY;
 
     expect(NOTICE_DAY > factsOf(fake).newestValueChanged, "the bent date is not newer than every value").toBe(true);
     expect(factsOf(fake).readRange.newest, "the bent notice did not reach the stamp").toBe(NOTICE_DAY);

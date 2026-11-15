@@ -11,6 +11,7 @@ import { routeAddresses, routePath } from "../src/lib/slug.js";
 // one: the results card puts the same words round the same sentence.
 import { separatorNote } from "../src/lib/quote.js";
 import { textOf } from "./text-of.js";
+import { audienceNoticeOf } from "./audience-notice.js";
 
 /**
  * A route page holds the dataset's figures and sentences, each as the dataset
@@ -20,8 +21,6 @@ import { textOf } from "./text-of.js";
 const ds = dataset as unknown as Dataset;
 const pages = routePages(ds);
 
-/** The dataset's notice that says who a route page is not for. */
-const audienceNotice = (d: Dataset): Notice | undefined => (d.notices ?? []).find((n) => n.kind === "no-permit-needed");
 /** The notices the dataset says are about `route`. */
 const noticesOn = (d: Dataset, route: Route): Notice[] => (d.notices ?? []).filter((n) => (n.routes ?? []).includes(route.id));
 
@@ -149,7 +148,7 @@ describe(ONE_PAGE_PER_ROUTE, () => {
         address.route.summary ?? "", address.route.scope.reason,
         ...routeStatements(address.route).flatMap((st) => [st.text, st.source?.quote ?? ""]),
         ...(address.route.readings ?? []).map((r) => r.text),
-        audienceNotice(ds)?.body ?? "", audienceNotice(ds)?.source.quote ?? "",
+        audienceNoticeOf(ds).body, audienceNoticeOf(ds).source.quote,
       ].join(" ");
       for (const amount of printed) {
         if (prose.includes(amount)) continue;
@@ -175,8 +174,7 @@ describe(ONE_PAGE_PER_ROUTE, () => {
       // with no reader shows both, so it holds both.
       for (const st of routeStatements(address.route))
         for (const value of statementSources(st)) held.add(esc(value.quote));
-      const notice = audienceNotice(ds);
-      if (notice) held.add(esc(notice.source.quote));
+      held.add(esc(audienceNoticeOf(ds).source.quote));
       // And every side of a notice the dataset says is about THIS route: the
       // Algerian talent question stands on two authorities disagreeing and on
       // the page that says what the reader gets instead, and all three are

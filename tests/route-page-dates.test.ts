@@ -16,6 +16,7 @@ import { DATA_PATH, FEEDBACK_PATH, watchState } from "../src/lib/site.js";
 import { countryAddresses, routeAddresses } from "../src/lib/slug.js";
 import { textOf } from "./text-of.js";
 import { footerIn } from "./frame-alone.js";
+import { audienceNoticeOf } from "./audience-notice.js";
 
 /**
  * The dates a route page prints: its stamp, each figure's reading, the
@@ -79,8 +80,8 @@ const DATES_WHAT_IT_PRINTS = "a route page dates what it prints";
 // German Blue Card's IT path was read (#134), past the 2026-09-30 used before.
 const NEVER_PRINTED = "2026-11-30";
 const bent = structuredClone(ds);
-const audience = (bent.notices ?? []).find((n) => n.kind === "no-permit-needed");
-for (const value of audience?.sources ?? []) value.retrieved_at = NEVER_PRINTED;
+const audience = audienceNoticeOf(bent);
+for (const value of audience.sources ?? []) value.retrieved_at = NEVER_PRINTED;
 const bentPages = routeAddresses(bent).map((a) => ({ route: a.route, page: routePage(bent, a) }));
 
 /**
@@ -93,7 +94,7 @@ const pageOwnHtml = (html: string): string => html.replace(footerIn(html), "");
 
 describe(DATES_WHAT_IT_PRINTS, () => {
   it("draws the stamp from no source the page leaves out", () => {
-    expect(audience?.sources?.length, "the notice no longer carries a source the page leaves out").toBeTruthy();
+    expect(audience.sources?.length, "the notice no longer carries a source the page leaves out").toBeTruthy();
     for (const { page } of bentPages) {
       expect(page.readDate, page.path).toBe(quoteDatesOf(page.html).sort().at(-1));
       expect(pageOwnHtml(page.html), page.path).not.toContain(NEVER_PRINTED);

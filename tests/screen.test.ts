@@ -11,6 +11,7 @@ import type { Masthead } from "../src/lib/screen.js";
 import { verdictOf, type Verdict } from "../src/lib/verdict/verdict.js";
 import { stepsIn } from "./verdict-cards.js";
 import { PRIYA_EXPLORING_ALL } from "./personas.js";
+import { audienceNoticeOf } from "./audience-notice.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -353,7 +354,7 @@ describe("the headline escapes what the dataset says (#25)", () => {
 
   it("a notice's title", () => {
     const data = wrecked();
-    data.notices!.find((n) => n.kind === "no-permit-needed")!.title = HOSTILE;
+    audienceNoticeOf(data).title = HOSTILE;
     const { action } = verdictOn(data, EU_PASSPORT);
     expect(action.kind).toBe("answered-outright");
     expect(tagIn(action.masthead.headline)).toBe(false);

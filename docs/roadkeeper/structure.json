@@ -3181,6 +3181,11 @@
   },
   {
    "from": "tests/card.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/card.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -4496,6 +4501,11 @@
   },
   {
    "from": "tests/route-page-dates.test.ts",
+   "to": "tests/audience-notice.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-dates.test.ts",
    "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
@@ -4547,6 +4557,11 @@
   {
    "from": "tests/route-page-provenance.test.ts",
    "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "tests/audience-notice.ts",
    "kind": "dependency"
   },
   {
@@ -4682,6 +4697,11 @@
   {
    "from": "tests/s12.test.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s12.test.ts",
+   "to": "tests/audience-notice.ts",
    "kind": "dependency"
   },
   {
@@ -5455,6 +5475,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s6-edges.test.ts",
+   "to": "tests/audience-notice.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s7.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
@@ -5567,6 +5592,11 @@
   {
    "from": "tests/screen.test.ts",
    "to": "src/lib/verdict/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
+   "to": "tests/audience-notice.ts",
    "kind": "dependency"
   },
   {
