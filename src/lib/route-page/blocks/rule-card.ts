@@ -11,7 +11,10 @@ import { type Glossary, glossed } from "../../gloss.js";
 import { glossedLearnLinkText, quoteLineHtml } from "../../quote.js";
 import { esc, escAttr } from "../../reason.js";
 import { tapInline } from "../../tap.js";
-import { ANY_PATH, EITHER_PATH } from "../../copy/route-page.js";
+import {
+  ANY_PATH, CONDITION_KIND, EITHER_PATH, FIND_OUT_YOURSELF, FOR_KIND, NOT_FOR_KIND, POINTS_KIND, THRESHOLD_KIND,
+  WHAT_THE_CHECKER_ASKS, asksAtLeastHtml, asksFor, countsPointsLine, notOpenTo,
+} from "../../copy/route-page.js";
 import { capitalise } from "../../copy/frame.js";
 import { railHtml } from "./rail.js";
 
@@ -47,7 +50,7 @@ function ruleHeading(dataset: Dataset, c: Criterion): string {
   if (thresholds.length) return capitalise(shortLabelOf(dataset, thresholds[0].field));
   // Named by who it shuts out, said as the answer they gave: "Algeria" is a
   // country and "an Algerian passport" is the thing this rule reads.
-  if (c.op === "not-in") return `Not open to ${criterionPhrase(dataset, c)}`;
+  if (c.op === "not-in") return notOpenTo(criterionPhrase(dataset, c));
   // A choice of paths is named by its own label: the body lists the paths, and
   // its phrase may be a short_reason written for a verdict line, not a heading.
   if (c.op === "any") return capitalise(c.label);
@@ -55,15 +58,15 @@ function ruleHeading(dataset: Dataset, c: Criterion): string {
 }
 
 function ruleKind(c: Criterion): string {
-  if (thresholdsUnder(c).length) return "Threshold";
-  if (c.op === "points") return "Points";
+  if (thresholdsUnder(c).length) return THRESHOLD_KIND;
+  if (c.op === "points") return POINTS_KIND;
   // A closure is the opposite claim from the criterion beside it, and the two
   // sit on the same page: one says who the permit is for, the other who the
   // authority does not open it to. Reading them under one label would make the
   // page say the second is a condition the reader could meet (s8).
-  if (c.op === "not-in") return "Who this is not for";
-  if ("field" in c && c.field === "citizenship") return "Who this is for";
-  return "Condition";
+  if (c.op === "not-in") return NOT_FOR_KIND;
+  if ("field" in c && c.field === "citizenship") return FOR_KIND;
+  return CONDITION_KIND;
 }
 
 function rulePlain(dataset: Dataset, c: Criterion, notice?: Notice): string {
@@ -76,19 +79,17 @@ function rulePlain(dataset: Dataset, c: Criterion, notice?: Notice): string {
     // its id: "The offer must pay at least ..." is true of a salary and false
     // of the funds a job-search stay asks you to evidence.
     const period = periodOf(dataset, c.field);
-    return `This route asks for at least <span class="mono">${
-      esc(formatEURPer(c.threshold.amount, period))}</span> — ${
-      esc(subjectOf(dataset, c.field))}.`;
+    return asksAtLeastHtml(esc(formatEURPer(c.threshold.amount, period)), esc(subjectOf(dataset, c.field)));
   }
   if (c.op === "points")
-    return `This route counts ${c.required.value} points from the official table. Every item below scores, and the table is quoted under it.`;
+    return esc(countsPointsLine(c.required.value));
   if ("field" in c && c.field === "citizenship")
     // The lede has already said who the page is for, three lines above; saying
     // it again word for word at the top of the first rule reads as a stutter.
     // What this card adds is the authority's own answer for everyone else, in
     // its words, with its quote below.
-    return notice ? esc(notice.body) : `This route asks for ${esc(criterionPhrase(dataset, c))}.`;
-  return `This route asks for ${esc(criterionPhrase(dataset, c))}.`;
+    return notice ? esc(notice.body) : esc(asksFor(criterionPhrase(dataset, c)));
+  return esc(asksFor(criterionPhrase(dataset, c)));
 }
 
 /**
@@ -121,9 +122,9 @@ function asksBlock(dataset: Dataset, criteria: Criterion[], seen: Glossary): str
   // A question's words with any route they name said in full (#159).
   const learn = fields.flatMap((f) => learnLinkOf(dataset, f.id) ?? []);
   return `
-        <div class="asks"><b>What the checker asks</b><ul>${
+        <div class="asks"><b>${esc(WHAT_THE_CHECKER_ASKS)}</b><ul>${
     fields.map((f) => `<li>${esc(glossed(fillRouteSlots(f.label, dataset), seen))}</li>`).join("")}</ul>${
-    learn.map((l) => `<p>You can find this out yourself: <a ${tapInline()} href="${
+    learn.map((l) => `<p>${esc(FIND_OUT_YOURSELF)} <a ${tapInline()} href="${
       escAttr(l.url)}" target="_blank" rel="noopener">${
       esc(glossedLearnLinkText(l, seen))} &#8599;</a></p>`).join("")}</div>`;
 }

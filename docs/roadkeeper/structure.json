@@ -1881,6 +1881,11 @@
   },
   {
    "from": "src/lib/route-page/blocks/rail.ts",
+   "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/rail.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
@@ -1952,6 +1957,11 @@
   {
    "from": "src/lib/route-page/blocks/stated-blocks.ts",
    "to": "src/lib/copy/quotes.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/stated-blocks.ts",
+   "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -8082,6 +8092,16 @@
     "exported": true
    },
    {
+    "name": "checkYoursFor",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CHECK_YOUR_OWN_SITUATION",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "THE_DATA",
     "kind": "const",
     "exported": true
@@ -8542,6 +8562,161 @@
    {
     "name": "ANY_PATH",
     "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "sourcedOnThisPage",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "thresholdInDescription",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "RULES_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ANSWER_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ASKED_SCOPE_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WHERE_DO_YOU_STAND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CHECK_ON_THIS_DEVICE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "onThisRouteHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "BESIDE_THE_RULES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_BEHIND_THIS_PAGE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "GENERATED_FROM_DATASET",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "notOpenTo",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "THRESHOLD_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "POINTS_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOR_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FOR_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CONDITION_KIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "asksAtLeastHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "countsPointsLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "asksFor",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "WHAT_THE_CHECKER_ASKS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FIND_OUT_YOURSELF",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WHO_THIS_DOES_NOT_BIND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ALSO_REQUIRED_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "AUTHORITY_REQUIRES_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "UNSOURCED_CAVEATS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "READINGS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "RAIL_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "thisRouteRow",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "anotherRouteRow",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "otherRoutesRow",
+    "kind": "fn",
     "exported": true
    }
   ],
@@ -10364,5 +10539,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "974367e2c45b89ecf0e0b58b87f06636ddff663cabb2ff5603f48f0e3e3c95f9"
+ "digest": "3d08212bd06fb21fa699582cd7372df0cda92d00addeae61f9f4c4f4176d868a"
 }
