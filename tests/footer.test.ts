@@ -3,7 +3,10 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { DISCLAIMER, datasetDay, unreadLabel } from "../src/lib/copy/frame.js";
+import {
+  CHECK_YOURS, DISCLAIMER, LAST_RUN, OWNER, PRODUCT_NAME, READ_DAILY, ROUTE_AS_JSON, copyrightNotice, datasetDay,
+  readRangeHtml, unreadLabel,
+} from "../src/lib/copy/frame.js";
 import { countryLinks } from "../src/lib/slug.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
@@ -57,6 +60,9 @@ const footerOf = (html: string): string => {
  * unbreakable tokens in their own elements, so its sentences live across tags
  * and only the rendered text can be asserted whole.
  */
+/** The read range's words before its first day, as the copy says them. */
+const READ_RANGE_OPENING = readRangeHtml("\u0000", "\u0000").split("\u0000")[0]!;
+
 const readerSees = (html: string): string =>
   html.replace(/<[^>]*>/g, "").split(/\s+/).join(" ").split(String.fromCharCode(160)).join(" ").trim();
 
@@ -72,7 +78,7 @@ function today(): { run: string; unread: number; parenthesis: string; day: strin
   return {
     run,
     unread: unread.length,
-    parenthesis: `(last run ${run}${unread.length ? ` \u00b7 ${unreadLabel(unread.length)}` : ""})`,
+    parenthesis: `(${LAST_RUN} ${run}${unread.length ? ` \u00b7 ${unreadLabel(unread.length)}` : ""})`,
     day: unread.length
       ? `an unread day, ${run}: ${unread.map((u) => u.id).join(", ")}`
       : `a clean day, ${run}`,
@@ -83,7 +89,7 @@ function today(): { run: string; unread: number; parenthesis: string; day: strin
 const shared = (footer: string): string =>
   footer
     .replace(/ aria-current="(page|true)"/g, "")
-    .replace(/<li><a class="tap-min" href="[^"]*">This route as JSON<\/a><\/li>/, "")
+    .replace(new RegExp(`<li><a class="tap-min" href="[^"]*">${ROUTE_AS_JSON}</a></li>`), "")
     // "Check yours" is pre-scoped where a country is known, so its href is the
     // page's business, not the footer's.
     .replace(/<li class="act"><a class="tap-min" href="[^"]*">/, '<li class="act"><a href="CHECK">')
@@ -114,11 +120,11 @@ describe("one footer, every page", () => {
       const footer = footerOf(route.html);
       expect(footer, route.path).toContain('aria-current="true"');
       // And the route's own JSON, which no other page may claim.
-      expect(footer, route.path).toContain("This route as JSON");
+      expect(footer, route.path).toContain(ROUTE_AS_JSON);
       expect(footer, route.path).toContain(`href="${url(`${route.path}.json`)}"`);
     }
     for (const page of pages.filter((p) => !/^\/[a-z-]+\/[a-z0-9-]+\/index\.html$/.test(p.path)))
-      expect(footerOf(page.html), `${page.path} offers a route's JSON`).not.toContain("This route as JSON");
+      expect(footerOf(page.html), `${page.path} offers a route's JSON`).not.toContain(ROUTE_AS_JSON);
   });
 
   it("the disclaimer is said once per page, in the words the copy module holds", () => {
@@ -173,19 +179,19 @@ describe("one footer, every page", () => {
   it("the data line states the span the values were read over, from the dataset", () => {
     const read = reckonDatasetFacts(ds, watchState).readRange;
     const footer = footerIn(frameAlone(ds));
-    expect(footer).toContain(`values read between <b><time datetime="${read.oldest}">`);
+    expect(footer).toContain(`${READ_RANGE_OPENING}<b><time datetime="${read.oldest}">`);
     // "Re-read daily" is a claim, so the day it last happened is printed with
     // it, from the watch's own state (devils-advocate, 2026-09-08) — and, on
     // a day that run left a source unread, how many (s11).
     const state = today();
-    expect(readerSees(footer), state.day).toContain(`re-read daily ${state.parenthesis}`);
+    expect(readerSees(footer), state.day).toContain(`${READ_DAILY} ${state.parenthesis}`);
     expect(state.run, "the watch has never recorded a run").toMatch(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
     expect(footer).toContain(`dataset ${datasetDay(ds.dataset_version)}`);
     // The oldest is really the oldest, and the two ends are different days.
     expect(read.oldest < read.newest, `${read.oldest}..${read.newest}`).toBe(true);
     // The schema version belongs to the data page now, not to every page.
     expect(footer).not.toContain(ds.schema_version);
-    expect(footer).toContain(`\u00a9 ${read.newest.slice(0, 4)} Oytun Onal`);
+    expect(footer).toContain(copyrightNotice(read.newest.slice(0, 4), OWNER));
   });
 });
 
@@ -257,7 +263,7 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
         // address was a second exception for a day; it left the footer on
         // the s13 walk, and no link here may be one.)
         expect(link.text.includes("@"), `"${link.text}" is a mail address in the footer`).toBe(false);
-        if (link.text === "Check yours" || link.text.endsWith("Permit Rulebook")) continue;
+        if (link.text === CHECK_YOURS || link.text.endsWith(PRODUCT_NAME)) continue;
         expect(link.underline, `"${link.text}" has no resting underline`).toContain("underline");
       }
     }, 180000);
@@ -308,7 +314,7 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
     }
     // The tokens a reader must never see split.
     const texts = seen.held.map((t) => t.text.split(String.fromCharCode(160)).join(" "));
-    expect(texts.some((t) => t.includes("Oytun Onal")), texts.join(" | ")).toBe(true);
+    expect(texts.some((t) => t.includes(OWNER)), texts.join(" | ")).toBe(true);
     // The last-run parenthesis is among them on a clean day. With a count in
     // it, it is not: it grew to 350 px in this 348 px column on the first
     // unread day (s15, 2026-09-16, run 35098352421), so it may break at its
@@ -316,11 +322,11 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
     // half is held whole and measured above.
     const state = today();
     if (state.unread) {
-      expect(texts.some((t) => /^\(last run [0-9]{4}-[0-9]{2}-[0-9]{2} \u00b7$/.test(t)), `${state.day}: ${texts.join(" | ")}`)
+      expect(texts.some((t) => new RegExp(`^\\(${LAST_RUN} [0-9]{4}-[0-9]{2}-[0-9]{2} \u00b7$`).test(t)), `${state.day}: ${texts.join(" | ")}`)
         .toBe(true);
       expect(texts, `${state.day}: ${texts.join(" | ")}`).toContain(`${unreadLabel(state.unread)})`);
     } else {
-      expect(texts.some((t) => /^\(last run [0-9]{4}-[0-9]{2}-[0-9]{2}\)$/.test(t)), `${state.day}: ${texts.join(" | ")}`)
+      expect(texts.some((t) => new RegExp(`^\\(${LAST_RUN} [0-9]{4}-[0-9]{2}-[0-9]{2}\\)$`).test(t)), `${state.day}: ${texts.join(" | ")}`)
         .toBe(true);
     }
     expect(texts.filter((t) => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(t)).length,
@@ -339,7 +345,7 @@ describe("what the site says about the daily check is what the watch recorded", 
     const html = dataPage(ds).html;
     const run = reckonDatasetFacts(ds, watchState).watchRun.lastRun;
     expect(run, "the watch state carries no last_run").toMatch(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
-    expect(html).toContain(`last run <b><time datetime="${run}">${run}</time></b>`);
+    expect(html).toContain(`${LAST_RUN} <b><time datetime="${run}">${run}</time></b>`);
     // And it no longer claims a mechanism that does not exist.
     expect(html).not.toContain("moves on its own");
     expect(html).not.toContain("asks this site to rebuild");
@@ -351,6 +357,6 @@ describe("what the site says about the daily check is what the watch recorded", 
     const state = today();
     for (const page of builtPages())
       expect(readerSees(footerOf(page.html)), `${page.path} on ${state.day}`)
-        .toContain(`re-read daily ${state.parenthesis}`);
+        .toContain(`${READ_DAILY} ${state.parenthesis}`);
   });
 });

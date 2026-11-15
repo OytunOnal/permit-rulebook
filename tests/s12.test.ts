@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { dataPage } from "../src/lib/data-page.js";
-import { LAST_CHECKED, NEWEST_VALUE_CHANGED } from "../src/lib/copy/data-page.js";
-import { datasetDay } from "../src/lib/copy/frame.js";
+import {
+  DAILY_CHECK_CLAIM, DATASET_VERSION, LAST_CHECKED, NEWEST_VALUE_CHANGED, QUOTED_VALUES, ROUTES_TERM, SCHEMA_VERSION,
+  SENTENCES_OF_OURS,
+} from "../src/lib/copy/data-page.js";
+import { RULES_READ, datasetDay, readRangeHtml } from "../src/lib/copy/frame.js";
 import { watchState } from "../src/lib/site.js";
 import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { watchStateAt } from "./watch-state-at.js";
@@ -156,7 +159,7 @@ describe("what /data/ says about when everything was last checked", () => {
     expect(termsOf(html)).not.toContain(LAST_CHECKED);
     expect(html).not.toContain(LAST_CHECKED);
     expect(html, "an empty date is on the page for a machine to read").not.toContain(`datetime=""`);
-    expect(readerSees(html)).toContain("Every source is re-read daily.");
+    expect(readerSees(html)).toContain(`${DAILY_CHECK_CLAIM}.`);
   });
 });
 
@@ -195,9 +198,9 @@ describe("how the list is grouped, after the human read it on the live page", ()
   it("holds the seven facts in three lists, each of one kind", () => {
     expect(factLists(dataPage(ds).html).map((list) => [list.kind, list.rows.map(([term]) => term)]))
       .toEqual([
-        ["facts-dates", ["Dataset version", "Schema version", NEWEST_VALUE_CHANGED, LAST_CHECKED]],
-        ["facts-counts", ["Quoted values", "Sentences of ours"]],
-        ["facts-wide", ["Routes"]],
+        ["facts-dates", [DATASET_VERSION, SCHEMA_VERSION, NEWEST_VALUE_CHANGED, LAST_CHECKED]],
+        ["facts-counts", [QUOTED_VALUES, SENTENCES_OF_OURS]],
+        ["facts-wide", [ROUTES_TERM]],
       ]);
   });
 
@@ -209,7 +212,7 @@ describe("how the list is grouped, after the human read it on the live page", ()
    */
   it("leaves the Routes sentence its full wording, alone on its row", () => {
     const { counts } = factsOf(ds);
-    expect(under(dataPage(ds).html, "Routes")).toBe(
+    expect(under(dataPage(ds).html, ROUTES_TERM)).toBe(
       `${counts.scored} scored, ${counts.quotedOnly} quoted and dated but not scored, in ${
         ds.countries.length} countries`);
   });
@@ -224,10 +227,10 @@ describe("how the list is grouped, after the human read it on the live page", ()
   it("prints the dataset version as a day, like every other date beside it", () => {
     const day = datasetDay(ds.dataset_version);
     const html = dataPage(ds).html;
-    expect(under(html, "Dataset version")).toBe(day);
-    expect(under(html, "Dataset version"), "dots among dashes").not.toContain(".");
+    expect(under(html, DATASET_VERSION)).toBe(day);
+    expect(under(html, DATASET_VERSION), "dots among dashes").not.toContain(".");
     expect(ds.dataset_version, "the dataset's own version string was rewritten").toContain(".");
-    expect(html).toContain(`<dt>Dataset version</dt><dd><time datetime="${day}">${day}</time></dd>`);
+    expect(html).toContain(`<dt>${DATASET_VERSION}</dt><dd><time datetime="${day}">${day}</time></dd>`);
   });
 });
 describe("what this slice does not touch", () => {
@@ -238,8 +241,8 @@ describe("what this slice does not touch", () => {
   it("leaves the stamp, the quote dates and the footer's range alone", () => {
     const html = dataPage(ds).html;
     const seen = readerSees(html);
-    expect(seen).toContain("Rules read");
-    expect(seen).toContain("values read between");
+    expect(seen).toContain(RULES_READ);
+    expect(seen).toContain(readRangeHtml("\u0000", "\u0000").split("\u0000")[0]!.trim());
     expect(html).toContain("<small>read ");
     expect(stampedDate(html)).toBe(factsOf(ds).readRange.newest);
   });
@@ -248,8 +251,8 @@ describe("what this slice does not touch", () => {
   it("carries the same seven facts, none lost and none said twice", () => {
     const terms = termsOf(dataPage(ds).html);
     expect(terms).toEqual([
-      "Dataset version", "Schema version", NEWEST_VALUE_CHANGED, LAST_CHECKED,
-      "Quoted values", "Sentences of ours", "Routes",
+      DATASET_VERSION, SCHEMA_VERSION, NEWEST_VALUE_CHANGED, LAST_CHECKED,
+      QUOTED_VALUES, SENTENCES_OF_OURS, ROUTES_TERM,
     ]);
     expect(terms, "a fact is on the page twice").toEqual([...new Set(terms)]);
   });

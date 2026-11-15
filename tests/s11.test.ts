@@ -5,7 +5,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { unreadSentence, unreadSources, type Dataset, type Route, type WatchState } from "permit-rulebook-data";
 import { DAILY_CHECK_CLAIM } from "../src/lib/copy/data-page.js";
 import { dailyCheck } from "../src/lib/copy/route-page.js";
-import { unreadLabel } from "../src/lib/copy/frame.js";
+import { LAST_RUN, READ_DAILY, unreadLabel } from "../src/lib/copy/frame.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { routePages, type RoutePage } from "../src/lib/route-page/route-page.js";
 import { watchState } from "../src/lib/site.js";
@@ -61,7 +61,7 @@ describe("what /data/ says on a day something went unread", () => {
   it("carries the qualification, in the human's words", () => {
     const html = dataPage(ds, watchStateAt("2026-09-15", [spain])).html;
     expect(readerSees(html)).toContain(
-      "Every source is re-read daily — last run 2026-09-15. "
+      `${DAILY_CHECK_CLAIM} — ${LAST_RUN} 2026-09-15. `
       + `A Spanish source did not answer on the last run; the values it backs were read on ${stateReadingDayOf(spain)}.`);
   });
 
@@ -97,7 +97,7 @@ describe("what /data/ says on a day something went unread", () => {
     // by name, not by the state's luck (the first unread day, 2026-09-16, run
     // 35098352421).
     const clean = dataPage(ds, watchStateAt(stateRun().lastRun)).html;
-    expect(readerSees(clean)).toContain(`Every source is re-read daily — last run ${stateRun().lastRun}.`);
+    expect(readerSees(clean)).toContain(`${DAILY_CHECK_CLAIM} — ${LAST_RUN} ${stateRun().lastRun}.`);
     expect(clean).not.toContain("did not answer on the last run");
     expect(clean).not.toContain("unread");
   });
@@ -106,19 +106,19 @@ describe("what /data/ says on a day something went unread", () => {
 describe("the footer's short form", () => {
   it("names the count beside the run, in figures, inside the same parenthesis", () => {
     const footer = footerOn(watchStateAt("2026-09-15", [spain, netherlands]));
-    expect(readerSees(footer)).toContain("re-read daily (last run 2026-09-15 · 2 sources unread)");
+    expect(readerSees(footer)).toContain(`${READ_DAILY} (${LAST_RUN} 2026-09-15 · ${unreadLabel(2)})`);
   });
 
   it("counts one in the singular", () => {
     const footer = footerOn(watchStateAt("2026-09-15", [spain]));
-    expect(readerSees(footer)).toContain("re-read daily (last run 2026-09-15 · 1 source unread)");
+    expect(readerSees(footer)).toContain(`${READ_DAILY} (${LAST_RUN} 2026-09-15 · ${unreadLabel(1)})`);
   });
 
   it("says nothing at all when every source answered", () => {
     // The empty list is passed, not read: the default is the real state, and
     // the real state stopped being clean on 2026-09-16 (s15, run 35098352421).
     const footer = footerOn(watchStateAt(stateRun().lastRun));
-    expect(readerSees(footer)).toContain(`re-read daily (last run ${stateRun().lastRun})`);
+    expect(readerSees(footer)).toContain(`${READ_DAILY} (${LAST_RUN} ${stateRun().lastRun})`);
     expect(footer).not.toContain("unread");
   });
 });
@@ -181,18 +181,18 @@ describe("the state this site is built against", () => {
     ];
     expect(pages.length).toBeGreaterThan(20);
     for (const page of pages)
-      expect(readerSees(page.html), page.path).toContain("re-read daily (last run " + run + " · 1 source unread)");
-    expect(readerSees(dataPage(ds, AS_RECORDED).html)).not.toContain("a daily check re-reads every source.");
+      expect(readerSees(page.html), page.path).toContain(`${READ_DAILY} (${LAST_RUN} ${run} · ${unreadLabel(1)})`);
+    expect(readerSees(dataPage(ds, AS_RECORDED).html)).not.toContain(`${dailyCheck(0)}.`);
     const citing = routes.filter((p) => routeFactsOf(facts, p.json.route as Route).unread.length);
     expect(citing.map((p) => p.path).every((x) => x.startsWith("/spain/")), "the UGE PDF backs Spanish values").toBe(true);
     expect(citing.length).toBeGreaterThan(0);
     for (const page of routes) {
       const seen = readerSees(page.html);
       if (citing.includes(page)) {
-        expect(seen, page.path).not.toContain("a daily check re-reads every source.");
-        expect(seen, page.path).toContain("a daily check re-reads every source; the last run did not reach one of this route's sources");
+        expect(seen, page.path).not.toContain(`${dailyCheck(0)}.`);
+        expect(seen, page.path).toContain(dailyCheck(1));
       } else {
-        expect(seen, page.path).toContain("a daily check re-reads every source.");
+        expect(seen, page.path).toContain(`${dailyCheck(0)}.`);
         expect(seen, page.path).not.toContain("did not reach");
       }
     }
@@ -205,10 +205,10 @@ describe("the state this site is built against", () => {
     const run = stateRun().lastRun;
     for (const page of routePages(ds, watchStateAt(run))) {
       const seen = readerSees(page.html);
-      expect(seen, page.path).toContain("a daily check re-reads every source.");
+      expect(seen, page.path).toContain(`${dailyCheck(0)}.`);
       expect(seen, page.path).not.toContain("unread");
     }
-    expect(readerSees(dataPage(ds, watchStateAt(run)).html)).toContain(`Every source is re-read daily — last run ${run}.`);
+    expect(readerSees(dataPage(ds, watchStateAt(run)).html)).toContain(`${DAILY_CHECK_CLAIM} — ${LAST_RUN} ${run}.`);
   });
 
   /**
@@ -228,7 +228,7 @@ describe("the state this site is built against", () => {
     const day = unread.length
       ? `an unread day, ${run}: ${unread.map((u) => u.id).join(", ")}`
       : `a clean day, ${run}`;
-    const parenthesis = `re-read daily (last run ${run}${unread.length ? ` · ${unreadLabel(unread.length)}` : ""})`;
+    const parenthesis = `${READ_DAILY} (${LAST_RUN} ${run}${unread.length ? ` · ${unreadLabel(unread.length)}` : ""})`;
     expect(routes.length, day).toBeGreaterThan(20);
     for (const page of routes) {
       const seen = readerSees(page.html);
@@ -238,7 +238,7 @@ describe("the state this site is built against", () => {
     }
     const seen = readerSees(data);
     expect(seen, `/data/ on ${day}`).toContain(
-      `${DAILY_CHECK_CLAIM} — last run ${run}.${unread.length ? ` ${unreadSentence(unread)}` : ""} A source that has moved`);
+      `${DAILY_CHECK_CLAIM} — ${LAST_RUN} ${run}.${unread.length ? ` ${unreadSentence(unread)}` : ""} A source that has moved`);
     expect(seen, `/data/ on ${day}`).toContain(parenthesis);
     if (!unread.length) expect(seen, `/data/ on ${day}`).not.toContain("unread");
   }
@@ -274,7 +274,7 @@ describe("the state this site is built against", () => {
     expect(readerSees(dataPage(ds, state).html)).toContain(
       `A German source did not answer on the last run; the values it backs were read on ${since}.`);
     expect(readerSees(footerOn(state)))
-      .toContain(`re-read daily (last run ${run} · 1 source unread)`);
+      .toContain(`${READ_DAILY} (${LAST_RUN} ${run} · ${unreadLabel(1)})`);
   });
 
   /**

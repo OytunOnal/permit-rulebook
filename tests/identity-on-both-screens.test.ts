@@ -6,6 +6,7 @@ import { answerWith, openAtRest, skipReason, withSite } from "./browser-walk.js"
 import { FALLBACK_STACK } from "./fallback-stack.js";
 import { SEED_FINISHED_RECORD } from "./seed-finished-record.js";
 import { WIDE_FROM_PX } from "../src/lib/first-paint.js";
+import { RECORD_GENERATED, RULES_READ } from "../src/lib/copy/frame.js";
 import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { watchState } from "../src/lib/site.js";
 
@@ -139,7 +140,7 @@ async function readStampOnScreensOpenedBy(page: BrowserPage, openTheInterview: (
   await openTheInterview();
   const results = await read();
   // The words alone, with the masthead's own copy untouched.
-  await page.evaluate('document.getElementById("stamp-label").textContent = "Rules read"');
+  await page.evaluate(`document.getElementById("stamp-label").textContent = ${JSON.stringify(RULES_READ)}`);
   return { first, answered, results, swapped: await read() };
 }
 
@@ -218,8 +219,8 @@ describe.skipIf(skipped !== null)(LANDS_IDENTICALLY, () => {
         expect(route[key], `${key} differs between the two screens`).toEqual(results[key]);
 
       // The text each stamp carries is its own, and stays its own.
-      expect(results.text).toMatch(/^Record generated[ ]+[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
-      expect(route.text).toMatch(/^Rules read[ ]+[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+      expect(results.text).toMatch(new RegExp(`^${RECORD_GENERATED}[ ]+[0-9]{4}-[0-9]{2}-[0-9]{2}$`));
+      expect(route.text).toMatch(new RegExp(`^${RULES_READ}[ ]+[0-9]{4}-[0-9]{2}-[0-9]{2}$`));
     }, 120000);
   }
 });
@@ -274,11 +275,11 @@ describe.skipIf(skipped !== null)(LANDS_IDENTICALLY, () => {
 
     const newest = reckonDatasetFacts(dataset as unknown as Dataset, watchState).readRange.newest;
     // The questions stand on the end of the read range, the dataset's one newest read day (ruling 1 on #323).
-    expect(seen.first.text).toBe(`Rules read ${newest}`);
+    expect(seen.first.text).toBe(`${RULES_READ} ${newest}`);
     expect(seen.first.datetime).toBe(newest);
-    expect(seen.answered.text).toBe(`Rules read ${newest}`);
+    expect(seen.answered.text).toBe(`${RULES_READ} ${newest}`);
     // The results stand on the day the record was made.
-    expect(seen.results.text).toMatch(/^Record generated [0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+    expect(seen.results.text).toMatch(new RegExp(`^${RECORD_GENERATED} [0-9]{4}-[0-9]{2}-[0-9]{2}$`));
     // The box is the same box on every screen, and swapping the words alone moves nothing at all.
     for (const state of ["answered", "results"])
       for (const key of ["left", "width", "height"])

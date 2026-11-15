@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { PRODUCT_NAME } from "../src/lib/copy/frame.js";
 import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
@@ -71,7 +72,7 @@ describe(ONE_PAGE_PER_ROUTE, () => {
         'property="og:url"', 'name="twitter:card"', 'rel="canonical"', 'rel="icon"',
       ]) expect(page.html, `${page.path}: ${tag}`).toContain(tag);
       expect(page.html, page.path).toContain("/social-card.png");
-      expect(page.title, page.path).toContain("Permit Rulebook");
+      expect(page.title, page.path).toContain(PRODUCT_NAME);
     }
   });
 

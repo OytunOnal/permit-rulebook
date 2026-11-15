@@ -4,9 +4,9 @@ import {
   evaluate,
   type Criterion, type Dataset, type Profile, type Route,
 } from "permit-rulebook-data";
-import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn } from "../src/lib/copy/quotes.js";
+import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn, sameNumberNote } from "../src/lib/copy/quotes.js";
 import {
-  APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_OFFICIAL_WORDING_HEADING, WHAT_THIS_ROUTE_ASKS,
+  APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NOT_CHECKED_HEADING, NO_OFFICIAL_WORDING_HEADING, WHAT_THIS_ROUTE_ASKS,
 } from "../src/lib/copy/verdict.js";
 import { blocksIn, drawnRouteOn, everyDrawnRouteIn, standingOn, verdictOn } from "./verdict-cards.js";
 import { DUTCH_GRADUATE, bandFor } from "./personas.js";
@@ -67,7 +67,7 @@ describe("the orientation year, on the card", () => {
 
   it("states the condition the interview cannot ask, under the same heading as the rest", () => {
     const html = precondOf(blankDrawnRoute("nl-orientation-year"));
-    expect(html).toContain("Also required — not checked here");
+    expect(html).toContain(NOT_CHECKED_HEADING);
     expect(html).toMatch(/must not have previously held an orientation year permit/i);
     // Beside the plain lines, not in a block of its own. The deadline reads
     // as the immigration service states it since s5f — "in the three years
@@ -362,7 +362,7 @@ describe("a quote on the results card is framed the way it is on a route page", 
   });
 
   it("and says so where the source spells a number its own way", () => {
-    expect(blueCardSources()).toContain("The source writes 50.700 where this page writes 50,700");
+    expect(blueCardSources()).toContain(sameNumberNote("50.700", "50,700"));
   });
 
   it("an English source is not labelled as anything else", () => {

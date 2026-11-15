@@ -7,7 +7,7 @@ import {
   FEEDBACK_LEDE, FEEDBACK_NOTE, FEEDBACK_OWN_APP, FEEDBACK_OWN_APP_LEAD, TRACKER_NEW_NEED, TRACKER_WRONG_VALUE,
   feedbackTemplateLine,
 } from "../src/lib/copy/feedback.js";
-import { COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW } from "../src/lib/copy/frame.js";
+import { CHECK_YOURS, COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW, THE_DATA } from "../src/lib/copy/frame.js";
 import { RESULT_FEEDBACK_ASK, resultFeedbackLine } from "../src/lib/copy/verdict.js";
 import {
   FEEDBACK_ADDRESS, FEEDBACK_PATH, GMAIL_COMPOSE_URL, NEW_NEED_URL, SPONSOR_URL, TRACKER_URL, absolute, url,
@@ -281,7 +281,7 @@ describe("the header: four countries under one word", () => {
     // four countries live INSIDE the disclosure and are not items of the row.
     const row = [...header.replace(/<div class="list">[\s\S]*?<\/div>/, "")
       .matchAll(/<(?:summary|a) class="tap-min[^"]*"[^>]*>([^<]*)</g)].map((m) => m[1]);
-    expect(row.slice(0, 4)).toEqual([COUNTRIES, "Check yours", "The data", FEEDBACK]);
+    expect(row.slice(0, 4)).toEqual([COUNTRIES, CHECK_YOURS, THE_DATA, FEEDBACK]);
   });
 
   it("on a country's page the word is that country, and its row is marked", () => {
@@ -306,7 +306,7 @@ describe("the header: four countries under one word", () => {
     expect(header).toContain(`<span class="group">${COUNTRIES}</span>`);
     const order = [...header.matchAll(/<(?:span class="group"|summary|a)[^>]*>([^<]+)</g)].map((m) => m[1]);
     const after = order.slice(order.lastIndexOf("Netherlands") + 1);
-    expect(after).toEqual(["Check yours", "The data", FEEDBACK]);
+    expect(after).toEqual([CHECK_YOURS, THE_DATA, FEEDBACK]);
   });
 
   it("no country name enters any inline script, and the scripts remember nothing", () => {
@@ -763,7 +763,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
     // heading is always the word.
     expect(seen.summaryShown, "the disclosure's word is shown twice on the phone").toBe(false);
     expect(seen.rows).toEqual([
-      ...countryLinks(ds).map((l) => l.name), "Check yours", "The data", FEEDBACK,
+      ...countryLinks(ds).map((l) => l.name), CHECK_YOURS, THE_DATA, FEEDBACK,
     ]);
     for (const [i, tap] of seen.taps.entries())
       expect(tap, `"${seen.rows[i]}" is ${tap} px`).toBeGreaterThanOrEqual(44);

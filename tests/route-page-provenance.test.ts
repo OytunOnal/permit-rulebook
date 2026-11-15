@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { sameNumberNote } from "../src/lib/copy/quotes.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   forEachCriterion, formatEUR, formatEURPer, noticeSources, provenancedValuesOf, quoteLanguage,
@@ -109,12 +110,12 @@ describe(ONE_PAGE_PER_ROUTE, () => {
 
   it("says once where the source spells a number differently from the page", () => {
     expect(separatorNote(50700, "welches im Jahr 2026 50.700 Euro beträgt"))
-      .toBe("The source writes 50.700 where this page writes 50,700 — the same number.");
+      .toBe(sameNumberNote("50.700", "50,700"));
     // No note where the source agrees with the page, or never spells it.
     expect(separatorNote(50700, "at least 50,700 euro")).toBe("");
     expect(separatorNote(50700, "the general threshold applies")).toBe("");
     const de = pages.find((p) => p.path === "/germany/eu-blue-card-general")!;
-    expect(textOf(de.html)).toContain("The source writes 50.700 where this page writes 50,700");
+    expect(textOf(de.html)).toContain(sameNumberNote("50.700", "50,700"));
   });
 });
 

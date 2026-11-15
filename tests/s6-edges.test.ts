@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { FOR_KIND, audienceLine } from "../src/lib/copy/route-page.js";
 import { existsSync, readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { evaluate, notices, type Dataset, type Profile } from "permit-rulebook-data";
@@ -25,7 +26,7 @@ describe("s6 step 10 — the Irish reader on a German page", () => {
     const notice = audienceNoticeOf(ds);
     // The notice is a dataset value like any other: quote, source, read date.
     expect(notice.kind).toBe("no-permit-needed");
-    expect(page.html.indexOf("This page is for people who need a permit to work in Germany."))
+    expect(page.html.indexOf(audienceLine("Germany")))
       .toBeLessThan(page.html.indexOf('<article class="rule">'));
     // And its own sentence, with its quote, is the first rule card — not a
     // footnote at the bottom of seven rules she does not need.
@@ -33,7 +34,7 @@ describe("s6 step 10 — the Irish reader on a German page", () => {
       page.html.indexOf('<article class="rule">'),
       page.html.indexOf("</article>"),
     );
-    expect(firstCard).toContain("Who this is for");
+    expect(firstCard).toContain(FOR_KIND);
     expect(firstCard).toContain(notice.body);
     expect(firstCard).toContain(notice.source.quote);
     expect(firstCard).toContain(notice.source.retrieved_at);

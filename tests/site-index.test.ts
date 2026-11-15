@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { DISCLAIMER } from "../src/lib/copy/frame.js";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
@@ -232,7 +233,7 @@ describe("the site can be crawled and browsed", () => {
       expect(page.html, page.path).not.toContain('class="crumbs');
       expect(page.html, page.path).toContain('aria-current="page"');
       expect(page.html, page.path).toContain(`href="${url("/")}"`);
-      expect(text, page.path).toContain("Permit Rulebook makes no immigration decision");
+      expect(text, page.path).toContain(DISCLAIMER);
       // The page's stylesheet opens with the frame's, not a second copy of it.
       expect(page.html, page.path).toContain(`<style>${styleIn(frameAlone(ds))}`);
     }

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { SITUATION_FIELD, deriveQuestions, evaluate, isClosed, type Dataset, type Profile } from "permit-rulebook-data";
 import { INTRO_SUBLINE, SHORT_SUBLINE } from "../src/lib/copy/interview.js";
-import { answersCheckedLine, nearestLine } from "../src/lib/copy/verdict.js";
+import { NOTHING_OPEN_HEADLINE, answersCheckedLine, nearestLine } from "../src/lib/copy/verdict.js";
 import {
   EMPTY_INTERVIEW, interviewAfter, type Gesture, type InterviewState, type InterviewStep,
 } from "../src/lib/interview/start-interview.js";
@@ -238,8 +238,8 @@ describe("the masthead has exactly one author", () => {
     // the one line the type exists to keep honest (review J2).
     const one = verdictOn(ds, FRANCE_NOTHING, 3).action.masthead;
     const several = verdictOn(twoCountriesNothingOpen(), { ...FRANCE_NOTHING, destination: "all" }, 3).action.masthead;
-    expect(one.headline).toBe("Nothing open on these answers.");
-    expect(several.headline).toBe("Nothing open on these answers.");
+    expect(one.headline).toBe(NOTHING_OPEN_HEADLINE);
+    expect(several.headline).toBe(NOTHING_OPEN_HEADLINE);
     expect(one.subline.startsWith(answersCheckedLine(3, routesChecked(FRANCE_NOTHING)))).toBe(true);
     expect(several.subline.startsWith(answersCheckedLine(3, routesChecked(FRANCE_NOTHING)))).toBe(true);
     // A single country has no country sections to send anyone to (F7).

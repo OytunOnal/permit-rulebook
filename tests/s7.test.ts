@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { WHO_THIS_DOES_NOT_BIND } from "../src/lib/copy/route-page.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   evaluate, routeStatements, scopeLine,
@@ -118,7 +119,7 @@ describe("s7 — a Turkish passport on the Dutch highly skilled migrant route", 
     expect(html).toContain("This employer is a sponsor recognised by the IND.");
     // And, under it, who it does not bind — its own words, its own quote, its
     // own read date.
-    expect(html).toContain("Who this does not bind");
+    expect(html).toContain(WHO_THIS_DOES_NOT_BIND);
     expect(html).toContain("For employees with Turkish nationality, a recognised sponsor is not required.");
     expect(html).toContain("read 2026-09-10");
   });
@@ -180,7 +181,7 @@ describe("s7 — the other two permits the IND names, and the page that calls th
   it("a route page shows who the provisional residence permit does not bind", () => {
     const page = routePages(ds).find((p) => p.path.includes("/netherlands/") && p.path.includes("researcher"));
     expect(page, "no Dutch researcher page was built").toBeDefined();
-    expect(page!.html).toContain("Who this does not bind");
+    expect(page!.html).toContain(WHO_THIS_DOES_NOT_BIND);
     // Its own words, after the condition above it has explained the MVV.
     const said = (statement: string): string =>
       routeStatements(routeOf("nl-researcher")).find((s) => s.id === statement)!.except!.text;

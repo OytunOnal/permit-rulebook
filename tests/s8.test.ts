@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { NOT_FOR_KIND, notOpenTo } from "../src/lib/copy/route-page.js";
 import { esc, escAttr } from "../src/lib/reason.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
@@ -176,8 +177,8 @@ describe("s8 — the notice carries the open question without answering it", () 
 describe("s8 — a page is never quieter than a card", () => {
   it("states on the transfer card's page who the permit is not open to", () => {
     const html = pageAt(ICT_PAGE);
-    expect(html).toContain("Who this is not for");
-    expect(html).toContain("Not open to an Algerian passport");
+    expect(html).toContain(NOT_FOR_KIND);
+    expect(html).toContain(notOpenTo("an Algerian passport"));
     expect(html).toContain("Vous êtes étranger (sauf Européen ou Algérien)");
     expect(html).toContain("read 2026-09-10");
   });

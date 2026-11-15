@@ -7,8 +7,11 @@ import { dataPage } from "../src/lib/data-page.js";
 import { indexedPaths } from "../src/lib/sitemap.js";
 import { countryAddresses, routeAddresses, routePath } from "../src/lib/slug.js";
 import { arrivalOf } from "../src/lib/scope.js";
-import { NO_FIGURE } from "../src/lib/copy/route-page.js";
-import { QUOTED_ONLY_HEADING, countryHeadline } from "../src/lib/copy/country-page.js";
+import { ANSWER_HEADING, NO_FIGURE, WHERE_DO_YOU_STAND } from "../src/lib/copy/route-page.js";
+import {
+  NO_SALARY_THRESHOLD, QUOTED_ONLY_HEADING, SALARY_THRESHOLD, countryHeadline,
+} from "../src/lib/copy/country-page.js";
+import { PRODUCT_NAME } from "../src/lib/copy/frame.js";
 import { watchStateAt } from "./watch-state-at.js";
 
 const ds = dataset as unknown as Dataset;
@@ -103,8 +106,8 @@ describe("s9 — a route page that quotes the rules and offers no verdict", () =
       const html = routePage(ds, a, watchStateAt("2026-09-10")).html;
       const text = textOf(html);
       expect(html, a.route.id).not.toContain(`?route=${a.route.id}`);
-      expect(text, a.route.id).not.toContain("Where do you stand on this route?");
-      expect(text, a.route.id).not.toContain("What this route asks for");
+      expect(text, a.route.id).not.toContain(WHERE_DO_YOU_STAND);
+      expect(text, a.route.id).not.toContain(ANSWER_HEADING);
       expect(text, a.route.id).not.toContain(NO_FIGURE);
       // No rule cards: a rule card is what a criterion renders as, and this
       // route has none.
@@ -139,7 +142,7 @@ describe("s9 — a route page that quotes the rules and offers no verdict", () =
       for (const tag of [
         'property="og:title"', 'property="og:description"', 'rel="canonical"', 'rel="icon"',
       ]) expect(html, `${a.route.id}: ${tag}`).toContain(tag);
-      expect(html, a.route.id).toContain("Permit Rulebook");
+      expect(html, a.route.id).toContain(PRODUCT_NAME);
       expect(html, a.route.id).toContain("last run");
       expect(page.readDate, a.route.id).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(page.json.route, a.route.id).toEqual(a.route);
@@ -211,8 +214,8 @@ describe("s9 — a country page lists them, below the ones it scores", () => {
   it("an unscored card offers no figure it has no rule for", () => {
     const { page } = pageFor("DE");
     const after = page.html.slice(page.html.indexOf(QUOTED_ONLY_HEADING));
-    expect(after).not.toContain("no salary threshold");
-    expect(after).not.toContain("salary threshold");
+    expect(after).not.toContain(NO_SALARY_THRESHOLD);
+    expect(after).not.toContain(SALARY_THRESHOLD);
   });
 });
 

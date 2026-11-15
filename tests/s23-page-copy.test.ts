@@ -9,6 +9,7 @@ import {
 } from "permit-rulebook-data";
 import { EITHER_PATH, dailyCheck } from "../src/lib/copy/route-page.js";
 import { proseProvenanceCounts } from "../src/lib/copy/data-page.js";
+import { LAST_RUN, READ_DAILY, unreadLabel } from "../src/lib/copy/frame.js";
 import { questionCounter } from "../src/lib/copy/interview.js";
 import { glossSection, glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
@@ -74,14 +75,14 @@ describe("the route page's liveness line names its own source or stays silent", 
 
   it("a route none of whose sources went unread prints the plain line, whatever went unread elsewhere", () => {
     const html = routePage(ds, address("fr-talent-blue-card"), watchStateAt(run, [own, other])).html;
-    expect(textOf(html)).toContain("a daily check re-reads every source. ");
+    expect(textOf(html)).toContain(`${dailyCheck(0)}. `);
     expect(textOf(html)).not.toContain("did not reach");
     expect(dailyCheck(0)).toBe("a daily check re-reads every source");
   });
 
   it("the footer's short form still counts every unread source the reader is looking at (s11)", () => {
     const html = routePage(ds, address("fr-talent-blue-card"), watchStateAt(run, [own, other])).html;
-    expect(textOf(html)).toContain(`re-read daily (last run ${run} · 2 sources unread)`);
+    expect(textOf(html)).toContain(`${READ_DAILY} (${LAST_RUN} ${run} · ${unreadLabel(2)})`);
   });
 
   it("over every route: only the pages citing the unread source carry the clause", () => {
