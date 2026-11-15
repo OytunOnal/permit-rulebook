@@ -4,12 +4,12 @@ import { WIDE_FROM_PX, WIDE_QUERY } from "./first-paint.js";
 /**
  * The site's one narrow/wide breakpoint, written once (#388).
  *
- * A stylesheet cannot import, so the width the first paint reads,
- * `WIDE_FROM_PX`, was typed again by hand in every sheet that turns with it,
- * and a missed copy would split the page at two widths (#69). Each sheet now
- * writes a name for the side it draws, `@media (--narrow)` or
- * `@media (--wide)`, and this step writes the first paint's width in its
- * place, before any other step reads the sheet.
+ * A stylesheet cannot import the width the first paint reads, `WIDE_FROM_PX`,
+ * and a width typed by hand in each sheet that turns with it would split the
+ * page at two widths wherever one copy was missed. So each sheet writes a name
+ * for the side it draws, `@media (--narrow)` or `@media (--wide)`, and this
+ * step writes the first paint's width in its place, before any other step
+ * reads the sheet.
  */
 const QUERY_OF_NAME: Readonly<Record<string, string>> = {
   "(--narrow)": `(max-width: ${WIDE_FROM_PX - 1}px)`,

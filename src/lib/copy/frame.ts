@@ -164,8 +164,8 @@ export const FEEDBACK_FOOTER_ROW = "How to write, and what happens";
 
 /**
  * The footer's words: its columns' headings and rows, the licence line and
- * the health line. The wording is #85's and #185's; it moved here unchanged
- * (#389), so the footer's template types none of it.
+ * the health line. The wording is #85's and #185's; the footer's template
+ * types none of it.
  */
 export const CHECK_YOURS = "Check yours"; // the countries column's last row and the header's: where the interview starts
 /** A page's own button into the interview: "Check yours", then the places it is scoped to, joined. */

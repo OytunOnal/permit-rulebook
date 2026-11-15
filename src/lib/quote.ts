@@ -155,7 +155,7 @@ export const readDateTime = (day: string): string => `<time datetime="${escAttr(
  * frame's note, and its own link to its source ↗ (#387). The route page's
  * rules, its notices and its stated blocks draw it, and so do the results
  * screen's cards, notices and closed rows: one line, so the two screens
- * cannot print a quote two ways again.
+ * cannot print a quote two ways.
  */
 export function quoteLineHtml(value: QuotedValue, options: QuoteLineOptions = {}, seen: Glossary = new Set()): string {
   const { lang, host, note } = quoteFrame(value, options.amount);
