@@ -91,7 +91,9 @@ describe("the route page's liveness line names its own source or stays silent", 
   });
 
   it("over every route: only the pages citing the unread source carry the clause", () => {
-    const pages = routePages(ds, watchStateAt(run, [own])), facts = reckonDatasetFacts(ds, watchStateAt(run, [own]));
+    const state = watchStateAt(run, [own]);
+    const pages = routePages(ds, state);
+    const facts = reckonDatasetFacts(ds, state);
     const citing = new Set(routeAddresses(ds).filter((a) => routeFactsOf(facts, a.route).unread.length).map((a) => a.path));
     expect(citing.size).toBeGreaterThan(0);
     expect(citing.size).toBeLessThan(pages.length);
