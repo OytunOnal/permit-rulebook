@@ -23,7 +23,7 @@ import {
   NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, alsoInHeading, askedRouteDescription,
   audienceLine, dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription,
 } from "../copy/route-page.js";
-import { PRODUCT_NAME } from "../copy/frame.js";
+import { PRODUCT_NAME, ROUTE_AS_JSON } from "../copy/frame.js";
 import { WRONG_DOOR_LABEL } from "../copy/feedback.js";
 import {
   countryCheckPath, countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress,
@@ -241,7 +241,7 @@ function asideHtml(page: RulePage, jsonPath: string): string {
     <p>This page is generated from an open dataset: every number and quote above is a record in it, with its source and read date. Reuse it under ${
     esc(DATA_LICENCE_FULL)} — credit and link back.</p>
     <nav aria-label="The data behind this page">
-      <a ${tapMin()} href="${escAttr(url(jsonPath))}">This route as JSON</a>
+      <a ${tapMin()} href="${escAttr(url(jsonPath))}">${esc(ROUTE_AS_JSON)}</a>
       <a ${tapMin()} href="${escAttr(REPO_DATA)}" target="_blank" rel="noopener">The dataset on GitHub</a>
       <a ${tapMin()} href="${escAttr(url(FEEDBACK_PATH))}">${esc(WRONG_DOOR_LABEL)}</a>
     </nav>

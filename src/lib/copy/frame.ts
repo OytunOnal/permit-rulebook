@@ -140,3 +140,26 @@ export const MENU_CLOSE = "Close";
  * column's heading is already the word, so the row says the rest (critique F6,
  * 2026-09-16). */
 export const FEEDBACK_FOOTER_ROW = "How to write, and what happens";
+
+/**
+ * The footer's words: its columns' headings and rows, the licence line and
+ * the health line. The wording is #85's and #185's; it moved here unchanged
+ * (#389), so the footer's template types none of it.
+ */
+export const CHECK_YOURS = "Check yours"; // the countries column's last row and the header's: where the interview starts
+export const THE_DATA = "The data"; // the data column's heading and the header's link to /data/
+export const DATA_FOOTER_ROW = "The data — status, versions, downloads"; // the data column's row to /data/
+export const ROUTE_AS_JSON = "This route as JSON"; // the link to the route's own JSON, in the footer and on the route page
+export const REPOSITORY_FOOTER_ROW = "The repository"; // the data column's row to the data repository
+export const licenceFooterRow = (licenceName: string): string => `Licence · ${licenceName}`;
+export const SPONSOR_FOOTER_ROW = "Sponsor this work"; // the feedback column's second row
+export const CODE_LICENCE = "code MIT"; // the licence line: the code's licence, beside the data's
+export const dataLicence = (licenceName: string): string => `data ${licenceName}`;
+export const copyrightNotice = (year: string, owner: string): string => `© ${year} ${owner}`;
+
+/** The health line's read range; each day is already markup, its `<time>` in bold. */
+export const readRangeHtml = (oldestHtml: string, newestHtml: string): string =>
+  `values read between ${oldestHtml} and ${newestHtml}`;
+export const READ_DAILY = "re-read daily"; // the health line's promise, after the read range
+export const LAST_RUN = "last run"; // opens the health line's parenthesis, before the watch's day
+export const datasetVersionLabel = (version: string): string => `dataset ${version}`;
