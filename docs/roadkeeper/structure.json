@@ -950,6 +950,11 @@
    "kind": "type-only"
   },
   {
+   "from": "src/lib/copy/not-found.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/copy/verdict.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
@@ -7649,6 +7654,16 @@
     "name": "RESULT_NAMES_FITTING_ROUTES",
     "kind": "const",
     "exported": true
+   },
+   {
+    "name": "ANSWERED_ON_THIS_DEVICE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "listedAndMore",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "src/lib/copy/data-page.ts": [
@@ -8415,6 +8430,31 @@
    }
   ],
   "src/lib/copy/not-found.ts": [
+   {
+    "name": "NOT_FOUND",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "NOT_FOUND_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOUND_TITLE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOUND_LEDE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOUND_COUNTRIES_HEADING",
+    "kind": "const",
+    "exported": true
+   },
    {
     "name": "NOT_FOUND_START",
     "kind": "const",
@@ -10539,5 +10579,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "3d08212bd06fb21fa699582cd7372df0cda92d00addeae61f9f4c4f4176d868a"
+ "digest": "124615bbb0b7699ff9b15c36f7de2a2e2c513eac0f039beaed1a6e84b33e5da2"
 }
