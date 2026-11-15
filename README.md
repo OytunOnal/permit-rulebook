@@ -1,9 +1,9 @@
 # Permit Rulebook
 
-[![The results screen: three German routes open and two short on a figure,
-the nearest by up to €304.20/year; each card says the path it was met
-through, every rule is checked against what the reader declared, and every
-value carries the authority's quote and the day it was read](docs/media/results-2026-11-10.png)](https://permitrulebook.com)
+[![The results screen: one German route open and two short on a figure,
+one of them needing €45,934.20/year; the reader's declared answers on the left, each
+open card saying why it was met, and every quote carrying its source, the
+day it was read and a link of its own to the official page](docs/media/results-2026-11-16.png)](https://permitrulebook.com)
 
 **Every route, quoted and dated.** A person answers a few questions and
 [permitrulebook.com](https://permitrulebook.com) shows which work-permit routes
@@ -20,20 +20,20 @@ them. This repository is the site; that one is the ruleset.
 wants the rules rather than an opinion — and anyone who needs the ruleset
 itself.
 
-**What it does now** — v1.2.6, from its
-[release](https://github.com/OytunOnal/permit-rulebook/releases/tag/v1.2.6):
+**What it does now** — v1.2.7, from its
+[release](https://github.com/OytunOnal/permit-rulebook/releases/tag/v1.2.7):
 
 > Public at https://permitrulebook.com: 29 routes across Germany, France,
 > Spain and the Netherlands — 23 checked against a reader's answers, 6 quoted
 > and dated but not checked, each with a page of its own — and 189 quoted
 > values, each carrying the authority's sentence, its page and the day it was
 > read. The watch re-reads the sources every morning. What changed since
-> v1.2.5: a red morning now means the watch could not read its sources, and
-> it reaches the owner by name; every pull request shows the deploy's own
-> checks before it is merged; every results screen fits a phone, however long
-> a card's link is; and a browser test fails on an error on any page it
-> opened, not only the last. The isolated walk: 38/50 on RUBRIC 1.3, no
-> blocker. 1338 + 1361 tests. (2026-11-13)
+> v1.2.6: every page prints the same read dates and the same counts, and
+> every quote, on a result card and on a route page, links to its own
+> source; underneath, each route's standing and the dataset's dates are
+> worked out once, and each part of the site starts from a file named for
+> what it does. The isolated walk: 38/50 on RUBRIC 1.3, no blocker.
+> 1385 + 1361 tests. (2026-11-16)
 
 **How to run it.** Both repositories side by side — the site reads the dataset
 package from the sibling directory its manifest names. Tried from a fresh clone
