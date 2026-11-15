@@ -13,7 +13,7 @@ import {
   verdictHtml, type ArrangedLine, type CountrySection, type JobOfferLine, type Verdict, type VerdictGroup,
 } from "../src/lib/verdict/verdict.js";
 import { answerWordsOf, groupsIn, stepsIn, verdictFor, verdictOn } from "./verdict-cards.js";
-import { PRIYA_EXPLORING_ALL } from "./personas.js";
+import { DENIZ, PRIYA_EXPLORING_ALL } from "./personas.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -27,13 +27,6 @@ const ds = dataset as unknown as Dataset;
  * checked — never that it would be met. The not-yet fold points up only at
  * something that stands above it.
  */
-
-/** Deniz: Turkish engineer with a Berlin offer (persona P1, s23). An offer-holder. */
-const DENIZ: Profile = {
-  destination: "de", citizenship: "TR", situation: "offer", situation_country: "de", qualification: "degree",
-  recognition_de: "unknown", occupation_shortage: "yes", occupation_it: "yes", experience_5y: "lt2", experience_7y: "3to5", german: "a1",
-  english: "c1", funds_eur_month: "band_1", salary_eur_year: "band_5", age_band: "a30to35",
-};
 
 /** The hostile walk's offer-holder in Spain with no qualification: nothing
  * open, and nothing but a hosting agreement would open anything. */
