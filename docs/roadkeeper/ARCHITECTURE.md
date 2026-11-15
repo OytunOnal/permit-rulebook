@@ -152,7 +152,10 @@ click on the tracker link. Answers never leave the device.
 - **Tokens** — `tokens.css` (the design system) and `identity.css` (the
   identity pair: the tilted PR stamp over the read-date stamp, and the body
   and column every page lays out in; one source, inlined by the frame, linked
-  by the interview).
+  by the interview). The one narrow/wide breakpoint is written once,
+  `WIDE_FROM_PX` in `first-paint.ts`: every sheet names its side,
+  `(--narrow)` or `(--wide)`, and one Vite step, `breakpoint-widths.ts`, writes
+  the width in, in the build and in the suite alike (#382).
 - **Frame** — what every page wears around its own content: the head (the
   CSP, the icon links, the stylesheet), the header, the footer and the menu.
   One deep module, `src/lib/frame/` (#299). Its entry, `framed-page.ts`,
@@ -161,7 +164,11 @@ click on the tracker link. Answers never leave the device.
   its title, preview lines, own head lines, own style rules, place and
   content. It gives the interview its pieces through `interviewFrameOf`. It
   marks the header item for the page it draws, and imports no page. Each
-  page's own style rules sit beside its code, in a `.css` file read raw.
+  page hands it the page's dataset facts, and the footer prints them; the
+  frame reckons none itself (#382). Each
+  page's own style rules sit beside its code, in a `.css` file read raw; the
+  quote line's look, `quote-line.css`, is inlined by the frame and imported by
+  the results screen, one sheet for both (#382).
 - **Build** — Astro, `base` derived from `SITE_URL`, the site's address, which
   is one literal line in `pages.yml`: the deploy reads no repository variable
   (#110). An invalid dataset breaks
@@ -255,17 +262,37 @@ click on the tracker link. Answers never leave the device.
 
 **Diagram 3 — the reader**
 
+- **Dataset facts** — every date, count and watch-run fact a page prints,
+  reckoned once, apart from any page: one deep module at `application`,
+  `src/lib/dataset-facts/` (#382), entered through `reckon-dataset-facts.ts`'s
+  `reckonDatasetFacts(dataset, watchState)`; it reads no file, the page's
+  builder hands it the watch state. It returns the **read range** (the oldest
+  and newest day any quoted sentence was read, values and notices alike; its
+  end is the one newest read day every "Rules read" stamp and the footer
+  print), the newest value changed (values only), the counts dataset-wide and
+  per country, the watch run (its last run, the sources it could not read),
+  and each country's and route's stamp. For each route it holds what its page
+  prints, card by card: the quotes, the unquoted rules, the notices and the
+  audience notice, and the run's unread sources among them, so a route page
+  and its stamp read one answer. Every page takes its facts from one call; no
+  page imports another page, and what two pages share sits in no page
+  (`route-lines.ts`, `slug.ts`).
 - **Route page** — rules in interview order, the rail with its label list,
   quotes with language and read date, the scope block, the data door (JSON,
   repository, tracker), one call to action that pre-scopes the interview.
   It dates only what it prints: each headline figure carries its own read
   date, and the stamp, the country cards and the liveness line read one set,
-  the quotes the page prints. A site-wide page (/data/, /feedback/, the 404,
-  the sitemap) dates the whole dataset, as the interview does (#76).
+  the quotes the page prints, from its route's dataset facts. A site-wide
+  page (/data/, /feedback/, the 404, the sitemap) dates the whole dataset by
+  the read range's end, as the interview does (#76, #382).
   It is one deep module, `src/lib/route-page/` (#299): its entry,
   `route-page.ts`, composes the masthead, the rules and the aside, and its
   blocks (the rule card with its asks box, the rail, the stated blocks, the
-  notices, the route figure) are private behind it.
+  notices, the route figure) are private behind it; they draw the cards
+  their route's dataset facts hand them. Every quote line, here and on the
+  results screen, is drawn by one function, `quoteLineHtml` in `quote.ts`:
+  the quote, its host, its citation, its read day and its own source link
+  (#382).
 - **Interview** — questions by information gain, then the verdict; runs
   entirely in the browser. The page is wiring alone: it builds the browser's
   history adapter and the record's store and starts the interview, one deep
@@ -323,7 +350,9 @@ click on the tracker link. Answers never leave the device.
   formats its amounts once, and `copy/verdict.ts` says it side by side as the
   card's note, a step's reach and the headline's emphasis.
   Every word a screen prints lives in `src/lib/copy/`, one file per screen or
-  part, read by name. Its first paint is one module, `src/lib/first-paint.ts` (#66).
+  part, read by name, the footer's, the owner's name and the licence's
+  included; tests read from it the words they check, apart from a whole
+  composed sentence a test states as its expected value (#382). Its first paint is one module, `src/lib/first-paint.ts` (#66).
   An inline head script reads the record, the link and the width before
   anything paints, and writes a cover and the first-paint seeds on `<html>`.
   The stylesheet it renders hides what each cover hides. The interview takes the
