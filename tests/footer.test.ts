@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { DISCLAIMER, datasetDay, unreadLabel } from "../src/lib/copy/frame.js";
-import { countryLinks } from "../src/lib/country-page.js";
+import { countryLinks } from "../src/lib/slug.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import {

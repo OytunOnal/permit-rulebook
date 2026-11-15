@@ -21,21 +21,21 @@ import {
 import {
   ROUTE_PAGE_ADDENDUM,
   NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, alsoInHeading, askedRouteDescription,
-  audienceLine, dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription,
+  dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription,
 } from "../copy/route-page.js";
 import { PRODUCT_NAME, ROUTE_AS_JSON } from "../copy/frame.js";
 import { WRONG_DOOR_LABEL } from "../copy/feedback.js";
 import {
   countryCheckPath, countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress,
 } from "../slug.js";
+import { audienceSentence, gist } from "../route-lines.js";
 import { noticeSection } from "./blocks/notices.js";
-import { answerBlock, gist } from "./blocks/route-figure.js";
+import { answerBlock } from "./blocks/route-figure.js";
 import { ruleCard, tapMin, type RulePage } from "./blocks/rule-card.js";
 import { statedBlocks } from "./blocks/stated-blocks.js";
 import ROUTE_PAGE_RULES from "./route-page.css?raw";
 
 export { TAP_CLASSES } from "./blocks/rule-card.js";
-export { gist, routeFigure, type RouteFigure } from "./blocks/route-figure.js";
 
 /**
  * One page per route, generated from the dataset and never typed.
@@ -55,14 +55,6 @@ export { gist, routeFigure, type RouteFigure } from "./blocks/route-figure.js";
  * their language tagged and a note where the source's notation differs from the
  * page's (F1/F5), and one date format throughout (F3).
  */
-
-/**
- * Who the page is for, said before the first rule. An Irish reader who lands on
- * a German route page from a search is told here, not after seven rules and a
- * refusal (`tests/s6-edges.test.ts`), and the call to action below leads to the notice
- * that answers her rather than to a rejection.
- */
-export const audienceSentence = (country: Country): string => audienceLine(phraseOf(country.code));
 
 function neighbours(country: Country, route: Route, seen: Glossary): string {
   const others = country.routes.filter((r) => r !== route);

@@ -6,8 +6,7 @@ import {
   DESTINATION_FIELD, phraseAtStartOf, evaluate, isClosed, isScored, scopeLine, scopeWords,
   type Dataset, type Profile,
 } from "permit-rulebook-data";
-import { countryAddresses } from "../src/lib/country-page.js";
-import { routeAddresses } from "../src/lib/slug.js";
+import { countryAddresses, routeAddresses } from "../src/lib/slug.js";
 import { PRODUCT_NAME, TAGLINE, promise, routesCheckerAsksAbout } from "../src/lib/copy/frame.js";
 import { answersCheckedLine } from "../src/lib/copy/verdict.js";
 import { countryHeadline } from "../src/lib/copy/country-page.js";

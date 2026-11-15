@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { scopeLine, isScored, type Dataset } from "permit-rulebook-data";
-import { audienceSentence, routePage, routePages } from "../src/lib/route-page/route-page.js";
+import { routePage, routePages } from "../src/lib/route-page/route-page.js";
+import { audienceSentence } from "../src/lib/route-lines.js";
 import { esc } from "../src/lib/reason.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { stringPagesSheet, styleIn } from "./frame-alone.js";

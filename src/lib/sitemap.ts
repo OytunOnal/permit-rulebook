@@ -1,9 +1,8 @@
 // @level presentation
 import type { Dataset, WatchState } from "permit-rulebook-data";
-import { countryAddresses } from "./country-page.js";
 import { countryFactsOf, reckonDatasetFacts, routeFactsOf } from "./dataset-facts/reckon-dataset-facts.js";
 import { DATA_PATH, FEEDBACK_PATH, absolute, watchState } from "./site.js";
-import { routeAddresses } from "./slug.js";
+import { countryAddresses, routeAddresses } from "./slug.js";
 
 /**
  * What this site offers a crawler — generated from the dataset, never listed.
