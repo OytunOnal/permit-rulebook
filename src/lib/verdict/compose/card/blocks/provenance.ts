@@ -6,10 +6,9 @@ import { esc, escAttr } from "../../../../reason.js";
 import {
   APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_THRESHOLD_ON_ROUTE, perPeriod,
 } from "../../../../copy/verdict.js";
-import { readOn } from "../../../../copy/quotes.js";
 import { type Glossary, glossed } from "../../../../gloss.js";
-// One frame for every quote the product shows (2026-09-08).
-import { linkLabelOf, noteHtml, quoteForCard, quoteFrame } from "../../../../quote.js";
+// One line for every quote the product shows (2026-09-08; #387).
+import { linkLabelOf, quoteLineHtml, type QuoteLineOptions } from "../../../../quote.js";
 import type { CardScreen } from "./card-screen.js";
 import { routeAsStated } from "./route-statements.js";
 
@@ -52,21 +51,19 @@ function amountPeriodHtml(ds: Dataset, route: Route, amount: number | undefined)
   return period ? ` · ${esc(perPeriod(period))}` : "";
 }
 
-/** One value's quote, with whatever citation it is given. */
-function provenanceLineHtml(context: ProvenanceContext, entry: ProvenanceEntry, citation?: string): string {
-  const { label, value, amount, applied } = entry;
-  // The same frame the route pages put round a quote: its language, its host,
-  // and the note where the source spells the number its own way.
-  const { lang, host, note } = quoteFrame(value, amount);
+/** What a card adds to one value's quote line: the period its amount is
+ * stated per, the applies-to-you mark and the ruled-out dimming, and the
+ * citation it is given. */
+function cardLineOptionsOf(context: ProvenanceContext, entry: ProvenanceEntry, citation?: string): QuoteLineOptions {
+  const { label, amount, applied } = entry;
   // Per entry, not per card: one settled disjunction on a route must not put
   // a ruled-out mark under a second one nobody has decided.
   const takesMark = context.contested && amount !== undefined;
-  const mark = takesMark ? appliesMarkHtml(applied) : "";
-  return `<div class="src${takesMark && applied === false ? " unapplied" : ""}"><i${
-    lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
-    label ? ` · ${esc(label)}` : ""}${amountPeriodHtml(context.ds, context.route, amount)}${mark}${
-    citation ? ` · ${esc(citation)}` : ""} · <b>${esc(readOn(value.retrieved_at))}</b>${
-    noteHtml(note)}</div>`;
+  return {
+    amount, label, citation,
+    afterLabelHtml: amountPeriodHtml(context.ds, context.route, amount) + (takesMark ? appliesMarkHtml(applied) : ""),
+    lineClass: takesMark && applied === false ? "unapplied" : undefined,
+  };
 }
 
 /**
@@ -121,8 +118,10 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult, notTaken: Rea
   // reached the salary question that both of the route's thresholds were
   // against them (review 2026-09-07).
   const contested = entries.some((e) => e.amount !== undefined && e.applied === false);
+  // The same line the route pages draw a quote with: its frame, and its own
+  // link to its source, with the card's additions (#387).
   const lines = distinctProvenanceLines(entries, seen, (entry, citation) =>
-    provenanceLineHtml({ ds, route: r.route, contested }, entry, citation));
+    quoteLineHtml(entry.value, cardLineOptionsOf({ ds, route: r.route, contested }, entry, citation)));
 
   // The promise on the first screen is that every value shows its quote and
   // its read date. A route that decides nothing on a number has no AMOUNT to
@@ -133,25 +132,6 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult, notTaken: Rea
   if (!decidesOnANumber(r.route))
     lines.push(`<div class="src nosrc">${esc(NO_THRESHOLD_ON_ROUTE)}</div>`);
   return `<div class="srcs">${lines.join("")}</div>`;
-}
-
-/**
- * One quote, framed the way every quote on a results screen is framed: its
- * language, its host, whatever citation it carries, and the day it was read.
- *
- * The closed-route row and the notice both draw it. The frame is the claim of
- * this product, and three copies of it would be three claims that can drift
- * (s8).
- */
-export function srcLine(
-  value: { quote: string; source_url: string; retrieved_at: string; legal_basis?: string }, seen: Glossary,
-): string {
-  const { lang, host, note } = quoteFrame(value);
-  const { shown, trimmed } = quoteForCard(value.quote);
-  return `<div class="src"${trimmed ? ` title="${escAttr(value.quote)}"` : ""}><i${
-    lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(shown)}”</i> · ${esc(host)}${
-    value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b>${esc(readOn(value.retrieved_at))}</b>${
-    noteHtml(note)}</div>`;
 }
 
 /** The link at a card's foot to the page behind it, labelled by whose page it is. */

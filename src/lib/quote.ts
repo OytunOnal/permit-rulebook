@@ -1,5 +1,5 @@
 // @level presentation
-import { LANGUAGE_NAMES, formatEUR, hostKindOf, quoteLanguage, type ProvenanceEntry } from "permit-rulebook-data";
+import { LANGUAGE_NAMES, formatEUR, hostKindOf, quoteLanguage } from "permit-rulebook-data";
 import { OFFICIAL_PAGE, consolidatedTextOn, learnLinkWithKind, readOn } from "./copy/quotes.js";
 import { esc, escAttr } from "./reason.js";
 import { type Glossary, glossed } from "./gloss.js";
@@ -115,25 +115,54 @@ export function noteHtml(note: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// The quote block
+// The quote line
 // ---------------------------------------------------------------------------
 
-interface QuoteOptions {
+/** A sentence the site quotes: its words, its page, the day it was read and
+ * the provision it cites, where it cites one. */
+export interface QuotedValue {
+  quote: string;
+  source_url: string;
+  retrieved_at: string;
+  legal_basis?: string;
+}
+
+/** What a screen adds to a quote line, beside the quote's own frame. */
+export interface QuoteLineOptions {
   /** The amount this quote is the proof of, where it is the proof of one. */
   amount?: number;
   /** What the value is called on its own line ("standard amount"). */
   label?: string;
+  /** Markup said after the label: a card's period and its applies-to-you mark. */
+  afterLabelHtml?: string;
+  /** The citation as printed, where the screen glosses it itself; otherwise
+   * the value's legal basis, glossed on the screen's memory. */
+  citation?: string;
+  /** A class the line wears beside `src`: a card's ruled-out amount is "unapplied". */
+  lineClass?: string;
+  /** Whether a long quote shows its first sentence, its whole text on the line's title. */
+  trimLong?: boolean;
 }
 
 /** A read date as a quote and a headline figure both print it. */
 export const readDateTime = (day: string): string => `<time datetime="${escAttr(day)}">${esc(readOn(day))}</time>`;
 
-export function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}, seen: Glossary = new Set()): string {
+/**
+ * One quote line, wherever a quote is shown: the quote in its own language,
+ * its host, whatever the screen adds, its citation, the day it was read, the
+ * frame's note, and its own link to its source ↗ (#387). The route page's
+ * rules, its notices and its stated blocks draw it, and so do the results
+ * screen's cards, notices and closed rows: one line, so the two screens
+ * cannot print a quote two ways again.
+ */
+export function quoteLineHtml(value: QuotedValue, o: QuoteLineOptions = {}, seen: Glossary = new Set()): string {
   const { lang, host, note } = quoteFrame(value, o.amount);
-  return `<div class="src">
-        <span><q${lang ? ` lang="${escAttr(lang)}"` : ""}>${esc(value.quote)}</q> · ${esc(host)}${
-    o.label ? ` · ${esc(o.label)}` : ""}${
-    value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b>${readDateTime(value.retrieved_at)}</b>${
+  const { shown, trimmed } = o.trimLong ? trimmedQuote(value.quote) : { shown: value.quote, trimmed: false };
+  const citation = o.citation ?? (value.legal_basis ? glossed(value.legal_basis, seen) : "");
+  return `<div class="src${o.lineClass ? ` ${escAttr(o.lineClass)}` : ""}"${trimmed ? ` title="${escAttr(value.quote)}"` : ""}>
+        <span><q${lang ? ` lang="${escAttr(lang)}"` : ""}>${esc(shown)}</q> · ${esc(host)}${
+    o.label ? ` · ${esc(o.label)}` : ""}${o.afterLabelHtml ?? ""}${
+    citation ? ` · ${esc(citation)}` : ""} · <b>${readDateTime(value.retrieved_at)}</b>${
     noteHtml(note)}</span>
         <a ${tapInline()} href="${escAttr(value.source_url)}" target="_blank" rel="noopener">${
     esc(linkLabelOf(value.source_url))} &#8599;</a>
@@ -147,7 +176,7 @@ export function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}
  * go through it as the cards' do: the Türkiye notice's runs to 640
  * characters (Standards review, 2026-09-10).
  */
-export function quoteForCard(quote: string): { shown: string; trimmed: boolean } {
+function trimmedQuote(quote: string): { shown: string; trimmed: boolean } {
   if (quote.length <= 200) return { shown: quote, trimmed: false };
   const end = quote.indexOf(". ");
   if (end < 0 || end > 200) return { shown: quote.slice(0, 200).trimEnd() + "…", trimmed: true };

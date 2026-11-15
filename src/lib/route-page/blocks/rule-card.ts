@@ -8,7 +8,7 @@ import type { PrintedRule } from "../../dataset-facts/reckon-dataset-facts.js";
 import { type Glossary, glossed } from "../../gloss.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
-import { glossedLearnLinkText, quoteBlock } from "../../quote.js";
+import { glossedLearnLinkText, quoteLineHtml } from "../../quote.js";
 import { esc, escAttr } from "../../reason.js";
 import { tapInline } from "../../tap.js";
 import { ANY_PATH, EITHER_PATH } from "../../copy/route-page.js";
@@ -151,6 +151,6 @@ export function ruleCard(page: RulePage, rule: PrintedRule): string {
     thresholds.length ? `
       ${railHtml(page, thresholds[0])}` : ""}${asks}${
     values.map((e) => `
-      ${quoteBlock(e.value, { amount: e.amount, label: e.label }, seen)}`).join("")}
+      ${quoteLineHtml(e.value, { amount: e.amount, label: e.label }, seen)}`).join("")}
       </article>`;
 }

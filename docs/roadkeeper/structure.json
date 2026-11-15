@@ -2105,11 +2105,6 @@
   },
   {
    "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
-   "to": "src/lib/copy/quotes.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
@@ -9348,9 +9343,14 @@
     "exported": true
    },
    {
-    "name": "QuoteOptions",
+    "name": "QuotedValue",
     "kind": "type",
-    "exported": false
+    "exported": true
+   },
+   {
+    "name": "QuoteLineOptions",
+    "kind": "type",
+    "exported": true
    },
    {
     "name": "readDateTime",
@@ -9358,14 +9358,14 @@
     "exported": true
    },
    {
-    "name": "quoteBlock",
+    "name": "quoteLineHtml",
     "kind": "fn",
     "exported": true
    },
    {
-    "name": "quoteForCard",
+    "name": "trimmedQuote",
     "kind": "fn",
-    "exported": true
+    "exported": false
    }
   ],
   "src/lib/reason.ts": [
@@ -10090,5 +10090,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "409c665537bdb790ad9a789265b5101dd2229a60c70c4011766f873d8527f195"
+ "digest": "7842c6c399adf4f7a9027adbd937f3f5736ae12fd003bbaa7587c1551dc567d4"
 }

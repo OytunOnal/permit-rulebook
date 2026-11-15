@@ -5,7 +5,7 @@ import {
 } from "permit-rulebook-data";
 import type { CardScreen } from "./blocks/card-screen.js";
 import { pathLinesHtml, pathsNotTakenOf } from "./blocks/path-line.js";
-import { provenanceHtml, sourceLinkHtml, srcLine } from "./blocks/provenance.js";
+import { provenanceHtml, sourceLinkHtml } from "./blocks/provenance.js";
 import { railHtml } from "./blocks/rail.js";
 import {
   carveOutHtml, caveatHtml, precondHtml, readingHtml, routeAsStated, scopedHtml,
@@ -21,7 +21,7 @@ import { countryOf } from "../../../countries.js";
 // and learn labels are glossed as the route page's are (#151, ruling 8). Each
 // block takes the screen's memory; one drawn alone is a screen of its own.
 import { type Glossary, glossSection, glossed } from "../../../gloss.js";
-import { glossedLearnLinkText } from "../../../quote.js";
+import { glossedLearnLinkText, quoteLineHtml } from "../../../quote.js";
 import { esc, escAttr, failDetailHtml, whyHtml } from "../../../reason.js";
 import { url } from "../../../site.js";
 import { routePath } from "../../../slug.js";
@@ -300,7 +300,7 @@ export function closedRowHtml(r: RouteResult, seen: Glossary = new Set()): strin
           ${closures.map((cr) => {
     const c = cr.criterion;
     if (c.op !== "not-in") return "";
-    return `<p class="why">${esc(glossed(c.text, seen))}</p>${srcLine(c.source, seen)}`;
+    return `<p class="why">${esc(glossed(c.text, seen))}</p>${quoteLineHtml(c.source, { trimLong: true }, seen)}`;
   }).join("")}
           <div class="foot">${sourceLinkHtml(r.route.info_url)}</div>
         </article>`;
@@ -320,7 +320,7 @@ export function closedRowHtml(r: RouteResult, seen: Glossary = new Set()): strin
 export function noticeHtml(n: Notice, seen: Glossary = new Set()): string {
   const title = esc(glossed(n.title, seen));
   const body = esc(glossed(n.body, seen));
-  const sources = noticeSources(n).map((value) => srcLine(value, seen)).join("");
+  const sources = noticeSources(n).map((value) => quoteLineHtml(value, { trimLong: true }, seen)).join("");
   const next = n.learn
     ? `<a class="next" href="${escAttr(n.learn.url)}" target="_blank" rel="noopener">${
       esc(glossedLearnLinkText(n.learn, seen))}</a>`

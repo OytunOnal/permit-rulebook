@@ -216,8 +216,20 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
 .foot{display:flex;justify-content:space-between;gap:1rem;align-items:baseline;border-top:var(--rule-dotted);
   margin-top:.85rem;padding-top:.6rem;flex-wrap:wrap}
 .srcs{display:grid;gap:.3rem;flex:1;min-width:16rem}
-.src{font:var(--text-source);color:var(--color-muted)}
-.src b{color:var(--color-met);font-weight:500}
+/* A quote line in the route page's look (#387): the quote, its host, its
+   citation and its read day, and its own source link at the tap floor, each
+   line under a dotted rule; on a phone the link goes under its line. The
+   route page's rules for it (frame/head/shared-blocks.css) are inlined into
+   the pages built as strings, which this screen is not, so they are stated
+   here for the same markup. */
+.src{font:var(--text-source);color:var(--color-muted);border-top:var(--rule-dotted);padding-top:var(--space-2);
+  margin-top:var(--space-3);display:flex;justify-content:space-between;gap:var(--space-3);align-items:flex-start}
+.src q{font-style:italic;color:var(--color-ink);quotes:"\201C" "\201D"}
+.src b{color:var(--color-met);font-weight:600}
+.src a{white-space:nowrap;display:inline-flex;align-items:center;min-height:var(--tap-min);padding:0 var(--space-2);margin:0}
+.src .note{display:inline}
+/* The first line of a card's list sits under the foot's own rule, so it draws none. */
+.srcs > .src:first-child{border-top:none;padding-top:0;margin-top:0}
 .src.nosrc{font-style:italic}
 /* Where a route states two thresholds, both quotes stay — the reader may
    want to know the other exists — but only one of them is theirs. */
@@ -242,6 +254,8 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
   details.country-sec > summary.said{justify-content:flex-start}
   .tally.said{flex-basis:100%;max-width:none}
   .tally{text-align:left}
+  .src{flex-direction:column}
+  .src a{padding-left:0}
 }
 
 @media print{

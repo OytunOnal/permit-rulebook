@@ -1,7 +1,7 @@
 // @level presentation
 import { noticeSources, type Notice } from "permit-rulebook-data";
 import { type Glossary, glossed } from "../../gloss.js";
-import { glossedLearnLinkText, linkLabelOf, quoteBlock } from "../../quote.js";
+import { glossedLearnLinkText, linkLabelOf, quoteLineHtml } from "../../quote.js";
 import { esc, escAttr } from "../../reason.js";
 import { tapInline } from "../../tap.js";
 
@@ -25,7 +25,7 @@ export function noticeSection(n: Notice, seen: Glossary): string {
     <h2 id="notice-${escAttr(n.id)}">${esc(glossed(n.title, seen))}</h2>
     <p class="plain">${esc(glossed(n.body, seen))}</p>${
     noticeSources(n).map((value) => `
-      ${quoteBlock(value, {}, seen)}`).join("")}
+      ${quoteLineHtml(value, {}, seen)}`).join("")}
     <p class="notice-next"><a ${tapInline()} href="${escAttr(nextUrl)}" target="_blank" rel="noopener">${
     esc(nextLabel())} &#8599;</a></p>
   </section>`;
