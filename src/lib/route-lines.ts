@@ -4,6 +4,9 @@ import {
   type Country, type Criterion, type Dataset, type Route, type ThresholdCriterion,
 } from "permit-rulebook-data";
 import { audienceLine } from "./copy/route-page.js";
+import {
+  FUNDS_TO_SHOW, LOWEST_OF_SEVERAL, NO_SALARY_THRESHOLD, POINTS_NEEDED, SALARY_THRESHOLD,
+} from "./copy/country-page.js";
 import type { PrintedQuotes } from "./dataset-facts/reckon-dataset-facts.js";
 
 /**
@@ -72,13 +75,13 @@ export function routeFigure(dataset: Dataset, route: Route, printed: PrintedQuot
     // "Salary threshold" and "funds to show" are the two things money means on
     // these routes, and the field says which: one is what a job pays you, the
     // other is what you must be able to show you have.
-    const label = /funds/.test(lowest.field) ? "funds to show" : "salary threshold";
-    const from = amounts.length > 1 ? "from " : "";
+    const label = /funds/.test(lowest.field) ? FUNDS_TO_SHOW : SALARY_THRESHOLD;
+    const from = amounts.length > 1 ? LOWEST_OF_SEVERAL : "";
     return {
       label,
       value: `${from}${formatEURPer(lowest.threshold.amount, periodOf(dataset, lowest.field))}`,
     };
   }
-  if (points) return { label: "points needed", value: String(points.required.value) };
-  return { label: "no salary threshold", value: "" };
+  if (points) return { label: POINTS_NEEDED, value: String(points.required.value) };
+  return { label: NO_SALARY_THRESHOLD, value: "" };
 }

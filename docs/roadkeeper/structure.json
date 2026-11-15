@@ -1876,6 +1876,11 @@
   },
   {
    "from": "src/lib/route-lines.ts",
+   "to": "src/lib/copy/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-lines.ts",
    "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
@@ -7711,6 +7716,31 @@
     "exported": true
    },
    {
+    "name": "FUNDS_TO_SHOW",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SALARY_THRESHOLD",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "POINTS_NEEDED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NO_SALARY_THRESHOLD",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "LOWEST_OF_SEVERAL",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "listedAndMore",
     "kind": "fn",
     "exported": true
@@ -10664,5 +10694,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "2a748ad9a05340a2b800cc66a6b87549f44d8bded6464acb6f30d1f2524a6577"
+ "digest": "d3bae22d5345cf1d5195ea9c164e53acece419b09d6c585e59ef00adf2c1e7e6"
 }
