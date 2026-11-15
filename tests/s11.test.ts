@@ -8,7 +8,8 @@ import { dailyCheck } from "../src/lib/copy/route-page.js";
 import { unreadLabel } from "../src/lib/copy/frame.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { ownUnread, routePages, type RoutePage } from "../src/lib/route-page/route-page.js";
-import { lastWatchRun, unreadSourcesAt, watchState, type WatchRun } from "../src/lib/site.js";
+import { watchState } from "../src/lib/site.js";
+import { reckonDatasetFacts, type WatchRun } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { footerIn, frameAlone } from "./frame-alone.js";
 
 /**
@@ -33,6 +34,8 @@ import { footerIn, frameAlone } from "./frame-alone.js";
  */
 
 const ds = dataset as unknown as Dataset;
+/** The run the watch's state records, and what it left unread. */
+const stateRun = (): WatchRun => reckonDatasetFacts(ds, watchState).watchRun;
 const readerSees = (html: string): string =>
   html.replace(/<[^>]*>/g, "").split(/\s+/).join(" ").split(String.fromCharCode(160)).join(" ").trim();
 
@@ -94,8 +97,8 @@ describe("what /data/ says on a day something went unread", () => {
     // "Today" was the clean day this case was written on; the list is empty
     // by name, not by the state's luck (the first unread day, 2026-09-16, run
     // 35098352421).
-    const clean = dataPage(ds, { lastRun: lastWatchRun(), unread: [] }).html;
-    expect(readerSees(clean)).toContain(`Every source is re-read daily — last run ${lastWatchRun()}.`);
+    const clean = dataPage(ds, { lastRun: stateRun().lastRun, unread: [] }).html;
+    expect(readerSees(clean)).toContain(`Every source is re-read daily — last run ${stateRun().lastRun}.`);
     expect(clean).not.toContain("did not answer on the last run");
     expect(clean).not.toContain("unread");
   });
@@ -115,8 +118,8 @@ describe("the footer's short form", () => {
   it("says nothing at all when every source answered", () => {
     // The empty list is passed, not read: the default is the real state, and
     // the real state stopped being clean on 2026-09-16 (s15, run 35098352421).
-    const footer = footerIn(frameAlone(ds, { run: { lastRun: lastWatchRun(), unread: [] } }));
-    expect(readerSees(footer)).toContain(`re-read daily (last run ${lastWatchRun()})`);
+    const footer = footerIn(frameAlone(ds, { run: { lastRun: stateRun().lastRun, unread: [] } }));
+    expect(readerSees(footer)).toContain(`re-read daily (last run ${stateRun().lastRun})`);
     expect(footer).not.toContain("unread");
   });
 });
@@ -201,7 +204,7 @@ describe("the state this site is built against", () => {
     // Rendered over an empty list on purpose: the render with no list reads
     // the real state, and the first unread day (2026-09-16, run 35098352421)
     // showed this case had been measuring the state's luck, not a clean day.
-    const run = lastWatchRun();
+    const run = stateRun().lastRun;
     for (const page of routePages(ds, { lastRun: run, unread: [] })) {
       const seen = readerSees(page.html);
       expect(seen, page.path).toContain("a daily check re-reads every source.");
@@ -247,8 +250,7 @@ describe("the state this site is built against", () => {
    * with no arguments is the one the build ships, so it is the one asked.
    */
   it("every surface says what the state says today — clean or not", () => {
-    const run = lastWatchRun();
-    everySurfaceSays({ lastRun: run, unread: unreadSourcesAt(ds, run) }, routePages(ds), dataPage(ds).html);
+    everySurfaceSays(stateRun(), routePages(ds), dataPage(ds).html);
   });
 
   it("a fabricated clean run: the plain thing on every surface", () => {

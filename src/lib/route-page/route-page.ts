@@ -13,8 +13,9 @@ import { framedPageHtml } from "../frame/framed-page.js";
 import { esc, escAttr } from "../reason.js";
 import {
   DATA_LICENCE_FULL, DATA_LICENCE_NAME, FEEDBACK_PATH, REPO_DATA,
-  absolute, readWatchRun, url, type WatchRun,
+  absolute, url, watchState,
 } from "../site.js";
+import { reckonDatasetFacts, type WatchRun } from "../dataset-facts/reckon-dataset-facts.js";
 import {
   ROUTE_PAGE_ADDENDUM,
   NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, alsoInHeading, askedRouteDescription,
@@ -124,8 +125,9 @@ function description(dataset: Dataset, country: Country, route: Route): string {
  * with it, and is read the same way, for the same reason. Either one left out
  * is read from the watch's state.
  */
-export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun = {}): RoutePage {
-  const watch = readWatchRun(dataset, run);
+export function routePage(dataset: Dataset, address: RouteAddress, run: Partial<WatchRun> = {}): RoutePage {
+  const facts = reckonDatasetFacts(dataset, watchState, run);
+  const watch = facts.watchRun;
   const { country, route } = address;
   const read = pageStamp(dataset, route);
   const title = `${route.name} · ${country.name} · ${PRODUCT_NAME}`;
@@ -147,14 +149,14 @@ export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun
   ${asideHtml(page, jsonPath)}
   </div>`;
   const html = framedPageHtml(dataset, {
-    title, meta: { description: desc, path, kind: "article" }, css: ROUTE_PAGE_RULES, run: watch, content,
+    title, meta: { description: desc, path, kind: "article" }, css: ROUTE_PAGE_RULES, facts, content,
     place: { countryPath: countryPath(country), current: "true", jsonPath, checkPath: countryCheckPath(country) },
   });
   return { path, jsonPath, title, description: desc, readDate: read, html, json: routeRecord(dataset, address, read) };
 }
 
 /** Every route page this dataset produces. 23 at launch. */
-export function routePages(dataset: Dataset, run: WatchRun = {}): RoutePage[] {
+export function routePages(dataset: Dataset, run: Partial<WatchRun> = {}): RoutePage[] {
   return routeAddresses(dataset).map((a) => routePage(dataset, a, run));
 }
 

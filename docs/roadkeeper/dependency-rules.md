@@ -6,6 +6,7 @@
 - `scripts/browser/tab`
 - `scripts/carry-assets`
 - `src/lib/country-search`
+- `src/lib/dataset-facts`
 - `src/lib/frame`
 - `src/lib/interview`
 - `src/lib/interview/draw`

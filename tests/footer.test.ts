@@ -8,9 +8,9 @@ import { countryLinks } from "../src/lib/country-page.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import {
-  DATA_PATH, FEEDBACK_PATH, NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, lastWatchRun, readRange,
-  unreadSourcesAt, url,
+  DATA_PATH, FEEDBACK_PATH, NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, url, watchState,
 } from "../src/lib/site.js";
+import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import type { Dataset } from "permit-rulebook-data";
 import { PHONE, chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { withSite } from "./browser-walk.js";
@@ -67,8 +67,7 @@ const readerSees = (html: string): string =>
  * kind of day it was.
  */
 function today(): { run: string; unread: number; parenthesis: string; day: string } {
-  const run = lastWatchRun();
-  const unread = unreadSourcesAt(ds, run);
+  const { lastRun: run, unread } = reckonDatasetFacts(ds, watchState).watchRun;
   return {
     run,
     unread: unread.length,
@@ -171,7 +170,7 @@ describe("one footer, every page", () => {
   });
 
   it("the data line states the span the values were read over, from the dataset", () => {
-    const read = readRange(ds);
+    const read = reckonDatasetFacts(ds, watchState).readRange;
     const footer = footerIn(frameAlone(ds));
     expect(footer).toContain(`values read between <b><time datetime="${read.oldest}">`);
     // "Re-read daily" is a claim, so the day it last happened is printed with
@@ -337,7 +336,7 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
 describe("what the site says about the daily check is what the watch recorded", () => {
   it("the data page prints the watch's own last-run day", () => {
     const html = dataPage(ds).html;
-    const run = lastWatchRun();
+    const run = reckonDatasetFacts(ds, watchState).watchRun.lastRun;
     expect(run, "the watch state carries no last_run").toMatch(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
     expect(html).toContain(`last run <b><time datetime="${run}">${run}</time></b>`);
     // And it no longer claims a mechanism that does not exist.

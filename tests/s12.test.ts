@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset, UnreadSource } from "permit-rulebook-data";
-import { dataPage, routeCounts } from "../src/lib/data-page.js";
+import { dataPage } from "../src/lib/data-page.js";
 import { LAST_CHECKED, NEWEST_VALUE_CHANGED } from "../src/lib/copy/data-page.js";
 import { datasetDay } from "../src/lib/copy/frame.js";
-import { lastWatchRun, readRange } from "../src/lib/site.js";
+import { watchState } from "../src/lib/site.js";
+import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { siteReadDate } from "../src/lib/country-page.js";
 
 /**
@@ -25,6 +26,8 @@ import { siteReadDate } from "../src/lib/country-page.js";
  */
 
 const ds = dataset as unknown as Dataset;
+/** The dataset's facts on the watch's own state. */
+const factsOf = (d: Dataset) => reckonDatasetFacts(d, watchState);
 const readerSees = (html: string): string =>
   html.replace(/<[^>]*>/g, "").split(/\s+/).join(" ").split(String.fromCharCode(160)).join(" ").trim();
 
@@ -70,7 +73,7 @@ describe("what /data/ says about when a value changed", () => {
   });
 
   it("prints the newest retrieved_at among the dataset's values", () => {
-    expect(under(dataPage(ds).html, NEWEST_VALUE_CHANGED)).toBe(readRange(ds).newest);
+    expect(under(dataPage(ds).html, NEWEST_VALUE_CHANGED)).toBe(factsOf(ds).newestValueChanged);
   });
 
   /**
@@ -98,12 +101,12 @@ describe("what /data/ says about when a value changed", () => {
     expect(notice, "the dataset no longer carries the notice this case bends").toBeDefined();
     notice!.source.retrieved_at = NOTICE_DAY;
 
-    expect(NOTICE_DAY > readRange(fake).newest, "the bent date is not newer than every value").toBe(true);
+    expect(NOTICE_DAY > factsOf(fake).newestValueChanged, "the bent date is not newer than every value").toBe(true);
     expect(siteReadDate(fake), "the bent notice did not reach the stamp").toBe(NOTICE_DAY);
 
     const html = dataPage(fake, { lastRun: "2026-09-30", unread: [] }).html;
     expect(under(html, NEWEST_VALUE_CHANGED), "a re-read notice moved a row about values changing")
-      .toBe(readRange(fake).newest);
+      .toBe(factsOf(fake).newestValueChanged);
     expect(stampedDate(html), "the stamp lost the newest date the site published").toBe(NOTICE_DAY);
     expect(under(html, NEWEST_VALUE_CHANGED)).not.toBe(stampedDate(html));
   });
@@ -113,7 +116,7 @@ describe("what /data/ says about when everything was last checked", () => {
   it("carries the watch's last run as its own row, directly beneath the one above", () => {
     const terms = termsOf(dataPage(ds).html);
     expect(LAST_CHECKED).toBe("Last checked");
-    expect(under(dataPage(ds).html, LAST_CHECKED)).toBe(lastWatchRun());
+    expect(under(dataPage(ds).html, LAST_CHECKED)).toBe(factsOf(ds).watchRun.lastRun);
     expect(terms.indexOf(LAST_CHECKED)).toBe(terms.indexOf(NEWEST_VALUE_CHANGED) + 1);
   });
 
@@ -146,7 +149,7 @@ describe("what /data/ says about when everything was last checked", () => {
   /**
    * And a state with no run at all says nothing rather than something empty.
    *
-   * `lastWatchRun()` is "" before the watch has ever written, and the freshness
+   * The watch's last run is "" before the watch has ever written, and the freshness
    * sentence has always dropped its clause there. A row is a claim with a date
    * in it; there is no date, so there is no row — and certainly no `datetime=""`
    * for a machine to read as a fact.
@@ -163,7 +166,7 @@ describe("what /data/ says about when everything was last checked", () => {
 describe("how the two rows are built", () => {
   it("both are dates, marked up as dates, like the rows around them", () => {
     const html = dataPage(ds, { lastRun: "2026-09-15", unread: [] }).html;
-    const newest = readRange(ds).newest;
+    const newest = factsOf(ds).newestValueChanged;
     expect(html).toContain(`<dt>${NEWEST_VALUE_CHANGED}</dt><dd><time datetime="${newest}">${newest}</time></dd>`);
     expect(html).toContain(`<dt>${LAST_CHECKED}</dt><dd><time datetime="2026-09-15">2026-09-15</time></dd>`);
   });
@@ -208,7 +211,7 @@ describe("how the list is grouped, after the human read it on the live page", ()
    * read off the dataset and compared, not eyeballed.
    */
   it("leaves the Routes sentence its full wording, alone on its row", () => {
-    const counts = routeCounts(ds);
+    const { counts } = factsOf(ds);
     expect(under(dataPage(ds).html, "Routes")).toBe(
       `${counts.scored} scored, ${counts.quotedOnly} quoted and dated but not scored, in ${
         ds.countries.length} countries`);

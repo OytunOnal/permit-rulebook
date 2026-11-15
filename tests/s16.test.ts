@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { proseProvenance, type Dataset } from "permit-rulebook-data";
-import { dataPage, routeCounts } from "../src/lib/data-page.js";
+import { dataPage } from "../src/lib/data-page.js";
+import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import {
   DATA_LEDE_CLOSE_TAIL, DATA_LEDE_OPEN, FRESHNESS_HUMAN_HAND, PROSE_OURS_TAIL, dataLedeClose, dataMetaDescription,
 } from "../src/lib/copy/data-page.js";
 import { FEEDBACK_DOORS, WRONG_DOOR_LABEL } from "../src/lib/copy/feedback.js";
-import { FEEDBACK_PATH, REPO_DATA, TRACKER_URL, url } from "../src/lib/site.js";
+import { FEEDBACK_PATH, REPO_DATA, TRACKER_URL, url, watchState } from "../src/lib/site.js";
 
 /**
  * s16 — `/data/` in the reader's words, and the last two tracker doors.
@@ -86,7 +87,7 @@ describe("/data/ in the reader's words", () => {
   });
 
   it("describes itself to a search result without the door it no longer offers", () => {
-    const { scored, quotedOnly } = routeCounts(ds);
+    const { scored, quotedOnly } = reckonDatasetFacts(ds, watchState).counts;
     const desc = dataMetaDescription(scored, quotedOnly, ds.countries.length);
     expect(desc).toBe(`What Permit Rulebook holds today: ${scored} routes scored against your answers and ${
       quotedOnly} quoted and dated but not scored, across ${ds.countries.length} countries, every value carrying `

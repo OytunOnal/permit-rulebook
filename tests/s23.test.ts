@@ -16,7 +16,8 @@ import { glossSection, glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { routePage, routePages, routeSourceUrls } from "../src/lib/route-page/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
-import { lastWatchRun, watchState } from "../src/lib/site.js";
+import { watchState } from "../src/lib/site.js";
+import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, hintsIn, paintedAsComposedScript, placed, standingOn, stepsIn, verdictFor,
@@ -253,7 +254,7 @@ describe("the not-yet Opportunity Card prints its tally, and the CEFR rungs are 
 });
 
 describe("the route page's liveness line names its own source or stays silent", () => {
-  const run = lastWatchRun();
+  const run = reckonDatasetFacts(ds, watchState).watchRun.lastRun;
   const address = (id: string) => routeAddresses(ds).find((a) => a.route.id === id)!;
   /**
    * An unread source of the Opportunity Card's own: its points table's page.

@@ -1,7 +1,5 @@
 // @level presentation
-import {
-  routeProvenance, unreadSources, type Dataset, type UnreadSource, type WatchState,
-} from "permit-rulebook-data";
+import type { WatchState } from "permit-rulebook-data";
 // The watch's own record of when it last ran. It is a fact about the data
 // repository, not about the dataset, and it is the only date on this site that
 // moves without a person (devils-advocate, 2026-09-08).
@@ -238,61 +236,8 @@ export function headMeta(o: {
 }
 
 /**
- * The span of days the values on this site were read on.
- *
- * The footer says the range rather than the newest date alone: "read
- * 2026-09-08" is the flattering end of a set that starts earlier, and a reader
- * deciding whether to trust a number deserves both ends of it (footer critique,
- * 2026-09-08).
+ * The watch's own record: when it last ran, and what that run could not read.
+ * The one read of it the site makes; whoever builds a page hands it to the
+ * reckoning of the dataset's facts, which reads no file.
  */
-export function readRange(dataset: Dataset): { oldest: string; newest: string } {
-  const days: string[] = [];
-  for (const country of dataset.countries)
-    for (const route of country.routes)
-      for (const entry of routeProvenance(route)) days.push(entry.value.retrieved_at);
-  days.sort();
-  return { oldest: days[0] ?? "", newest: days[days.length - 1] ?? "" };
-}
-
-/**
- * The day every watched source was last re-read — written by every run of the
- * watch, changed or not.
- *
- * The site used to say the date in the corner "moves on its own", which was
- * false: that is the newest `retrieved_at` in the dataset, and only a person
- * writes it. This is the one that moves by itself, so it is the one printed
- * beside "re-read daily".
- */
-export const lastWatchRun = (): string =>
-  watchState.last_run ?? "";
-
-/** The watch's record itself, for the derivations the data package owns. */
 export const watchState: WatchState = watchStateJson as WatchState;
-
-/**
- * The sources that run could not read — of the ones a reader is looking at.
- *
- * It takes the run it is being asked about, and answers only for the run the
- * state belongs to. A caller naming another day gets silence, because an
- * unread list belongs to the pass that wrote it: that is what keeps the root
- * build's fingerprint frozen, which renders the footer at a day no watch ever
- * ran, and what stopped `lastRun` being read off the live state there in the
- * first place (2026-09-09).
- */
-export const unreadSourcesAt = (dataset: Dataset, run: string): UnreadSource[] =>
-  run === lastWatchRun() ? unreadSources(dataset, watchState) : [];
-
-/** The watch's last run as a page prints it: its day, and the sources it could not read. */
-export interface WatchRun {
-  lastRun?: string;
-  unread?: UnreadSource[];
-}
-
-/**
- * A watch run with whatever it leaves out read from the watch's state: the day
- * of its last run, and the sources that day's pass could not read.
- */
-export function readWatchRun(dataset: Dataset, run: WatchRun = {}): Required<WatchRun> {
-  const lastRun = run.lastRun ?? lastWatchRun();
-  return { lastRun, unread: run.unread ?? unreadSourcesAt(dataset, lastRun) };
-}
