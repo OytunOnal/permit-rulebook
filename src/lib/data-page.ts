@@ -1,6 +1,6 @@
 // @level presentation
 import {
-  phraseOf, countryVocabulary, proseProvenance, unreadClause,
+  phraseOf, countryVocabulary, unreadClause,
   type Country, type Dataset, type WatchState,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
@@ -55,11 +55,10 @@ export const DATASET_JSON_PATH = "/dataset.json";
 /** The country vocabulary the passport question is built from. */
 export const COUNTRIES_JSON_PATH = "/countries.json";
 
-/** What the data page's sections draw from: the dataset, its reckoned facts, and its prose counts. */
+/** What the data page's sections draw from: the dataset and its reckoned facts. */
 interface DataPageContext {
   dataset: Dataset;
   facts: DatasetFacts;
-  prose: ReturnType<typeof proseProvenance>;
 }
 
 /**
@@ -123,14 +122,14 @@ function datesFactsHtml(dataset: Dataset, facts: DatasetFacts): string {
 
 /** What the dataset holds today: its dates, then its counts. */
 function holdsSectionHtml(context: DataPageContext): string {
-  const { dataset, facts, prose } = context;
+  const { dataset, facts } = context;
   const { counts } = facts;
   return `<section class="answer" aria-labelledby="holds-h">
       <h2 class="label" id="holds-h">${esc(HOLDS_HEADING)}</h2>
       ${datesFactsHtml(dataset, facts)}
       <dl class="facts facts-counts">
         <div><dt>${esc(QUOTED_VALUES)}</dt><dd>${esc(quotedValuesCount(counts.quotedValues))}</dd></div>
-        <div><dt>${esc(SENTENCES_OF_OURS)}</dt><dd>${prose.ours}, ${esc(PROSE_OURS_TAIL)}</dd></div>
+        <div><dt>${esc(SENTENCES_OF_OURS)}</dt><dd>${counts.prose.ours}, ${esc(PROSE_OURS_TAIL)}</dd></div>
       </dl>
       <dl class="facts facts-wide">
         <div><dt>${esc(ROUTES_TERM)}</dt><dd>${esc(routesCount(counts.scored, counts.quotedOnly, counts.countries))}</dd></div>
@@ -157,7 +156,8 @@ function dailyCheckHtml(run: WatchRun): string {
 
 /** What checks the dataset: the four gates, the counter, the translation policy and the daily check. */
 function checksSectionHtml(context: DataPageContext): string {
-  const { facts, prose } = context;
+  const { facts } = context;
+  const { prose } = facts.counts;
   return `<section class="rules" aria-labelledby="checks-h">
       <h2 class="label" id="checks-h">${esc(CHECKS_HEADING)}</h2>
       <p>${esc(GATES_LEAD)}</p>
@@ -210,7 +210,7 @@ function takeSectionHtml(context: DataPageContext): string {
 export function dataPage(dataset: Dataset, state: WatchState = watchState): DataPage {
   const facts = reckonDatasetFacts(dataset, state);
   const { counts } = facts;
-  const context: DataPageContext = { dataset, facts, prose: proseProvenance(dataset) };
+  const context: DataPageContext = { dataset, facts };
   const title = DATA_PAGE_TITLE;
   const desc = dataMetaDescription(counts.scored, counts.quotedOnly, counts.countries);
   // The one page that IS the dataset says so in the vocabulary a dataset

@@ -1,5 +1,7 @@
 // @level application
-import { isScored, routeProvenance, type Dataset, type Route } from "permit-rulebook-data";
+import {
+  isScored, proseProvenance, routeProvenance, type Dataset, type ProseProvenance, type Route,
+} from "permit-rulebook-data";
 
 /**
  * A set of routes, counted: the ones the product scores, the ones it quotes
@@ -18,11 +20,13 @@ export interface RouteCounts {
   total: number;
 }
 
-/** What the dataset holds, counted rather than typed: its routes, its countries and its quoted values. */
+/** What the dataset holds, counted rather than typed: its routes, its countries, its quoted values and its prose. */
 export interface DatasetCounts extends RouteCounts {
   countries: number;
   /** Every value in the dataset that carries a quote and a date. */
   quotedValues: number;
+  /** Its prose sentences: the ones with provenance, ours, and the ones declared unsourced. */
+  prose: ProseProvenance;
 }
 
 /** `routes`, counted. */
@@ -35,5 +39,5 @@ export function routeCountsOf(routes: Route[]): RouteCounts {
 export function datasetCountsOf(dataset: Dataset): DatasetCounts {
   const routes = dataset.countries.flatMap((c) => c.routes);
   const quotedValues = routes.reduce((sum, route) => sum + routeProvenance(route).length, 0);
-  return { ...routeCountsOf(routes), countries: dataset.countries.length, quotedValues };
+  return { ...routeCountsOf(routes), countries: dataset.countries.length, quotedValues, prose: proseProvenance(dataset) };
 }
