@@ -47,6 +47,6 @@ nav.jsonlinks a small { font: var(--text-source); color: var(--color-met); white
 .facts > div { display: flex; flex-direction: column; justify-content: space-between; }
 /* A phone takes the four dates two at a time. The counts stack themselves at
    that width and are better for it — two across at 390 broke each of them over
-   three lines (measured). 760px is the width the shared sheet already turns at,
-   and this page turns with it rather than inventing a second one. */
-@media (max-width: 760px) { .facts-dates { grid-template-columns: repeat(2, 1fr); } }
+   three lines (measured). The narrow side is the one the shared sheet already
+   turns at, and this page turns with it rather than inventing a second one. */
+@media (--narrow) { .facts-dates { grid-template-columns: repeat(2, 1fr); } }

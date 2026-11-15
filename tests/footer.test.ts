@@ -226,7 +226,7 @@ async function settledLayoutAt(page: BrowserPage, url: string, path: string): Pr
 }
 
 describe.skipIf(skipped !== null)("the footer lays out where it says it does", () => {
-  // The mock's own steps: three columns, two below 760, one below 480. Measured
+  // The mock's own steps: three columns, two on the narrow side, one below 480. Measured
   // per page, because a count that depends on how wide the page happens to be
   // is not a design (Spec review, 2026-09-08).
   for (const [width, columns] of [[1100, 3], [761, 3], [760, 2], [600, 2], [481, 2], [390, 1]] as const)

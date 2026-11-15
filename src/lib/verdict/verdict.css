@@ -235,7 +235,7 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
   display:inline-block;align-content:center;min-height:var(--tap-min);overflow-wrap:anywhere}
 .next::after{content:"\2060↗"}
 
-@media (max-width:760px){
+@media (--narrow){
   details.country-sec > summary{flex-wrap:wrap;letter-spacing:.18em}
   /* The sentence takes a row of its own under the name; the name stays
      where every other country's is, at the marker (s21). */
