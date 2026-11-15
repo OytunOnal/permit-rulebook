@@ -73,6 +73,11 @@ export const countryPath = (country: Country): string => `/${countrySlug(country
 /** The interview's address scoped to this country: where "Check yours" leads from its pages. */
 export const countryCheckPath = (country: Country): string => `/?country=${country.code.toLowerCase()}`;
 
+/**
+ * A country page's address. It lives beside the route pages' addresses, not in
+ * the country page, so the 404 and the sitemap read it without importing a page
+ * (ruling 2 on #323).
+ */
 export interface CountryAddress {
   country: Country;
   slug: string;

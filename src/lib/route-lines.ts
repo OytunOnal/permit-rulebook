@@ -7,6 +7,13 @@ import { audienceLine } from "./copy/route-page.js";
 import type { PrintedQuotes } from "./dataset-facts/reckon-dataset-facts.js";
 
 /**
+ * The lines a route is told in outside its own rules: its gist, the figure it
+ * turns on, and whom its country's routes are for. The route page and the
+ * country page both print them, so they live in neither, and no page imports
+ * another (ruling 2 on #323).
+ */
+
+/**
  * Who the page is for, said before the first rule. An Irish reader who lands on
  * a German route page from a search is told here, not after seven rules and a
  * refusal (`tests/s6-edges.test.ts`), and the call to action below leads to the notice
