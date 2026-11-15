@@ -156,6 +156,10 @@ export const ROUTE_AS_JSON = "This route as JSON"; // the link to the route's ow
 export const REPOSITORY_FOOTER_ROW = "The repository"; // the data column's row to the data repository
 export const licenceFooterRow = (licenceName: string): string => `Licence · ${licenceName}`;
 export const SPONSOR_FOOTER_ROW = "Sponsor this work"; // the feedback column's second row
+
+/** The open dataset's door and its terms, as `/data/` and every route page say them. */
+export const DATASET_ON_GITHUB = "The dataset on GitHub"; // the link to the data repository
+export const reuseUnder = (licenceName: string): string => `Reuse it under ${licenceName} — credit and link back.`;
 export const CODE_LICENCE = "code MIT"; // the licence line: the code's licence, beside the data's
 export const dataLicence = (licenceName: string): string => `data ${licenceName}`;
 export const copyrightNotice = (year: string, owner: string): string => `© ${year} ${owner}`;

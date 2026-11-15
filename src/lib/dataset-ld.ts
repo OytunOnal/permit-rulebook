@@ -2,8 +2,9 @@
 import type { Dataset } from "permit-rulebook-data";
 import { reckonDatasetFacts, type DatasetFacts } from "./dataset-facts/reckon-dataset-facts.js";
 import { DATA_LICENCE_NAME, OWNER, REPO_DATA, absolute, watchState } from "./site.js";
-import { PRODUCT_NAME } from "./copy/frame.js";
-import { datasetDescription } from "./copy/data-page.js";
+import {
+  COUNTRIES_DOWNLOAD_NAME, DATASET_KEYWORDS, datasetDescription, datasetName, wholeDatasetDownloadName,
+} from "./copy/data-page.js";
 
 /**
  * The data page's structured description of the dataset, for the machines that
@@ -45,13 +46,13 @@ function datasetDownloads(): Record<string, string>[] {
   return [
     {
       "@type": "DataDownload",
-      name: `The whole dataset (${DATA_LICENCE_NAME})`,
+      name: wholeDatasetDownloadName(DATA_LICENCE_NAME),
       encodingFormat: "application/json",
       contentUrl: absolute("/dataset.json"),
     },
     {
       "@type": "DataDownload",
-      name: "The countries and their routes",
+      name: COUNTRIES_DOWNLOAD_NAME,
       encodingFormat: "application/json",
       contentUrl: absolute("/countries.json"),
     },
@@ -77,7 +78,7 @@ export function datasetLd(
   const ld = {
     "@context": "https://schema.org",
     "@type": "Dataset",
-    name: `${PRODUCT_NAME} — work-permit routes for ${countries.join(", ")}`,
+    name: datasetName(countries.join(", ")),
     // Words, so the copy module's: a person reads them in the index's result,
     // and the last sentence is the page's own promise of when a flag is read
     // (#62).
@@ -89,10 +90,7 @@ export function datasetLd(
     isAccessibleForFree: true,
     creator: { "@type": "Person", name: OWNER },
     dateModified: read,
-    keywords: [
-      "work permit", "residence permit", "immigration", "eligibility", "open data",
-      ...countries,
-    ],
+    keywords: [...DATASET_KEYWORDS, ...countries],
     spatialCoverage: coveredPlaces(countries),
     distribution: datasetDownloads(),
   };

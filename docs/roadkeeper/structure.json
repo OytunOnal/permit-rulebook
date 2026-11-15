@@ -1206,11 +1206,6 @@
   },
   {
    "from": "src/lib/dataset-ld.ts",
-   "to": "src/lib/copy/frame.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/dataset-ld.ts",
    "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
@@ -7721,6 +7716,176 @@
     "name": "proseProvenanceCounts",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "DATA_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_PAGE_TITLE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "HOLDS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATASET_VERSION",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SCHEMA_VERSION",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "QUOTED_VALUES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "quotedValuesCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "SENTENCES_OF_OURS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ROUTES_TERM",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "routesCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CHECKS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "GATES_LEAD",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SCHEMA_VALIDATION",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SCHEMA_VALIDATION_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "QUOTE_FIDELITY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "QUOTE_FIDELITY_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WATCH_COVERAGE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WATCH_COVERAGE_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "PROSE_PROVENANCE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "proseProvenanceLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ANALYTICS_NOTE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "TAKE_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DOWNLOADS_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WHOLE_DATASET_AS_JSON",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "COUNTRIES_JSON_LINK",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SERVED_ON_ITS_OWN",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "STATUS_ALIAS_TITLE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "movedHeadingHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "STATUS_ALIAS_LEDE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "statusAliasDescription",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "datasetName",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "wholeDatasetDownloadName",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "COUNTRIES_DOWNLOAD_NAME",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATASET_KEYWORDS",
+    "kind": "const",
+    "exported": true
    }
   ],
   "src/lib/copy/feedback.ts": [
@@ -7944,6 +8109,16 @@
    {
     "name": "SPONSOR_FOOTER_ROW",
     "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATASET_ON_GITHUB",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "reuseUnder",
+    "kind": "fn",
     "exported": true
    },
    {
@@ -10189,5 +10364,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "6545917e3817bf780dea506a602652d1a0b0be187f5f4a923f748f19481ee16b"
+ "digest": "974367e2c45b89ecf0e0b58b87f06636ddff663cabb2ff5603f48f0e3e3c95f9"
 }
