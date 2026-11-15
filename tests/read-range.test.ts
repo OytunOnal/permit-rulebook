@@ -10,6 +10,7 @@ import { interviewFrameOf } from "../src/lib/frame/framed-page.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
 import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { NEWEST_VALUE_CHANGED } from "../src/lib/copy/data-page.js";
+import { readRangeHtml } from "../src/lib/copy/frame.js";
 import { DATA_PATH, FEEDBACK_PATH } from "../src/lib/site.js";
 import { countryAddresses, routeAddresses } from "../src/lib/slug.js";
 import { footerIn } from "./frame-alone.js";
@@ -53,10 +54,13 @@ function withNoticeReadOn(day: string): Dataset {
   return copy;
 }
 
+/** The footer's read range as the copy words it, each day's `<time>` captured. */
+const READ_RANGE = new RegExp(readRangeHtml("1001", "1002").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  .replace("1001", '<b><time datetime="([^"]*)">[\\s\\S]*?</b>').replace("1002", '<b><time datetime="([^"]*)">'));
+
 /** The two days of the footer's read range. Throws where the footer prints none. */
 function footerRange(html: string): { oldest: string; newest: string } {
-  const range = /values read between <b><time datetime="([^"]*)">[\s\S]*?<\/b> and <b><time datetime="([^"]*)">/
-    .exec(footerIn(html));
+  const range = READ_RANGE.exec(footerIn(html));
   if (!range) throw new Error("the footer prints no read range");
   return { oldest: range[1]!, newest: range[2]! };
 }
