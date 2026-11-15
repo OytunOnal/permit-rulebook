@@ -149,8 +149,10 @@ export const ANY_PATH = "Any one of these paths meets it:";
  * page is, said of its numbers on a route the checker asks about and of its
  * conditions on one it does not.
  */
-export const sourcedOnThisPage = (scored: boolean): string =>
-  `Every ${scored ? "number" : "condition"} on this page is the authority's own sentence, with the page it came from and the day we read it.`;
+export const EVERY_NUMBER_SOURCED = // on a route the checker asks about
+  "Every number on this page is the authority's own sentence, with the page it came from and the day we read it.";
+export const EVERY_CONDITION_SOURCED = // on a route the checker does not ask about
+  "Every condition on this page is the authority's own sentence, with the page it came from and the day we read it.";
 
 /** What a search result says of a threshold, among a route's first conditions; `measure` is the field's own noun, lower-cased. */
 export const thresholdInDescription = (amount: string, measure: string): string => `the ${amount} ${measure}`;

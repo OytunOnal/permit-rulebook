@@ -8655,8 +8655,13 @@
     "exported": true
    },
    {
-    "name": "sourcedOnThisPage",
-    "kind": "fn",
+    "name": "EVERY_NUMBER_SOURCED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "EVERY_CONDITION_SOURCED",
+    "kind": "const",
     "exported": true
    },
    {
@@ -10624,5 +10629,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a164183d2bf5c3dccc2fcd6208afd2f9a93fec86dc590cb26087fc43e802b2d2"
+ "digest": "c16d87455e821eab79e2c51369ba73f2de4caf179b15789bc26acf0d1169cee1"
 }

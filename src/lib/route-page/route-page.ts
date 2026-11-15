@@ -20,10 +20,11 @@ import {
 } from "../dataset-facts/reckon-dataset-facts.js";
 import {
   ROUTE_PAGE_ADDENDUM,
-  ASKED_SCOPE_HEADING, BESIDE_THE_RULES, CHECK_ON_THIS_DEVICE, DATA_BEHIND_THIS_PAGE, GENERATED_FROM_DATASET,
+  ASKED_SCOPE_HEADING, BESIDE_THE_RULES, CHECK_ON_THIS_DEVICE, DATA_BEHIND_THIS_PAGE, EVERY_CONDITION_SOURCED,
+  EVERY_NUMBER_SOURCED, GENERATED_FROM_DATASET,
   NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, RULES_HEADING, WHERE_DO_YOU_STAND,
   alsoInHeading, askedRouteDescription, dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription,
-  onThisRouteHtml, sourcedOnThisPage, thresholdInDescription,
+  onThisRouteHtml, thresholdInDescription,
 } from "../copy/route-page.js";
 import {
   CHECK_YOUR_OWN_SITUATION, DATASET_ON_GITHUB, PRODUCT_NAME, ROUTE_AS_JSON, checkYoursFor, reuseUnder,
@@ -172,7 +173,7 @@ function mastheadHtml(page: RulePage, read: string): string {
     <div>
       <h1>${esc(heading)}</h1>
       <p class="tagline">${esc(ROUTE_TAGLINE)}</p>
-      <p class="lede">${route.summary ? `${esc(glossed(route.summary, seen))} ` : ""}${esc(sourcedOnThisPage(scored))} ${
+      <p class="lede">${route.summary ? `${esc(glossed(route.summary, seen))} ` : ""}${esc(scored ? EVERY_NUMBER_SOURCED : EVERY_CONDITION_SOURCED)} ${
     esc(audienceSentence(country))} ${esc(scored ? ROUTE_PAGE_ADDENDUM : ROUTE_PAGE_UNSCORED_ADDENDUM)}</p>
     </div>
     ${rulesRead(read)}
