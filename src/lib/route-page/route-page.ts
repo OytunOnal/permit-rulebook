@@ -101,7 +101,7 @@ function description(dataset: Dataset, address: RouteAddress, printed: PrintedQu
       bits.push(thresholdInDescription(formatEURPer(c.threshold.amount, periodOf(dataset, c.field)),
         shortLabelOf(dataset, c.field).toLowerCase()));
   });
-  for (const { criterion: c } of printed.rules) {
+  for (const { criterion: c } of printed.cards) {
     if (bits.length >= 3) break;
     const isThresholdOrCitizenship = c.op === "gte" || ("field" in c && c.field === "citizenship");
     if (isThresholdOrCitizenship) continue;
@@ -186,7 +186,7 @@ function mainHtml(page: RulePage, own: RouteFacts): string {
 
   <section class="rules" aria-labelledby="rules-h">
     <h2 class="visually-hidden" id="rules-h">${esc(RULES_HEADING)}</h2>${
-    own.printed.rules.map((rule) => ruleCard(page, rule)).join("")}${
+    own.printed.cards.map((card) => ruleCard(page, card)).join("")}${
     statedBlocks(route, seen)}
   </section>
 

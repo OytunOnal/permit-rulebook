@@ -25,7 +25,7 @@ import { reckonRouteFacts, type RouteFacts } from "./per-page/reckon-route-facts
 export type { DatasetCounts, RouteCounts } from "./dataset-wide/dataset-counts.ts";
 export type { ReadRange } from "./dataset-wide/read-range.ts";
 export type { WatchRun } from "./dataset-wide/watch-run.ts";
-export type { PrintedQuotes, PrintedRule, RouteFacts } from "./per-page/reckon-route-facts.ts";
+export type { PrintedCard, PrintedQuotes, RouteFacts } from "./per-page/reckon-route-facts.ts";
 
 /** What a country page prints about its country. */
 export interface CountryFacts {

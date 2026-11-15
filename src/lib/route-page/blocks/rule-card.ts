@@ -4,7 +4,7 @@ import {
   learnLinkOf, periodOf, referencedFields, shortLabelOf, subjectOf, thresholdsUnder,
   type Country, type Criterion, type Dataset, type Notice, type Route,
 } from "permit-rulebook-data";
-import type { PrintedRule } from "../../dataset-facts/reckon-dataset-facts.js";
+import type { PrintedCard } from "../../dataset-facts/reckon-dataset-facts.js";
 import { type Glossary, glossed } from "../../gloss.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
@@ -133,12 +133,12 @@ function asksBlock(dataset: Dataset, criteria: Criterion[], seen: Glossary): str
  * One rule card, drawn from the reckoning's answer: its quotes, and the rules
  * on it that print none, for which it says what the interview will ask.
  */
-export function ruleCard(page: RulePage, rule: PrintedRule): string {
+export function ruleCard(page: RulePage, card: PrintedCard): string {
   const { dataset, seen, notice } = page;
-  const { criterion: c, quotes: values } = rule;
+  const { criterion: c, quotes: values } = card;
   const thresholds = thresholdsUnder(c);
   const year = thresholds.length ? thresholds[0].threshold.retrieved_at.slice(0, 4) : "";
-  const asks = asksBlock(dataset, rule.unquoted, seen);
+  const asks = asksBlock(dataset, card.unquoted, seen);
   return `
       <article class="rule">
         <div class="top"><h2>${esc(ruleHeading(dataset, c))}</h2><span class="kind">${

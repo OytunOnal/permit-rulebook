@@ -59,7 +59,7 @@ type Points = Extract<Criterion, { op: "points" }>;
  */
 export function figuresOf(route: Route, printed: PrintedQuotes): { amounts: ThresholdCriterion[]; points?: Points } {
   const seen = new Set<number>();
-  const amounts = printed.rules.map((r) => r.criterion).flatMap(thresholdsUnder)
+  const amounts = printed.cards.map((card) => card.criterion).flatMap(thresholdsUnder)
     .filter((c) => (seen.has(c.threshold.amount) ? false : seen.add(c.threshold.amount)))
     .sort((a, b) => a.threshold.amount - b.threshold.amount);
   return { amounts, points: route.criteria.find((c): c is Points => c.op === "points") };

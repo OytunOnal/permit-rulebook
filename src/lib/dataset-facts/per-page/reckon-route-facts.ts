@@ -12,7 +12,7 @@ import {
 } from "permit-rulebook-data";
 
 /** One rule card a route page prints. */
-export interface PrintedRule {
+export interface PrintedCard {
   /** The rule the card is about. */
   criterion: Criterion;
   /** The quotes the card prints, in its order. */
@@ -24,7 +24,7 @@ export interface PrintedRule {
 /** Which quotes one route page prints. */
 export interface PrintedQuotes {
   /** Its rule cards, in the order the interview asks them. */
-  rules: PrintedRule[];
+  cards: PrintedCard[];
   /** The notices it prints. */
   notices: Notice[];
   /** The notice that says who the page is not for, whose words and quote the audience card may borrow. */
@@ -122,7 +122,7 @@ function ruleCriteria(dataset: Dataset, route: Route): Criterion[] {
  * says instead what the interview will ask. A quoted card says it for the
  * unquoted rules inside its paths.
  */
-function printedRule(criterion: Criterion, notice?: Notice): PrintedRule {
+function printedCard(criterion: Criterion, notice?: Notice): PrintedCard {
   const quotes = cardValues(criterion, notice);
   const isBare = quotes.length === 0 && thresholdsUnder(criterion).length === 0;
   return { criterion, quotes, unquoted: isBare ? [criterion] : unquotedInPaths(criterion) };
@@ -165,7 +165,7 @@ function audienceNoticeOf(dataset: Dataset): Notice | undefined {
 function printedQuotesOf(dataset: Dataset, route: Route): PrintedQuotes {
   const audienceNotice = audienceNoticeOf(dataset);
   return {
-    rules: ruleCriteria(dataset, route).map((c) => printedRule(c, audienceNotice)),
+    cards: ruleCriteria(dataset, route).map((c) => printedCard(c, audienceNotice)),
     notices: printedNotices(dataset, route),
     audienceNotice,
   };
@@ -177,7 +177,7 @@ function printedQuotesOf(dataset: Dataset, route: Route): PrintedQuotes {
  * the ones printed here count.
  */
 function printedSources(route: Route, printed: PrintedQuotes): ProvenanceEntry["value"][] {
-  const out = printed.rules.flatMap((r) => r.quotes).map((e) => e.value);
+  const out = printed.cards.flatMap((card) => card.quotes).map((e) => e.value);
   for (const s of routeStatements(route)) out.push(...statementSources(s));
   for (const n of printed.notices) out.push(...noticeSources(n));
   return out;
