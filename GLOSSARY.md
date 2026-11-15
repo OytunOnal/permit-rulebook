@@ -41,6 +41,14 @@ checked; prose is optional and never the gate. A re-read that found the same
 value is recorded like a change, so "read 2026-09-08" on a page is earned.
 _Avoid_: note (as the record), log, changelog
 
+**Read range** (#323):
+The span of days the dataset's quoted sentences were read on: from the oldest
+to the newest read date among every sentence the site quotes, values and
+notices alike. Its newest day is the dataset's one newest read day; a notice
+re-read alone moves it, since a notice is a rule read. Not the newest value
+changed, which counts values only.
+_Avoid_: "newest date" for either end, which hides which day it is
+
 **Route statement**:
 Something a source says about one route that no criterion can compute, carried
 in the source's own words — either a Precondition that ships with its quote, or
