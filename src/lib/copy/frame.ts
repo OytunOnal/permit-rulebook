@@ -146,10 +146,10 @@ export const FEEDBACK_FOOTER_ROW = "How to write, and what happens";
  * the health line. The wording is #85's and #185's; it moved here unchanged
  * (#389), so the footer's template types none of it.
  */
-export const CHECK_YOURS = "Check yours"; // the countries column's last row: where the interview starts
-export const THE_DATA = "The data"; // the data column's heading
+export const CHECK_YOURS = "Check yours"; // the countries column's last row and the header's: where the interview starts
+export const THE_DATA = "The data"; // the data column's heading and the header's link to /data/
 export const DATA_FOOTER_ROW = "The data — status, versions, downloads"; // the data column's row to /data/
-export const ROUTE_AS_JSON = "This route as JSON"; // the data column's row to the route's own JSON
+export const ROUTE_AS_JSON = "This route as JSON"; // the link to the route's own JSON, in the footer and on the route page
 export const REPOSITORY_FOOTER_ROW = "The repository"; // the data column's row to the data repository
 export const licenceFooterRow = (licenceName: string): string => `Licence · ${licenceName}`;
 export const SPONSOR_FOOTER_ROW = "Sponsor this work"; // the feedback column's second row

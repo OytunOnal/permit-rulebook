@@ -1,5 +1,5 @@
 // @level presentation
-import { COUNTRIES, FEEDBACK, MENU, MENU_CLOSE, PRODUCT_NAME } from "../../copy/frame.js";
+import { CHECK_YOURS, COUNTRIES, FEEDBACK, MENU, MENU_CLOSE, PRODUCT_NAME, THE_DATA } from "../../copy/frame.js";
 import { seal } from "../../identity.js";
 import { esc, escAttr } from "../../reason.js";
 import { DATA_PATH, FEEDBACK_PATH, url } from "../../site.js";
@@ -92,8 +92,8 @@ export function siteHeader(countries: NavLink[], place: HeaderPlace = {}): strin
     // One name for it, the human's own: the header says "Check yours" and so
     // does the footer; the page's own button says which country (footer
     // critique, 2026-09-08).
-    item({ path: "/", label: "Check yours", action: true }),
-    item({ path: DATA_PATH, label: "The data" }),
+    item({ path: "/", label: CHECK_YOURS, action: true }),
+    item({ path: DATA_PATH, label: THE_DATA }),
     // The word a reader meets the moment any page opens on a desktop, and one
     // tap behind Menu on a phone (s13).
     item({ path: FEEDBACK_PATH, label: FEEDBACK }),
