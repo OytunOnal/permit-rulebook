@@ -1896,17 +1896,17 @@
   },
   {
    "from": "src/lib/route-page/blocks/route-figure.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/route-figure.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/route-page/blocks/route-figure.ts",
    "to": "src/lib/route-lines.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page/blocks/route-figure.ts",
-   "to": "src/lib/route-page/blocks/rule-card.ts",
    "kind": "dependency"
   },
   {
@@ -2047,6 +2047,11 @@
   {
    "from": "src/lib/route-page/route-page.ts",
    "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/tap.ts",
    "kind": "dependency"
   },
   {
@@ -4467,6 +4472,11 @@
   {
    "from": "tests/route-page-frame.test.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-frame.test.ts",
+   "to": "src/lib/tap.ts",
    "kind": "dependency"
   },
   {
@@ -10149,5 +10159,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "c7049065005df9d7e953fa7e182f1065a29688dfcc3af2a5649d88fefc9e5abd"
+ "digest": "a615c63913fe566a02556481acacd494ac82a489fc6d6774c6021c7e4cbcd025"
 }

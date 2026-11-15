@@ -15,11 +15,6 @@ import { ANY_PATH, EITHER_PATH } from "../../copy/route-page.js";
 import { capitalise } from "../../copy/frame.js";
 import { railHtml } from "./rail.js";
 
-// The route page's entry and its figure take these from here, as they did
-// before the quote line and the tap floor moved out of the route page.
-export { TAP_CLASSES, tapMin } from "../../tap.js";
-export { readDateTime } from "../../quote.js";
-
 /**
  * What every rule card on one route page shares: the dataset, the country and
  * route the page is about, the page's memory of what it has already explained,
