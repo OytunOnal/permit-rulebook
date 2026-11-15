@@ -5,7 +5,7 @@ import {
 import { type Glossary, glossed } from "../../gloss.js";
 import { esc, escAttr } from "../../reason.js";
 import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn } from "../../copy/quotes.js";
-import { quoteBlock } from "./rule-card.js";
+import { quoteBlock } from "../../quote.js";
 
 // ---------------------------------------------------------------------------
 // The blocks beside the rules

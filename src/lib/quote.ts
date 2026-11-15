@@ -1,8 +1,9 @@
 // @level presentation
-import { LANGUAGE_NAMES, formatEUR, hostKindOf, quoteLanguage } from "permit-rulebook-data";
-import { OFFICIAL_PAGE, consolidatedTextOn, learnLinkWithKind } from "./copy/quotes.js";
-import { esc } from "./reason.js";
+import { LANGUAGE_NAMES, formatEUR, hostKindOf, quoteLanguage, type ProvenanceEntry } from "permit-rulebook-data";
+import { OFFICIAL_PAGE, consolidatedTextOn, learnLinkWithKind, readOn } from "./copy/quotes.js";
+import { esc, escAttr } from "./reason.js";
 import { type Glossary, glossed } from "./gloss.js";
+import { tapInline } from "./tap.js";
 
 /**
  * How a quote is framed, wherever one is shown.
@@ -111,4 +112,44 @@ export const NOTE_SEPARATOR = " · ";
 
 export function noteHtml(note: string): string {
   return note ? `<span class="note">${NOTE_SEPARATOR}${esc(note)}</span>` : "";
+}
+
+// ---------------------------------------------------------------------------
+// The quote block
+// ---------------------------------------------------------------------------
+
+interface QuoteOptions {
+  /** The amount this quote is the proof of, where it is the proof of one. */
+  amount?: number;
+  /** What the value is called on its own line ("standard amount"). */
+  label?: string;
+}
+
+/** A read date as a quote and a headline figure both print it. */
+export const readDateTime = (day: string): string => `<time datetime="${escAttr(day)}">${esc(readOn(day))}</time>`;
+
+export function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}, seen: Glossary = new Set()): string {
+  const { lang, host, note } = quoteFrame(value, o.amount);
+  return `<div class="src">
+        <span><q${lang ? ` lang="${escAttr(lang)}"` : ""}>${esc(value.quote)}</q> · ${esc(host)}${
+    o.label ? ` · ${esc(o.label)}` : ""}${
+    value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b>${readDateTime(value.retrieved_at)}</b>${
+    noteHtml(note)}</span>
+        <a ${tapInline()} href="${escAttr(value.source_url)}" target="_blank" rel="noopener">${
+    esc(linkLabelOf(value.source_url))} &#8599;</a>
+      </div>`;
+}
+
+/**
+ * A quote long enough to bury the card is shown to its first sentence, with
+ * the whole passage on the element and its source a click away — the evidence
+ * stays complete, the card stays readable (tracker #5). The notice's quotes
+ * go through it as the cards' do: the Türkiye notice's runs to 640
+ * characters (Standards review, 2026-09-10).
+ */
+export function quoteForCard(quote: string): { shown: string; trimmed: boolean } {
+  if (quote.length <= 200) return { shown: quote, trimmed: false };
+  const end = quote.indexOf(". ");
+  if (end < 0 || end > 200) return { shown: quote.slice(0, 200).trimEnd() + "…", trimmed: true };
+  return { shown: quote.slice(0, end + 1) + " …", trimmed: true };
 }

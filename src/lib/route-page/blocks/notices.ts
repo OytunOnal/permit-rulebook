@@ -1,9 +1,9 @@
 // @level presentation
 import { noticeSources, type Notice } from "permit-rulebook-data";
 import { type Glossary, glossed } from "../../gloss.js";
-import { glossedLearnLinkText, linkLabelOf } from "../../quote.js";
+import { glossedLearnLinkText, linkLabelOf, quoteBlock } from "../../quote.js";
 import { esc, escAttr } from "../../reason.js";
-import { quoteBlock, tapInline } from "./rule-card.js";
+import { tapInline } from "../../tap.js";
 
 /**
  * A notice, on a page with no reader.

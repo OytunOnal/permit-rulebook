@@ -9,7 +9,7 @@ import {
 import { readOn } from "../../../../copy/quotes.js";
 import { type Glossary, glossed } from "../../../../gloss.js";
 // One frame for every quote the product shows (2026-09-08).
-import { linkLabelOf, noteHtml, quoteFrame } from "../../../../quote.js";
+import { linkLabelOf, noteHtml, quoteForCard, quoteFrame } from "../../../../quote.js";
 import type { CardScreen } from "./card-screen.js";
 import { routeAsStated } from "./route-statements.js";
 
@@ -133,20 +133,6 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult, notTaken: Rea
   if (!decidesOnANumber(r.route))
     lines.push(`<div class="src nosrc">${esc(NO_THRESHOLD_ON_ROUTE)}</div>`);
   return `<div class="srcs">${lines.join("")}</div>`;
-}
-
-/**
- * A quote long enough to bury the card is shown to its first sentence, with
- * the whole passage on the element and its source a click away — the evidence
- * stays complete, the card stays readable (tracker #5). The notice's quotes
- * go through it as the cards' do: the Türkiye notice's runs to 640
- * characters (Standards review, 2026-09-10).
- */
-function quoteForCard(quote: string): { shown: string; trimmed: boolean } {
-  if (quote.length <= 200) return { shown: quote, trimmed: false };
-  const end = quote.indexOf(". ");
-  if (end < 0 || end > 200) return { shown: quote.slice(0, 200).trimEnd() + "…", trimmed: true };
-  return { shown: quote.slice(0, end + 1) + " …", trimmed: true };
 }
 
 /**

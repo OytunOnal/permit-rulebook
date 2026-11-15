@@ -381,6 +381,7 @@
   "src/lib/situations.ts": "application",
   "src/lib/slug.ts": "presentation",
   "src/lib/social-card.ts": "presentation",
+  "src/lib/tap.ts": "presentation",
   "src/lib/verdict/compose/answer-phrase.ts": "presentation",
   "src/lib/verdict/compose/card/blocks/card-screen.ts": "presentation",
   "src/lib/verdict/compose/card/blocks/path-line.ts": "presentation",
@@ -1843,6 +1844,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/quote.ts",
+   "to": "src/lib/tap.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/route-page/blocks/notices.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
@@ -1859,7 +1865,7 @@
   },
   {
    "from": "src/lib/route-page/blocks/notices.ts",
-   "to": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/tap.ts",
    "kind": "dependency"
   },
   {
@@ -1894,11 +1900,6 @@
   },
   {
    "from": "src/lib/route-page/blocks/rule-card.ts",
-   "to": "src/lib/copy/quotes.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page/blocks/rule-card.ts",
    "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
@@ -1928,6 +1929,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/tap.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/route-page/blocks/stated-blocks.ts",
    "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
@@ -1939,12 +1945,12 @@
   },
   {
    "from": "src/lib/route-page/blocks/stated-blocks.ts",
-   "to": "src/lib/reason.ts",
+   "to": "src/lib/quote.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/route-page/blocks/stated-blocks.ts",
-   "to": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
@@ -2059,6 +2065,11 @@
   },
   {
    "from": "src/lib/social-card.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/tap.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
@@ -5793,6 +5804,31 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/verdict-short-on-a-figure.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
@@ -9310,6 +9346,26 @@
     "name": "noteHtml",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "QuoteOptions",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "readDateTime",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "quoteBlock",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "quoteForCard",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "src/lib/reason.ts": [
@@ -9765,6 +9821,23 @@
     "exported": true
    }
   ],
+  "src/lib/tap.ts": [
+   {
+    "name": "TAP_CLASSES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "tapMin",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "tapInline",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "src/pages/404.astro": [
    {
     "name": "dataset",
@@ -10002,6 +10075,7 @@
   "src/lib/situations.ts",
   "src/lib/slug.ts",
   "src/lib/social-card.ts",
+  "src/lib/tap.ts",
   "src/pages/404.astro",
   "src/pages/[country]/[route].astro",
   "src/pages/[country]/[route].json.ts",
@@ -10016,5 +10090,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "d89647407facf9afcbbd3f18a23e316de3f61e510789f7e46746352cf728226c"
+ "digest": "409c665537bdb790ad9a789265b5101dd2229a60c70c4011766f873d8527f195"
 }
