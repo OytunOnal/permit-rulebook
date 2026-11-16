@@ -10,13 +10,13 @@ import { everyDrawnRouteIn, verdictFor, withoutGlosses } from "./verdict-cards.j
 const ds = dataset as unknown as Dataset;
 
 /** Markup a reader is shown, and where it was read. */
-interface MarkupRead {
+interface DrawnMarkup {
   where: string;
   html: string;
 }
 
 /** Each phrase of the declared screen-place set the markup carries, by where it was read. */
-const screenPlacePhrasesOn = (markup: MarkupRead[]): string[] =>
+const screenPlacePhrasesOn = (markup: DrawnMarkup[]): string[] =>
   markup.flatMap(({ where, html }) => screenPlacePhrasesIn(plainTextOf(html)).map((phrase) => `${where}: ${phrase}`));
 
 /** The texts the data's screen-place check reads that `holder` holds. */
@@ -26,7 +26,7 @@ const checkedTextsHeldBy = (holder: CheckedText["holder"]): string[] =>
 /** The notices and route cards drawn at the end of every destination under
  * every situation: with a passport no Notice names, with each passport a
  * Notice names, and answering "I don't know" wherever a question offers it. */
-function resultNoticesAndCards(): MarkupRead[] {
+function resultNoticesAndCards(): DrawnMarkup[] {
   const walksTaken = [...[DEFAULT_PASSPORT, ...noticePassports()].flatMap((passport) => walks(passport)), ...unknowingWalks()];
   return walksTaken.map((walk) => {
     const verdict = verdictFor(walk.answers);
