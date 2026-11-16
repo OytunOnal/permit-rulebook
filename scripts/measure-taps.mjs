@@ -98,6 +98,15 @@ const DRAWN = [
     recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "lt2", experience_7y: "3to5",
     german: "b1", english: "c1", nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
   }],
+  // The v1.2.6 gate critique's own walk, in the order it answered: its short
+  // Tallies draw one-line country headers, and its offer in the Netherlands
+  // gathers Germany's routes into a Fold.
+  ["/ (results, all four countries, offer in the Netherlands)", {
+    destination: "all", situation: "offer", situation_country: "nl", age_band: "a30to35", citizenship: "TR",
+    qualification: "degree", recognition_de: "not_assessed", experience_5y: "2plus", experience_7y: "5plus",
+    occupation_shortage: "yes", salary_eur_month: "band_5", nl_recent_grad: "no", top200_grad: "no",
+    german: "a1", funds_eur_month: "unknown",
+  }],
   // The Algerian notice's Learn link, a foot link longer than a phone's line, wraps here.
   ["/ (results, France, Algerian passport)", {
     destination: "fr", situation: "offer", qualification: "none", fr_innovative_employer: "yes", citizenship: "DZ",
