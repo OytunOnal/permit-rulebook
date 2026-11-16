@@ -10,6 +10,7 @@ import { APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, perPeriod } from "../src/lib/cop
 import { authorityRoutePageLinksIn } from "./authority-route-page-links.js";
 import { ALGERIAN, DUTCH_GRADUATE, PRIYA_EXPLORING_ALL } from "./personas.js";
 import { blocksIn, drawnRouteOn, everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
+import { routeOf } from "./route-of.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -221,7 +222,7 @@ describe(AUTHORITY_LINK_STANDS_APART,() => {
     const shapes = new Set<string>();
     for (const [name, answers] of SHAPE_READERS)
       for (const drawn of everyDrawnRouteIn(verdictFor(answers))) {
-        const route = ds.countries.flatMap((c) => c.routes).find((r) => r.id === drawn.route)!;
+        const route = routeOf(ds, drawn.route);
         shapes.add(shapeOf(drawn.html));
         offenders.push(...authorityLinkPlacementProblems(drawn.html, route.info_url).map((p) => `${name}: ${drawn.route}: ${p}`));
       }

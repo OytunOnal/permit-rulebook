@@ -15,6 +15,7 @@ import { textOf } from "./text-of.js";
 import { audienceNoticeOf } from "./audience-notice.js";
 import { authorityRoutePageLinksIn } from "./authority-route-page-links.js";
 import { PRIYA_EXPLORING_ALL } from "./personas.js";
+import { routeOf } from "./route-of.js";
 import { everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
 
 /**
@@ -205,7 +206,7 @@ const mastheadOf = (html: string): string => /<header class="masthead\b[^"]*">[\
 describe("a route page links to its authority's route page in its header", () => {
   it("every route page carries, in its header under the summary, exactly one link to its route's authority's route page, as the result card draws it", () => {
     const onCards = everyDrawnRouteIn(verdictFor(PRIYA_EXPLORING_ALL)).flatMap((drawn) => {
-      const route = ds.countries.flatMap((c) => c.routes).find((r) => r.id === drawn.route)!;
+      const route = routeOf(ds, drawn.route);
       return authorityRoutePageLinksIn(drawn.html, route.info_url).map((link) => markupAround(link.markup));
     });
     const cardMarkup = [...new Set(onCards)];

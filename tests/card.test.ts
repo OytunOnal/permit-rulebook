@@ -10,11 +10,9 @@ import {
 } from "../src/lib/copy/verdict.js";
 import { blocksIn, drawnRouteOn, everyDrawnRouteIn, standingOn, verdictOn } from "./verdict-cards.js";
 import { DUTCH_GRADUATE, bandFor } from "./personas.js";
+import { routeOf } from "./route-of.js";
 
 const ds = dataset as unknown as Dataset;
-
-const routeOf = (id: string): Route =>
-  ds.countries.flatMap((c) => c.routes).find((r) => r.id === id)!;
 
 /** The card or row a route is drawn with on the verdict these answers read. */
 const drawnRouteFor = (answers: Profile, id: string, data: Dataset = ds): string => drawnRouteOn(verdictOn(data, answers), id);
@@ -93,7 +91,7 @@ describe("the orientation year, on the card", () => {
 
   it("dataset prose reaches the page as text, never as markup", () => {
     const route: Route = {
-      ...routeOf("nl-orientation-year"),
+      ...routeOf(ds, "nl-orientation-year"),
       preconditions: ["<script>alert(1)</script>"],
       statements: [{
         id: "x", kind: "caveat", text: "a & b <em>c</em>",
@@ -189,8 +187,8 @@ describe("the source list says which quote applied to this reader", () => {
     // the card is marking; the living-costs quote must still carry no mark,
     // because nothing has decided it (review 2026-09-07).
     const twoChoices = structuredClone(ds);
-    const route = twoChoices.countries.flatMap((c) => c.routes).find((r) => r.id === "nl-hsm-under30")!;
-    const funds = ds.countries.flatMap((c) => c.routes).find((r) => r.id === "de-chancenkarte")!
+    const route = routeOf(twoChoices, "nl-hsm-under30");
+    const funds = routeOf(ds, "de-chancenkarte")
       .criteria.flatMap(function flat(c): Criterion[] {
         return c.op === "any" ? c.paths.flatMap((pa) => pa.criteria.flatMap(flat)) : [c];
       })
@@ -244,7 +242,7 @@ describe("the source list says which quote applied to this reader", () => {
  * would have seen is still the thing under test.
  */
 const unsourcedRoute = (): Route => ({
-  ...routeOf("es-blue-card"),
+  ...routeOf(ds, "es-blue-card"),
   statements: [{
     id: "reduced-also-for-shortage-occupations",
     kind: "caveat",
@@ -268,7 +266,7 @@ describe("nothing that says \"you may qualify for less\" renders as a requiremen
     // Every scored route is on this screen, so every one is read.
     expect(drawnRoutes.length).toBe(evaluate(ds, {}).length);
     for (const drawnRoute of drawnRoutes) {
-      const route = routeOf(drawnRoute.route);
+      const route = routeOf(ds, drawnRoute.route);
       const required = precondOf(drawnRoute.html);
       for (const s of route.statements ?? [])
         if (s.kind === "caveat") expect(required, `${route.id}:${s.id}`).not.toContain(s.text);

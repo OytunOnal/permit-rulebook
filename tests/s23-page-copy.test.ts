@@ -21,13 +21,12 @@ import { reckonDatasetFacts, routeFactsOf } from "../src/lib/dataset-facts/recko
 import { routeAddresses } from "../src/lib/slug.js";
 import { blocksIn, drawnRouteOn, verdictFor } from "./verdict-cards.js";
 import { PRIYA_EXPLORING_ALL } from "./personas.js";
+import { routeOf } from "./route-of.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const textOf = (html: string): string =>
   html.replace(/<[^>]*>/g, " ").split(/\s+/).join(" ").split(String.fromCharCode(160)).join(" ").trim();
-
-const routeOf = (id: string) => ds.countries.flatMap((c) => c.routes).find((r) => r.id === id)!;
 
 /**
  * s23 — the copy pass (v1.1 gate critique, F1, F3, F4, P1–P6), on the pages:
@@ -49,7 +48,7 @@ describe("the route page's liveness line names its own source or stays silent", 
    * citizenship card's, which every scored page prints.
    */
   const pointsTables: string[] = [];
-  forEachCriterion(routeOf("de-chancenkarte").criteria, (c) => {
+  forEachCriterion(routeOf(ds, "de-chancenkarte").criteria, (c) => {
     if (c.op === "points") pointsTables.push(c.required.source_url);
   });
   const ownUrl = pointsTables[0]!;

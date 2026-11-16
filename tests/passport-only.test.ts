@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { routeStatements, type Dataset, type Profile } from "permit-rulebook-data";
 import { routePages } from "../src/lib/route-page/route-page.js";
+import { routeOf } from "./route-of.js";
 import { drawnRouteOn, verdictFor, withoutGlosses } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
@@ -12,7 +13,7 @@ const ORIENTATION_YEAR = "nl-orientation-year";
 /** The orientation year's caveat about Turkish passports, as the dataset
  * writes it. */
 const turkishCaveat = (): string =>
-  routeStatements(ds.countries.flatMap((c) => c.routes).find((r) => r.id === ORIENTATION_YEAR)!)
+  routeStatements(routeOf(ds, ORIENTATION_YEAR))
     .find((s) => s.id === "turkish-citizens-differ")!.text;
 
 /** A graduate of a Dutch university looking for work in the Netherlands,

@@ -12,6 +12,7 @@ import {
 } from "../src/lib/copy/verdict.js";
 import { verdictHtml, type Verdict, type VerdictGroup } from "../src/lib/verdict/verdict.js";
 import { drawnRouteOn, groupsIn, placed, routeIdsIn, verdictFor, verdictOn } from "./verdict-cards.js";
+import { routeOf } from "./route-of.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -89,7 +90,7 @@ describe("s8 — a route the authority closes is not a result", () => {
   it("escapes what it prints, like every other block", () => {
     const algerian = transferring("DZ");
     const altered = structuredClone(ds);
-    const route = altered.countries.flatMap((c) => c.routes).find((x) => x.id === "fr-ict")!;
+    const route = routeOf(altered, "fr-ict");
     const closing = route.criteria.find((c) => c.op === "not-in")!;
     if (closing.op !== "not-in") throw new Error("unreachable");
     closing.text = "a & b <em>c</em>";
