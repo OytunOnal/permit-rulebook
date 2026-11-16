@@ -84,6 +84,12 @@ yet is, and so is a route page, which has no reader — its words say whom it is
 about ("If you hold a Turkish passport…").
 _Avoid_: carve-in, scope, when, audience, addressee
 
+**Screen-place words**:
+Words that point at a place on one screen ("the answer above", "the routes
+below"); a sentence from the data is shown on more than one screen, so it
+never uses them.
+_Avoid_: positional words, layout words
+
 **Unsourced**:
 The one declared exception to Provenance: a Route statement carrying no
 verbatim quote, because the source does not publish one we can read. Recorded
