@@ -157,7 +157,7 @@ describe("8 — the card's door is a door", () => {
   it("the scope line stands alone, no separator after it; the door follows as its own element, the copy's words, an internal href", () => {
     const address = routeAddresses(ds).find((a) => a.route.id === "de-chancenkarte")!;
     const html = blocksIn(drawnRouteOn(verdictFor(OPENED), "de-chancenkarte"), "scoped");
-    const m = /^<div class="scoped">([^<]*)<a class="door" href="([^"]+)">([^<]*)<\/a><\/div>$/.exec(html);
+    const m = /^<div class="scoped">([^<]*)<a class="door route-link" href="([^"]+)">([^<]*)<\/a><\/div>$/.exec(html);
     expect(m, html).not.toBeNull();
     const [, scope, href, words] = m!;
     expect(scope!.trim()).not.toMatch(/[·:—-]$/);

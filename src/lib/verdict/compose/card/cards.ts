@@ -21,7 +21,7 @@ import { countryOf } from "../../../countries.js";
 // and learn labels are glossed as the route page's are (#151, ruling 8). Each
 // block takes the screen's memory; one drawn alone is a screen of its own.
 import { type Glossary, glossSection, glossed } from "../../../gloss.js";
-import { glossedLearnLinkText, quoteLineHtml } from "../../../quote.js";
+import { authorityRoutePageLinkHtml, glossedLearnLinkText, quoteLineHtml } from "../../../quote.js";
 import { esc, escAttr, failDetailHtml, whyHtml } from "../../../reason.js";
 import { url } from "../../../site.js";
 import { routePath } from "../../../slug.js";
@@ -178,6 +178,7 @@ export function fullCardHtml(screen: VerdictScreen, route: ResultWithRouteStandi
           ${cameFromNote(screen, r)}
           <p class="why">${leadLineHtml(screen, route)}</p>
           ${scopeFor(screen, r, notTaken)}
+          ${authorityRoutePageLinkHtml(r.route)}
           ${precondHtml(screen, r.route, notTaken)}
           ${carveOutHtml(screen, r.route)}
           ${caveatHtml(screen, r.route)}
@@ -187,7 +188,7 @@ export function fullCardHtml(screen: VerdictScreen, route: ResultWithRouteStandi
           ${gapNoteHtml(screen, routeStanding)}
           ${pointsNoteHtml(r)}
           ${learnBoxHtml(screen, routeStanding)}
-          <div class="foot">${provenanceHtml(screen, r, notTaken)}${sourceLinkHtml(r.route.info_url)}</div>
+          <div class="foot">${provenanceHtml(screen, r, notTaken)}</div>
         </article>`;
 }
 
@@ -219,6 +220,7 @@ export function notYetRowHtml(screen: VerdictScreen, route: ResultWithRouteStand
             ${cameFromNote(screen, r)}
             ${r.route.summary ? `<p class="why">${esc(glossed(r.route.summary, glossary))}</p>` : ""}
             ${scopeFor(screen, r)}
+            ${authorityRoutePageLinkHtml(r.route)}
             ${precondHtml(screen, r.route)}
             ${carveOutHtml(screen, r.route)}
             ${caveatHtml(screen, r.route)}
@@ -226,7 +228,7 @@ export function notYetRowHtml(screen: VerdictScreen, route: ResultWithRouteStand
             ${pointsLineHtml(ds, r)}
             ${failDetailHtml(ds, r, answers)}
             ${learnBoxHtml(screen, routeStanding)}
-            <div class="foot">${provenanceHtml(screen, r)}${sourceLinkHtml(r.route.info_url)}</div>
+            <div class="foot">${provenanceHtml(screen, r)}</div>
           </div>
         </details>`;
 }
@@ -297,12 +299,12 @@ export function closedRowHtml(r: RouteResult, seen: Glossary = new Set()): strin
   return `
         <article class="closed">
           <h3><span class="country">${esc(r.country)}</span> ${esc(r.route.name)}</h3>
+          ${authorityRoutePageLinkHtml(r.route)}
           ${closures.map((cr) => {
     const c = cr.criterion;
     if (c.op !== "not-in") return "";
     return `<p class="why">${esc(glossed(c.text, seen))}</p>${quoteLineHtml(c.source, { trimLong: true }, seen)}`;
   }).join("")}
-          <div class="foot">${sourceLinkHtml(r.route.info_url)}</div>
         </article>`;
 }
 
