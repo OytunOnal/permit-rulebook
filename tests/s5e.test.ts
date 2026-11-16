@@ -9,13 +9,13 @@ import {
   blocksIn, drawnRouteOn, drawnRoutesIn, everyDrawnRouteIn, groupsIn, placed, verdictFor, verdictOn, withoutGlosses,
 } from "./verdict-cards.js";
 import { OUR_READING_HEADING } from "../src/lib/copy/verdict.js";
+import { routeOf } from "./route-of.js";
 
 const ds = dataset as unknown as Dataset;
 const routes = (): Route[] => ds.countries.flatMap((c) => c.routes);
 let blankVerdict: ReturnType<typeof verdictFor> | undefined;
 /** A route's card on the verdict of a reader who has answered nothing. */
 const blankCard = (id: string): string => drawnRouteOn((blankVerdict ??= verdictFor({})), id);
-const routeOf = (id: string): Route => routes().find((r) => r.id === id)!;
 
 /**
  * Every block that puts DATASET prose on a card: what else is required, what
@@ -164,7 +164,7 @@ describe("s5e — what is ours says so, in words a stranger understands", () => 
 
   it("dataset prose reaches the page as text, never as markup", () => {
     const route: Route = {
-      ...routeOf("de-blue-card-general"),
+      ...routeOf(ds, "de-blue-card-general"),
       readings: [{ id: "x", text: "a & b <em>c</em>" }],
     };
     const altered = structuredClone(ds);
