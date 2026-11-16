@@ -8,7 +8,7 @@ import { DESK, PHONE, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { isArrowOnLastWordLine, isAsWideAsTextAndArrow, type CardLink } from "./card-link.js";
 import {
-  CARD_AUTHORITY_LINK, DEFAULT_PASSPORT, EVERY_DESTINATION, authorityLinksOf, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf,
+  CARD_AUTHORITY_LINK, CARD_DOOR, DEFAULT_PASSPORT, EVERY_DESTINATION, authorityLinksOf, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf,
   learnLinksOf, noticePassports, noticesDrawnOnNone, openOnAFullCard, openWithRecord, questionCards, resultsWhere, sentencesOf, unknowingWalks,
   walks, type CardLinkOnScreen, type ReaderPage,
 } from "./reader-pages.js";
@@ -186,8 +186,6 @@ interface LongLabelsLaidOut {
 /** The two colour schemes a reader's device may ask for, each set explicitly. */
 const COLOUR_SCHEMES = ["light", "dark"] as const;
 
-/** The first full card's door. */
-const CARD_DOOR = "#main article.route .scoped .door";
 /** A route page's link, in its header, to its authority's route page. */
 const PAGE_AUTHORITY_LINK = ".masthead a.authority-route-page";
 
@@ -223,7 +221,7 @@ const inksInEachScheme = (authorityLinkInkOf: (site: PageOnSite) => Promise<InkO
     const read: SchemeRead[] = [];
     for (const scheme of COLOUR_SCHEMES) {
       await site.page.emulateMedia([{ name: "prefers-color-scheme", value: scheme }]);
-      await openOnAFullCard(site);
+      await openOnAFullCard(site, CARD_AUTHORITY_LINK);
       const isSet = Boolean(await site.page.evaluate(`matchMedia("(prefers-color-scheme: ${scheme})").matches`));
       const door = await inkOnScreenOf(site, CARD_DOOR);
       read.push({ scheme, isSet, door, authority: await authorityLinkInkOf(site) });
@@ -317,7 +315,7 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
     const routePage = routeAddresses(ds)[0]!.path;
     const read = await withSite(async (site) => {
       await site.page.emulatePrint();
-      await openOnAFullCard(site);
+      await openOnAFullCard(site, CARD_AUTHORITY_LINK);
       const onCard = await onPaper(site, CARD_AUTHORITY_LINK, "the full card");
       await openWithRecord(site, routePage, null);
       return [onCard, await onPaper(site, PAGE_AUTHORITY_LINK, routePage)];

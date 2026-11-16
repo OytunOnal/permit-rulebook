@@ -1,16 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { DESK, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
-import { openWithRecord, resultsWhere, walks } from "./reader-pages.js";
+import { CARD_DOOR, openOnAFullCard, resultsWhere } from "./reader-pages.js";
 
 /**
  * A full result card's door ("Read the rules of this route") is a box of the
  * tap's height whose label sits in its vertical middle, by the padding and
  * line height of `.route-link` (#401, rulings 24 and 28).
  */
-
-/** The first full card's door. */
-const CARD_DOOR = "#main article.route .scoped .door";
 
 /** How far, in px, the label's middle may sit from the box's and still read as centred. */
 const CENTRING_TOLERANCE = 2;
@@ -50,16 +47,11 @@ interface DoorLaidOut {
   textBottom: number;
 }
 
-/** Opens the results of the first walk whose screen draws a full card's door
- * and reads it at rest. Throws where no walk's does. */
-async function doorOnAFullCard(site: PageOnSite): Promise<DoorLaidOut> {
-  for (const walk of walks()) {
-    await openWithRecord(site, "/", walk);
-    if (!(await site.page.evaluate(`Boolean(document.querySelector(${JSON.stringify(CARD_DOOR)}))`))) continue;
-    await site.page.waitUntilAtRest();
-    return { where: resultsWhere(walk), ...(JSON.parse(await site.page.evaluate(DOOR_LAID_OUT)) as Omit<DoorLaidOut, "where">) };
-  }
-  throw new Error("no walk's results draw a full card's door");
+/** Opens a full card's door and reads it at rest, with the results it is on. */
+async function readDoorLaidOut(site: PageOnSite): Promise<DoorLaidOut> {
+  const walk = await openOnAFullCard(site, CARD_DOOR);
+  await site.page.waitUntilAtRest();
+  return { where: resultsWhere(walk), ...(JSON.parse(await site.page.evaluate(DOOR_LAID_OUT)) as Omit<DoorLaidOut, "where">) };
 }
 
 const notWalked = skipReason();
@@ -67,7 +59,7 @@ if (notWalked) warnNotWalked("the door's label on a full card", notWalked);
 
 describe.skipIf(notWalked !== null)("every screen the module draws", () => {
   it("sets a full result card's door's label in the vertical middle of its box of the tap's height, at the desk", async () => {
-    const door = await withSite(doorOnAFullCard, DESK);
+    const door = await withSite(readDoorLaidOut, DESK);
     expect(door.lines, `precondition, ${door.where}: the door's label is read`).toBeGreaterThan(0);
     expect(door.tapMin, `precondition, ${door.where}: the door is held to a tap height`).toBeGreaterThan(0);
     expect(Math.abs(door.boxHeight - door.tapMin),

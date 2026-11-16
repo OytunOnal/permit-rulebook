@@ -220,15 +220,18 @@ export async function openWithRecord({ page, url }: PageOnSite, path: string, re
 
 /** The first full card's link to its authority's route page. */
 export const CARD_AUTHORITY_LINK = "#main article.route a.authority-route-page";
+/** The first full card's door. */
+export const CARD_DOOR = "#main article.route .scoped .door";
 
-/** Opens the results of the first walk whose screen draws a full card with a
- * link to its authority's route page. Throws where no walk's does. */
-export async function openOnAFullCard(site: PageOnSite): Promise<void> {
+/** Opens the results of the first walk whose screen draws the part of a full
+ * card `cardPart` selects (CARD_AUTHORITY_LINK, CARD_DOOR), and hands back
+ * that walk. Throws where no walk's does. */
+export async function openOnAFullCard(site: PageOnSite, cardPart: string): Promise<Walk> {
   for (const walk of walks()) {
     await openWithRecord(site, "/", walk);
-    if (await site.page.evaluate(`Boolean(document.querySelector(${JSON.stringify(CARD_AUTHORITY_LINK)}))`)) return;
+    if (await site.page.evaluate(`Boolean(document.querySelector(${JSON.stringify(cardPart)}))`)) return walk;
   }
-  throw new Error("no walk's results draw a full card with a link to its authority's route page");
+  throw new Error(`no walk's results draw a full card's ${cardPart}`);
 }
 
 /** Where the results at the end of `walk` were read, as a drawn screen names
