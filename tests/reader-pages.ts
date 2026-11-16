@@ -218,6 +218,19 @@ export async function openWithRecord({ page, url }: PageOnSite, path: string, re
   await page.goto(url(path));
 }
 
+/** The first full card's link to its authority's route page. */
+export const CARD_AUTHORITY_LINK = "#main article.route a.authority-route-page";
+
+/** Opens the results of the first walk whose screen draws a full card with a
+ * link to its authority's route page. Throws where no walk's does. */
+export async function openOnAFullCard(site: PageOnSite): Promise<void> {
+  for (const walk of walks()) {
+    await openWithRecord(site, "/", walk);
+    if (await site.page.evaluate(`Boolean(document.querySelector(${JSON.stringify(CARD_AUTHORITY_LINK)}))`)) return;
+  }
+  throw new Error("no walk's results draw a full card with a link to its authority's route page");
+}
+
 /** Where the results at the end of `walk` were read, as a drawn screen names
  * it: its destination, situation and passport, and each field it answered
  * "I don't know". */

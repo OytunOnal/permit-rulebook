@@ -8,8 +8,8 @@ import { DESK, PHONE, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { isArrowOnLastWordLine, isAsWideAsTextAndArrow, type CardLink } from "./card-link.js";
 import {
-  DEFAULT_PASSPORT, EVERY_DESTINATION, authorityLinksOf, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf,
-  learnLinksOf, noticePassports, noticesDrawnOnNone, openWithRecord, questionCards, resultsWhere, sentencesOf, unknowingWalks,
+  CARD_AUTHORITY_LINK, DEFAULT_PASSPORT, EVERY_DESTINATION, authorityLinksOf, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf,
+  learnLinksOf, noticePassports, noticesDrawnOnNone, openOnAFullCard, openWithRecord, questionCards, resultsWhere, sentencesOf, unknowingWalks,
   walks, type CardLinkOnScreen, type ReaderPage,
 } from "./reader-pages.js";
 import { printedLinkScript, type PrintedLink } from "./printed-address.js";
@@ -188,8 +188,6 @@ const COLOUR_SCHEMES = ["light", "dark"] as const;
 
 /** The first full card's door. */
 const CARD_DOOR = "#main article.route .scoped .door";
-/** The first full card's link to its authority's route page. */
-const CARD_AUTHORITY_LINK = "#main article.route a.authority-route-page";
 /** A route page's link, in its header, to its authority's route page. */
 const PAGE_AUTHORITY_LINK = ".masthead a.authority-route-page";
 
@@ -206,16 +204,6 @@ interface SchemeRead {
   isSet: boolean;
   door: InkOnGround;
   authority: InkOnGround | null;
-}
-
-/** Opens the results of the first walk whose screen draws a full card with a
- * link to its authority's route page. Throws where no walk's does. */
-async function openOnAFullCard(site: PageOnSite): Promise<void> {
-  for (const walk of walks()) {
-    await openWithRecord(site, "/", walk);
-    if (await site.page.evaluate(`Boolean(document.querySelector(${JSON.stringify(CARD_AUTHORITY_LINK)}))`)) return;
-  }
-  throw new Error("no walk's results draw a full card with a link to its authority's route page");
 }
 
 /** The ink and the ground of the text of the first element `selector` finds,
