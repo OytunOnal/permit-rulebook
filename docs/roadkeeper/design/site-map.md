@@ -22,9 +22,12 @@ flowchart TB
     Mail["The reader's mail app (mailto:)"]
     Data["JSON per route (data door)"]
     Repo["Repositories · tracker (GitHub)"]
+    Authority["The authority's route page (new tab)"]
 
     Home --> Results
     Results -->|"The rules of this route"| Route
+    Results -->|"This route on <host>"| Authority
+    Route -->|"This route on <host>"| Authority
     Route -->|"Check yours (pre-scoped)"| Home
     Route -->|"Also in <country>"| Route
     Route -->|"crumb"| Country
