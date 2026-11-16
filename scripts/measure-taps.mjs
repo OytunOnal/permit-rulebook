@@ -134,12 +134,13 @@ const DRAWN = [
     destination: "de", citizenship: "IN", situation: "offer", qualification: "degree",
     recognition_de: "unknown", occupation_shortage: "unknown", experience_5y: "lt2", experience_7y: "3to5",
     german: "b1", english: "c1", age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
-    funds_eur_month: "band_1", salary_eur_year: "unknown",
+    funds_eur_month: "band_1", salary_eur_year: "unknown", occupation_it: "no",
   }],
   ["/ (results, all four countries)", {
     destination: "all", citizenship: "TR", situation: "offer", qualification: "degree",
     recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "lt2", experience_7y: "3to5",
     german: "b1", english: "c1", nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
+    situation_country: "de", salary_eur_year: "unknown", funds_eur_month: "band_1",
   }],
   // The v1.2.6 gate critique's own walk, in the order it answered: its short
   // Tallies draw one-line country headers, and its offer in the Netherlands
