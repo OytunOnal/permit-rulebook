@@ -123,6 +123,13 @@ cannot be read, and its link says so ("Consolidated text on buzer.de"), never
 "Official page" (#92, 2026-10-21).
 _Avoid_: mirror (in front of a reader), unofficial source
 
+**Authority's route page**:
+The authority's own page about a route as a whole: the permit's page on
+bamf.de, not a page any one quote comes from. Its link names the site it opens
+("This route on bamf.de"), and is never one of the quotes' source links (#396,
+2026-11-16).
+_Avoid_: official page (that is a quote's source), source link, info page
+
 **Prose provenance**:
 The measurement `npm run check` prints for sentences, beside the one it prints
 for numbers: how many carry a covering source, how many are declared ours, how
