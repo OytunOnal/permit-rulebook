@@ -3136,6 +3136,11 @@
   },
   {
    "from": "tests/breakpoint-written-once.test.ts",
+   "to": "tests/built-sheets.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
    "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
@@ -4031,6 +4036,11 @@
   },
   {
    "from": "tests/identity-written-once.test.ts",
+   "to": "tests/built-sheets.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-written-once.test.ts",
    "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
@@ -4492,6 +4502,11 @@
   {
    "from": "tests/route-link-written-once.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-link-written-once.test.ts",
+   "to": "tests/built-sheets.ts",
    "kind": "dependency"
   },
   {

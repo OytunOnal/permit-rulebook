@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import IDENTITY_AS_BUILT from "../identity.css?raw";
+import { builtPages, builtSheetsOf, read, root } from "./built-sheets.js";
 import { frameAlone, styleIn } from "./frame-alone.js";
 
 /**
@@ -19,9 +19,6 @@ import { frameAlone, styleIn } from "./frame-alone.js";
  * Half of this is checked by reading; the other half by measuring, because a
  * shared stylesheet proves nothing if one page overrides it.
  */
-
-const root = (p: string) => fileURLToPath(new URL(`../${p}`, import.meta.url));
-const read = (p: string) => readFileSync(root(p), "utf8").split("\r\n").join("\n");
 
 // `identity.css` as the build reads it: its breakpoint names written as the first paint's width (#388).
 const identity = IDENTITY_AS_BUILT.split("\r\n").join("\n");
@@ -119,25 +116,6 @@ describe(ONE_DEFINITION, () => {
   });
 });
 
-/** Every built page under `dist/`, by its path from the root. */
-function builtPages(dir = "dist", out: string[] = []): string[] {
-  for (const name of readdirSync(root(dir))) {
-    const path = `${dir}/${name}`;
-    if (statSync(root(path)).isDirectory()) builtPages(path, out);
-    else if (name.endsWith(".html")) out.push(path);
-  }
-  return out;
-}
-
-/** A built page's stylesheets as the browser receives them, the inline ones and the ones it links, print taken out. */
-function builtSheetsOf(page: string): string {
-  const html = read(page);
-  const inline = [...html.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]!);
-  const linked = [...html.matchAll(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)]
-    .map((m) => read(`dist/${m[1]!.replace(/^.*\/_astro\//, "_astro/")}`));
-  return withoutPrint([...inline, ...linked].join("\n"));
-}
-
 /** Each rule a stylesheet writes on the pair: its selector, spaces collapsed, and the properties it sets. */
 const pairRulesOf = (css: string): { selector: string; properties: string[] }[] =>
   [...css.matchAll(/(^|[ ,}])([.]stamps[^{;]*)[{]([^}]*)[}]/gm)].map((rule) => ({
@@ -172,7 +150,7 @@ describe(ONE_DEFINITION, () => {
     expect(pages.length, "precondition: every page is read, the site's, one per route and one per country")
       .toBe(SITE_PAGES.length + routes + ds.countries.length);
     for (const page of pages) {
-      const css = builtSheetsOf(page);
+      const css = withoutPrint(builtSheetsOf(page));
       expect(drawingsOf(css), `${page} draws the pair as often as identity.css does`).toBe(drawingsOf(own));
       for (const rule of pairRulesOf(css))
         for (const property of rule.properties)

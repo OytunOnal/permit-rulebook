@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { existsSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { warnNotWalked } from "./browser-walk.js";
+import { builtPages, builtSheetsOf, root } from "./built-sheets.js";
 import { PRIYA_EXPLORING_ALL } from "./personas.js";
 import { blocksIn, everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
 
@@ -17,27 +17,6 @@ import { blocksIn, everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
  */
 
 const ds = dataset as unknown as Dataset;
-const root = (p: string) => fileURLToPath(new URL(`../${p}`, import.meta.url));
-const read = (p: string) => readFileSync(root(p), "utf8").split("\r\n").join("\n");
-
-/** Every built page under `dist/`, by its path from the root. */
-function builtPages(dir = "dist", out: string[] = []): string[] {
-  for (const name of readdirSync(root(dir))) {
-    const path = `${dir}/${name}`;
-    if (statSync(root(path)).isDirectory()) builtPages(path, out);
-    else if (name.endsWith(".html")) out.push(path);
-  }
-  return out;
-}
-
-/** A built page's stylesheets as the browser receives them: the inline ones and the ones it links. */
-function builtSheetsOf(page: string): string {
-  const html = read(page);
-  const inline = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]!);
-  const linked = [...html.matchAll(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)]
-    .map((m) => read(`dist/${m[1]!.replace(/^.*\/_astro\//, "_astro/")}`));
-  return [...inline, ...linked].join("\n");
-}
 
 /** The class every link about the route wears for its look. */
 const LOOK = "route-link";
