@@ -168,7 +168,9 @@ click on the tracker link. Answers never leave the device.
   frame reckons none itself (#382). Each
   page's own style rules sit beside its code, in a `.css` file read raw; the
   quote line's look, `quote-line.css`, is inlined by the frame and imported by
-  the results screen, one sheet for both (#382).
+  the results screen, one sheet for both (#382); it also holds the look of the
+  route's own links, `route-link`, worn by the card's door and by the link to
+  the Authority's route page, its ↗ on screen and its address in print (#401).
 - **Build** — Astro, `base` derived from `SITE_URL`, the site's address, which
   is one literal line in `pages.yml`: the deploy reads no repository variable
   (#110). An invalid dataset breaks
@@ -292,7 +294,11 @@ click on the tracker link. Answers never leave the device.
   their route's dataset facts hand them. Every quote line, here and on the
   results screen, is drawn by one function, `quoteLineHtml` in `quote.ts`:
   the quote, its host, its citation, its read day and its own source link
-  (#382).
+  (#382). The link to the route's Authority's route page ("This route on
+  <host>") is drawn by one function too, `authorityRoutePageLinkHtml` in
+  `quote.ts`, from the route alone: in the route page's masthead under the
+  lede, and on the result card under its door (a closed row: under its
+  title), before the quotes, never at a card's foot (#401).
 - **Interview** — questions by information gain, then the verdict; runs
   entirely in the browser. The page is wiring alone: it builds the browser's
   history adapter and the record's store and starts the interview, one deep
@@ -378,13 +384,15 @@ click on the tracker link. Answers never leave the device.
   Every screen but `/data/` speaks the reader's words, not the model's: no
   "scored", "rule set" or "this interview" (GLOSSARY, Scope statement). A
   link to a source says whose page it is ("Official page", or "Consolidated
-  text on buzer.de"); an abbreviation is explained the first time each page
+  text on buzer.de"), and the link to the route's own page at the authority
+  names its site ("This route on bamf.de"); a notice links at its foot only
+  to a page it sends the reader to; an abbreviation is explained the first time each page
   uses it (`src/lib/gloss.ts`, results cards included); a criterion with
   paths is headed by its label with one line per path; the passport search
   answers a territory with the passport its people hold. One walk over every
   page the build draws (`tests/reader-pages.ts`) holds these (#151).
-  Every screen fits a phone's width whatever the data writes. A card's foot
-  link, its Learn links and its status label wrap. A link's ↗ is joined to
+  Every screen fits a phone's width whatever the data writes. A card's link
+  to its Authority's route page, its Learn links and its status label wrap. A link's ↗ is joined to
   its last word, and a single word longer than the line breaks. The same
   walk draws every screen at 390 px, every walk once per passport a Notice
   names, and a second time with its text widened, so text that cannot wrap
