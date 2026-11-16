@@ -12,10 +12,12 @@
 
 /* Result summary + groups (s3). The counters are one plain line, with no
    pill, border or ground: bordered, they read as tabs and did nothing when
-   pressed (F4). Each count keeps its status colour. */
+   pressed (F4). Each count keeps its status colour. The dot follows its
+   part, so a line the Strip wraps ends on a dot and the next starts with a
+   count. */
 .strip{display:flex;gap:.6rem;margin:0 0 .4rem;flex-wrap:wrap}
 .strip span{font:600 .78rem var(--font-sans);letter-spacing:.08em;text-transform:uppercase}
-.strip span + span::before{content:"·";margin-right:.6rem;color:var(--color-muted)}
+.strip span:not(:last-child)::after{content:"·";margin-left:.6rem;color:var(--color-muted)}
 .strip .s-met{color:var(--color-met)}
 .strip .s-near{color:var(--color-near)}
 .strip .s-hold{color:var(--color-hold)}
