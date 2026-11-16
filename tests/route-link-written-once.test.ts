@@ -42,6 +42,9 @@ function builtSheetsOf(page: string): string {
 /** The class every link about the route wears for its look. */
 const LOOK = "route-link";
 
+/** The class the link to a route's authority's route page alone wears. */
+const AUTHORITY_LINK = "authority-route-page";
+
 /** Each rule a stylesheet writes on a selector naming `cls`: its declarations,
  * spaces taken out and in order, so a minified sheet, which may reorder them,
  * and a written one read alike. A comment is no rule, and is taken out first. */
@@ -49,6 +52,12 @@ const rulesNaming = (css: string, cls: string): string[] =>
   [...css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}@;]+)\{([^{}]*)\}/g)]
     .filter((rule) => new RegExp(`\\.${cls}(?![\\w-])`).test(rule[1]!))
     .map((rule) => rule[2]!.replace(/\s+/g, "").split(";").filter(Boolean).sort().join(";"));
+
+/** A stylesheet with each escaped character (`\2197`) as the character it
+ * stands for, so a minified sheet, which writes it out, and a written one
+ * read alike. */
+const withEscapesRead = (css: string): string =>
+  css.replace(/\\([0-9a-fA-F]{1,6}) ?/g, (_, code: string) => String.fromCodePoint(parseInt(code, 16)));
 
 /** The site's own pages, beside one per route and one per country. */
 const SITE_PAGES = ["dist/index.html", "dist/404.html", "dist/data/index.html", "dist/feedback/index.html"];
@@ -72,6 +81,19 @@ describe.skipIf(noBuild !== null)(WRITTEN_ONCE, () => {
     expect(offenders, "a page that draws the look other than once").toEqual([]);
     const drawn = new Set([...looks.values()].flat());
     expect(drawn.size, `the look is drawn more than one way: ${[...drawn].join(" | ")}`).toBe(1);
+  });
+
+  it("every built page, each route page among them, draws the link to an authority's route page only as the results page does, with no rule of its own for it", () => {
+    const pages = builtPages();
+    const routes = ds.countries.flatMap((country) => country.routes).length;
+    expect(pages, "precondition: the results page is built").toContain("dist/index.html");
+    expect(pages.length, "precondition: every page is read, the site's, one per route and one per country")
+      .toBeGreaterThan(routes + ds.countries.length);
+    const rulesOf = (page: string) => rulesNaming(withEscapesRead(builtSheetsOf(page)), AUTHORITY_LINK).join(" | ");
+    const shared = rulesOf("dist/index.html");
+    expect(shared, "precondition: the results page's sheet draws the link").not.toBe("");
+    const offenders = pages.filter((page) => rulesOf(page) !== shared);
+    expect(offenders).toEqual([]);
   });
 
   it("no built page draws the door's look on the door itself", () => {

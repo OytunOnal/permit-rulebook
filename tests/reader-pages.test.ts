@@ -189,6 +189,8 @@ const COLOUR_SCHEMES = ["light", "dark"] as const;
 const CARD_DOOR = "#main article.route .scoped .door";
 /** The first full card's link to its authority's route page. */
 const CARD_AUTHORITY_LINK = "#main article.route a.authority-route-page";
+/** A route page's link, in its header, to its authority's route page. */
+const PAGE_AUTHORITY_LINK = ".masthead a.authority-route-page";
 
 /** How far, in RGB, two inks read off a screenshot may be and still be one
  * colour: room for the glyph edges' blending, far less than the 148 between
@@ -212,6 +214,22 @@ async function openOnAFullCard(site: PageOnSite): Promise<void> {
     if (await site.page.evaluate(`Boolean(document.querySelector(${JSON.stringify(CARD_AUTHORITY_LINK)}))`)) return;
   }
   throw new Error("no walk's results draw a full card with a link to its authority's route page");
+}
+
+/** What a screenshot showed under one colour scheme of a card's door and of a
+ * route page's link to its authority's route page, or null where the route
+ * page draws none. */
+interface RoutePageSchemeRead extends Omit<SchemeRead, "authority"> {
+  authority: InkOnGround | null;
+}
+
+/** The ink and the ground of the text of the first element `selector` finds,
+ * scrolled to the middle of the screen and read from a screenshot. */
+async function inkOnScreenOf(site: PageOnSite, selector: string): Promise<InkOnGround> {
+  await site.page.evaluate(`document.querySelector(${JSON.stringify(selector)}).scrollIntoView({ block: "center" })`);
+  await site.page.waitUntilAtRest();
+  const [ink] = await inksOnGroundAt(site.page, [selector]);
+  return ink!;
 }
 
 const notWalked = skipReason();
@@ -260,6 +278,33 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
       expect(isSet, `precondition: the ${scheme} scheme is set`).toBe(true);
       expect(distanceBetween(door.ink, door.ground), `precondition, ${scheme}: the door's text is read`).toBeGreaterThan(100);
       expect(distanceBetween(authority.ink, door.ink), `${scheme}: the link is drawn ${authority.ink}, the door ${door.ink}`)
+        .toBeLessThan(INK_TOLERANCE);
+    }
+  }, 600000);
+});
+
+describe.skipIf(notWalked !== null)("every screen the module draws", () => {
+  it("draws a route page's link to its authority's route page in a card's door's colour, read from a screenshot's pixels, in the light and the dark colour scheme", async () => {
+    const routePage = routeAddresses(ds)[0]!.path;
+    const seen = await withSite(async (site) => {
+      const read: RoutePageSchemeRead[] = [];
+      for (const scheme of COLOUR_SCHEMES) {
+        await site.page.emulateMedia([{ name: "prefers-color-scheme", value: scheme }]);
+        await openOnAFullCard(site);
+        const isSet = Boolean(await site.page.evaluate(`matchMedia("(prefers-color-scheme: ${scheme})").matches`));
+        const door = await inkOnScreenOf(site, CARD_DOOR);
+        await openWithRecord(site, routePage, null);
+        const isDrawn = Boolean(await site.page.evaluate(`Boolean(document.querySelector(${JSON.stringify(PAGE_AUTHORITY_LINK)}))`));
+        read.push({ scheme, isSet, door, authority: isDrawn ? await inkOnScreenOf(site, PAGE_AUTHORITY_LINK) : null });
+      }
+      return read;
+    }, DESK);
+    expect(seen.map((s) => s.scheme)).toEqual([...COLOUR_SCHEMES]);
+    for (const { scheme, isSet, door, authority } of seen) {
+      expect(isSet, `precondition: the ${scheme} scheme is set`).toBe(true);
+      expect(distanceBetween(door.ink, door.ground), `precondition, ${scheme}: the door's text is read`).toBeGreaterThan(100);
+      expect(authority, `${scheme}: ${routePage} draws no link to its authority's route page`).not.toBeNull();
+      expect(distanceBetween(authority!.ink, door.ink), `${scheme}: the link is drawn ${authority!.ink}, the door ${door.ink}`)
         .toBeLessThan(INK_TOLERANCE);
     }
   }, 600000);
