@@ -3645,6 +3645,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/door-label-centred.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/door-label-centred.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/door-label-centred.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/escaping.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
