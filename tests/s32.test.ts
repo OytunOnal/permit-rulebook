@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   answerLabel, evaluate, forEachCriterion, provenancedValuesOf, routeStatements,
-  type Dataset, type Profile, type Route, type RouteStatement,
+  type Dataset, type Profile, type RouteStatement,
 } from "permit-rulebook-data";
 import { NOT_CHECKED_HEADING, STATUS_LABEL, askedHeading } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
@@ -13,11 +13,11 @@ import {
   PAINTED_AS_COMPOSED, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, placed, verdictOn, withoutGlosses,
 } from "./verdict-cards.js";
 import { withSite } from "./browser-walk.js";
+import { routeOf } from "./route-of.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const clone = (): Dataset => JSON.parse(JSON.stringify(dataset)) as Dataset;
-const routeOf = (d: Dataset, id: string): Route => d.countries.flatMap((c) => c.routes).find((r) => r.id === id)!;
 const statementOf = (d: Dataset, route: string, id: string): RouteStatement =>
   routeStatements(routeOf(d, route)).find((s) => s.id === id)!;
 

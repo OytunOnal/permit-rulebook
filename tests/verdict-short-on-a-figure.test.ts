@@ -10,6 +10,7 @@ import {
 } from "../src/lib/copy/verdict.js";
 import { PERSONA_A, PRIYA } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
+import { routeOf } from "./route-of.js";
 import type { RouteStanding, StepPlace, Verdict } from "../src/lib/verdict/verdict.js";
 import {
   badgeOf, drawnRouteOn, foldedLineOf, groupHeadingsIn, groupsIn, placed, standingOn, stepsIn, stripTextOf,
@@ -52,7 +53,7 @@ const YEARLY_SALARY = figureNamed("salary_eur_year");  // persona A's figure
 const MONTHLY_SALARY = figureNamed("salary_eur_month");  // Priya's figure
 
 /** The general Blue Card's name, as a step's route line opens on it. */
-const GENERAL_BLUE_CARD = ds.countries.flatMap((c) => c.routes).find((r) => r.id === "de-blue-card-general")!.name;
+const GENERAL_BLUE_CARD = routeOf(ds, "de-blue-card-general").name;
 
 describe("the lowest band: the group says what is missing (rulings 8 and 9)", () => {
   const verdict = verdictFor(PERSONA_A_LOWEST);
@@ -115,7 +116,7 @@ describe("a route short on two figures names both (ruling 9)", () => {
   it("its standing carries both figure gaps in the dataset's order, the salary's a bounded gap (#375)", () => {
     const written = salaryOnTheOpportunityCard();
     const card = evaluate(written, POINTS_AND_SALARY_SHORT).find((r) => r.route.id === "de-chancenkarte")!;
-    const salary = written.countries.flatMap((c) => c.routes).find((r) => r.id === "de-chancenkarte")!.criteria.at(-1)!;
+    const salary = routeOf(written, "de-chancenkarte").criteria.at(-1)!;
     expect(salary.op, "precondition: the salary the written dataset adds").toBe("gte");
     const line = salary.op === "gte" ? salary.threshold.amount : NaN;
     const band = deriveBands(written, SALARY).find((b) => b.id === POINTS_AND_SALARY_SHORT[SALARY])!;
