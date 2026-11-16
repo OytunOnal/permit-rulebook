@@ -7,9 +7,6 @@
 /* What the interview asks of a route, said on the card in the same words
    the route page uses — ink on card, no new colour and no verdict colour. */
 .scoped{font:var(--text-source);color:var(--color-muted);margin:.35rem 0 .1rem}
-/* The door under the scope line, and the link to the authority's route page
-   under the door, wear the look of a link about the route, which
-   quote-line.css writes for both screens (#401, ruling 7). */
 /* Two answers that cannot both be true, said before the verdicts. */
 .clash{font-size:.9rem;color:var(--color-ink);background:var(--color-near-soft);border-left:3px solid var(--color-near);padding:.6rem .8rem;margin:0 0 .8rem}
 

@@ -12,7 +12,7 @@ import { escAttr } from "./reason.js";
  * it back in negative margin. `route-link` for a link about the route on a
  * line of its own, the door and the link to the authority's route page: its
  * look, in the quote line's sheet, is a block at least `--tap-min` tall
- * (#401, ruling 7).
+ * (#401, ruling 17).
  *
  * Every `<a>` and `<button>` on a generated page carries exactly one of them,
  * which is what makes the invariant checkable without a browser: the v0.7

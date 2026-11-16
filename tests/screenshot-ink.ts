@@ -19,7 +19,7 @@ export interface InkOnGround {
 }
 
 /** A text's box on the screen, in CSS pixels from the viewport's corner. */
-interface TextBox {
+export interface TextBox {
   left: number;
   top: number;
   width: number;
@@ -40,10 +40,10 @@ const textBoxesOf = (selectors: string[]): string => `JSON.stringify(${JSON.stri
   return { left, top, width, height };
 }))`;
 
-/** Starts, in the page, decoding `png` (base64) and reading the ground and the
- * ink over each box, at the screenshot's scale; the reading, or the decode's
- * error, is written on the window once done. */
-const readingStarted = (png: string, boxes: TextBox[]): string => `(() => {
+/** The script that starts, in the page, decoding `png` (base64) and reading
+ * the ground and the ink over each box, at the screenshot's scale; the
+ * reading, or the decode's error, is written on the window once done. */
+const inkReadingScript = (png: string, boxes: TextBox[]): string => `(() => {
   window.${READING} = undefined;
   const bytes = Uint8Array.from(atob(${JSON.stringify(png)}), (c) => c.charCodeAt(0));
   createImageBitmap(new Blob([bytes], { type: "image/png" })).then((bitmap) => {
@@ -83,8 +83,16 @@ export async function inksOnGroundAt(page: BrowserPage, selectors: string[]): Pr
   const boxes = JSON.parse(await page.evaluate(textBoxesOf(selectors))) as (TextBox | null)[];
   const missing = selectors.filter((_, i) => boxes[i] === null);
   if (missing.length) throw new Error(`nothing on the screen for ${missing.join(", ")}`);
+  return inksOnGroundIn(page, boxes as TextBox[]);
+}
+
+/**
+ * The ground and the ink over each box, read from one screenshot of the
+ * screen as it stands. Throws for a screenshot the page could not decode.
+ */
+export async function inksOnGroundIn(page: BrowserPage, boxes: TextBox[]): Promise<InkOnGround[]> {
   const png = (await page.screenshot()).toString("base64");
-  await page.evaluate(readingStarted(png, boxes as TextBox[]));
+  await page.evaluate(inkReadingScript(png, boxes));
   const reading = JSON.parse(String(await page.waitUntil(`window.${READING}`, "the screenshot was never read"))) as
     InkOnGround[] | { error: string };
   if (!Array.isArray(reading)) throw new Error(`the page could not decode its screenshot: ${reading.error}`);

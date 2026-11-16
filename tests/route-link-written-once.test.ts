@@ -19,7 +19,7 @@ import { blocksIn, everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
 const ds = dataset as unknown as Dataset;
 
 /** The class every link about the route wears for its look. */
-const LOOK = "route-link";
+const ROUTE_LINK_CLASS = "route-link";
 
 /** The class the link to a route's authority's route page alone wears. */
 const AUTHORITY_LINK = "authority-route-page";
@@ -63,7 +63,7 @@ describe.skipIf(noBuild !== null)(WRITTEN_ONCE, () => {
   it("every built page, the results page and each route page among them, draws the look exactly once, the same on each", () => {
     const pages = everyBuiltPage();
     const looks = new Map<string, string[]>();
-    for (const page of pages) looks.set(page, rulesNaming(builtSheetsOf(page), LOOK));
+    for (const page of pages) looks.set(page, rulesNaming(builtSheetsOf(page), ROUTE_LINK_CLASS));
     const offenders = [...looks].filter(([, rules]) => rules.length !== 1).map(([page, rules]) => `${page}: ${rules.length}`);
     expect(offenders, "a page that draws the look other than once").toEqual([]);
     const drawn = new Set([...looks.values()].flat());
@@ -80,8 +80,7 @@ describe.skipIf(noBuild !== null)(WRITTEN_ONCE, () => {
   });
 
   it("no built page draws the door's look on the door itself", () => {
-    const pages = builtPages();
-    expect(pages, "precondition: the results page is built").toContain("dist/index.html");
+    const pages = everyBuiltPage();
     const offenders = pages.filter((page) => /\.scoped\s+\.door/.test(builtSheetsOf(page)));
     expect(offenders).toEqual([]);
   });
@@ -95,8 +94,8 @@ describe(WRITTEN_ONCE, () => {
     for (const html of withDoor) {
       const door = /<a class="([^"]*)" href="[^"]*">/.exec(blocksIn(html, "scoped"));
       const authority = /<a class="([^"]*\bauthority-route-page\b[^"]*)"/.exec(html);
-      expect(door?.[1]?.split(" "), "the door").toContain(LOOK);
-      expect(authority?.[1]?.split(" "), "the link to the authority's route page").toContain(LOOK);
+      expect(door?.[1]?.split(" "), "the door").toContain(ROUTE_LINK_CLASS);
+      expect(authority?.[1]?.split(" "), "the link to the authority's route page").toContain(ROUTE_LINK_CLASS);
     }
   });
 });

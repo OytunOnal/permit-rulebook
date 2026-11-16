@@ -200,9 +200,9 @@ function shapeOf(html: string): "card" | "not-yet row" | "closed row" {
  * failure: none, several, or one placed after the first quote line or before
  * the door (a card and a not-yet row) or the title (a closed row). Empty where
  * it carries exactly one, in its place. */
-function misplacedAuthorityLink(html: string, infoUrl: string): string[] {
-  const links = authorityRoutePageLinksIn(html, infoUrl);
-  if (links.length !== 1) return [`${links.length} links to ${infoUrl}`];
+function authorityLinkPlacementProblems(html: string, authorityRoutePageUrl: string): string[] {
+  const links = authorityRoutePageLinksIn(html, authorityRoutePageUrl);
+  if (links.length !== 1) return [`${links.length} links to ${authorityRoutePageUrl}`];
   const { at } = links[0]!;
   const firstQuote = html.indexOf('<div class="src');
   const after = shapeOf(html) === "closed row" ? html.indexOf("</h3>") : html.indexOf('class="door');
@@ -223,7 +223,7 @@ describe(AUTHORITY, () => {
       for (const drawn of everyDrawnRouteIn(verdictFor(answers))) {
         const route = ds.countries.flatMap((c) => c.routes).find((r) => r.id === drawn.route)!;
         shapes.add(shapeOf(drawn.html));
-        offenders.push(...misplacedAuthorityLink(drawn.html, route.info_url).map((p) => `${name}: ${drawn.route}: ${p}`));
+        offenders.push(...authorityLinkPlacementProblems(drawn.html, route.info_url).map((p) => `${name}: ${drawn.route}: ${p}`));
       }
     expect([...shapes].sort(), "precondition: the readers draw every route shape").toEqual(["card", "closed row", "not-yet row"]);
     expect(offenders).toEqual([]);

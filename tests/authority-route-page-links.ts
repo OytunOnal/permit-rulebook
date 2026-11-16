@@ -9,9 +9,9 @@ export interface AuthorityRoutePageLink {
   at: number;
 }
 
-/** Each link in `html` to `infoUrl` in the copy module's words for a link to
- * a route's authority's route page. */
-export const authorityRoutePageLinksIn = (html: string, infoUrl: string): AuthorityRoutePageLink[] =>
+/** Each link in `html` to `authorityRoutePageUrl` in the copy module's words
+ * for a link to a route's Authority's route page. */
+export const authorityRoutePageLinksIn = (html: string, authorityRoutePageUrl: string): AuthorityRoutePageLink[] =>
   [...html.matchAll(/<a\b[^>]*\bhref="([^"]*)"[^>]*>([^<]*)<\/a>/g)]
-    .filter((m) => m[1] === escAttr(infoUrl) && m[2] === esc(thisRouteOn(hostOf(infoUrl))))
+    .filter((m) => m[1] === escAttr(authorityRoutePageUrl) && m[2] === esc(thisRouteOn(hostOf(authorityRoutePageUrl))))
     .map((m) => ({ markup: m[0], at: m.index }));

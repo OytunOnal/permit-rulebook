@@ -106,20 +106,21 @@ describe("a notice that names no page of its own links its source by its kind", 
   });
 });
 
-describe("a card's link to its route's page names the site it opens", () => {
-  it("on the row of a route the authority closes, where the route's page is a consolidated text, and claims no official page", () => {
-    // The intra-corporate transfer, closed to an Algerian passport; its page
-    // moved, in this written result, to a consolidated-text host. The link
-    // names that host, as every link to an authority's route page does (#401,
-    // ruling 2), and never says "Official page".
+describe("a card's link to its route's Authority's route page names the site it opens", () => {
+  it("on the row of a route the authority closes, where its Authority's route page is a consolidated text, and claims no official page", () => {
+    // The intra-corporate transfer, closed to an Algerian passport; its
+    // Authority's route page moved, in this written result, to a
+    // consolidated-text host. The link names that host, as every link to an
+    // Authority's route page does (#401, ruling 2), and never says "Official
+    // page".
     const answers: Profile = { destination: "fr", citizenship: "DZ", situation: "ict", situation_country: "fr" };
     const altered = structuredClone(ds);
-    const infoUrl = `https://${CONSOLIDATED_TEXT_HOSTS[0]}/21_AufenthG.htm`;
-    altered.countries.flatMap((c) => c.routes).find((x) => x.id === "fr-ict")!.info_url = infoUrl;
+    const authorityRoutePageUrl = `https://${CONSOLIDATED_TEXT_HOSTS[0]}/21_AufenthG.htm`;
+    altered.countries.flatMap((c) => c.routes).find((x) => x.id === "fr-ict")!.info_url = authorityRoutePageUrl;
     const html = drawnRouteOn(verdictOn(altered, answers), "fr-ict");
     expect(html, "fr-ict is not closed to this reader").not.toBe("");
-    const toItsPage = linksIn(html, "fr-ict").filter((l) => l.href === infoUrl);
-    expect(toItsPage.map((l) => l.text)).toEqual([thisRouteOn(consolidatedHostOf(infoUrl)!)]);
+    const toItsPage = linksIn(html, "fr-ict").filter((l) => l.href === authorityRoutePageUrl);
+    expect(toItsPage.map((l) => l.text)).toEqual([thisRouteOn(consolidatedHostOf(authorityRoutePageUrl)!)]);
     expect(toItsPage[0]!.text).not.toContain(OFFICIAL_PAGE);
   });
 });
