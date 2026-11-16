@@ -122,7 +122,12 @@ click on the tracker link. Answers never leave the device.
   https source (#151) · the arranged mark only on the path question (#167) ·
   a path's words on every path of its criterion or none, distinct within a
   route, and a precondition's path one of them · an improvable question with
-  answers marks some attainable, never "I don't know" (#310). A failing gate fails the build downstream.
+  answers marks some attainable, never "I don't know" (#310) · a
+  Passport-only statement's `bindsOnly` names only passports the citizenship
+  question offers, never beside a carve-out (`src/binds-only.ts`) · no notice,
+  statement or carve-out sentence uses a screen-place word, the one set
+  `src/screen-place.ts` declares and exports, which the site's sweep of drawn
+  pages reads too (#407). A failing gate fails the build downstream.
   The data repository runs them on every push to master, every pull request
   and after every watch run (`check.yml`); a red check after a watch run keeps
   `check failed on master`, and the next green one closes it (#117).
@@ -133,7 +138,12 @@ click on the tracker link. Answers never leave the device.
   eq/in/gte/points/any, band edges = thresholds, deciding path,
   still-reachable, points as the best row an answer satisfies, questions by
   information gain, provable single-step unlocks, notices; property tests over
-  thousands of generated profiles. A disjunction is judged path by path in its
+  thousands of generated profiles. Whom a route statement binds is decided in
+  one place, `bindsReader`: a carve-out releases the passports it names, a
+  Passport-only statement (`bindsOnly`) binds only the passports it names, and
+  a reader with no passport declared, or a route page, is bound by both; every
+  card block, the scope line and the source list read it, and the answer
+  classes count both (#407). A disjunction is judged path by path in its
   own module (`src/disjunction.ts`): it is a hard fail only when no path is
   open, every open path asks its questions, and when every path failed the
   deciding path is the nearest gap or else the open path with the fewest unmet
