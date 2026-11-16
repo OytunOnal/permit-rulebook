@@ -75,6 +75,15 @@ passport"). A page with no reader shows both, under "Who this does not bind".
 _Avoid_: exception, exemption, waiver, override — and "except" outside the
 field name that carries it.
 
+**Passport-only statement**:
+A Route statement the authority says is about certain passports alone — the
+IND's "different requirements may apply to Turkish citizens". The mirror of a
+Carve-out: it keys only on the passport the interview asks for. A reader who
+declared another passport is not shown it; a reader who has not declared one
+yet is, and so is a route page, which has no reader — its words say whom it is
+about ("If you hold a Turkish passport…").
+_Avoid_: carve-in, scope, when, audience, addressee
+
 **Unsourced**:
 The one declared exception to Provenance: a Route statement carrying no
 verbatim quote, because the source does not publish one we can read. Recorded
