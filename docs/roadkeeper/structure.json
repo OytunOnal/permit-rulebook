@@ -7209,6 +7209,11 @@
   "scripts/cli-deploy-finding.mjs": [],
   "scripts/cli-measure-taps.mjs": [
    {
+    "name": "isDrawnShortOfResult",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "hasProblem",
     "kind": "fn",
     "exported": false
@@ -11014,5 +11019,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "97ca197ca43c7837494f0e895ba39f5a67d03b034e1201962ccafec20752fceb"
+ "digest": "fdef4f73ee28d4fffa80f151a610df1dd3c12f6a387b055c1e4f34844311b232"
 }

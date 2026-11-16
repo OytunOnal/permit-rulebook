@@ -6,9 +6,13 @@
  * `main-measure-taps.mjs` prints what it returns.
  */
 
-/** Whether a screen has a control under the floor, scrolls sideways, or has a Strip line starting with a dot. */
+/** Whether a drawn screen, named after a result, stopped short of the result screen. */
+const isDrawnShortOfResult = (screen) => screen.kind === "drawn" && !screen.isResult;
+
+/** Whether a screen has a control under the floor, scrolls sideways, has a Strip line starting with a dot, or is a drawn screen that is not a result. */
 const hasProblem = (screen) =>
-  screen.bad.length > 0 || screen.isOverflowing || screen.stripLinesStartingWithADot.length > 0;
+  screen.bad.length > 0 || screen.isOverflowing || screen.stripLinesStartingWithADot.length > 0
+  || isDrawnShortOfResult(screen);
 
 /** How the Strip wrapped on a clean screen, said only where the screen draws one. */
 const stripWrapOf = (screen) =>
@@ -25,6 +29,7 @@ export function screenLinesOf(screen) {
     ...screen.bad.map((under) => `     under the floor: ${under}`),
     ...(screen.isOverflowing ? [`     horizontal overflow: ${screen.scrollWidth - screen.innerWidth}px`] : []),
     ...screen.stripLinesStartingWithADot.map((part) => `     Strip line starts with a dot: ${part}`),
+    ...(isDrawnShortOfResult(screen) ? [`     not a result: stops at ${screen.questionAsked ?? "a screen with no question card"}`] : []),
   ];
 }
 

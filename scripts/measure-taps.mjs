@@ -24,6 +24,12 @@
  * On each screen it also reads where the Strip wraps, and reports a Strip
  * line that starts with a separator dot.
  *
+ * A drawn screen is named after the result its record produces, so it must
+ * end on the result screen: one that stops at a question, because the
+ * interview asks something its record does not answer, would measure a
+ * question card under a result's name. Each screen says whether it is a
+ * result, and on a question screen which question it asks.
+ *
  * What it cannot see, and never could: whether the page is alive at all. It
  * counts elements, so a dead interview measures as "0 controls under the
  * floor". `npm run smoke` is the check for that.
@@ -85,6 +91,11 @@ const PROBE = `(() => {
     }
     stripLineCounts.push(lineCount);
   }
+  // The interview marks its box "results" when it draws a verdict, and only
+  // then; a question screen keeps it "questions".
+  const isResult = document.querySelector("#app[data-state='results']") !== null;
+  const questionLabel = document.querySelector(".qcard .qlabel");
+  const questionProgress = document.querySelector(".qcard .qmeta");
   return JSON.stringify({
     innerWidth: window.innerWidth,
     scrollWidth: document.documentElement.scrollWidth,
@@ -92,6 +103,10 @@ const PROBE = `(() => {
     bad,
     stripLineCounts,
     stripLinesStartingWithADot,
+    isResult,
+    questionAsked: questionLabel
+      ? [questionProgress, questionLabel].filter(Boolean).map((el) => el.textContent.trim().replace(/\\s+/g, " ")).join(" ").slice(0, 120)
+      : null,
     tapMin: getComputedStyle(document.documentElement).getPropertyValue("--tap-min").trim(),
   });
 })()`;
@@ -111,7 +126,8 @@ function listBuiltPages(dir) {
 /**
  * Screens the page draws rather than the build emits, each with the record
  * that produces it. A record is written, the page is reloaded, and what the
- * reader actually taps is measured.
+ * reader actually taps is measured. Each record answers every question the
+ * interview asks on the way, so the page reloads onto the result.
  */
 const DRAWN = [
   ["/ (results, one country)", {
@@ -155,6 +171,8 @@ const seedFor = (answers) =>
  * The open page's measure, once it is at rest: the probe's fields, the
  * screen's name, the floor it was measured against, and `kind`, "built" for
  * a page the build emits or "drawn" for one the page draws from a record.
+ * `isResult` is whether the page drew the result screen; `questionAsked` is
+ * the question card's progress and label where it drew one instead, else null.
  */
 async function measureAtRest(page, name, kind) {
   await page.waitUntilAtRest();
