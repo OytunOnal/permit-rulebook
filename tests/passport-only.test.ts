@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { routeStatements, type Dataset, type Profile } from "permit-rulebook-data";
+import { routeStatements, type Dataset, type Profile, type Route } from "permit-rulebook-data";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import { routeOf } from "./route-of.js";
 import { drawnRouteOn, verdictFor, withoutGlosses } from "./verdict-cards.js";
@@ -48,7 +48,7 @@ describe("the orientation year's caveat about Turkish passports", () => {
   });
 
   it("is on the orientation-year route page", () => {
-    const pages = routePages(ds).filter((p) => p.path.includes("/orientation-year"));
+    const pages = routePages(ds).filter((p) => (p.json.route as Route).id === ORIENTATION_YEAR);
     expect(pages.length).toBe(1);
     expect(withoutGlosses(pages[0]!.html)).toContain(turkishCaveat());
   });

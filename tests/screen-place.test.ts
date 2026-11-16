@@ -1,29 +1,32 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { SCREEN_PLACE_PHRASES, routeStatements, screenPlacePhrasesIn, type Dataset } from "permit-rulebook-data";
+import {
+  SCREEN_PLACE_PHRASES, screenPlacePhrasesIn, textsCheckedForScreenPlace, type CheckedText, type Dataset,
+} from "permit-rulebook-data";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import { DEFAULT_PASSPORT, noticePassports, plainTextOf, resultsWhere, unknowingWalks, walks } from "./reader-pages.js";
 import { everyDrawnRouteIn, verdictFor, withoutGlosses } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 
-/** Something drawn, and where it was read. */
-interface Drawn {
+/** Markup a reader is shown, and where it was read. */
+interface MarkupRead {
   where: string;
   html: string;
 }
 
-/** Each phrase of the declared screen-place set a drawn text carries, by where it was read. */
-const screenPlacePhrasesOn = (drawn: Drawn[]): string[] =>
-  drawn.flatMap(({ where, html }) => screenPlacePhrasesIn(plainTextOf(html)).map((phrase) => `${where}: ${phrase}`));
+/** Each phrase of the declared screen-place set the markup carries, by where it was read. */
+const screenPlacePhrasesOn = (markup: MarkupRead[]): string[] =>
+  markup.flatMap(({ where, html }) => screenPlacePhrasesIn(plainTextOf(html)).map((phrase) => `${where}: ${phrase}`));
 
-const noticeTexts = (): string[] => (ds.notices ?? []).flatMap((n) => [n.title, n.body]);
-const statementTexts = (): string[] => ds.countries.flatMap((c) => c.routes.flatMap((r) => routeStatements(r).map((s) => s.text)));
+/** The texts the data's screen-place check reads that `holder` holds. */
+const checkedTextsHeldBy = (holder: CheckedText["holder"]): string[] =>
+  textsCheckedForScreenPlace(ds).filter((t) => t.holder === holder).map((t) => t.text);
 
 /** The notices and route cards drawn at the end of every destination under
  * every situation: with a passport no Notice names, with each passport a
  * Notice names, and answering "I don't know" wherever a question offers it. */
-function resultNoticesAndCards(): Drawn[] {
+function resultNoticesAndCards(): MarkupRead[] {
   const walksTaken = [...[DEFAULT_PASSPORT, ...noticePassports()].flatMap((passport) => walks(passport)), ...unknowingWalks()];
   return walksTaken.map((walk) => {
     const verdict = verdictFor(walk.answers);
@@ -46,10 +49,10 @@ describe("the screens a reader sees point at no place on the screen", () => {
   });
 
   it("finds no phrase of the declared set in the notices and route cards of the walks' results", () => {
-    const screens = resultNoticesAndCards();
-    const read = withoutGlosses(screens.map((s) => s.html).join(""));
-    expect(noticeTexts().filter((t) => !read.includes(t)), "a notice's title or body the results never draw").toEqual([]);
-    expect(statementTexts().filter((t) => read.includes(t)).length, "route statements the results draw").toBeGreaterThan(0);
-    expect(screenPlacePhrasesOn(screens)).toEqual([]);
+    const noticesAndCards = resultNoticesAndCards();
+    const drawnText = withoutGlosses(noticesAndCards.map((s) => s.html).join(""));
+    expect(checkedTextsHeldBy("notice").filter((t) => !drawnText.includes(t)), "a notice's title or body the results never draw").toEqual([]);
+    expect(checkedTextsHeldBy("statement").filter((t) => drawnText.includes(t)).length, "route statements the results draw").toBeGreaterThan(0);
+    expect(screenPlacePhrasesOn(noticesAndCards)).toEqual([]);
   });
 });
