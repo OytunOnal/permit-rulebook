@@ -5,7 +5,8 @@ import {
   type Dataset, type Notice, type Profile,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "../src/lib/reason.js";
-import { linkLabelOf } from "../src/lib/quote.js";
+import { hostOf, linkLabelOf } from "../src/lib/quote.js";
+import { thisRouteOn } from "../src/lib/copy/quotes.js";
 import { APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, perPeriod } from "../src/lib/copy/verdict.js";
 import { ALGERIAN, DUTCH_GRADUATE, PRIYA_EXPLORING_ALL } from "./personas.js";
 import { blocksIn, drawnRouteOn, everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
@@ -131,16 +132,79 @@ function graduateLineQuoting(amount: string): QuoteLine {
   return line;
 }
 
-describe(KEPT, () => {
-  it("a card keeps its link to the permit's official page at its foot", () => {
-    for (const [name, answers] of CARD_READERS)
+/** The readers whose screens draw every route shape between them: not-yet
+ * rows (the card readers), full cards (the Dutch graduate), and a closed row
+ * (the Algerian moved to France by their group). */
+const SHAPE_READERS: [string, Profile][] = [
+  ...CARD_READERS, ["the Dutch graduate", DUTCH_GRADUATE], ["the transferred Algerian", TRANSFERRED_ALGERIAN],
+];
+
+/** The shape a route is drawn in, read off its markup's first tag. */
+function shapeOf(html: string): "card" | "not-yet row" | "closed row" {
+  const tag = /<(article|details) class="([^"]*)"/.exec(html);
+  if (tag?.[2] === "route") return "card";
+  if (tag?.[2] === "route-hold") return "not-yet row";
+  if (tag?.[2] === "closed") return "closed row";
+  throw new Error(`a route drawn in no shape this case knows: ${html.slice(0, 120)}`);
+}
+
+/** Where, in a route's markup, each link to its route's authority's route
+ * page starts: a link to `info_url` in the copy module's words. */
+function authorityRoutePageLinksIn(html: string, infoUrl: string): number[] {
+  const words = `${esc(thisRouteOn(hostOf(infoUrl)))}`;
+  return [...html.matchAll(/<a\b[^>]*\bhref="([^"]*)"[^>]*>([^<]*)<\/a>/g)]
+    .filter((m) => m[1] === escAttr(infoUrl) && m[2] === words)
+    .map((m) => m.index);
+}
+
+/** Where a route's links to its authority's route page sit, said for a
+ * failure: none, several, or one placed after the first quote line or before
+ * the door (a card and a not-yet row) or the title (a closed row). Empty where
+ * it carries exactly one, in its place. */
+function misplacedAuthorityLink(html: string, infoUrl: string): string[] {
+  const at = authorityRoutePageLinksIn(html, infoUrl);
+  if (at.length !== 1) return [`${at.length} links to ${infoUrl}`];
+  const firstQuote = html.indexOf('<div class="src');
+  const after = shapeOf(html) === "closed row" ? html.indexOf("</h3>") : html.indexOf('class="door');
+  const problems: string[] = [];
+  if (after < 0 || at[0]! < after) problems.push("before its door or title");
+  if (firstQuote >= 0 && at[0]! > firstQuote) problems.push("after its first quote line");
+  return problems;
+}
+
+// The title these cases sit under; each block below repeats it, so a block stays a short function.
+const AUTHORITY = "a route's link to its authority's route page stands apart from its quotes";
+
+describe(AUTHORITY, () => {
+  it("every full card, not-yet row and closed row carries one link to its authority's route page, in the copy's words, after its door or title and before its first quote line", () => {
+    const offenders: string[] = [];
+    const shapes = new Set<string>();
+    for (const [name, answers] of SHAPE_READERS)
       for (const drawn of everyDrawnRouteIn(verdictFor(answers))) {
         const route = ds.countries.flatMap((c) => c.routes).find((r) => r.id === drawn.route)!;
-        const foot = /<div class="foot">[\s\S]*<\/div>(\s*<a class="next" href="([^"]*)")/.exec(drawn.html);
-        expect(foot?.[2], `${name}: ${drawn.route}`).toBe(escAttr(route.info_url));
+        shapes.add(shapeOf(drawn.html));
+        offenders.push(...misplacedAuthorityLink(drawn.html, route.info_url).map((p) => `${name}: ${drawn.route}: ${p}`));
       }
+    expect([...shapes].sort(), "precondition: the readers draw every route shape").toEqual(["card", "closed row", "not-yet row"]);
+    expect(offenders).toEqual([]);
   });
 
+  it("no route card's foot carries a link beside its quote lines", () => {
+    const offenders: string[] = [];
+    let feet = 0;
+    for (const [name, answers] of SHAPE_READERS)
+      for (const drawn of everyDrawnRouteIn(verdictFor(answers))) {
+        const foot = blocksIn(drawn.html, "foot");
+        if (foot) feet++;
+        const beside = foot.replace(blocksIn(foot, "srcs"), "");
+        if (beside.includes("<a ")) offenders.push(`${name}: ${drawn.route}`);
+      }
+    expect(feet, "precondition: the cards draw a foot").toBeGreaterThan(0);
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe(KEPT, () => {
   it("a card's amount keeps the period it is stated per", () => {
     expect(graduateLineQuoting("€ 3,122.00").html).toContain(` · ${perPeriod("month")}`);
   });

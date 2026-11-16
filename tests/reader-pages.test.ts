@@ -4,14 +4,15 @@ import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { phraseOf, phraseAtStartOf, countryVocabulary, type Dataset, type Notice } from "permit-rulebook-data";
 import { countryAddresses, routeAddresses } from "../src/lib/slug.js";
-import { DESK, PHONE } from "../scripts/browser/browser.mjs";
+import { DESK, PHONE, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { isArrowOnLastWordLine, isAsWideAsTextAndArrow, type CardLink } from "./card-link.js";
 import {
-  DEFAULT_PASSPORT, EVERY_DESTINATION, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf,
+  DEFAULT_PASSPORT, EVERY_DESTINATION, authorityLinksOf, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf,
   learnLinksOf, noticePassports, noticesDrawnOnNone, openWithRecord, questionCards, resultsWhere, sentencesOf, unknowingWalks,
   walks, type CardLinkOnScreen, type ReaderPage,
 } from "./reader-pages.js";
+import { distanceBetween, inksOnGroundAt, type InkOnGround } from "./screenshot-ink.js";
 import { widenedFailuresOf, widenedScreens } from "./widened-screen.js";
 
 /**
@@ -72,7 +73,9 @@ describe("the walk's own precondition", () => {
     const ids = (ds.notices ?? []).map((n) => n.id);
     expect(ids.length).toBeGreaterThan(1);
     expect(noticesDrawnOnNone([])).toEqual(ids);
-    const first = { where: "a screen", html: "", noticeHeadings: [ds.notices![0]!.title], footLinks: [], learnLinks: [], failure: null };
+    const first = {
+      where: "a screen", html: "", noticeHeadings: [ds.notices![0]!.title], footLinks: [], authorityLinks: [], learnLinks: [], failure: null,
+    };
     expect(noticesDrawnOnNone([first])).toEqual(ids.slice(1));
   });
 
@@ -133,12 +136,12 @@ const failureLineOf = (link: CardLinkOnScreen): string => {
     : `its ↗ ${arrow.right.toFixed(1)} px right of its last word and ${arrow.down.toFixed(1)} px down from its line`;
   const fits = link.fitsItsLine ? "its label fits its line" : "its label does not fit its line";
   return `${link.where}, "${link.label}" on "${link.card}": ${fits}, ${link.lines} line(s), ${arrowAt}, ${
-    link.width.toFixed(2)} px wide for ${link.textWidth.toFixed(2)} px of text and a ${link.loneArrowWidth.toFixed(2)} px ↗`;
+    link.width.toFixed(2)} px wide for ${link.textWidth.toFixed(2)} px of text and a ${link.arrowWidth.toFixed(2)} px ↗`;
 };
 
 /** Whether a link lays out as the desk draws it. Where its label fits its
  * line: on one line, its ↗ right after its last word, as wide as its text and
- * a lone ↗. Where it does not, as in a wider font than this machine's: its ↗
+ * its ↗. Where it does not, as in a wider font than this machine's: its ↗
  * on its last word's line. */
 const isLaidOutForTheDesk = (link: CardLink): boolean =>
   link.fitsItsLine
@@ -150,16 +153,22 @@ const LONG_WORD = "Unbreakable".repeat(12);
 
 /** Reads, in the page, how results drawing a Learn link lay out once every
  * card link's label is LONG_WORD: the page's width and scroll width, how many
- * foot and Learn links took it, and the furthest right edge among them. A
- * screen with no Learn link is left as it is and counts none. */
+ * foot links, links to a route's authority's route page and Learn links took
+ * it, and the furthest right edge among them. A screen with no Learn link is
+ * left as it is and counts none. */
 const WITH_LONG_LABELS = `(() => {
   for (const folded of document.querySelectorAll("#main details:not([open])")) folded.open = true;
   const foot = [...document.querySelectorAll("#main .foot > a.next")];
+  const authority = [...document.querySelectorAll("#main a.authority-route-page")];
   const learn = [...document.querySelectorAll("#main .learn a")];
-  if (learn.length === 0) return JSON.stringify({ innerWidth, scrollWidth: 0, foot: 0, learn: 0, furthestRight: 0 });
-  for (const link of [...foot, ...learn]) link.textContent = ${JSON.stringify(LONG_WORD)};
-  const furthestRight = Math.max(...[...foot, ...learn].map((link) => link.getBoundingClientRect().right));
-  return JSON.stringify({ innerWidth, scrollWidth: document.documentElement.scrollWidth, foot: foot.length, learn: learn.length, furthestRight });
+  if (learn.length === 0) return JSON.stringify({ innerWidth, scrollWidth: 0, foot: 0, authority: 0, learn: 0, furthestRight: 0 });
+  const links = [...foot, ...authority, ...learn];
+  for (const link of links) link.textContent = ${JSON.stringify(LONG_WORD)};
+  const furthestRight = Math.max(...links.map((link) => link.getBoundingClientRect().right));
+  return JSON.stringify({
+    innerWidth, scrollWidth: document.documentElement.scrollWidth,
+    foot: foot.length, authority: authority.length, learn: learn.length, furthestRight,
+  });
 })()`;
 
 /** How a results screen laid out with LONG_WORD for every card link's label. */
@@ -168,8 +177,41 @@ interface LongLabelsLaidOut {
   innerWidth: number;
   scrollWidth: number;
   foot: number;
+  authority: number;
   learn: number;
   furthestRight: number;
+}
+
+/** The two colour schemes a reader's device may ask for, each set explicitly. */
+const COLOUR_SCHEMES = ["light", "dark"] as const;
+
+/** The first full card's door. */
+const CARD_DOOR = "#main article.route .scoped .door";
+/** The first full card's link to its authority's route page. */
+const CARD_AUTHORITY_LINK = "#main article.route a.authority-route-page";
+
+/** How far, in RGB, two inks read off a screenshot may be and still be one
+ * colour: room for the glyph edges' blending, far less than the 148 between
+ * the door's blue and the quote links' red. */
+const INK_TOLERANCE = 40;
+
+/** What a screenshot showed of a card under one colour scheme: whether the
+ * page read the scheme as set, and the door's and the link's ink. */
+interface SchemeRead {
+  scheme: (typeof COLOUR_SCHEMES)[number];
+  isSet: boolean;
+  door: InkOnGround;
+  authority: InkOnGround;
+}
+
+/** Opens the results of the first walk whose screen draws a full card with a
+ * link to its authority's route page. Throws where no walk's does. */
+async function openOnAFullCard(site: PageOnSite): Promise<void> {
+  for (const walk of walks()) {
+    await openWithRecord(site, "/", walk);
+    if (await site.page.evaluate(`Boolean(document.querySelector(${JSON.stringify(CARD_AUTHORITY_LINK)}))`)) return;
+  }
+  throw new Error("no walk's results draw a full card with a link to its authority's route page");
 }
 
 const notWalked = skipReason();
@@ -184,16 +226,42 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
     expect(articleDropped(screens)).toEqual([]);
   }, 600000);
 
-  it("lays out every foot link and Learn link whose label fits its line on one line at the desk, as wide as its text and a lone ↗, and every other with its ↗ on its last word's line, on the Algerian reader's results, on the results for every destination at once and on the results of a reader who does not know", async () => {
+  it("lays out every foot link, link to an authority's route page and Learn link whose label fits its line on one line at the desk, as wide as its text and its ↗, and every other with its ↗ on its last word's line, on the Algerian reader's results, on the results for every destination at once and on the results of a reader who does not know", async () => {
     const everyDestination = walks().filter((w) => w.answers["destination"] === EVERY_DESTINATION);
     const guarded = [...walks(ALGERIAN_PASSPORT), ...everyDestination, ...unknowingWalks()];
     const screens = await withSite((site) => drawnResults(site, guarded), DESK);
     expect(failuresOf(screens)).toEqual([]);
     expect(footLinksOf(screens, noticeNaming(ALGERIAN_PASSPORT)), "the Algerian notice's foot link is on none of the screens").not.toEqual([]);
+    expect(authorityLinksOf(screens), "no screen draws a link to an authority's route page").not.toEqual([]);
     expect(learnLinksOf(screens), "no screen draws a Learn link").not.toEqual([]);
-    const links = [...footLinksOf(screens), ...learnLinksOf(screens)];
+    const links = [...footLinksOf(screens), ...authorityLinksOf(screens), ...learnLinksOf(screens)];
     expect(links.filter((link) => link.fitsItsLine), "no link's label fits its line").not.toEqual([]);
     expect(links.filter((link) => !isLaidOutForTheDesk(link)).map(failureLineOf)).toEqual([]);
+  }, 600000);
+});
+
+describe.skipIf(notWalked !== null)("every screen the module draws", () => {
+  it("draws a result card's link to its authority's route page in its door's colour, read from a screenshot's pixels, in the light and the dark colour scheme", async () => {
+    const seen = await withSite(async (site) => {
+      const read: SchemeRead[] = [];
+      for (const scheme of COLOUR_SCHEMES) {
+        await site.page.emulateMedia([{ name: "prefers-color-scheme", value: scheme }]);
+        await openOnAFullCard(site);
+        const isSet = Boolean(await site.page.evaluate(`matchMedia("(prefers-color-scheme: ${scheme})").matches`));
+        await site.page.evaluate(`document.querySelector(${JSON.stringify(CARD_AUTHORITY_LINK)}).scrollIntoView({ block: "center" })`);
+        await site.page.waitUntilAtRest();
+        const [door, authority] = await inksOnGroundAt(site.page, [CARD_DOOR, CARD_AUTHORITY_LINK]);
+        read.push({ scheme, isSet, door: door!, authority: authority! });
+      }
+      return read;
+    }, DESK);
+    expect(seen.map((s) => s.scheme)).toEqual([...COLOUR_SCHEMES]);
+    for (const { scheme, isSet, door, authority } of seen) {
+      expect(isSet, `precondition: the ${scheme} scheme is set`).toBe(true);
+      expect(distanceBetween(door.ink, door.ground), `precondition, ${scheme}: the door's text is read`).toBeGreaterThan(100);
+      expect(distanceBetween(authority.ink, door.ink), `${scheme}: the link is drawn ${authority.ink}, the door ${door.ink}`)
+        .toBeLessThan(INK_TOLERANCE);
+    }
   }, 600000);
 });
 
@@ -218,7 +286,7 @@ describe.skipIf(notWalked !== null)("every screen the module draws, on a phone",
     expect.soft(wrappedLearnLinks.filter((link) => !isArrowOnLastWordLine(link)).map(failureLineOf)).toEqual([]);
   }, 900000);
 
-  it("breaks a label of one word longer than the line within the screen, at a card's foot and in its Learn box", async () => {
+  it("breaks a label of one word longer than the line within the screen, under a card's door and in its Learn box", async () => {
     const laidOut = await withSite(async (site) => {
       const screens: LongLabelsLaidOut[] = [];
       for (const walk of unknowingWalks()) {
@@ -227,8 +295,8 @@ describe.skipIf(notWalked !== null)("every screen the module draws, on a phone",
       }
       return screens;
     }, PHONE);
-    const withBoth = laidOut.filter((s) => s.foot > 0 && s.learn > 0);
-    expect(withBoth, "no screen draws a foot link and a Learn link").not.toEqual([]);
+    const withBoth = laidOut.filter((s) => s.authority > 0 && s.learn > 0);
+    expect(withBoth, "no screen draws a link to an authority's route page and a Learn link").not.toEqual([]);
     const phone = PHONE.viewport.width;
     expect(withBoth.filter((s) => s.innerWidth !== phone || s.scrollWidth > phone || s.furthestRight > phone)).toEqual([]);
   }, 600000);

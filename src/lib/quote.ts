@@ -1,7 +1,7 @@
 // @level presentation
-import { LANGUAGE_NAMES, formatEUR, hostKindOf, quoteLanguage } from "permit-rulebook-data";
+import { LANGUAGE_NAMES, formatEUR, hostKindOf, quoteLanguage, type Route } from "permit-rulebook-data";
 import {
-  OFFICIAL_PAGE, consolidatedTextOn, languageNote, learnLinkWithKind, readOn, sameNumberNote,
+  OFFICIAL_PAGE, consolidatedTextOn, languageNote, learnLinkWithKind, readOn, sameNumberNote, thisRouteOn,
 } from "./copy/quotes.js";
 import { esc, escAttr } from "./reason.js";
 import { type Glossary, glossed } from "./gloss.js";
@@ -37,6 +37,18 @@ export const hostOf = (url: string): string => new URL(url).hostname.replace(/^w
 /** The label of a link to a source: whose page it opens, by its host's kind. */
 export function linkLabelOf(url: string): string {
   return hostKindOf(url) === "consolidated-text" ? consolidatedTextOn(hostOf(url)) : OFFICIAL_PAGE;
+}
+
+/**
+ * The link to a route's Authority's route page (GLOSSARY), drawn from the
+ * route alone, wherever a route offers it: a result card, a not-yet row, a
+ * closed row and the route page call this one function, so they cannot drift
+ * apart (ruling 5 on #396). It names the site it opens; its look is the
+ * door's (`route-link`, in quote-line.css), and the sheet puts its ↗ after it.
+ */
+export function authorityRoutePageLinkHtml(route: Route): string {
+  return `<a class="route-link authority-route-page" href="${escAttr(route.info_url)}" target="_blank" rel="noopener">${
+    esc(thisRouteOn(hostOf(route.info_url)))}</a>`;
 }
 
 /**
