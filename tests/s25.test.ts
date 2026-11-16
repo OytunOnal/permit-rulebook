@@ -19,6 +19,7 @@ import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, paintedAsComposedScript, placed, stepsIn, verdictFor, verdictOn,
 } from "./verdict-cards.js";
+import { routeOf } from "./route-of.js";
 
 const ds = rawDataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -306,7 +307,7 @@ const walkedTo = (five: string, seven: string): Profile =>
 
 /** The § 6 BeschV sentence the five-year rule quotes. */
 const FIVE_YEAR_QUOTE = (() => {
-  const route = ds.countries.flatMap((c) => c.routes).find((r) => r.id === "de-experienced-worker")!;
+  const route = routeOf(ds, "de-experienced-worker");
   const rule = route.criteria.find((c) => "field" in c && c.field === FIVE) as { source?: { quote: string } };
   return rule.source!.quote;
 })();

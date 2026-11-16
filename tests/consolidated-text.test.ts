@@ -13,6 +13,7 @@ import { routeAddresses } from "../src/lib/slug.js";
 import type { PageOnSite } from "../scripts/browser/browser.mjs";
 import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { builtPages } from "./reader-pages.js";
+import { routeOf } from "./route-of.js";
 import { blocksIn, drawnRouteOn, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
@@ -116,7 +117,7 @@ describe("a card's link to its route's Authority's route page names the site it 
     const answers: Profile = { destination: "fr", citizenship: "DZ", situation: "ict", situation_country: "fr" };
     const altered = structuredClone(ds);
     const authorityRoutePageUrl = `https://${CONSOLIDATED_TEXT_HOSTS[0]}/21_AufenthG.htm`;
-    altered.countries.flatMap((c) => c.routes).find((x) => x.id === "fr-ict")!.info_url = authorityRoutePageUrl;
+    routeOf(altered, "fr-ict").info_url = authorityRoutePageUrl;
     const html = drawnRouteOn(verdictOn(altered, answers), "fr-ict");
     expect(html, "fr-ict is not closed to this reader").not.toBe("");
     const toItsPage = linksIn(html, "fr-ict").filter((l) => l.href === authorityRoutePageUrl);

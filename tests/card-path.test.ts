@@ -6,6 +6,7 @@ import {
 import { otherPathNeedsLine, pathTakenLine } from "../src/lib/copy/verdict.js";
 import { PERSONA_A } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
+import { routeOf } from "./route-of.js";
 import { blocksIn, drawnRouteOn, placed, verdictFor, verdictOn, withoutGlosses } from "./verdict-cards.js";
 
 /**
@@ -23,17 +24,10 @@ const SHORTAGE = "de-blue-card-shortage";
 /** The orientation year: where you studied, with one path-linked item. */
 const ORIENTATION = "nl-orientation-year";
 
-/** A route of the shipped dataset, by its id; one it lacks fails the case. */
-function shippedRouteOf(id: string): Route {
-  const found = ds.countries.flatMap((c) => c.routes).find((r) => r.id === id);
-  if (!found) throw new Error(`no route ${id} in the dataset`);
-  return found;
-}
-
 /** The statements a route links to one of its paths, by the path's words; a
  * route with none fails the case. */
 function linkedStatementsOf(route: string, path: string): RouteStatement[] {
-  const linked = routeStatements(shippedRouteOf(route)).filter((s) => s.path === path);
+  const linked = routeStatements(routeOf(ds, route)).filter((s) => s.path === path);
   if (!linked.length) throw new Error(`${route} links no item to ${path}`);
   return linked;
 }
@@ -80,7 +74,7 @@ const alsoRequiredOf = (html: string): string => plainTextOf(blocksIn(html, "pre
 /** The shipped dataset with a third path on the shortage Blue Card's degree-or-IT criterion. */
 function withThirdShortagePath(): Dataset {
   const written = structuredClone(ds);
-  const route = written.countries.flatMap((c) => c.routes).find((r) => r.id === SHORTAGE)!;
+  const route = routeOf(written, SHORTAGE);
   const marked = route.criteria.find((c) => c.op === "any" && c.paths.some((p) => p.subject !== undefined));
   if (marked?.op !== "any") throw new Error("the shortage Blue Card has no marked criterion");
   marked.paths.push({
@@ -177,7 +171,7 @@ const scopeOf = (card: string): string => plainTextOf(blocksIn(card, "scoped"));
 const sourcesOf = (card: string): string => plainTextOf(blocksIn(card, "srcs"));
 
 describe("an item a card drops is gone from its scope line's count and its source list too (ruling 5)", () => {
-  const shortage = shippedRouteOf(SHORTAGE);
+  const shortage = routeOf(ds, SHORTAGE);
   const dropped = linkedStatementsOf(SHORTAGE, IT_PATH);
   const quotes = dropped.map((s) => s.source?.quote ?? "");
   /** The shortage Blue Card as a card met through the recognised-degree path states it. */

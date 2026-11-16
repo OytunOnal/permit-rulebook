@@ -7,6 +7,7 @@ import {
   QLABEL, answer, middleBandOf, skipReason, topBandOf, waitUntilPastTheBeat, walkTo, warnNotWalked, withSite,
 } from "./browser-walk.js";
 import { shiftScoreSince } from "./layout-shifts.js";
+import { routeOf } from "./route-of.js";
 
 /**
  * #139 — a question that only some of the reader's open routes read says
@@ -58,7 +59,7 @@ const IT_NO_DEGREE: Profile = {
 };
 
 const labelOf = (field: string): string => ds.fields.find((f) => f.id === field)!.label;
-const cardNameOf = (route: string): string => ds.countries.flatMap((c) => c.routes).find((r) => r.id === route)!.name;
+const cardNameOf = (route: string): string => routeOf(ds, route).name;
 
 /** What the line on the question card marks: the routes it names, each with
  * its country, and the count per country where it counts. */

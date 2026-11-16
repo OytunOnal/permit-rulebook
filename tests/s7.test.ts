@@ -3,16 +3,14 @@ import { WHO_THIS_DOES_NOT_BIND } from "../src/lib/copy/route-page.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   evaluate, routeStatements, scopeLine,
-  type Dataset, type Profile, type Route, type RouteResult,
+  type Dataset, type Profile, type RouteResult,
 } from "permit-rulebook-data";
 import { NOT_CHECKED_HEADING, NOT_REQUIRED_FOR_YOUR_PASSPORT, ROUTE_DOOR } from "../src/lib/copy/verdict.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import { blocksIn, drawnRouteOn, placed, verdictFor, verdictOn, withoutGlosses } from "./verdict-cards.js";
+import { routeOf } from "./route-of.js";
 
 const ds = dataset as unknown as Dataset;
-
-const routeOf = (id: string): Route =>
-  ds.countries.flatMap((c) => c.routes).find((r) => r.id === id)!;
 
 const resultOf = (answers: Profile, id: string): RouteResult =>
   evaluate(ds, answers).find((r) => r.route.id === id)!;
@@ -25,10 +23,10 @@ const pageAt = (address: string): string =>
  * first use on the screen (#156), so the blocks below are read without the
  * explainers. */
 const statementText = (route: string, statement: string): string =>
-  routeStatements(routeOf(route)).find((s) => s.id === statement)!.text;
+  routeStatements(routeOf(ds, route)).find((s) => s.id === statement)!.text;
 
 const carveOutText = (route: string, statement: string): string =>
-  routeStatements(routeOf(route)).find((s) => s.id === statement)!.except!.text;
+  routeStatements(routeOf(ds, route)).find((s) => s.id === statement)!.except!.text;
 
 /** A route's card on the verdict these answers read, on the shipped dataset
  * or on one a test writes. */
@@ -104,7 +102,7 @@ describe("s7 — a Turkish passport on the Dutch highly skilled migrant route", 
   });
 
   it("does not count a condition that does not bind this reader among the ones stated", () => {
-    const route = routeOf("nl-hsm-30plus");
+    const route = routeOf(ds, "nl-hsm-30plus");
     const line = blocksIn(cardFor(turkish, "nl-hsm-30plus"), "scoped");
     expect(line).toContain(scopeLine(route, { reader: "answered", profile: turkish }));
     expect(line).not.toContain(scopeLine(route, { reader: "answered", profile: {} }));
@@ -128,7 +126,7 @@ describe("s7 — a Turkish passport on the Dutch highly skilled migrant route", 
 describe("s7 — every card block reads the reader's passport", () => {
   it("escapes what it prints, like every other block", () => {
     const altered = structuredClone(ds);
-    const route = altered.countries.flatMap((c) => c.routes).find((r) => r.id === "nl-hsm-30plus")!;
+    const route = routeOf(altered, "nl-hsm-30plus");
     const sponsor = routeStatements(route).find((s) => s.id === "employer-must-be-a-recognised-sponsor")!;
     sponsor.except!.text = "a & b <em>c</em>";
     expect(carveOutOf(turkish, "nl-hsm-30plus", altered)).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
@@ -184,7 +182,7 @@ describe("s7 — the other two permits the IND names, and the page that calls th
     expect(page!.html).toContain(WHO_THIS_DOES_NOT_BIND);
     // Its own words, after the condition above it has explained the MVV.
     const said = (statement: string): string =>
-      routeStatements(routeOf("nl-researcher")).find((s) => s.id === statement)!.except!.text;
+      routeStatements(routeOf(ds, "nl-researcher")).find((s) => s.id === statement)!.except!.text;
     expect(page!.html).toContain(said("mvv-needed"));
     expect(page!.html).toContain(said("the-institute-must-be-a-recognised-sponsor"));
   });
