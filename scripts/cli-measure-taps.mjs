@@ -6,19 +6,25 @@
  * `main-measure-taps.mjs` prints what it returns.
  */
 
-/** Whether a screen has a control under the floor or scrolls sideways. */
-const hasProblem = (screen) => screen.bad.length > 0 || screen.isOverflowing;
+/** Whether a screen has a control under the floor, scrolls sideways, or has a Strip line starting with a dot. */
+const hasProblem = (screen) =>
+  screen.bad.length > 0 || screen.isOverflowing || screen.stripLinesStartingWithADot.length > 0;
+
+/** How the Strip wrapped on a clean screen, said only where the screen draws one. */
+const stripWrapOf = (screen) =>
+  screen.stripLineCounts.length === 0 ? "" : `, Strip on ${screen.stripLineCounts.join("+")} line(s), none starting with a dot`;
 
 /** A screen's lines: one `ok`, or a `FAIL` and what put it there. */
 export function screenLinesOf(screen) {
   if (!hasProblem(screen))
-    return [`ok   ${screen.name} — ${screen.innerWidth}px, ${screen.controls} controls, none under ${screen.floorPx}px, no overflow`];
+    return [`ok   ${screen.name} — ${screen.innerWidth}px, ${screen.controls} controls, none under ${screen.floorPx}px, no overflow${stripWrapOf(screen)}`];
   const tapMin = screen.kind === "built" ? ` · --tap-min ${screen.tapMin}` : "";
   return [
     `FAIL ${screen.name}`,
     `     viewport ${screen.innerWidth}px · scrollWidth ${screen.scrollWidth}px · ${screen.controls} controls${tapMin}`,
     ...screen.bad.map((under) => `     under the floor: ${under}`),
     ...(screen.isOverflowing ? [`     horizontal overflow: ${screen.scrollWidth - screen.innerWidth}px`] : []),
+    ...screen.stripLinesStartingWithADot.map((part) => `     Strip line starts with a dot: ${part}`),
   ];
 }
 

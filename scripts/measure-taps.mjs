@@ -21,6 +21,9 @@
  * `browser.mjs`, and `owned.mjs` closes what they open however the process
  * leaves.
  *
+ * On each screen it also reads where the Strip wraps, and reports a Strip
+ * line that starts with a separator dot.
+ *
  * What it cannot see, and never could: whether the page is alive at all. It
  * counts elements, so a dead interview measures as "0 controls under the
  * floor". `npm run smoke` is the check for that.
@@ -60,11 +63,35 @@ const PROBE = `(() => {
       // name this script prints.
       bad.push(Math.round(r.height) + "px \u00b7 " + (el.textContent || el.tagName).trim().replace(/\\s+/g, " ").slice(0, 34));
   }
+  // The Strip wraps between its parts. A part that starts a line below the
+  // first, its left edge at the Strip's own, must not have a separator drawn
+  // in front of it: a line that opens on a dot reads as a stray mark.
+  const stripLineCounts = [];
+  const stripLinesStartingWithADot = [];
+  for (const strip of document.querySelectorAll(".strip")) {
+    const stripBox = strip.getBoundingClientRect();
+    if (stripBox.width === 0 && stripBox.height === 0) continue;
+    const parts = [...strip.children].map((part) => ({ part, box: part.getBoundingClientRect() }));
+    if (parts.length === 0) continue;
+    const firstLineTop = Math.min(...parts.map(({ box }) => box.top));
+    let lineCount = 1;
+    for (const { part, box } of parts) {
+      const isLineStart = Math.abs(box.left - stripBox.left) <= 1 && box.top > firstLineTop + 1;
+      if (!isLineStart) continue;
+      lineCount++;
+      const inFront = getComputedStyle(part, "::before").content;
+      if (inFront !== "none" && inFront !== "normal" && inFront !== '""')
+        stripLinesStartingWithADot.push(inFront + " " + part.textContent.trim().replace(/\\s+/g, " ").slice(0, 34));
+    }
+    stripLineCounts.push(lineCount);
+  }
   return JSON.stringify({
     innerWidth: window.innerWidth,
     scrollWidth: document.documentElement.scrollWidth,
     controls: n,
     bad,
+    stripLineCounts,
+    stripLinesStartingWithADot,
     tapMin: getComputedStyle(document.documentElement).getPropertyValue("--tap-min").trim(),
   });
 })()`;
