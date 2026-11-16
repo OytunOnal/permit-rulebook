@@ -2,13 +2,13 @@
 import {
   forEachCriterion, periodOf, resultProvenance, thresholdsUnder, type Dataset, type Route, type RouteResult,
 } from "permit-rulebook-data";
-import { esc, escAttr } from "../../../../reason.js";
+import { esc } from "../../../../reason.js";
 import {
   APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_THRESHOLD_ON_ROUTE, perPeriod,
 } from "../../../../copy/verdict.js";
 import { type Glossary, glossed } from "../../../../gloss.js";
 // One line for every quote the product shows (2026-09-08; #387).
-import { linkLabelOf, quoteLineHtml, type QuoteLineOptions } from "../../../../quote.js";
+import { quoteLineHtml, type QuoteLineOptions } from "../../../../quote.js";
 import type { CardScreen } from "./card-screen.js";
 import { routeAsStated } from "./route-statements.js";
 
@@ -132,9 +132,4 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult, notTaken: Rea
   if (!decidesOnANumber(r.route))
     lines.push(`<div class="src nosrc">${esc(NO_THRESHOLD_ON_ROUTE)}</div>`);
   return `<div class="srcs">${lines.join("")}</div>`;
-}
-
-/** The link at a card's foot to the page behind it, labelled by whose page it is. */
-export function sourceLinkHtml(url: string): string {
-  return `<a class="next" href="${escAttr(url)}" target="_blank" rel="noopener">${esc(linkLabelOf(url))}</a>`;
 }

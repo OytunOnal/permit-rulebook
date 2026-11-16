@@ -5,7 +5,7 @@ import {
 } from "permit-rulebook-data";
 import type { CardScreen } from "./blocks/card-screen.js";
 import { pathLinesHtml, pathsNotTakenOf } from "./blocks/path-line.js";
-import { provenanceHtml, sourceLinkHtml } from "./blocks/provenance.js";
+import { provenanceHtml } from "./blocks/provenance.js";
 import { railHtml } from "./blocks/rail.js";
 import {
   carveOutHtml, caveatHtml, precondHtml, readingHtml, routeAsStated, scopedHtml,
@@ -318,6 +318,8 @@ export function closedRowHtml(r: RouteResult, seen: Glossary = new Set()): strin
  * page saying what the reader gets instead — so every side is printed, each
  * quote framed with its own language, and the link at the foot is the page the
  * notice sends the reader to rather than whichever source it leads with (s8).
+ * A notice with no such page has no foot link: its first quote line already
+ * links its leading source (#401, ruling 4).
  */
 export function noticeHtml(n: Notice, seen: Glossary = new Set()): string {
   const title = esc(glossed(n.title, seen));
@@ -326,7 +328,7 @@ export function noticeHtml(n: Notice, seen: Glossary = new Set()): string {
   const next = n.learn
     ? `<a class="next" href="${escAttr(n.learn.url)}" target="_blank" rel="noopener">${
       esc(glossedLearnLinkText(n.learn, seen))}</a>`
-    : sourceLinkHtml(n.source.source_url);
+    : "";
   return `
         <article class="notice ${escAttr(n.kind)}">
           <h3>${title}</h3>
