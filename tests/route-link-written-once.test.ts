@@ -41,6 +41,18 @@ const withEscapesRead = (css: string): string =>
 /** The site's own pages, beside one per route and one per country. */
 const SITE_PAGES = ["dist/index.html", "dist/404.html", "dist/data/index.html", "dist/feedback/index.html"];
 
+/** Every built page, once the case has checked that the site's own pages
+ * are among them and that there are more than one per route and one per
+ * country. */
+function everyBuiltPage(): string[] {
+  const pages = builtPages();
+  const routes = ds.countries.flatMap((country) => country.routes).length;
+  expect(pages, "precondition: the site's own pages are built").toEqual(expect.arrayContaining(SITE_PAGES));
+  expect(pages.length, "precondition: every page is read, the site's, one per route and one per country")
+    .toBeGreaterThan(routes + ds.countries.length);
+  return pages;
+}
+
 const noBuild = existsSync(root("dist")) ? null : "no dist/ — run npm run build first";
 if (noBuild) warnNotWalked("the built sheets of the route link's look", noBuild);
 
@@ -49,11 +61,7 @@ const WRITTEN_ONCE = "a link about the route has one look, written once";
 
 describe.skipIf(noBuild !== null)(WRITTEN_ONCE, () => {
   it("every built page, the results page and each route page among them, draws the look exactly once, the same on each", () => {
-    const pages = builtPages();
-    const routes = ds.countries.flatMap((country) => country.routes).length;
-    expect(pages, "precondition: the site's own pages are built").toEqual(expect.arrayContaining(SITE_PAGES));
-    expect(pages.length, "precondition: every page is read, the site's, one per route and one per country")
-      .toBeGreaterThan(routes + ds.countries.length);
+    const pages = everyBuiltPage();
     const looks = new Map<string, string[]>();
     for (const page of pages) looks.set(page, rulesNaming(builtSheetsOf(page), LOOK));
     const offenders = [...looks].filter(([, rules]) => rules.length !== 1).map(([page, rules]) => `${page}: ${rules.length}`);
@@ -63,11 +71,7 @@ describe.skipIf(noBuild !== null)(WRITTEN_ONCE, () => {
   });
 
   it("every built page, each route page among them, draws the link to an authority's route page only as the results page does, with no rule of its own for it", () => {
-    const pages = builtPages();
-    const routes = ds.countries.flatMap((country) => country.routes).length;
-    expect(pages, "precondition: the results page is built").toContain("dist/index.html");
-    expect(pages.length, "precondition: every page is read, the site's, one per route and one per country")
-      .toBeGreaterThan(routes + ds.countries.length);
+    const pages = everyBuiltPage();
     const rulesOf = (page: string) => rulesNaming(withEscapesRead(builtSheetsOf(page)), AUTHORITY_LINK).join(" | ");
     const shared = rulesOf("dist/index.html");
     expect(shared, "precondition: the results page's sheet draws the link").not.toBe("");

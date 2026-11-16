@@ -3035,6 +3035,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/authority-route-page-links.ts",
+   "to": "src/lib/copy/quotes.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/authority-route-page-links.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/authority-route-page-links.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/back-and-keep.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -4661,6 +4676,11 @@
   },
   {
    "from": "tests/route-page-provenance.test.ts",
+   "to": "tests/authority-route-page-links.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
    "to": "tests/personas.ts",
    "kind": "dependency"
   },
@@ -6076,11 +6096,6 @@
   },
   {
    "from": "tests/verdict-quote-lines.test.ts",
-   "to": "src/lib/copy/quotes.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/verdict-quote-lines.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
@@ -6092,6 +6107,11 @@
   {
    "from": "tests/verdict-quote-lines.test.ts",
    "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "tests/authority-route-page-links.ts",
    "kind": "dependency"
   },
   {

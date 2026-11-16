@@ -5,9 +5,9 @@ import {
   type Dataset, type Notice, type Profile,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "../src/lib/reason.js";
-import { glossedLearnLinkText, hostOf, linkLabelOf } from "../src/lib/quote.js";
-import { thisRouteOn } from "../src/lib/copy/quotes.js";
+import { glossedLearnLinkText, linkLabelOf } from "../src/lib/quote.js";
 import { APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, perPeriod } from "../src/lib/copy/verdict.js";
+import { authorityRoutePageLinksIn } from "./authority-route-page-links.js";
 import { ALGERIAN, DUTCH_GRADUATE, PRIYA_EXPLORING_ALL } from "./personas.js";
 import { blocksIn, drawnRouteOn, everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
 
@@ -111,12 +111,14 @@ function noticeArticleOf(html: string, n: Notice): string {
   return articles[0]!;
 }
 
+/** A foot's markup with its quote lines taken out: what it carries beside them. */
+const besideQuoteLines = (foot: string): string => foot.replace(blocksIn(foot, "srcs"), "");
+
 /** Each link a notice's foot carries beside its quote lines: its address and its words. */
 function footLinksOf(article: string): { href: string; text: string }[] {
   const foot = blocksIn(article, "foot");
   if (!foot) throw new Error(`a notice drawn with no foot: ${article.slice(0, 120)}`);
-  const beside = foot.replace(blocksIn(foot, "srcs"), "");
-  return [...beside.matchAll(/<a\b[^>]*\bhref="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g)].map((m) => ({ href: m[1]!, text: m[2]! }));
+  return [...besideQuoteLines(foot).matchAll(/<a\b[^>]*\bhref="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g)].map((m) => ({ href: m[1]!, text: m[2]! }));
 }
 
 /** Every notice the notice readers are shown, each with the article it is drawn in. */
@@ -194,27 +196,19 @@ function shapeOf(html: string): "card" | "not-yet row" | "closed row" {
   throw new Error(`a route drawn in no shape this case knows: ${html.slice(0, 120)}`);
 }
 
-/** Where, in a route's markup, each link to its route's authority's route
- * page starts: a link to `info_url` in the copy module's words. */
-function authorityRoutePageLinksIn(html: string, infoUrl: string): number[] {
-  const words = `${esc(thisRouteOn(hostOf(infoUrl)))}`;
-  return [...html.matchAll(/<a\b[^>]*\bhref="([^"]*)"[^>]*>([^<]*)<\/a>/g)]
-    .filter((m) => m[1] === escAttr(infoUrl) && m[2] === words)
-    .map((m) => m.index);
-}
-
 /** Where a route's links to its authority's route page sit, said for a
  * failure: none, several, or one placed after the first quote line or before
  * the door (a card and a not-yet row) or the title (a closed row). Empty where
  * it carries exactly one, in its place. */
 function misplacedAuthorityLink(html: string, infoUrl: string): string[] {
-  const at = authorityRoutePageLinksIn(html, infoUrl);
-  if (at.length !== 1) return [`${at.length} links to ${infoUrl}`];
+  const links = authorityRoutePageLinksIn(html, infoUrl);
+  if (links.length !== 1) return [`${links.length} links to ${infoUrl}`];
+  const { at } = links[0]!;
   const firstQuote = html.indexOf('<div class="src');
   const after = shapeOf(html) === "closed row" ? html.indexOf("</h3>") : html.indexOf('class="door');
   const problems: string[] = [];
-  if (after < 0 || at[0]! < after) problems.push("before its door or title");
-  if (firstQuote >= 0 && at[0]! > firstQuote) problems.push("after its first quote line");
+  if (after < 0 || at < after) problems.push("before its door or title");
+  if (firstQuote >= 0 && at > firstQuote) problems.push("after its first quote line");
   return problems;
 }
 
@@ -242,8 +236,7 @@ describe(AUTHORITY, () => {
       for (const drawn of everyDrawnRouteIn(verdictFor(answers))) {
         const foot = blocksIn(drawn.html, "foot");
         if (foot) feet++;
-        const beside = foot.replace(blocksIn(foot, "srcs"), "");
-        if (beside.includes("<a ")) offenders.push(`${name}: ${drawn.route}`);
+        if (besideQuoteLines(foot).includes("<a ")) offenders.push(`${name}: ${drawn.route}`);
       }
     expect(feet, "precondition: the cards draw a foot").toBeGreaterThan(0);
     expect(offenders).toEqual([]);

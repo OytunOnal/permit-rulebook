@@ -10,11 +10,10 @@ import { esc } from "../src/lib/reason.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 // The frame round a quote lives with the quote, not with the page that shows
 // one: the results card puts the same words round the same sentence.
-import { hostOf, separatorNote } from "../src/lib/quote.js";
-import { thisRouteOn } from "../src/lib/copy/quotes.js";
-import { escAttr } from "../src/lib/reason.js";
+import { separatorNote } from "../src/lib/quote.js";
 import { textOf } from "./text-of.js";
 import { audienceNoticeOf } from "./audience-notice.js";
+import { authorityRoutePageLinksIn } from "./authority-route-page-links.js";
 import { PRIYA_EXPLORING_ALL } from "./personas.js";
 import { everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
 
@@ -196,13 +195,6 @@ describe(ONE_PAGE_PER_ROUTE, () => {
   });
 });
 
-/** Each link in `html` to `infoUrl` in the copy module's words for a link to
- * a route's authority's route page, as its markup. */
-const authorityRoutePageLinksIn = (html: string, infoUrl: string): string[] =>
-  [...html.matchAll(/<a\b[^>]*\bhref="([^"]*)"[^>]*>([^<]*)<\/a>/g)]
-    .filter((m) => m[1] === escAttr(infoUrl) && m[2] === esc(thisRouteOn(hostOf(infoUrl))))
-    .map((m) => m[0]);
-
 /** A link's markup without what is its route's own, its address and its
  * words: what every route's link shares. */
 const markupAround = (link: string): string => link.replace(/\bhref="[^"]*"/, 'href=""').replace(/>[^<]*</, "><");
@@ -214,7 +206,7 @@ describe("a route page links to its authority's route page in its header", () =>
   it("every route page carries, in its header under the summary, exactly one link to its route's authority's route page, as the result card draws it", () => {
     const onCards = everyDrawnRouteIn(verdictFor(PRIYA_EXPLORING_ALL)).flatMap((drawn) => {
       const route = ds.countries.flatMap((c) => c.routes).find((r) => r.id === drawn.route)!;
-      return authorityRoutePageLinksIn(drawn.html, route.info_url).map(markupAround);
+      return authorityRoutePageLinksIn(drawn.html, route.info_url).map((link) => markupAround(link.markup));
     });
     const cardMarkup = [...new Set(onCards)];
     expect(onCards.length, "precondition: the results screen draws the link").toBeGreaterThan(0);
@@ -229,8 +221,8 @@ describe("a route page links to its authority's route page in its header", () =>
       const onPage = authorityRoutePageLinksIn(html, route.info_url);
       const afterSummary = header.indexOf("</p>", header.indexOf('class="lede"'));
       if (inHeader.length !== 1 || onPage.length !== 1) offenders.push(`${path}: ${inHeader.length} in its header, ${onPage.length} on the page`);
-      else if (header.indexOf(inHeader[0]!) < afterSummary) offenders.push(`${path}: before the end of its summary`);
-      else if (markupAround(inHeader[0]!) !== cardMarkup[0]) offenders.push(`${path}: ${inHeader[0]} where the card draws ${cardMarkup[0]}`);
+      else if (inHeader[0]!.at < afterSummary) offenders.push(`${path}: before the end of its summary`);
+      else if (markupAround(inHeader[0]!.markup) !== cardMarkup[0]) offenders.push(`${path}: ${inHeader[0]!.markup} where the card draws ${cardMarkup[0]}`);
     });
     expect(offenders).toEqual([]);
   });
