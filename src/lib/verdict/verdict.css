@@ -7,11 +7,6 @@
 /* What the interview asks of a route, said on the card in the same words
    the route page uses — ink on card, no new colour and no verdict colour. */
 .scoped{font:var(--text-source);color:var(--color-muted);margin:.35rem 0 .1rem}
-/* The door under the scope line: a standalone internal link, so the two
-   signals the site already gives one — the underline and the prose-link
-   colour (.sub a) — together, on a line of its own, at the tap size (s27). */
-.scoped .door{display:flex;width:fit-content;align-items:center;min-height:var(--tap-min);color:var(--color-band);
-  text-decoration:underline;text-decoration-color:var(--color-line);text-underline-offset:.2em}
 /* Two answers that cannot both be true, said before the verdicts. */
 .clash{font-size:.9rem;color:var(--color-ink);background:var(--color-near-soft);border-left:3px solid var(--color-near);padding:.6rem .8rem;margin:0 0 .8rem}
 

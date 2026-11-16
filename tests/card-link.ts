@@ -1,41 +1,51 @@
 /**
- * A card's link out — its foot link, or a Learn link in its "find out
- * yourself" box — as it lays out on the running page: the read the reader-pages
- * walk runs in the page on every such link, and the two judgements made of it.
- * The ↗ after the label is the link's ::after, generated content no DOM read
- * reaches; the read measures it through an anchor laid on it.
+ * A card's link out — its foot link, its link to its route's authority's
+ * route page, or a Learn link in its "find out yourself" box — as it lays out
+ * on the running page: the read the reader-pages walk runs in the page on
+ * every such link, and the two judgements made of it. The ↗ after the label is
+ * the link's ::after, generated content no DOM read reaches; the read measures
+ * it through an anchor laid on it.
  */
 
 /** A card's link out as it lays out: its card's heading, its label, how many
- * lines its text takes, its box's width, its text's width, the width of a lone
- * ↗ in its font, whether the link held on one line fits the box it sits in,
- * and where its ↗ lays out from the end of its text's last line
- * (right of it, and down from that line's top), or null where its ↗ lays out
- * nowhere. */
+ * lines its text takes, its box's width, its text's width, the width of its
+ * ::after's ↗ laid out alone in its font (with the space the ::after puts
+ * before it, if any), whether the link held on one line fits the box it sits
+ * in, and where its ↗ lays out from the end of its text's last line (right of
+ * it, and down from that line's top), or null where its ↗ lays out nowhere. */
 export interface CardLink {
   card: string;
   label: string;
   lines: number;
   width: number;
   textWidth: number;
-  loneArrowWidth: number;
+  arrowWidth: number;
   fitsItsLine: boolean;
   arrowFromLastWord: { right: number; down: number } | null;
 }
 
 /** Reads, in the page, the width of a text set on one line in a link's font
- * and letter spacing, laid out apart from any link. */
-const DETACHED_WIDTH = `((link, text) => {
-  const style = getComputedStyle(link);
+ * and letter spacing, or in its ::after's where the third argument names that
+ * ("::after"), laid out apart from any link. Its spaces are kept as written:
+ * a space that opens it follows the link's words where it is drawn. */
+export const DETACHED_WIDTH = `((link, text, pseudo) => {
+  const style = getComputedStyle(link, pseudo ?? null);
   const probe = document.createElement("span");
   probe.textContent = text;
-  probe.style.cssText = "position:absolute;white-space:nowrap";
+  probe.style.cssText = "position:absolute;white-space:pre";
   probe.style.font = style.font;
   probe.style.letterSpacing = style.letterSpacing;
   document.body.append(probe);
   const width = probe.getBoundingClientRect().width;
   probe.remove();
   return width;
+})`;
+
+/** Reads, in the page, the text a link's ::after draws: its ↗, with whatever
+ * the stylesheet puts before it, or "" where it draws none. */
+const ARROW_TEXT = `((link) => {
+  const content = getComputedStyle(link, "::after").content;
+  return content.startsWith('"') ? JSON.parse(content) : "";
 })`;
 
 /** Reads, in the page, the width a link has to lay out in: the content width
@@ -52,7 +62,7 @@ const ROOM = `((link) => {
 /** Reads, in the page, the width a link lays out at on one line: the link
  * itself, its label and its ↗ as the stylesheet draws them, held on one line
  * for the read, then given its own style attribute back. */
-const ONE_LINE_WIDTH = `((link) => {
+export const ONE_LINE_WIDTH = `((link) => {
   const own = link.getAttribute("style");
   link.style.whiteSpace = "nowrap";
   const width = link.getBoundingClientRect().width;
@@ -99,7 +109,7 @@ export const CARD_LINK = `((link) => {
     lines: new Set(lines.map((r) => Math.round(r.top))).size,
     width: link.getBoundingClientRect().width,
     textWidth: text.getBoundingClientRect().width,
-    loneArrowWidth: ${DETACHED_WIDTH}(link, "\\u2197"),
+    arrowWidth: ${DETACHED_WIDTH}(link, ${ARROW_TEXT}(link)),
     fitsItsLine: ${ONE_LINE_WIDTH}(link) <= ${ROOM}(link) + ${LAYOUT_ROUNDING_PX},
     arrowFromLastWord: arrow && last ? { right: arrow.left - last.right, down: arrow.top - last.top } : null,
   };
@@ -110,7 +120,7 @@ export const CARD_LINK = `((link) => {
 export const isArrowOnLastWordLine = ({ arrowFromLastWord: arrow }: CardLink): boolean =>
   arrow !== null && Math.abs(arrow.right) < 1 && Math.abs(arrow.down) < 1;
 
-/** Whether a one-line link's box is its text's width and a lone ↗'s, with no
- * space between them, within half a pixel. */
+/** Whether a one-line link's box is its text's width and its ::after's ↗
+ * laid out alone, with nothing more between them, within half a pixel. */
 export const isAsWideAsTextAndArrow = (link: CardLink): boolean =>
-  Math.abs(link.width - (link.textWidth + link.loneArrowWidth)) < 0.5;
+  Math.abs(link.width - (link.textWidth + link.arrowWidth)) < 0.5;

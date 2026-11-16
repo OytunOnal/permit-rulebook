@@ -46,6 +46,7 @@ describe(ONE_PAGE_PER_ROUTE, () => {
     }
     expect(styleIn(pages[0]!.html)).toContain(".tap-min { display: inline-flex; align-items: center; min-height: var(--tap-min); }");
     expect(styleIn(pages[0]!.html)).toContain("a.tap { display: inline-block; padding: calc((var(--tap-min) - 1.6em) / 2) 0;");
+    expect(styleIn(pages[0]!.html)).toMatch(/\.route-link \{ display: block;[^}]* min-height: var\(--tap-min\);/);
     // The token itself, so a rule written against a hard-coded 44px fails.
     expect(styleIn(pages[0]!.html)).toContain("--tap-min: 44px;");
   });

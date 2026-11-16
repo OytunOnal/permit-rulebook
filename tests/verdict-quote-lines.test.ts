@@ -5,8 +5,9 @@ import {
   type Dataset, type Notice, type Profile,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "../src/lib/reason.js";
-import { linkLabelOf } from "../src/lib/quote.js";
+import { glossedLearnLinkText, linkLabelOf } from "../src/lib/quote.js";
 import { APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, perPeriod } from "../src/lib/copy/verdict.js";
+import { authorityRoutePageLinksIn } from "./authority-route-page-links.js";
 import { ALGERIAN, DUTCH_GRADUATE, PRIYA_EXPLORING_ALL } from "./personas.js";
 import { blocksIn, drawnRouteOn, everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
 
@@ -95,20 +96,47 @@ describe(LINKED, () => {
   });
 });
 
+/** The readers whose screens draw every notice between them: the open
+ * question an Algerian passport raises, on three authorities; the notice that
+ * answers a European passport outright; and the rights a Turkish passport
+ * adds (the Dutch graduate). */
+const NOTICE_READERS: Profile[] = [ALGERIAN, { ...ALGERIAN, citizenship: "eu_eea_ch" }, DUTCH_GRADUATE];
+
+/** The article a verdict draws a notice with, found by its kind; a kind drawn
+ * other than once on the screen fails the case. */
+function noticeArticleOf(html: string, n: Notice): string {
+  const articles = (html.match(/<article class="notice[\s\S]*?<\/article>/g) ?? [])
+    .filter((a) => a.startsWith(`<article class="notice ${escAttr(n.kind)}">`));
+  if (articles.length !== 1) throw new Error(`${n.id}: ${articles.length} notices of its kind on the screen`);
+  return articles[0]!;
+}
+
+/** A foot's markup with its quote lines taken out: what it carries beside them. */
+const besideQuoteLines = (foot: string): string => foot.replace(blocksIn(foot, "srcs"), "");
+
+/** Each link a notice's foot carries beside its quote lines: its address and its words. */
+function footLinksOf(article: string): { href: string; text: string }[] {
+  const foot = blocksIn(article, "foot");
+  if (!foot) throw new Error(`a notice drawn with no foot: ${article.slice(0, 120)}`);
+  return [...besideQuoteLines(foot).matchAll(/<a\b[^>]*\bhref="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g)].map((m) => ({ href: m[1]!, text: m[2]! }));
+}
+
+/** Every notice the notice readers are shown, each with the article it is drawn in. */
+const drawnNotices = (): { n: Notice; article: string }[] =>
+  NOTICE_READERS.flatMap((answers) => {
+    const html = verdictFor(answers).notices;
+    return notices(ds, answers).map((n) => ({ n, article: noticeArticleOf(html, n) }));
+  });
+
 describe(LINKED, () => {
   it("under a notice, every quote line carries a link to its own source", () => {
     const offenders: string[] = [];
     let lines = 0;
-    // The open question an Algerian passport raises, on three authorities, and
-    // the notice that answers a European passport outright.
-    for (const answers of [ALGERIAN, { ...ALGERIAN, citizenship: "eu_eea_ch" }]) {
-      const said: Notice[] = notices(ds, answers);
-      const quoted = said.flatMap((n) => noticeSources(n));
-      const html = verdictFor(answers).notices;
-      for (const article of html.match(/<article class="notice[\s\S]*?<\/article>/g) ?? []) {
-        lines += quoteLinesIn(article).length;
-        offenders.push(...linesWithoutTheirSource(article, quoted, `${answers.citizenship}: notice`));
-      }
+    const drawn = drawnNotices();
+    expect(new Set(drawn.map(({ n }) => n.id)).size, "precondition: the readers draw every notice").toBe(ds.notices!.length);
+    for (const { n, article } of drawn) {
+      lines += quoteLinesIn(article).length;
+      offenders.push(...linesWithoutTheirSource(article, noticeSources(n), `notice ${n.id}`));
     }
     expect(lines, "precondition: the notices print quotes").toBeGreaterThan(3);
     expect(offenders).toEqual([]);
@@ -123,6 +151,27 @@ describe(LINKED, () => {
   });
 });
 
+// The title these cases sit under: a notice's first quote line already links its leading source.
+const NOTICE_FOOT = "a notice's foot links only to the page it sends the reader to";
+
+describe(NOTICE_FOOT, () => {
+  it("a notice with no page of its own to send the reader to carries no foot link", () => {
+    const withoutPage = drawnNotices().filter(({ n }) => !n.learn);
+    expect(withoutPage.length, "precondition: the readers draw a notice with no page of its own").toBeGreaterThan(0);
+    const offenders = withoutPage.flatMap(({ n, article }) => footLinksOf(article).map((l) => `${n.id}: ${l.href}`));
+    expect(offenders).toEqual([]);
+  });
+
+  it("a notice with a page of its own keeps its one foot link to that page, in the page's own words", () => {
+    const withPage = drawnNotices().filter(({ n }) => n.learn);
+    expect(withPage.length, "precondition: the readers draw a notice with a page of its own").toBeGreaterThan(0);
+    for (const { n, article } of withPage)
+      expect(footLinksOf(article), n.id).toEqual([
+        { href: escAttr(n.learn!.url), text: esc(glossedLearnLinkText(n.learn!, new Set())) },
+      ]);
+  });
+});
+
 /** The line on the graduate's under-30 card that quotes this amount. */
 function graduateLineQuoting(amount: string): QuoteLine {
   const lines = quoteLinesIn(blocksIn(drawnRouteOn(verdictFor(DUTCH_GRADUATE), "nl-hsm-under30"), "srcs"));
@@ -131,16 +180,70 @@ function graduateLineQuoting(amount: string): QuoteLine {
   return line;
 }
 
-describe(KEPT, () => {
-  it("a card keeps its link to the permit's official page at its foot", () => {
-    for (const [name, answers] of CARD_READERS)
+/** The readers whose screens draw every route shape between them: not-yet
+ * rows (the card readers), full cards (the Dutch graduate), and a closed row
+ * (the Algerian moved to France by their group). */
+const SHAPE_READERS: [string, Profile][] = [
+  ...CARD_READERS, ["the Dutch graduate", DUTCH_GRADUATE], ["the transferred Algerian", TRANSFERRED_ALGERIAN],
+];
+
+/** The shape a route is drawn in, read off its markup's first tag. */
+function shapeOf(html: string): "card" | "not-yet row" | "closed row" {
+  const tag = /<(article|details) class="([^"]*)"/.exec(html);
+  if (tag?.[2] === "route") return "card";
+  if (tag?.[2] === "route-hold") return "not-yet row";
+  if (tag?.[2] === "closed") return "closed row";
+  throw new Error(`a route drawn in no shape this case knows: ${html.slice(0, 120)}`);
+}
+
+/** Where a route's links to its authority's route page sit, said for a
+ * failure: none, several, or one placed after the first quote line or before
+ * the door (a card and a not-yet row) or the title (a closed row). Empty where
+ * it carries exactly one, in its place. */
+function authorityLinkPlacementProblems(html: string, authorityRoutePageUrl: string): string[] {
+  const links = authorityRoutePageLinksIn(html, authorityRoutePageUrl);
+  if (links.length !== 1) return [`${links.length} links to ${authorityRoutePageUrl}`];
+  const { at } = links[0]!;
+  const firstQuote = html.indexOf('<div class="src');
+  const after = shapeOf(html) === "closed row" ? html.indexOf("</h3>") : html.indexOf('class="door');
+  const problems: string[] = [];
+  if (after < 0 || at < after) problems.push("before its door or title");
+  if (firstQuote >= 0 && at > firstQuote) problems.push("after its first quote line");
+  return problems;
+}
+
+// The title these cases sit under; each block below repeats it, so a block stays a short function.
+const AUTHORITY_LINK_STANDS_APART ="a route's link to its authority's route page stands apart from its quotes";
+
+describe(AUTHORITY_LINK_STANDS_APART,() => {
+  it("every full card, not-yet row and closed row carries one link to its authority's route page, in the copy's words, after its door or title and before its first quote line", () => {
+    const offenders: string[] = [];
+    const shapes = new Set<string>();
+    for (const [name, answers] of SHAPE_READERS)
       for (const drawn of everyDrawnRouteIn(verdictFor(answers))) {
         const route = ds.countries.flatMap((c) => c.routes).find((r) => r.id === drawn.route)!;
-        const foot = /<div class="foot">[\s\S]*<\/div>(\s*<a class="next" href="([^"]*)")/.exec(drawn.html);
-        expect(foot?.[2], `${name}: ${drawn.route}`).toBe(escAttr(route.info_url));
+        shapes.add(shapeOf(drawn.html));
+        offenders.push(...authorityLinkPlacementProblems(drawn.html, route.info_url).map((p) => `${name}: ${drawn.route}: ${p}`));
       }
+    expect([...shapes].sort(), "precondition: the readers draw every route shape").toEqual(["card", "closed row", "not-yet row"]);
+    expect(offenders).toEqual([]);
   });
 
+  it("no route card's foot carries a link beside its quote lines", () => {
+    const offenders: string[] = [];
+    let feet = 0;
+    for (const [name, answers] of SHAPE_READERS)
+      for (const drawn of everyDrawnRouteIn(verdictFor(answers))) {
+        const foot = blocksIn(drawn.html, "foot");
+        if (foot) feet++;
+        if (besideQuoteLines(foot).includes("<a ")) offenders.push(`${name}: ${drawn.route}`);
+      }
+    expect(feet, "precondition: the cards draw a foot").toBeGreaterThan(0);
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe(KEPT, () => {
   it("a card's amount keeps the period it is stated per", () => {
     expect(graduateLineQuoting("€ 3,122.00").html).toContain(` · ${perPeriod("month")}`);
   });

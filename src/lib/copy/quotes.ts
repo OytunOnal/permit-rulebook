@@ -15,6 +15,11 @@ import type { UnsourcedReasonWord } from "permit-rulebook-data";
  */
 export const OFFICIAL_PAGE = "Official page";
 export const consolidatedTextOn = (host: string): string => `Consolidated text on ${host}`;
+/**
+ * A link to a route's Authority's route page (GLOSSARY) names the site it
+ * opens, so it is not taken for one more quote's source (ruling 2 on #396).
+ */
+export const thisRouteOn = (host: string): string => `This route on ${host}`;
 /** A learn link's own label, followed by the kind of page it opens. */
 export const learnLinkWithKind = (label: string, kind: string): string => `${label} — ${kind}`;
 

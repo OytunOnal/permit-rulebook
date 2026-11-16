@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { countryPages } from "../src/lib/country-page.js";
@@ -9,6 +7,7 @@ import { feedbackPage } from "../src/lib/feedback-page.js";
 import { WIDE_FROM_PX } from "../src/lib/first-paint.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
+import { builtPages, builtSheetsOf } from "./built-sheets.js";
 import { frameAlone } from "./frame-alone.js";
 
 /**
@@ -19,9 +18,6 @@ import { frameAlone } from "./frame-alone.js";
  * (ruling 14 on #382): every width query a page carries turns at the first
  * paint's width, and no name is left for the browser to ignore.
  */
-
-const root = (p: string) => fileURLToPath(new URL(`../${p}`, import.meta.url));
-const read = (p: string) => readFileSync(root(p), "utf8");
 
 /**
  * The masthead's own breakpoints, `max-width: 959px` and `max-width: 480px` in
@@ -72,25 +68,6 @@ function breakpointOf(css: string): { namesLeft: string[]; sidesAtFirstPaint: st
       .filter((q) => q.turnsAt !== WIDE_FROM_PX && !MASTHEAD_TURNS.includes(q.turnsAt))
       .map((q) => `@media ${q.prelude}`),
   };
-}
-
-/** Every built page under `dist/`, by its path from the root. */
-function builtPages(dir = "dist", out: string[] = []): string[] {
-  for (const name of readdirSync(root(dir))) {
-    const path = `${dir}/${name}`;
-    if (statSync(root(path)).isDirectory()) builtPages(path, out);
-    else if (name.endsWith(".html")) out.push(path);
-  }
-  return out;
-}
-
-/** A built page's stylesheets as the browser receives them: the inline ones and the ones it links. */
-function builtSheetsOf(page: string): string {
-  const html = read(page);
-  const inline = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]!);
-  const linked = [...html.matchAll(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)]
-    .map((m) => read(`dist/${m[1]!.replace(/^.*\/_astro\//, "_astro/")}`));
-  return [...inline, ...linked].join("\n");
 }
 
 const ds = dataset as unknown as Dataset;

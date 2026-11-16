@@ -6,7 +6,7 @@ import {
   CONSOLIDATED_TEXT_HOSTS, deriveQuestions, isScored, routeStatements, scopeLine,
   type Dataset, type Profile, type Route,
 } from "permit-rulebook-data";
-import { OFFICIAL_PAGE, consolidatedTextOn } from "../src/lib/copy/quotes.js";
+import { OFFICIAL_PAGE, consolidatedTextOn, thisRouteOn } from "../src/lib/copy/quotes.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
@@ -106,17 +106,22 @@ describe("a notice that names no page of its own links its source by its kind", 
   });
 });
 
-describe("a card's foot links the route's page by its kind", () => {
-  it("on the row of a route the authority closes, where the route's page is a consolidated text", () => {
-    // The intra-corporate transfer, closed to an Algerian passport; its page
-    // moved, in this written result, to a consolidated-text host.
+describe("a card's link to its route's Authority's route page names the site it opens", () => {
+  it("on the row of a route the authority closes, where its Authority's route page is a consolidated text, and claims no official page", () => {
+    // The intra-corporate transfer, closed to an Algerian passport; its
+    // Authority's route page moved, in this written result, to a
+    // consolidated-text host. The link names that host, as every link to an
+    // Authority's route page does (#401, ruling 2), and never says "Official
+    // page".
     const answers: Profile = { destination: "fr", citizenship: "DZ", situation: "ict", situation_country: "fr" };
     const altered = structuredClone(ds);
-    altered.countries.flatMap((c) => c.routes).find((x) => x.id === "fr-ict")!.info_url =
-      `https://${CONSOLIDATED_TEXT_HOSTS[0]}/21_AufenthG.htm`;
+    const authorityRoutePageUrl = `https://${CONSOLIDATED_TEXT_HOSTS[0]}/21_AufenthG.htm`;
+    altered.countries.flatMap((c) => c.routes).find((x) => x.id === "fr-ict")!.info_url = authorityRoutePageUrl;
     const html = drawnRouteOn(verdictOn(altered, answers), "fr-ict");
     expect(html, "fr-ict is not closed to this reader").not.toBe("");
-    expect(checkedConsolidatedLinkCount(linksIn(html, "fr-ict"))).toBe(1);
+    const toItsPage = linksIn(html, "fr-ict").filter((l) => l.href === authorityRoutePageUrl);
+    expect(toItsPage.map((l) => l.text)).toEqual([thisRouteOn(consolidatedHostOf(authorityRoutePageUrl)!)]);
+    expect(toItsPage[0]!.text).not.toContain(OFFICIAL_PAGE);
   });
 });
 

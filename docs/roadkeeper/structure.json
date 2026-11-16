@@ -2051,6 +2051,11 @@
   },
   {
    "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
@@ -3030,6 +3035,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/authority-route-page-links.ts",
+   "to": "src/lib/copy/quotes.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/authority-route-page-links.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/authority-route-page-links.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/back-and-keep.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -3127,6 +3147,11 @@
   {
    "from": "tests/breakpoint-written-once.test.ts",
    "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "tests/built-sheets.ts",
    "kind": "dependency"
   },
   {
@@ -3620,6 +3645,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/door-label-centred.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/door-label-centred.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/door-label-centred.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/escaping.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
@@ -4026,6 +4066,11 @@
   },
   {
    "from": "tests/identity-written-once.test.ts",
+   "to": "tests/built-sheets.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-written-once.test.ts",
    "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
@@ -4305,6 +4350,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/printed-address.ts",
+   "to": "tests/card-link.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/printed-address.ts",
+   "to": "tests/screenshot-ink.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "tests/pull-request-check.test.ts",
    "to": "tests/workflow-text.ts",
    "kind": "dependency"
@@ -4411,7 +4466,17 @@
   },
   {
    "from": "tests/reader-pages.test.ts",
+   "to": "tests/printed-address.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.test.ts",
    "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.test.ts",
+   "to": "tests/screenshot-ink.ts",
    "kind": "dependency"
   },
   {
@@ -4477,6 +4542,26 @@
   {
    "from": "tests/record.test.ts",
    "to": "tests/wire.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-link-written-once.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-link-written-once.test.ts",
+   "to": "tests/built-sheets.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-link-written-once.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-link-written-once.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -4621,7 +4706,22 @@
   },
   {
    "from": "tests/route-page-provenance.test.ts",
+   "to": "tests/authority-route-page-links.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
    "to": "tests/text-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -5710,6 +5810,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/screenshot-ink.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
    "from": "tests/seed-finished-record.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
@@ -6032,6 +6137,11 @@
   {
    "from": "tests/verdict-quote-lines.test.ts",
    "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "tests/authority-route-page-links.ts",
    "kind": "dependency"
   },
   {
@@ -8698,6 +8808,11 @@
     "exported": true
    },
    {
+    "name": "thisRouteOn",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "learnLinkWithKind",
     "kind": "fn",
     "exported": true
@@ -9984,6 +10099,11 @@
     "exported": true
    },
    {
+    "name": "authorityRoutePageLinkHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "learnLinkTextOf",
     "kind": "fn",
     "exported": true
@@ -10794,5 +10914,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "3f4b5a58d00b06882df6c71aadaee0e95cfd8051f945b573e2ee187a827a0f71"
+ "digest": "0eab5e1912bbf39920418643e3e4a02271c205c0c1244d3519389259ef5ef3f1"
 }

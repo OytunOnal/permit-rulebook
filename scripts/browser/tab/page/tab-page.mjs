@@ -21,6 +21,7 @@ import { layoutShiftReadingExpression } from "../layout-shifts/layout-shift-read
  * @property {() => Promise<void>} waitUntilAtRest Returns once nothing animates, scrolls or loads.
  * @property {() => Promise<void>} waitUntilNewDocumentDrawn After a gesture that loads a document: once a document other than the one left has drawn.
  * @property {(features: { name: string, value: string }[]) => Promise<void>} emulateMedia Sets a media feature, such as reduced motion.
+ * @property {() => Promise<void>} emulatePrint Lays the page out as paper prints it.
  * @property {(x: number, y: number) => Promise<void>} clickAt A click at a point, returned once the page has reported its first input or another document stands.
  * @property {(selector: string) => Promise<void>} tapOn A real tap at the centre of the element, scrolled into view first, returned as `clickAt` is.
  * @property {() => Promise<void>} pressEnter Enter pressed and released, returned as `clickAt` is.
@@ -103,6 +104,15 @@ export class TabPage {
    */
   emulateMedia = async (features) => {
     await this.#sendToTab("Emulation.setEmulatedMedia", { features });
+  };
+
+  /**
+   * The print media type, as `@media print` reads it, for a read of what paper
+   * shows: the page is laid out and drawn as it prints, on the tab's screen.
+   * It replaces any media feature set before, and holds across navigations.
+   */
+  emulatePrint = async () => {
+    await this.#sendToTab("Emulation.setEmulatedMedia", { media: "print" });
   };
 
   clickAt = (x, y) => this.#gestures.clickAt(x, y);

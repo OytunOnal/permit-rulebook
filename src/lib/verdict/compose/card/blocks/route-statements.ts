@@ -146,8 +146,10 @@ export function carveOutHtml(screen: CardScreen, route: Route): string {
  */
 export function scopedHtml(route: Route, answers: Profile, href: string): string {
   // The scope line stands alone; the door is a line of its own under it, not
-  // a third item after a separator (s27, point 8).
-  return `<div class="scoped">${esc(scopeLine(route, { reader: "answered", profile: answers }))}<a class="door" href="${
+  // a third item after a separator (s27, point 8). Its look is a link about
+  // the route's, shared with the link to the authority's route page (#401,
+  // ruling 7).
+  return `<div class="scoped">${esc(scopeLine(route, { reader: "answered", profile: answers }))}<a class="door route-link" href="${
     escAttr(href)}">${esc(ROUTE_DOOR)}</a></div>`;
 }
 

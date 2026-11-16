@@ -166,14 +166,19 @@ export function questionCards(): QuestionCard[] {
 }
 
 /** A screen the module drew: its masthead and box, the heading of each Notice
- * on it, its foot links and its Learn links, and the harness's width failure
- * on opening it, or null. A screen that failed it holds nothing else. */
+ * on it, its foot links, its links to a route's authority's route page and its
+ * Learn links, and the harness's width failure on opening it, or null. A
+ * screen that failed it holds nothing else. */
 export interface DrawnScreen extends ReaderPage {
   noticeHeadings: string[];
   footLinks: CardLink[];
+  authorityLinks: CardLink[];
   learnLinks: CardLink[];
   failure: string | null;
 }
+
+/** What a drawn screen holds where the harness's width check failed on it. */
+const NOTHING_DRAWN = { html: "", noticeHeadings: [], footLinks: [], authorityLinks: [], learnLinks: [] };
 
 /** What the module drew, read from the running page: the masthead and the box
  * under it, each Notice's heading, and each card link's layout. The links are
@@ -183,8 +188,9 @@ const DRAWN = `(() => {
   const noticeHeadings = [...document.querySelectorAll("#main article.notice h3")].map((h) => h.textContent.trim());
   for (const folded of document.querySelectorAll("#main details:not([open])")) folded.open = true;
   const footLinks = [...document.querySelectorAll("#main .foot > a.next")].map(${CARD_LINK});
+  const authorityLinks = [...document.querySelectorAll("#main a.authority-route-page")].map(${CARD_LINK});
   const learnLinks = [...document.querySelectorAll("#main .learn a")].map(${CARD_LINK});
-  return JSON.stringify({ html, noticeHeadings, footLinks, learnLinks });
+  return JSON.stringify({ html, noticeHeadings, footLinks, authorityLinks, learnLinks });
 })()`;
 
 const seed = (walk: Walk) =>
@@ -198,7 +204,7 @@ async function screenDrawnAt(site: PageOnSite, path: string, record: Walk | null
   try {
     await openWithRecord(site, path, record);
   } catch (e) {
-    if (e instanceof WidthFailure) return { html: "", noticeHeadings: [], footLinks: [], learnLinks: [], failure: e.message };
+    if (e instanceof WidthFailure) return { ...NOTHING_DRAWN, failure: e.message };
     throw e;
   }
   return { ...(JSON.parse(await site.page.evaluate(DRAWN)) as Omit<DrawnScreen, "where" | "failure">), failure: null };
@@ -210,6 +216,22 @@ export async function openWithRecord({ page, url }: PageOnSite, path: string, re
   await page.goto(url("/404.html"));
   await page.evaluate(record ? seed(record) : "localStorage.clear()");
   await page.goto(url(path));
+}
+
+/** The first full card's link to its authority's route page. */
+export const CARD_AUTHORITY_LINK = "#main article.route a.authority-route-page";
+/** The first full card's door. */
+export const CARD_DOOR = "#main article.route .scoped .door";
+
+/** Opens the results of the first walk whose screen draws the part of a full
+ * card `cardPart` selects (CARD_AUTHORITY_LINK, CARD_DOOR), and hands back
+ * that walk. Throws where no walk's does. */
+export async function openOnAFullCard(site: PageOnSite, cardPart: string): Promise<Walk> {
+  for (const walk of walks()) {
+    await openWithRecord(site, "/", walk);
+    if (await site.page.evaluate(`Boolean(document.querySelector(${JSON.stringify(cardPart)}))`)) return walk;
+  }
+  throw new Error(`no walk's results draw a full card's ${cardPart}`);
 }
 
 /** Where the results at the end of `walk` were read, as a drawn screen names
@@ -292,6 +314,10 @@ export const footLinksOf = (screens: DrawnScreen[], notice?: Notice): CardLinkOn
   screens.flatMap((s) => s.footLinks
     .filter((link) => notice === undefined || isHeadingOf(notice, link.card))
     .map((link) => ({ ...link, where: s.where })));
+
+/** Every link to a route's authority's route page on `screens`, with the screen it is on. */
+export const authorityLinksOf = (screens: DrawnScreen[]): CardLinkOnScreen[] =>
+  screens.flatMap((s) => s.authorityLinks.map((link) => ({ ...link, where: s.where })));
 
 /** Every Learn link of `screens`, with the screen it is on. */
 export const learnLinksOf = (screens: DrawnScreen[]): CardLinkOnScreen[] =>

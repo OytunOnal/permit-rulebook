@@ -1,4 +1,26 @@
-/* The quote line's look, written once (#387, ruling 36 on #382): the frame inlines it into every page built as a string, after the blocks several pages draw, and the results screen imports it, as identity.css is shared. */
+/* The quote line's look, written once (#387, ruling 36 on #382): the frame inlines it into every page built as a string, after the blocks several pages draw, and the results screen imports it, as identity.css is shared. So is the look of a link about the route itself, beside the quote lines it stands apart from (#401, ruling 7). */
+/* A link about the route itself: a card's door to the route's page here, and
+   the link to its authority's route page. Blue where a quote's source link is
+   red, underlined, in the mono of the scope line it sits under, on a line of
+   its own at the tap size (s27). A block, so a label wider than the line
+   wraps with its ↗ after its last word, and a single word longer than the
+   line breaks rather than run past the screen. Its label sits in the middle
+   of the tap size by padding, as a.tap's does, a line height set to match:
+   centring a block's content otherwise needs align-content, which older
+   browsers ignore on a block, and a flex box would set the ↗ apart from the
+   last word. */
+.route-link { display: block; width: fit-content; min-height: var(--tap-min); font: var(--text-source); line-height: 1.6; padding: calc((var(--tap-min) - 1.6em) / 2) 0; color: var(--color-band); text-decoration: underline; text-decoration-color: var(--color-line); text-underline-offset: .2em; overflow-wrap: anywhere; }
+/* The authority's route page is another site: its ↗, held to the last word
+   by a no-break space, on screen only. On paper its address prints in the
+   ↗'s place, on a route page as on the results screen, whose own print rule
+   (interview.css) gives every link the same ::after; one ::after, so the
+   address prints once. */
+@media screen {
+  .authority-route-page::after { content: "\a0\2197"; }
+}
+@media print {
+  .authority-route-page::after { content: " (" attr(href) ")"; font-size: 8pt; word-break: break-all; }
+}
 /* Source line: the quote is the proof, so it is framed — language tagged, the
    separator difference explained once — and its link reaches 44 px. */
 .src { font: var(--text-source); color: var(--color-muted); border-top: var(--rule-dotted); padding-top: var(--space-2); margin-top: var(--space-3); display: flex; justify-content: space-between; gap: var(--space-3); align-items: flex-start; }
