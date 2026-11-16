@@ -213,9 +213,9 @@ function authorityLinkPlacementProblems(html: string, authorityRoutePageUrl: str
 }
 
 // The title these cases sit under; each block below repeats it, so a block stays a short function.
-const AUTHORITY = "a route's link to its authority's route page stands apart from its quotes";
+const AUTHORITY_LINK_STANDS_APART ="a route's link to its authority's route page stands apart from its quotes";
 
-describe(AUTHORITY, () => {
+describe(AUTHORITY_LINK_STANDS_APART,() => {
   it("every full card, not-yet row and closed row carries one link to its authority's route page, in the copy's words, after its door or title and before its first quote line", () => {
     const offenders: string[] = [];
     const shapes = new Set<string>();

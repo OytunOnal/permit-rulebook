@@ -22,7 +22,7 @@ const ds = dataset as unknown as Dataset;
 const ROUTE_LINK_CLASS = "route-link";
 
 /** The class the link to a route's authority's route page alone wears. */
-const AUTHORITY_LINK = "authority-route-page";
+const AUTHORITY_LINK_CLASS ="authority-route-page";
 
 /** Each rule a stylesheet writes on a selector naming `cls`: its declarations,
  * spaces taken out and in order, so a minified sheet, which may reorder them,
@@ -72,7 +72,7 @@ describe.skipIf(noBuild !== null)(WRITTEN_ONCE, () => {
 
   it("every built page, each route page among them, draws the link to an authority's route page only as the results page does, with no rule of its own for it", () => {
     const pages = everyBuiltPage();
-    const rulesOf = (page: string) => rulesNaming(withEscapesRead(builtSheetsOf(page)), AUTHORITY_LINK).join(" | ");
+    const rulesOf = (page: string) => rulesNaming(withEscapesRead(builtSheetsOf(page)), AUTHORITY_LINK_CLASS).join(" | ");
     const shared = rulesOf("dist/index.html");
     expect(shared, "precondition: the results page's sheet draws the link").not.toBe("");
     const offenders = pages.filter((page) => rulesOf(page) !== shared);
