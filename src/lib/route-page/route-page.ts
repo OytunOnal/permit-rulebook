@@ -34,6 +34,7 @@ import {
   countryCheckPath, countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress,
 } from "../slug.js";
 import { audienceSentence, gist } from "../route-lines.js";
+import { authorityRoutePageLinkHtml } from "../quote.js";
 import { noticeSection } from "./blocks/notices.js";
 import { answerBlock } from "./blocks/route-figure.js";
 import { ruleCard, type RulePage } from "./blocks/rule-card.js";
@@ -158,7 +159,9 @@ export function routePages(dataset: Dataset, state: WatchState = watchState): Ro
   return routeAddresses(dataset).map((a) => routePage(dataset, a, state));
 }
 
-/** The masthead: the route's name, the tagline, the lede and the read stamp. */
+/** The masthead: the route's name, the tagline, the lede, the link to the
+ * route's authority's route page as the result card draws it (#401, ruling 5)
+ * and the read stamp. */
 function mastheadHtml(page: RulePage, read: string): string {
   const { country, route, seen } = page;
   const heading = glossSection(route.name, seen);
@@ -175,6 +178,7 @@ function mastheadHtml(page: RulePage, read: string): string {
       <p class="tagline">${esc(ROUTE_TAGLINE)}</p>
       <p class="lede">${route.summary ? `${esc(glossed(route.summary, seen))} ` : ""}${esc(scored ? EVERY_NUMBER_SOURCED : EVERY_CONDITION_SOURCED)} ${
     esc(audienceSentence(country))} ${esc(scored ? ROUTE_PAGE_ADDENDUM : ROUTE_PAGE_UNSCORED_ADDENDUM)}</p>
+      ${authorityRoutePageLinkHtml(route)}
     </div>
     ${rulesRead(read)}
   </header>`;

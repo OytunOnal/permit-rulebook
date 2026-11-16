@@ -2051,6 +2051,11 @@
   },
   {
    "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
@@ -4416,6 +4421,11 @@
   },
   {
    "from": "tests/reader-pages.test.ts",
+   "to": "tests/screenshot-ink.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.test.ts",
    "to": "tests/widened-screen.ts",
    "kind": "dependency"
   },
@@ -4477,6 +4487,21 @@
   {
    "from": "tests/record.test.ts",
    "to": "tests/wire.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-link-written-once.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-link-written-once.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-link-written-once.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -4621,7 +4646,17 @@
   },
   {
    "from": "tests/route-page-provenance.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
    "to": "tests/text-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -5710,6 +5745,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/screenshot-ink.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
    "from": "tests/seed-finished-record.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
@@ -6017,6 +6057,11 @@
   {
    "from": "tests/verdict-module.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
   },
   {
@@ -8698,6 +8743,11 @@
     "exported": true
    },
    {
+    "name": "thisRouteOn",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "learnLinkWithKind",
     "kind": "fn",
     "exported": true
@@ -9984,6 +10034,11 @@
     "exported": true
    },
    {
+    "name": "authorityRoutePageLinkHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "learnLinkTextOf",
     "kind": "fn",
     "exported": true
@@ -10794,5 +10849,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "3f4b5a58d00b06882df6c71aadaee0e95cfd8051f945b573e2ee187a827a0f71"
+ "digest": "7c3390f224ea752797d45afdd6d469dab11c9fe218cf8c417ce497541a3555f2"
 }
