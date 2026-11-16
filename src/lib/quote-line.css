@@ -4,8 +4,12 @@
    red, underlined, in the mono of the scope line it sits under, on a line of
    its own at the tap size (s27). A block, so a label wider than the line
    wraps with its ↗ after its last word, and a single word longer than the
-   line breaks rather than run past the screen. */
-.route-link { display: block; width: fit-content; align-content: center; min-height: var(--tap-min); font: var(--text-source); color: var(--color-band); text-decoration: underline; text-decoration-color: var(--color-line); text-underline-offset: .2em; overflow-wrap: anywhere; }
+   line breaks rather than run past the screen. Its label sits in the middle
+   of the tap size by padding, as a.tap's does, a line height set to match:
+   centring a block's content otherwise needs align-content, which older
+   browsers ignore on a block, and a flex box would set the ↗ apart from the
+   last word. */
+.route-link { display: block; width: fit-content; min-height: var(--tap-min); font: var(--text-source); line-height: 1.6; padding: calc((var(--tap-min) - 1.6em) / 2) 0; color: var(--color-band); text-decoration: underline; text-decoration-color: var(--color-line); text-underline-offset: .2em; overflow-wrap: anywhere; }
 /* The authority's route page is another site: its ↗, held to the last word
    by a no-break space, on screen only, so paper prints the address instead. */
 @media screen {
