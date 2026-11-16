@@ -13,5 +13,12 @@
   "runTests": ["npx", "vitest", "run", "--reporter=junit", "--outputFile={out}", "{files}"],
   "beforeTests": [["npx", "astro", "build"]],
   "lintFile": ["npx", "eslint", "--format", "json", "{file}"],
-  "readByNothing": ["GLOSSARY.md", "CODING_STANDARDS.md", "CLAUDE.md", "docs/**"]
+  "readByNothing": ["GLOSSARY.md", "CODING_STANDARDS.md", "CLAUDE.md", "docs/**"],
+  "docTests": [
+    "tests/asked-for.test.ts",
+    "tests/beat.test.ts",
+    "tests/name-sweep.test.ts",
+    "tests/s13.test.ts",
+    "tests/s24.test.ts"
+  ]
 }
