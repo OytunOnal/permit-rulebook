@@ -272,7 +272,7 @@ describe("s19 — the quoted route, the counts and the data page follow", () => 
     // 0.8.4 is #313's, a path's words (`subject`) and a precondition's path;
     // 0.8.5 is ruling 28's on #310, an answer a reader can reach by acting
     // (`is_attainable`); 0.8.6 is #408's, a Passport-only statement
-    // (`onlyFor`).
+    // (`bindsOnly`).
     const text = textOf(dataPage(ds).html);
     expect(text).toContain("0.8.6");
     expect(text).toContain("2026-09-16");
