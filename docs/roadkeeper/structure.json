@@ -4335,6 +4335,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/printed-address.ts",
+   "to": "tests/card-link.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/printed-address.ts",
+   "to": "tests/screenshot-ink.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "tests/pull-request-check.test.ts",
    "to": "tests/workflow-text.ts",
    "kind": "dependency"
@@ -4437,6 +4447,11 @@
   {
    "from": "tests/reader-pages.test.ts",
    "to": "tests/card-link.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.test.ts",
+   "to": "tests/printed-address.ts",
    "kind": "dependency"
   },
   {
@@ -10884,5 +10899,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "9c677be993bdf7bb296b576a3499d801c858817eddbbc877dc071e2b9937485d"
+ "digest": "0eab5e1912bbf39920418643e3e4a02271c205c0c1244d3519389259ef5ef3f1"
 }

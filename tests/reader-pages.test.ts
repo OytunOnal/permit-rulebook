@@ -12,7 +12,8 @@ import {
   learnLinksOf, noticePassports, noticesDrawnOnNone, openWithRecord, questionCards, resultsWhere, sentencesOf, unknowingWalks,
   walks, type CardLinkOnScreen, type ReaderPage,
 } from "./reader-pages.js";
-import { distanceBetween, inksOnGroundAt, type InkOnGround } from "./screenshot-ink.js";
+import { printedLinkScript, type PrintedLink } from "./printed-address.js";
+import { distanceBetween, inksOnGroundAt, inksOnGroundIn, type InkOnGround } from "./screenshot-ink.js";
 import { widenedFailuresOf, widenedScreens } from "./widened-screen.js";
 
 /**
@@ -255,6 +256,29 @@ function expectInTheDoorsInk(seen: SchemeRead[], where: string): void {
   }
 }
 
+/** What paper shows of a link to an authority's route page: where it was
+ * read, whether the page was laid out for print, the link as
+ * printedLinkScript reads it, and the ink where its address starts. */
+interface PaperRead {
+  where: string;
+  isPrint: boolean;
+  link: PrintedLink;
+  addressStart: InkOnGround;
+}
+
+/** The link `selector` finds, scrolled to the middle of the screen and read
+ * as paper prints it, the page already laid out for print. Throws, naming
+ * `where`, when the page draws none. */
+async function onPaper(site: PageOnSite, selector: string, where: string): Promise<PaperRead> {
+  const isPrint = Boolean(await site.page.evaluate('matchMedia("print").matches'));
+  await site.page.evaluate(`document.querySelector(${JSON.stringify(selector)})?.scrollIntoView({ block: "center" })`);
+  await site.page.waitUntilAtRest();
+  const link = JSON.parse(await site.page.evaluate(printedLinkScript(selector))) as PrintedLink | null;
+  if (!link) throw new Error(`${where} draws no link to its authority's route page`);
+  const [addressStart] = await inksOnGroundIn(site.page, [link.addressStart]);
+  return { where, isPrint, link, addressStart: addressStart! };
+}
+
 const notWalked = skipReason();
 if (notWalked) warnNotWalked("the results and the arrival line", notWalked);
 
@@ -297,6 +321,29 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
       return isDrawn ? inkOnScreenOf(site, PAGE_AUTHORITY_LINK) : null;
     });
     expectInTheDoorsInk(seen, routePage);
+  }, 600000);
+});
+
+describe.skipIf(notWalked !== null)("every screen the module draws", () => {
+  it("prints a link to an authority's route page with its address after its words, once, on a full result card and on a route page", async () => {
+    const routePage = routeAddresses(ds)[0]!.path;
+    const read = await withSite(async (site) => {
+      await site.page.emulatePrint();
+      await openOnAFullCard(site);
+      const onCard = await onPaper(site, CARD_AUTHORITY_LINK, "the full card");
+      await openWithRecord(site, routePage, null);
+      return [onCard, await onPaper(site, PAGE_AUTHORITY_LINK, routePage)];
+    }, DESK);
+    expect(read.map((r) => r.where)).toEqual(["the full card", routePage]);
+    for (const { where, isPrint, link, addressStart } of read) {
+      expect(isPrint, `precondition, ${where}: laid out for print`).toBe(true);
+      expect(link.addressWidth, `precondition, ${where}: its address is measured`).toBeGreaterThan(0);
+      expect(Math.abs(link.widthPastWords - link.addressWidth),
+        `${where}: ${link.widthPastWords.toFixed(2)} px past its words, where its address once takes ${link.addressWidth.toFixed(2)} px`)
+        .toBeLessThan(0.5);
+      expect(distanceBetween(addressStart.ink, addressStart.ground), `${where}: nothing is drawn where its address starts`)
+        .toBeGreaterThan(100);
+    }
   }, 600000);
 });
 

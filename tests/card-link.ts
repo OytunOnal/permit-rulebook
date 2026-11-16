@@ -25,12 +25,14 @@ export interface CardLink {
 }
 
 /** Reads, in the page, the width of a text set on one line in a link's font
- * and letter spacing, laid out apart from any link. */
-const DETACHED_WIDTH = `((link, text) => {
-  const style = getComputedStyle(link);
+ * and letter spacing, or in its ::after's where the third argument names that
+ * ("::after"), laid out apart from any link. Its spaces are kept as written:
+ * a space that opens it follows the link's words where it is drawn. */
+export const DETACHED_WIDTH = `((link, text, pseudo) => {
+  const style = getComputedStyle(link, pseudo ?? null);
   const probe = document.createElement("span");
   probe.textContent = text;
-  probe.style.cssText = "position:absolute;white-space:nowrap";
+  probe.style.cssText = "position:absolute;white-space:pre";
   probe.style.font = style.font;
   probe.style.letterSpacing = style.letterSpacing;
   document.body.append(probe);
@@ -60,7 +62,7 @@ const ROOM = `((link) => {
 /** Reads, in the page, the width a link lays out at on one line: the link
  * itself, its label and its ↗ as the stylesheet draws them, held on one line
  * for the read, then given its own style attribute back. */
-const ONE_LINE_WIDTH = `((link) => {
+export const ONE_LINE_WIDTH = `((link) => {
   const own = link.getAttribute("style");
   link.style.whiteSpace = "nowrap";
   const width = link.getBoundingClientRect().width;

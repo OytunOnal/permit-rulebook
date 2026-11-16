@@ -11,9 +11,15 @@
    last word. */
 .route-link { display: block; width: fit-content; min-height: var(--tap-min); font: var(--text-source); line-height: 1.6; padding: calc((var(--tap-min) - 1.6em) / 2) 0; color: var(--color-band); text-decoration: underline; text-decoration-color: var(--color-line); text-underline-offset: .2em; overflow-wrap: anywhere; }
 /* The authority's route page is another site: its ↗, held to the last word
-   by a no-break space, on screen only, so paper prints the address instead. */
+   by a no-break space, on screen only. On paper its address prints in the
+   ↗'s place, on a route page as on the results screen, whose own print rule
+   (interview.css) gives every link the same ::after; one ::after, so the
+   address prints once. */
 @media screen {
   .authority-route-page::after { content: "\a0\2197"; }
+}
+@media print {
+  .authority-route-page::after { content: " (" attr(href) ")"; font-size: 8pt; word-break: break-all; }
 }
 /* Source line: the quote is the proof, so it is framed — language tagged, the
    separator difference explained once — and its link reaches 44 px. */
