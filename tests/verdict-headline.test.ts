@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { fieldOptions, type Criterion, type Dataset, type Profile, type Route } from "permit-rulebook-data";
+import { fieldOptions, phraseOf, type Criterion, type Dataset, type Profile, type Route } from "permit-rulebook-data";
 import { shortByUpToLine, unsettledHeadline } from "../src/lib/copy/verdict.js";
-import { ALGERIAN, PERSONA_A, PERSONA_C } from "./personas.js";
+import type { Verdict } from "../src/lib/verdict/verdict.js";
+import { DUTCH_OFFER_ON_FOUR } from "../scripts/seeded-results.mjs";
+import { ALGERIAN, PERSONA_A, PERSONA_C, PRIYA } from "./personas.js";
+import { plainTextOf } from "./reader-pages.js";
 import { groupsIn, layoutPinOf, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
@@ -77,6 +80,35 @@ describe("the headline names the nearest route short on a figure", () => {
     // the experienced-worker route both asking €50,700, so equally short.
     const data = datasetWithRewrittenCriteria({ "de-blue-card-shortage": yearlySalaryAt(60_000), "de-experienced-worker": yearlySalaryAt(50_700) });
     expect(headlineRouteOf(QUALIFIED_NIGERIAN, data)).toBe("de-blue-card-general");
+  });
+});
+
+/** The headline's stressed note on the nearest route within reach, as the reader reads it. */
+function stressedNoteOf(verdict: Verdict): string {
+  const stressed = /<b>([\s\S]*)<\/b>/.exec(verdict.action.masthead.headline);
+  if (!stressed) throw new Error("the headline stresses no note");
+  return plainTextOf(stressed[1]!);
+}
+
+// Ruling 2 on #362: still ranked across every country on screen; on the
+// four-country result the note says which country that route is in.
+describe("the headline's nearest gap says its country on the four-country result", () => {
+  it("Priya on all four: the Dutch Blue Card's gap in the Netherlands, then the German Blue Card's in Germany", () => {
+    const data = datasetWithRewrittenCriteria({ "de-blue-card-general": offerAnywhere });
+    expect(stressedNoteOf(verdictOn(data, { ...PRIYA_EVERYWHERE, salary_eur_year: "band_1" })))
+      .toBe(shortByUpToLine("€1,585/month", phraseOf("NL")));
+    expect(stressedNoteOf(verdictOn(data, { ...PRIYA_EVERYWHERE, salary_eur_year: "band_3" })))
+      .toBe(shortByUpToLine("€9,343.64/year", phraseOf("DE")));
+  });
+
+  it("the critique's reader with a job offer in the Netherlands: the note names the nearest route's country", () => {
+    expect(headlineRouteOf(DUTCH_OFFER_ON_FOUR)).toBe("nl-hsm-30plus");
+    expect(stressedNoteOf(verdictFor(DUTCH_OFFER_ON_FOUR))).toBe(shortByUpToLine("€1,188/month", phraseOf("NL")));
+  });
+
+  it("a one-country result names no country", () => {
+    expect(stressedNoteOf(verdictFor(PRIYA))).toBe(shortByUpToLine("€1,585/month"));
+    expect(stressedNoteOf(verdictFor(ALGERIAN))).toBe(shortByUpToLine("€8,673/year"));
   });
 });
 

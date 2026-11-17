@@ -1,10 +1,11 @@
 // @level presentation
 import { SITUATION_FIELD, findJobOfferAnswer, phraseOf, subjectOf, type Dataset } from "permit-rulebook-data";
 import {
-  CLOSED_HEADING, NOT_YET_HEADING, OPEN_HEADING, SEEK_HINT, SHORT_ON_A_FIGURE_HEADING, STEPS_HEADING, STEPS_HEADING_TAIL,
-  STEPS_HERE_HEADING, SUMMARY_LABEL, UNSETTLED_HEADING, UNSETTLED_SECTION_LINE, arrangedLine,
-  moreWithDifferentSituationCount, moreWithJobOfferCount, notOpenToPassportCount, notYetCount, notYetWithUnknowns,
-  openCount, resultFeedbackLine, shortOnAFigureCount, unlockingSteps, unsettledCount, writeJobOfferLine,
+  CHOICE_LINE, CLOSED_HEADING, NOT_YET_HEADING, OPEN_HEADING, SEEK_HINT, SHORT_ON_A_FIGURE_HEADING, STEPS_HEADING,
+  STEPS_HEADING_TAIL, STEPS_HERE_HEADING, SUMMARY_LABEL, UNSETTLED_HEADING, UNSETTLED_SECTION_LINE,
+  arrangedLine, moreWithDifferentSituationCount, moreWithJobOfferCount, notOpenToPassportCount, notYetCount,
+  notYetWithUnknowns, openCount, resultFeedbackLine, shortOnAFigureCount, unlockingSteps, unsettledCount,
+  writeJobOfferLine,
 } from "../../copy/verdict.js";
 import { FEEDBACK } from "../../copy/frame.js";
 import { countryOf } from "../../countries.js";
@@ -14,10 +15,11 @@ import type { NotScoredMark } from "../../situations.js";
 import { phraseOfAnswer, phraseOfAnswerRef } from "./answer-phrase.js";
 import { drawnRoutesHtml, drawnStepCard, type DrawnCards } from "./drawn-cards.js";
 import { notYetItemsHtml } from "./not-yet.js";
+import { stepsAnchorOf } from "./steps-line.js";
 import type { VerdictScreen } from "./types.js";
 import { unscoredTally } from "./unscored.js";
 import type {
-  ArrangedLine, CountrySection, JobOfferLine, Strip, Tally, VerdictGroup, VerdictLayout,
+  ArrangedLine, ComparedLayout, CountrySection, JobOfferLine, Strip, Tally, VerdictGroup, VerdictLayout,
 } from "../reckon/reckon-verdict.js";
 
 /** What the body is drawn from: the screen it words things on, and the cards
@@ -72,16 +74,30 @@ function arrangedLineHtml(ds: Dataset, line: ArrangedLine): string {
 /** The job-search sentence under the steps, where the layout stands it (s23, F1a). */
 const SEEK_HINT_HTML = `<p class="unlock-hint">${esc(SEEK_HINT)}</p>`;
 
-/** One group's markup; `stepsHeading` is the steps group's heading, which
- * the layout words. */
-function groupHtml(drawing: BodyDrawing, group: VerdictGroup, stepsHeading: string): string {
+/** What one section's groups are drawn with besides their own: the steps
+ * group's heading, which the layout words, and whether the Choice line stands
+ * above its open cards. */
+interface SectionAdditions {
+  stepsHeading: string;
+  drawsChoiceLine: boolean;
+}
+
+/** The Choice line: the open group's first line on a one-country result, and
+ * once above the country sections on the four-country result (ruling 8 on
+ * #362, ruling 26 on #420). */
+const CHOICE_LINE_HTML = `<p class="choice-line">${esc(CHOICE_LINE)}</p>`;
+
+/** One group's markup. */
+function groupHtml(drawing: BodyDrawing, group: VerdictGroup, additions: SectionAdditions): string {
   const { screen, cards } = drawing;
   switch (group.kind) {
     case "steps": {
       const line = group.jobOfferLine ? jobOfferLineHtml(screen.ds, group.jobOfferLine) : "";
       const steps = group.steps.map((s) => drawnStepCard(cards, s.id).html).join("");
-      return stepsHeading + line + steps + (group.hint ? SEEK_HINT_HTML : "");
+      return additions.stepsHeading + line + steps + (group.hint ? SEEK_HINT_HTML : "");
     }
+    case "open":
+      return headedGroupHtml(HEAD.open, (additions.drawsChoiceLine ? CHOICE_LINE_HTML : "") + drawnRoutesHtml(cards, group.routes), group.routes.length);
     case "arranged":
       return arrangedLineHtml(screen.ds, group);
     case "not-yet":
@@ -94,8 +110,8 @@ function groupHtml(drawing: BodyDrawing, group: VerdictGroup, stepsHeading: stri
   }
 }
 
-const groupsHtml = (drawing: BodyDrawing, groups: VerdictGroup[], stepsHeading: string): string =>
-  groups.map((g) => groupHtml(drawing, g, stepsHeading)).join("");
+const groupsHtml = (drawing: BodyDrawing, groups: VerdictGroup[], additions: SectionAdditions): string =>
+  groups.map((g) => groupHtml(drawing, g, additions)).join("");
 
 function stripHtml(s: Strip): string {
   const hold = s.openUnknowns ? notYetWithUnknowns(s.notYet, s.openUnknowns) : notYetCount(s.notYet);
@@ -139,18 +155,31 @@ function tallyHtml(screen: VerdictScreen, section: CountrySection): string {
   ].filter(Boolean).join(" · ");
 }
 
-const STEPS_HERE = `<h2 class="ghead unlockh"><b>${esc(STEPS_HERE_HEADING)}</b></h2>`;
+/** A country's steps heading, its words markup already escaped, carrying the
+ * id the Steps line links to. */
+const stepsHeadingHtml = (country: string, words: string): string =>
+  `<h2 class="ghead unlockh" id="${escAttr(stepsAnchorOf(country))}">${words}</h2>`;
 
 function countrySectionHtml(drawing: BodyDrawing, section: CountrySection): string {
   const said = section.tally.mark !== null;
   const name = countryOf(drawing.screen.ds, section.country).name;
+  // A section's open group never carries the Choice line: on this result it
+  // stands once, above the sections.
+  const additions: SectionAdditions = {
+    stepsHeading: stepsHeadingHtml(section.country, `<b>${esc(STEPS_HERE_HEADING)}</b>`), drawsChoiceLine: false,
+  };
   return `<details class="country-sec"${section.open ? " open" : ""}>
             <summary${said ? ` class="said"` : ""}><span class="cname">${esc(name)}</span> <span class="tally${said ? " said" : ""}">${tallyHtml(drawing.screen, section)}</span></summary>
-            <div class="cbody">${groupsHtml(drawing, section.groups, STEPS_HERE)}</div>
+            <div class="cbody">${groupsHtml(drawing, section.groups, additions)}</div>
           </details>`;
 }
 
-const STEPS_FLAT = `<h2 class="ghead unlockh"><b>${esc(STEPS_HEADING)}</b> — ${esc(STEPS_HEADING_TAIL)}</h2>`;
+/** The one-country layout's groups, its steps heading with the tail the flat
+ * layout adds. */
+const flatAdditionsOf = (layout: ComparedLayout & { kind: "one-country" }): SectionAdditions => ({
+  stepsHeading: stepsHeadingHtml(layout.country, `<b>${esc(STEPS_HEADING)}</b> — ${esc(STEPS_HEADING_TAIL)}`),
+  drawsChoiceLine: layout.drawsChoiceLine,
+});
 
 /**
  * The offer, at the end of the body: after the last section and before the
@@ -164,16 +193,17 @@ const feedbackLineHtml = (): string =>
   `<p class="say">${resultFeedbackLine(`<a href="${escAttr(url(FEEDBACK_PATH))}">${esc(FEEDBACK)}</a>`)}</p>`;
 
 /** The body under the notices, drawn from the layout and the cards drawn for
- * it: the strip, the flat groups or a section per country, and the offer;
- * nothing on the notice screen. */
+ * it: the strip, the flat groups or the Choice line where drawn and a section
+ * per country, and the offer; nothing on the notice screen. */
 export function bodyHtml(screen: VerdictScreen, layout: VerdictLayout, cards: DrawnCards): string {
   const drawing: BodyDrawing = { screen, cards };
   switch (layout.kind) {
     case "notice":
       return "";
     case "one-country":
-      return stripHtml(layout.strip) + groupsHtml(drawing, layout.groups, STEPS_FLAT) + feedbackLineHtml();
+      return stripHtml(layout.strip) + groupsHtml(drawing, layout.groups, flatAdditionsOf(layout)) + feedbackLineHtml();
     case "countries":
-      return stripHtml(layout.strip) + layout.sections.map((s) => countrySectionHtml(drawing, s)).join("") + feedbackLineHtml();
+      return stripHtml(layout.strip) + (layout.drawsChoiceLine ? CHOICE_LINE_HTML : "")
+        + layout.sections.map((s) => countrySectionHtml(drawing, s)).join("") + feedbackLineHtml();
   }
 }

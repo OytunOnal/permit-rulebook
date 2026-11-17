@@ -44,6 +44,13 @@ export interface VerdictMasthead extends Masthead {
    * reads.
    */
   sublineHtml?: string;
+  /**
+   * The Steps line's markup, composed from escaped parts, which the page
+   * draws under the masthead's rule, before the reader's declarations and
+   * the notices, so it is on the first screen (ruling 24 on #420); absent
+   * where the verdict draws none.
+   */
+  stepsLineHtml?: string;
   /** The sentence the live region announces: the headline's words, without
    * its markup. */
   announced: string;

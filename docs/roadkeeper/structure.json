@@ -197,6 +197,7 @@
     "src/lib/verdict/compose/masthead.ts",
     "src/lib/verdict/compose/not-yet.ts",
     "src/lib/verdict/compose/printed-shortfall.ts",
+    "src/lib/verdict/compose/steps-line.ts",
     "src/lib/verdict/compose/types.ts",
     "src/lib/verdict/compose/unscored.ts",
     "src/lib/verdict/verdict.css",
@@ -304,7 +305,9 @@
   "scripts/measure-taps.mjs": "infrastructure",
   "scripts/print-report.mjs": "presentation",
   "scripts/render-assets.mjs": "infrastructure",
+  "scripts/required-controls.mjs": "domain",
   "scripts/run-git.mjs": "infrastructure",
+  "scripts/seeded-results.mjs": "domain",
   "scripts/shot.mjs": "infrastructure",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure",
@@ -397,6 +400,7 @@
   "src/lib/verdict/compose/masthead.ts": "presentation",
   "src/lib/verdict/compose/not-yet.ts": "presentation",
   "src/lib/verdict/compose/printed-shortfall.ts": "presentation",
+  "src/lib/verdict/compose/steps-line.ts": "presentation",
   "src/lib/verdict/compose/types.ts": "presentation",
   "src/lib/verdict/compose/unscored.ts": "presentation",
   "src/lib/verdict/reckon/layout/figure-gaps.ts": "application",
@@ -695,6 +699,11 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/cli-measure-taps.mjs",
+   "to": "scripts/required-controls.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/cli-render-assets.mjs",
    "to": "scripts/find-option-value.mjs",
    "kind": "dependency"
@@ -857,6 +866,16 @@
   {
    "from": "scripts/measure-taps.mjs",
    "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/measure-taps.mjs",
+   "to": "scripts/required-controls.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/measure-taps.mjs",
+   "to": "scripts/seeded-results.mjs",
    "kind": "dependency"
   },
   {
@@ -2441,6 +2460,11 @@
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/verdict/compose/steps-line.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
    "to": "src/lib/verdict/compose/types.ts",
    "kind": "type-only"
   },
@@ -2521,6 +2545,21 @@
   },
   {
    "from": "src/lib/verdict/compose/printed-shortfall.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps-line.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps-line.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps-line.ts",
    "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
@@ -2777,6 +2816,11 @@
   {
    "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/masthead.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/verdict.ts",
+   "to": "src/lib/verdict/compose/steps-line.ts",
    "kind": "dependency"
   },
   {
@@ -3681,6 +3725,11 @@
   },
   {
    "from": "tests/escaping.test.ts",
+   "to": "scripts/seeded-results.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/escaping.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
@@ -4167,6 +4216,41 @@
   {
    "from": "tests/money-rows.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/more-quotes-page.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/more-quotes-page.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/more-quotes-page.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/more-quotes-page.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/more-quotes-page.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/more-quotes-page.test.ts",
+   "to": "tests/route-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/more-quotes-page.test.ts",
+   "to": "tests/screenshot-ink.ts",
    "kind": "dependency"
   },
   {
@@ -6146,12 +6230,27 @@
   },
   {
    "from": "tests/verdict-headline.test.ts",
+   "to": "scripts/seeded-results.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-headline.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/verdict-headline.test.ts",
+   "to": "src/lib/verdict/verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/verdict-headline.test.ts",
    "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-headline.test.ts",
+   "to": "tests/reader-pages.ts",
    "kind": "dependency"
   },
   {
@@ -6167,6 +6266,11 @@
   {
    "from": "tests/verdict-history.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-layout.test.ts",
+   "to": "scripts/seeded-results.mjs",
    "kind": "dependency"
   },
   {
@@ -6245,6 +6349,41 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/verdict-quotes-once.test.ts",
+   "to": "scripts/seeded-results.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quotes-once.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quotes-once.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quotes-once.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quotes-once.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quotes-once.test.ts",
+   "to": "tests/route-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quotes-once.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/verdict-short-on-a-figure.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
@@ -6271,6 +6410,51 @@
   },
   {
    "from": "tests/verdict-short-on-a-figure.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "scripts/seeded-results.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "src/lib/verdict/compose/steps-line.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "src/lib/verdict/verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -7219,12 +7403,22 @@
     "exported": false
    },
    {
+    "name": "missingRequiredControlsOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "hasProblem",
     "kind": "fn",
     "exported": false
    },
    {
     "name": "stripNoteOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "requiredControlsNoteOf",
     "kind": "fn",
     "exported": false
    },
@@ -7634,6 +7828,11 @@
     "exported": false
    },
    {
+    "name": "requiredControlCountsOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "readScreenState",
     "kind": "fn",
     "exported": false
@@ -7783,6 +7982,13 @@
     "exported": true
    }
   ],
+  "scripts/required-controls.mjs": [
+   {
+    "name": "REQUIRED_CONTROLS",
+    "kind": "const",
+    "exported": true
+   }
+  ],
   "scripts/run-git.mjs": [
    {
     "name": "GIT_FILE_NAME",
@@ -7802,6 +8008,33 @@
    {
     "name": "runGitOrNull",
     "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/seeded-results.mjs": [
+   {
+    "name": "GERMAN_OFFER_ON_ONE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "GERMAN_OFFER_ON_FOUR",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DUTCH_OFFER_ON_FOUR",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FRENCH_OFFER_TWO_STEPS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FRENCH_OFFER_NO_STEPS",
+    "kind": "const",
     "exported": true
    }
   ],
@@ -9367,6 +9600,11 @@
     "exported": true
    },
    {
+    "name": "nearestSubject",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "shortByUpToLine",
     "kind": "fn",
     "exported": true
@@ -9499,6 +9737,11 @@
    {
     "name": "DOES_NOT_APPLY_TO_YOU",
     "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "moreQuotes",
+    "kind": "fn",
     "exported": true
    },
    {
@@ -9698,6 +9941,26 @@
    },
    {
     "name": "STEPS_HERE_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "STEPS_LINE_LEAD",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "stepsCountIn",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "stepsThatWouldUnlockMore",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CHOICE_LINE",
     "kind": "const",
     "exported": true
    },
@@ -10991,7 +11254,9 @@
   "scripts/measure-taps.mjs",
   "scripts/print-report.mjs",
   "scripts/render-assets.mjs",
+  "scripts/required-controls.mjs",
   "scripts/run-git.mjs",
+  "scripts/seeded-results.mjs",
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
@@ -11044,5 +11309,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "c4c2c6c37142a1b2ea48651ce536fa719fae0b9069f48b5ad55870fd7e77e2b0"
+ "digest": "aced10d5d029b57f00f5bbf0ebde9456a1d5b2cf778a0555cf36b2cb8098a16f"
 }

@@ -188,7 +188,7 @@ export function fullCardHtml(screen: VerdictScreen, route: ResultWithRouteStandi
           ${gapNoteHtml(screen, routeStanding)}
           ${pointsNoteHtml(r)}
           ${learnBoxHtml(screen, routeStanding)}
-          <div class="foot">${provenanceHtml(screen, r, notTaken)}</div>
+          <div class="foot">${provenanceHtml(screen, r, { quotesInView: "first-two", notTaken })}</div>
         </article>`;
 }
 
@@ -228,7 +228,7 @@ export function notYetRowHtml(screen: VerdictScreen, route: ResultWithRouteStand
             ${pointsLineHtml(ds, r)}
             ${failDetailHtml(ds, r, answers)}
             ${learnBoxHtml(screen, routeStanding)}
-            <div class="foot">${provenanceHtml(screen, r)}</div>
+            <div class="foot">${provenanceHtml(screen, r, { quotesInView: "every" })}</div>
           </div>
         </details>`;
 }

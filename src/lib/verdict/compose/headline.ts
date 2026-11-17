@@ -1,4 +1,5 @@
 // @level presentation
+import { phraseOf } from "permit-rulebook-data";
 import {
   NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, shortfallHeadline, stepsWouldChangeHeadline,
   unsettledHeadline,
@@ -15,14 +16,17 @@ import { unscoredVerdict } from "./unscored.js";
  * How near the nearest route within reach is, or nothing: "up to" its gap on
  * a bounded band, as the card says it; on a band open at the bottom, the line
  * it asks, never that line as the reader's shortfall; or its points. The
- * shortfall is the route's standing's, as the card's.
+ * shortfall is the route's standing's, as the card's. On the four-country
+ * result it says which country the route is in; a one-country result names
+ * none (ruling 2 on #362).
  */
 function nearNote(screen: VerdictScreen, compared: ReckonedComparison, nearest: string | null): string {
   const named = compared.inView.results.find((r) => r.route.id === nearest);
   if (!named) return "";
+  const country = compared.layout.kind === "countries" ? phraseOf(named.country) : undefined;
   const money = findRouteStanding(compared.layout, named.route.id).shortfall;
-  if (money) return shortfallHeadline(printedShortfallOf(screen.ds, money));
-  if (named.gap_points) return pointsAwayLine(named.gap_points);
+  if (money) return shortfallHeadline(printedShortfallOf(screen.ds, money), country);
+  if (named.gap_points) return pointsAwayLine(named.gap_points, country);
   return "";
 }
 

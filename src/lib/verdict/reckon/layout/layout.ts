@@ -11,7 +11,7 @@ import {
   countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, reckonRouteWithStepTaken, titlesABoundedGap, type Step,
 } from "./steps.js";
 import type {
-  AnsweredDataset, ArrangedLine, ComparedLayout, CountrySection, HeadlineLayout, JobOfferLine, RouteGroupKind,
+  AnsweredDataset, ArrangedLine, ComparedLayout, CountryHolding, CountrySection, HeadlineLayout, JobOfferLine, RouteGroupKind,
   RouteStandings, StepPlace, Strip, Tally, VerdictGroup, WrittenStateKey,
 } from "./verdict-layout.js";
 
@@ -27,17 +27,21 @@ import type {
 const countryMarkOf = (ds: Dataset, country: Country, situation: string | undefined): NotScoredMark | null =>
   situation === undefined ? null : notScoredFor(ds, country.code.toLowerCase(), situation);
 
+/** The country the reader named at question 3, where the destination is all
+ * four, or none: the direct path never asks question 3, so a country answer
+ * under a one-country destination names nothing. */
+const namedCountryOf = (answers: Profile): string | undefined =>
+  answers[DESTINATION_FIELD] === EVERY_COUNTRY_ANSWER ? answers[SITUATION_COUNTRY_FIELD] : undefined;
+
 /** The written state's key for these answers, or none: reckoned once, onto
- * the written-state headline, which the lead country and the written state's
- * words read. */
+ * the written-state headline, which the written state's words read. */
 function writtenStateKeyOf(ds: Dataset, answers: Profile): WrittenStateKey | null {
   const destination = answers[DESTINATION_FIELD];
   const situation = answers[SITUATION_FIELD];
   if (destination === undefined || situation === undefined) return null;
   // Keyed by the named country where the destination is all four, and by the
-  // destination itself everywhere else — the direct path never asks question
-  // 3, so a country answer under a one-country destination is not a key.
-  const named = destination === EVERY_COUNTRY_ANSWER ? answers[SITUATION_COUNTRY_FIELD] : undefined;
+  // destination itself everywhere else.
+  const named = namedCountryOf(answers);
   const key = named ?? destination;
   const mark = notScoredFor(ds, key, situation);
   return mark ? { key, named, mark, situation } : null;
@@ -261,6 +265,21 @@ function headlineOf(answeredDataset: AnsweredDataset, compared: Compared): Headl
   return { kind: "open", routes: whole.met.length, countries, nearest };
 }
 
+/**
+ * The Steps line's counts and whether the Choice line is drawn, from each
+ * country's holding in screen order. The Steps line counts each country
+ * offering a step, unless the headline already names one (ruling 9 on #362);
+ * the Choice line is drawn where more than one route is open, in one country
+ * or across several (ruling 8 on #362, ruling 26 on #420).
+ */
+function firstScreenLinesOf(headline: HeadlineLayout, holdings: CountryHolding[]): Pick<ComparedLayout, "stepsLine" | "drawsChoiceLine"> {
+  const stepsLine = headline.kind === "steps"
+    ? []
+    : holdings.filter((h) => h.steps > 0);
+  const open = holdings.reduce((sum, h) => sum + h.open, 0);
+  return { stepsLine, drawsChoiceLine: open > 1 };
+}
+
 /** Single destination: the flat layout, no country chrome. */
 function oneCountryLayoutOf(answeredDataset: AnsweredDataset, compared: ComparedWithStandings): ComparedLayout {
   const code = compared.inView.visible[0]!.code;
@@ -268,9 +287,10 @@ function oneCountryLayoutOf(answeredDataset: AnsweredDataset, compared: Compared
   const groups = groupsOf(answeredDataset, {
     grouped: compared.whole, steps, ...linesIn(compared, code), results: compared.inView.results,
   });
+  const headline = headlineOf(answeredDataset, compared);
   return {
-    kind: "one-country", country: code, strip: stripOf(compared),
-    headline: headlineOf(answeredDataset, compared), groups, standings: compared.standings,
+    kind: "one-country", country: code, strip: stripOf(compared), headline, groups, standings: compared.standings,
+    ...firstScreenLinesOf(headline, [{ country: code, steps: steps.length, open: compared.whole.met.length }]),
   };
 }
 
@@ -281,10 +301,10 @@ const leads = (country: { code: string }, lead: string | undefined): boolean =>
 
 /**
  * The country sections of the four-country result, the named country's
- * first (s26): the section the headline is about leads the list, and the
- * others keep the dataset's order. `sort` is stable, so nothing else moves;
- * with no country to lead, or one the list does not hold, the order is the
- * dataset's.
+ * first (ruling 1 on #362): the country the reader's offer, transfer or
+ * agreement is in leads the list, and the others keep the dataset's order.
+ * `sort` is stable, so nothing else moves; with no country to lead, or one
+ * the list does not hold, the order is the dataset's.
  */
 function namedFirst<T extends { code: string }>(countries: readonly T[], lead: string | undefined): T[] {
   return [...countries].sort((a, b) => Number(leads(b, lead)) - Number(leads(a, lead)));
@@ -314,10 +334,10 @@ const holdsSomethingToActOn = (section: Section, tally: Tally): boolean =>
  * collapsed France hid what a job offer would check there, and a collapsed
  * Netherlands the reader's own "I don't know" (v1.2.2 critique F8; ruling 6
  * of #187); a section of not-yet rows with nothing to act on stays
- * collapsed, its tally visible. The country the headline is about leads,
- * open (s26). The tally names every action inside: its steps, and the routes
- * its job offer line would check and its arranged line would open (ruling
- * 7). A country's own closed routes are counted in its tally: a count no
+ * collapsed, its tally visible. The country named at question 3 leads, open,
+ * whatever it holds (ruling 1 on #362). The tally names every action inside:
+ * its steps, and the routes its job offer line would check and its arranged
+ * line would open (ruling 7). A country's own closed routes are counted in its tally: a count no
  * summary names is a route the reader never learns exists (s8).
  */
 function countrySection(answeredDataset: AnsweredDataset, compared: ComparedWithStandings, at: SectionPlace): CountrySection {
@@ -341,22 +361,21 @@ function countrySection(answeredDataset: AnsweredDataset, compared: ComparedWith
 }
 
 /**
- * Several destinations: a section per country, the one the headline is about
- * first (s26), the others in the dataset's order. Which country leads — the
- * one the reader named at question 3, when nothing is open anywhere and its
- * scored routes do not take the declared situation — is the headline's
- * decision: the written state is drawn only on a zero-open result, and the
- * country it names is the country that leads; with something open anywhere,
- * or a written state for nobody, the sections keep the dataset's order.
+ * Several destinations: a section per country, the one the reader named at
+ * question 3 first, open, the others in the dataset's order. The answer at
+ * question 3 alone decides it (ruling 1 on #362), whatever is open anywhere;
+ * with no country named, the sections keep the dataset's order.
  */
 function countrySectionsLayoutOf(answeredDataset: AnsweredDataset, compared: ComparedWithStandings): ComparedLayout {
   const { visible } = compared.inView;
   const headline = headlineOf(answeredDataset, compared);
-  const lead = headline.kind === "written-state" ? headline.writtenStateKey.named : undefined;
+  const lead = namedCountryOf(answeredDataset.answers);
   const sections = namedFirst(visible, lead).map((country) => countrySection(answeredDataset, compared, { country, lead }));
+  const holdings = sections.map((s) => ({ country: s.country, steps: s.tally.steps, open: s.tally.open }));
   return {
     kind: "countries", strip: stripOf(compared), headline,
     lead: visible.find((country) => leads(country, lead))?.code ?? null, sections, standings: compared.standings,
+    ...firstScreenLinesOf(headline, holdings),
   };
 }
 

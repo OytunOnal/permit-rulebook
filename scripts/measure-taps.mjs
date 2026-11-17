@@ -23,7 +23,9 @@
  * most controls in the product.
  *
  * On each screen it also reads where the Strip wraps, and reports a Strip
- * line that starts with a separator dot.
+ * line that starts with a separator dot. It counts each control a seed can
+ * require (`required-controls.mjs`), and a result seeded to draw one fails
+ * without it.
  *
  * A drawn screen is named after the result its record produces, so it must
  * end on the result screen: one that stops at a question, because the
@@ -45,13 +47,17 @@ import { PHONE, walkSite } from "./browser/browser.mjs";
 // hand goes stale the day the format moves, and this script would then
 // measure a screen the reader never sees.
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.ts";
+import {
+  DUTCH_OFFER_ON_FOUR, FRENCH_OFFER_NO_STEPS, FRENCH_OFFER_TWO_STEPS, GERMAN_OFFER_ON_FOUR, GERMAN_OFFER_ON_ONE,
+} from "./seeded-results.mjs";
+import { REQUIRED_CONTROLS } from "./required-controls.mjs";
 
 const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 
 /** The token's own value, asserted against the stylesheet the page ships. */
 const TAP_MIN = 44;
 
-// The four functions below run in the page, not here: the probe carries their
+// The five functions below run in the page, not here: the probe carries their
 // source text into it, so each reads nothing from this module but the others.
 
 /** An element's words on one line, cut to `cap` characters (all of them without one). */
@@ -107,6 +113,14 @@ function measureStripLines() {
   return { stripLineCounts, stripLinesStartingWithADot };
 }
 
+/** How many of each control a seed can require are on screen, by its name,
+ * from `selectorsByName`; each a control the floor above already measures. */
+function requiredControlCountsOf(selectorsByName) {
+  const counts = {};
+  for (const [name, selector] of Object.entries(selectorsByName)) counts[name] = document.querySelectorAll(selector).length;
+  return { requiredControlCounts: counts };
+}
+
 /**
  * Whether the page drew the result, whether that result is one a notice
  * answers outright, and the question card's progress and label where it drew
@@ -136,11 +150,13 @@ const PROBE = `(() => {
   ${measureControls}
   ${measureStripLines}
   ${readScreenState}
+  ${requiredControlCountsOf}
   return JSON.stringify({
     innerWidth: window.innerWidth,
     scrollWidth: document.documentElement.scrollWidth,
     ...measureControls(${TAP_MIN}),
     ...measureStripLines(),
+    ...requiredControlCountsOf(${JSON.stringify(Object.fromEntries(REQUIRED_CONTROLS.map((c) => [c.name, c.selector])))}),
     ...readScreenState(),
     tapMin: getComputedStyle(document.documentElement).getPropertyValue("--tap-min").trim(),
   });
@@ -162,41 +178,24 @@ function listBuiltPages(dir) {
  * Screens the page draws rather than the build emits, each with the record
  * that produces it. A record is written, the page is reloaded, and what the
  * reader actually taps is measured. Each record answers every question the
- * interview asks on the way, so the page reloads onto the result.
+ * interview asks on the way, so the page reloads onto the result. A third
+ * entry names the controls of `REQUIRED_CONTROLS` the result draws, so they
+ * are among the controls measured: one drawn without them fails.
  */
 const DRAWN = [
-  ["/ (results, one country)", {
-    destination: "de", citizenship: "IN", situation: "offer", qualification: "degree",
-    recognition_de: "unknown", occupation_shortage: "unknown", experience_5y: "lt2", experience_7y: "3to5",
-    german: "b1", english: "c1", age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
-    funds_eur_month: "band_1", salary_eur_year: "unknown", occupation_it: "no",
-  }],
-  ["/ (results, all four countries)", {
-    destination: "all", citizenship: "TR", situation: "offer", qualification: "degree",
-    recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "lt2", experience_7y: "3to5",
-    german: "b1", english: "c1", nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
-    situation_country: "de", salary_eur_year: "unknown", funds_eur_month: "band_1",
-  }],
+  ["/ (results, one country)", GERMAN_OFFER_ON_ONE],
+  ["/ (results, all four countries)", GERMAN_OFFER_ON_FOUR, ["Steps line", "More quotes control"]],
   // Short Tallies draw one-line country headers here, and a job offer in the
   // Netherlands gathers Germany's routes into a Fold, so the floor is measured
-  // on one-line country headers and on a Fold's header.
-  ["/ (results, all four countries, job offer in the Netherlands)", {
-    destination: "all", situation: "offer", situation_country: "nl", age_band: "a30to35", citizenship: "TR",
-    qualification: "degree", recognition_de: "not_assessed", experience_5y: "2plus", experience_7y: "5plus",
-    occupation_shortage: "yes", salary_eur_month: "band_5", nl_recent_grad: "no", top200_grad: "no",
-    german: "a1", funds_eur_month: "unknown",
-  }],
-  // The Algerian notice's Learn link, a foot link longer than a phone's line, wraps here.
-  ["/ (results, France, Algerian passport)", {
-    destination: "fr", situation: "offer", qualification: "none", fr_innovative_employer: "yes", citizenship: "DZ",
-    experience_7y: "lt3", salary_eur_year: "band_0",
-  }],
+  // on one-line country headers and on a Fold's header; its Steps line links
+  // to two countries' steps.
+  ["/ (results, all four countries, job offer in the Netherlands)", DUTCH_OFFER_ON_FOUR, ["Steps line", "More quotes control"]],
+  // The Algerian notice's Learn link, a foot link longer than a phone's line,
+  // wraps here; its Steps line is a one-country result's single link.
+  ["/ (results, France, Algerian passport)", FRENCH_OFFER_TWO_STEPS, ["Steps line", "More quotes control"]],
   // A reader who does not know whether the employer is innovative meets the
   // talent card's Learn link, which wraps here.
-  ["/ (results, France, a Learn link)", {
-    destination: "fr", situation: "offer", qualification: "none", fr_innovative_employer: "unknown", citizenship: "IN",
-    experience_7y: "lt3", salary_eur_year: "unknown",
-  }],
+  ["/ (results, France, a Learn link)", FRENCH_OFFER_NO_STEPS],
 ];
 
 const seedFor = (answers) =>
@@ -226,10 +225,11 @@ const listBuiltScreens = (url) => listBuiltPages(dist).map((file) => {
   return { name: path, kind: "built", open: (page) => page.goto(url(`/${path.replace(/index\.html$/, "")}`)) };
 });
 
-/** Each drawn screen: its name, its kind, and how the page opens it at the site's address `url` makes, its record written and the page reloaded. */
-const drawnScreens = (url) => DRAWN.map(([name, answers]) => ({
+/** Each drawn screen: its name, its kind, the controls it is seeded to draw, and how the page opens it at the site's address `url` makes, its record written and the page reloaded. */
+const drawnScreens = (url) => DRAWN.map(([name, answers, requiredControls = []]) => ({
   name,
   kind: "drawn",
+  requiredControls,
   async open(page) {
     await page.goto(url("/"));
     await page.evaluate(seedFor(answers));
@@ -240,9 +240,9 @@ const drawnScreens = (url) => DRAWN.map(([name, answers]) => ({
 /** Each of `screens` opened and measured in turn, handed to `onScreen` as it is measured; all of them returned. */
 async function measureEach(page, screens, onScreen) {
   const measured = [];
-  for (const { name, kind, open } of screens) {
+  for (const { name, kind, requiredControls = [], open } of screens) {
     await open(page);
-    const screen = await measureAtRest(page, name, kind);
+    const screen = { ...await measureAtRest(page, name, kind), requiredControls };
     onScreen(screen);
     measured.push(screen);
   }

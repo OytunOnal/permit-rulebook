@@ -12,9 +12,10 @@ import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
 import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { watchState } from "../src/lib/site.js";
 import {
-  deriveBands, deriveQuestions, forEachCriterion, shortLabelOf, type Dataset, type Profile,
+  countryVocabulary, deriveBands, deriveQuestions, forEachCriterion, shortLabelOf, type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { figureGapSentence, shortOn } from "../src/lib/copy/verdict.js";
+import { DUTCH_OFFER_ON_FOUR } from "../scripts/seeded-results.mjs";
 import { PERSONA_A, PRIYA } from "./personas.js";
 
 /**
@@ -228,6 +229,37 @@ describe("nothing from the dataset reaches the verdict's markup unescaped (#167)
     expect(arranged, "precondition: the offer-holder reads an arranged line").not.toBe("");
     expect(arranged).toContain(TAG_AS_TEXT);
     expect(html).not.toContain("<img");
+  });
+});
+
+/** What `draw` returns, run with the Netherlands' name in the country list
+ * carrying a tag; the list is put back after. */
+function withTaggedNetherlands<T>(draw: () => T): T {
+  const netherlands = countryVocabulary.countries.find((c) => c.code === "NL");
+  if (!netherlands) throw new Error("precondition: the country list holds the Netherlands");
+  const name = netherlands.name;
+  netherlands.name = `${name} ${TAG}`;
+  try {
+    return draw();
+  } finally {
+    netherlands.name = name;
+  }
+}
+
+describe("nothing from the country list reaches the first screen's country phrases unescaped", () => {
+  const verdictOfDutchOffer = () =>
+    verdictOf(ds, DUTCH_OFFER_ON_FOUR, { cameFrom: null, answered: Object.keys(DUTCH_OFFER_ON_FOUR).length });
+
+  it("the Steps line draws a country's phrase as text", () => {
+    const stepsLine = withTaggedNetherlands(() => verdictOfDutchOffer().action.masthead.stepsLineHtml ?? "");
+    expect(stepsLine, "precondition: the Dutch offer on four draws a Steps line naming the Netherlands").toContain(TAG_AS_TEXT);
+    expect(stepsLine).not.toContain("<img");
+  });
+
+  it("the headline's \"One in <country>\" draws the country's phrase as text", () => {
+    const headline = withTaggedNetherlands(() => verdictOfDutchOffer().action.masthead.headline);
+    expect(headline, "precondition: the Dutch offer on four's headline names the Netherlands").toContain(TAG_AS_TEXT);
+    expect(headline).not.toContain("<img");
   });
 });
 

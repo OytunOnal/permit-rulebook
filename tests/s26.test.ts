@@ -194,23 +194,22 @@ describe("s26 — the named country's section leads", () => {
     );
   });
 
-  it("dataset order with something open anywhere, and where the named country takes the situation, and with no country named", () => {
-    // The headline is the open one; the written state is not drawn, and no country leads.
+  it("first with something open anywhere and with no written state too; dataset order with no country named", () => {
+    // Ruling 1 on #362: the answer at question 3 alone leads. The headline is
+    // the open one and no written state is drawn, yet France leads, open.
     expect(zeroOpen(opened)).toBe(false);
-    expect(leadOf(opened)).toBeUndefined();
-    expect(order(opened)).toEqual(["DE", "FR", "ES", "NL"]);
-    // Zero open, but no written state for Germany: nothing leads.
+    expect(unscoredVerdict(opened)).toBeNull();
+    expect(order(opened)).toEqual(["FR", "DE", "ES", "NL"]);
+    expect(sectionsOf(opened)[0]!.open).toBe(true);
+    // Zero open, no written state for Germany: Germany, named, leads.
     expect(zeroOpen(readerWithJobOffer)).toBe(true);
     expect(unscoredVerdict(readerWithJobOffer)).toBeNull();
-    expect(leadOf(readerWithJobOffer)).toBeUndefined();
     expect(order(readerWithJobOffer)).toEqual(["DE", "FR", "ES", "NL"]);
-    // The explorer: nothing named, nothing leads.
+    expect(sectionsOf(readerWithJobOffer)[0]!.open).toBe(true);
+    // The explorer: nothing named, the dataset's order.
     expect(zeroOpen(explorer)).toBe(true);
     expect(leadOf(explorer)).toBeUndefined();
     expect(order(explorer)).toEqual(["DE", "FR", "ES", "NL"]);
-    // And the walk's own lead is nobody's the moment something is open: the
-    // decision is the headline's — `opened` is the walk with a German route open.
-    expect(leadOf(opened)).toBeUndefined();
     // The order is stable: with France leading, nothing else moves.
     expect(order(walk).slice(1)).toEqual(ds.countries.map((c) => c.code).filter((c) => c !== "FR"));
   });
@@ -275,22 +274,22 @@ describe("s26 — the results the walks end on, from the verdict", () => {
     expect(linkIn(germany!)).toBeNull();
   });
 
-  it("the walk that opens a German route reads the open headline, Germany first and open, France's line doing the saying", () => {
+  it("the walk that opens a German route reads the open headline, France first and open, its line doing the saying, Germany open second", () => {
     const m = verdictFor(WALKED_TO_A_GERMAN_ROUTE).action.masthead;
     expect(m.announced).toMatch(/^1 route looks open\./);
     expect(m.announced + m.subline).not.toContain("No route we check");
     expect(m.sublineHtml).toBeUndefined();
     const sections = sectionsOf(WALKED_TO_A_GERMAN_ROUTE);
     expect(sections.map((s) => [s.name, s.open])).toEqual([
-      ["Germany", true], ["France", false], ["Spain", false], ["Netherlands", false],
+      ["France", true], ["Germany", true], ["Spain", false], ["Netherlands", false],
     ]);
-    expect(sections[1]!.said!.text).toBe(
+    expect(sections[0]!.said!.text).toBe(
       "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
     );
-    expect(linkIn(sections[1]!)).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
+    expect(linkIn(sections[0]!)).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
   });
 
-  it("the other four-country results: the explorer and the offer in Germany keep the dataset's order, open where an arranged answer would open a route; a leading France and a Germany with steps are both open", () => {
+  it("the other four-country results: the explorer keeps the dataset's order and the offer in Germany leads with Germany, open where an arranged answer would open a route; a leading France and a Germany with steps are both open", () => {
     // No offer, transfer or agreement: no country named; only arranged answers would open more.
     const explorer: Profile = {
       destination: "all", situation: "none", citizenship: "TR", qualification: "none", nl_recent_grad: "no", top200_grad: "no",
@@ -321,7 +320,7 @@ describe("s26 — the results the walks end on, from the verdict", () => {
       ["Germany", true], ["France", true], ["Spain", true], ["Netherlands", true],
     ]);
     expect(sectionsOf(explorer).every((s) => linkIn(s) === null)).toBe(true);
-    // The offer in Germany: the same headline, dataset order, Germany's section open on its arranged line.
+    // The offer in Germany: the same headline, Germany first, open on its arranged line.
     expect(verdictFor(readerWithJobOffer).action.masthead.announced).toBe(NOTHING_OPEN_HEADLINE);
     expect(sectionsOf(readerWithJobOffer).map((s) => [s.name, s.open])).toEqual([
       ["Germany", true], ["France", false], ["Spain", false], ["Netherlands", false],

@@ -143,8 +143,7 @@ export type Explore = "one-country" | "several-countries";
 
 /** Where a written state stands: the answer it is keyed by, the destination
  * answer of the country the reader named at question 3 on the four-country
- * path only — the country whose section leads the result, open (s26); the
- * direct path has no list of countries to lead — the mark, and the situation. */
+ * path only (s26) — the mark, and the situation. */
 export interface WrittenStateKey {
   key: string;
   named: string | undefined;
@@ -222,22 +221,43 @@ export interface RouteStanding {
 /** Each route's standing, by the route's id. */
 export type RouteStandings = Record<string, RouteStanding>;
 
+/** What one country's section, or the flat layout's one country, holds for
+ * the first screen's lines: the country, by its code, the Leverage steps its
+ * steps group offers, and its open routes. */
+export interface CountryHolding {
+  country: string;
+  steps: number;
+  open: number;
+}
+
+/** What stands on the first screen beside the headline, on either layout. */
+interface FirstScreenLines {
+  /** The Steps line's countries, in screen order: each country whose steps
+   * group offers a Leverage step; none where no country does, or the headline
+   * already names a step (ruling 9 on #362). */
+  stepsLine: CountryHolding[];
+  /** Whether the Choice line is drawn: where more than one route is open,
+   * anywhere on screen (ruling 8 on #362, ruling 26 on #420). */
+  drawsChoiceLine: boolean;
+}
+
 /** A comparison's layout: one country flat, or a section per country, the
  * country the headline is about first where it names one; and each route's
  * standing by its id, beside the groups that list those ids. */
-export type ComparedLayout =
+export type ComparedLayout = FirstScreenLines & (
   | {
     kind: "one-country"; country: string; strip: Strip; headline: HeadlineLayout; groups: VerdictGroup[];
     standings: RouteStandings;
   }
   | {
     kind: "countries"; strip: Strip; headline: HeadlineLayout;
-    /** The country whose section leads, open, by its code; null where the
-     * sections keep the dataset's order. */
+    /** The country named at question 3, whose section leads, open, by its
+     * code; null where none is named and the sections keep the dataset's
+     * order. */
     lead: string | null;
     sections: CountrySection[];
     standings: RouteStandings;
-  };
+  });
 
 /** The screen's body as data: the notice screen, or a comparison's. */
 export type VerdictLayout = { kind: "notice" } | ComparedLayout;

@@ -163,10 +163,16 @@ export const asksOrMore = (threshold: string): string => `asks ${threshold} or m
 export type PrintedShortfall =
   | { kind: "bounded"; gap: string }
   | { kind: "open-below"; line: string; band: string };
+/** The subject of the headline's emphasis: the nearest route within reach,
+ * with the phrase of its country where the result shows several ("One in
+ * Germany"), and alone where it shows one (ruling 2 on #362). */
+const nearestSubject = (country?: string): string => (country === undefined ? "One" : `One in ${country}`);
 /** The headline's emphasis on a bounded gap: "up to", as the card says it. */
-export const shortByUpToLine = (amount: string): string => `One is short by up to ${amount}.`;
+export const shortByUpToLine = (amount: string, country?: string): string =>
+  `${nearestSubject(country)} is short by up to ${amount}.`;
 /** The headline's emphasis on a band open at the bottom: the line, not an amount. */
-export const needsOrMoreLine = (threshold: string): string => `One needs ${threshold} or more.`;
+export const needsOrMoreLine = (threshold: string, country?: string): string =>
+  `${nearestSubject(country)} needs ${threshold} or more.`;
 /** The card's note on a route short on money: its stressed opening, and the
  * rest, which names the field. */
 export const shortfallNote = (shortfall: PrintedShortfall, field: string): { lead: string; rest: string } =>
@@ -209,9 +215,10 @@ export const wouldThenBeShortOnly = (gaps: PrintedFigureGap[]): string =>
  * in their band, so "€304.20/year more" is at most that (ruling 1 on #187,
  * leftover 2). */
 export const upToTitle = (title: string): string => `up to ${title}`;
-/** The headline's emphasis on the nearest such route. */
-export const shortfallHeadline = (shortfall: PrintedShortfall): string =>
-  (shortfall.kind === "bounded" ? shortByUpToLine(shortfall.gap) : needsOrMoreLine(shortfall.line));
+/** The headline's emphasis on the nearest such route, with its country's
+ * phrase where the result shows several. */
+export const shortfallHeadline = (shortfall: PrintedShortfall, country?: string): string =>
+  (shortfall.kind === "bounded" ? shortByUpToLine(shortfall.gap, country) : needsOrMoreLine(shortfall.line, country));
 /** Where the reader's band stands against one amount, on the rail's row. */
 export const upToShort = (amount: string): string => `up to ${amount} short`;
 export const ABOVE_THE_AMOUNT = "above the amount";
@@ -243,6 +250,9 @@ export const OUR_READING_HEADING = "Our reading, not the authority's words:";
 export const perPeriod = (period: string): string => `per ${period}`;
 export const APPLIES_TO_YOU = "applies to you";
 export const DOES_NOT_APPLY_TO_YOU = "does not apply to you";
+/** The control a route's card folds its quote lines past the first two under
+ * (glossary: More quotes). */
+export const moreQuotes = (n: number): string => `${n} more quote${n === 1 ? "" : "s"}`;
 export const NO_THRESHOLD_ON_ROUTE = "No salary or points threshold on this route — nothing here to fall short of. "
   + "What it asks for is in the conditions above, each with the official wording behind it.";
 
@@ -289,7 +299,10 @@ export const stepsWouldChangeHeadline = (steps: number): string =>
 export const NOTHING_OPEN_HEADLINE = "Nothing open on these answers.";
 export const routesOpenHeadline = (open: number, countries: number): string =>
   `${open} route${open === 1 ? "" : "s"} look${open === 1 ? "s" : ""} open${countries > 1 ? ` across ${countries} countries` : ""}.`;
-export const pointsAwayLine = (points: number): string => `One is ${points} point${points === 1 ? "" : "s"} away.`;
+/** The headline's emphasis on a route short on points, with its country's
+ * phrase where the result shows several. */
+export const pointsAwayLine = (points: number, country?: string): string =>
+  `${nearestSubject(country)} is ${points} point${points === 1 ? "" : "s"} away.`;
 
 /**
  * A verdict's subline. What the results compared, counted in routes — the
@@ -337,6 +350,21 @@ export const CLOSED_HEADING = "Not open to your passport";
 export const STEPS_HEADING = "Steps that would unlock more";
 export const STEPS_HEADING_TAIL = "each re-checked against the rules";
 export const STEPS_HERE_HEADING = "Steps that would unlock more here";
+
+/** The Steps line under the headline (rulings 9–11 on #362): the Leverage
+ * steps counted per country, each count a link to that country's steps,
+ * after its lead; one count on a one-country result, the whole line. The
+ * country is the dataset's in-sentence phrase ("the Netherlands"). */
+export const STEPS_LINE_LEAD = "Steps that would unlock more:";
+export const stepsCountIn = (steps: number, country: string): string => `${steps} in ${country}`;
+export const stepsThatWouldUnlockMore = (steps: number): string =>
+  `${steps} step${steps === 1 ? "" : "s"} that would unlock more`;
+
+/** The Choice line, where more than one route is open (ruling 8 on #362,
+ * ruling 27 on #420): the product checks whether each route is open, not
+ * which to apply for. One wording on both results. */
+export const CHOICE_LINE = "More than one route is open on your answers. Which to apply for turns on things we "
+  + "don't check — compare what each open route also requires.";
 
 /** The job offer line: what a job offer would have checked in one country for an
  * explorer — a check, never a verdict, so never "met" or "short". The

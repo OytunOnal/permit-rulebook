@@ -4,7 +4,7 @@ import {
 } from "permit-rulebook-data";
 import { esc } from "../../../../reason.js";
 import {
-  APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_THRESHOLD_ON_ROUTE, perPeriod,
+  APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_THRESHOLD_ON_ROUTE, moreQuotes, perPeriod,
 } from "../../../../copy/verdict.js";
 import { type Glossary, glossed } from "../../../../gloss.js";
 // One line for every quote the product shows (2026-09-08; #387).
@@ -52,18 +52,54 @@ function amountPeriodHtml(ds: Dataset, route: Route, amount: number | undefined)
 }
 
 /** What a card adds to one value's quote line: the period its amount is
- * stated per, the applies-to-you mark and the ruled-out dimming, and the
- * citation it is given. */
+ * stated per, the applies-to-you mark on a settled choice of amounts, the
+ * does-not-apply mark and the dimming on every quote of a path not taken,
+ * and the citation it is given. */
 function cardLineOptionsOf(context: ProvenanceContext, entry: ProvenanceEntry, citation?: string): QuoteLineOptions {
   const { label, amount, applied } = entry;
   // Per entry, not per card: one settled disjunction on a route must not put
   // a ruled-out mark under a second one nobody has decided.
-  const takesMark = context.contested && amount !== undefined;
+  const ruledOut = applied === false;
+  const takesMark = ruledOut || (context.contested && amount !== undefined);
   return {
     amount, label, citation,
     afterLabelHtml: amountPeriodHtml(context.ds, context.route, amount) + (takesMark ? appliesMarkHtml(applied) : ""),
-    lineClass: takesMark && applied === false ? "unapplied" : undefined,
+    lineClass: ruledOut ? "unapplied" : undefined,
   };
+}
+
+/**
+ * A card's values in the order a reader takes them (ruling 5 on #420): the
+ * deciding path's, and every value no path decides, first; then each value of
+ * a path not taken. Within each part, the dataset's order. The engine marks
+ * each value's path; this reads the mark and decides nothing.
+ */
+function inReadingOrder(entries: ProvenanceEntry[]): ProvenanceEntry[] {
+  return [...entries.filter((e) => e.applied !== false), ...entries.filter((e) => e.applied === false)];
+}
+
+// A quote ending on its sentence's full stop or an ellipsis is still contained
+// in a longer quote whose sentence runs on past that point, as the data's check reads it.
+const SENTENCE_END = /[.…]+$/;
+
+/** Whether `longer` quotes `shorter`'s sentence inside its own, from the same page. */
+function quotesInside(longer: ProvenanceEntry, shorter: ProvenanceEntry): boolean {
+  const { quote, source_url } = shorter.value;
+  return longer.value.source_url === source_url && longer.value.quote.length > quote.length
+    && longer.value.quote.includes(quote.replace(SENTENCE_END, ""));
+}
+
+/**
+ * A card's values without one whose sentence another value from the same page
+ * on the card quotes inside a longer one: the longer line carries it (ruling 4
+ * on #420). The dataset gives such a pair one legal basis and one read date,
+ * so dropping the shorter loses nothing the reader is shown. A line the
+ * reader's own path rests on is never dropped for a line of a path not taken,
+ * which is dimmed and says it does not apply to them (ruling 29 on #420).
+ */
+function dropContainedSentences(entries: ProvenanceEntry[]): ProvenanceEntry[] {
+  return entries.filter((entry) => !entries.some((other) =>
+    quotesInside(other, entry) && (other.applied !== false || entry.applied === false)));
 }
 
 /**
@@ -98,6 +134,33 @@ function distinctProvenanceLines(
   return lines;
 }
 
+/** Which of a card's quote lines are in view: the first two, the rest one tap
+ * away under More quotes, as a route's card has them; or every one, as a
+ * not-yet row has them inside its own fold (rulings 6 and 13 on #420). */
+export type QuotesInView = "first-two" | "every";
+
+/** How a card's quote lines are drawn: which are in view, and the items the
+ * card dropped, linked to a path its route did not take, which are not quoted. */
+export interface QuotesShownAndDropped {
+  quotesInView: QuotesInView;
+  notTaken?: ReadonlySet<string>;
+}
+
+/** How many quote lines a route's card shows before its More quotes control. */
+const FIRST_QUOTES_IN_VIEW = 2;
+
+/** A card's quote lines as `quotesInView` says: past the first two, under one
+ * control that says how many it holds; two or fewer draw no control. */
+function linesInView(lines: string[], quotesInView: QuotesInView): string[] {
+  if (quotesInView === "every" || lines.length <= FIRST_QUOTES_IN_VIEW) return lines;
+  const behind = lines.slice(FIRST_QUOTES_IN_VIEW);
+  return [
+    ...lines.slice(0, FIRST_QUOTES_IN_VIEW),
+    `<details class="more-quotes"><summary>${esc(moreQuotes(behind.length))}</summary>`
+    + `<div class="more-quotes-body">${behind.join("")}</div></details>`,
+  ];
+}
+
 /**
  * Every value this route rests on, quoted and dated. Where a route states two
  * thresholds and only one of them applied to this reader, both still render —
@@ -105,11 +168,15 @@ function distinctProvenanceLines(
  * both unmarked left a reader free to take the lower one for theirs when they
  * do not qualify for it (human catch 2026-09-07). An item the card dropped,
  * linked to a path its route did not take (`notTaken`), is not quoted either
- * (#315, ruling 5).
+ * (#315, ruling 5). Any other value of a path not taken is quoted after the
+ * rest, dimmed and marked as not applying (ruling 5 on #420). Which lines are
+ * in view is `shown`'s.
  */
-export function provenanceHtml(screen: CardScreen, r: RouteResult, notTaken: ReadonlySet<string> = new Set()): string {
+export function provenanceHtml(screen: CardScreen, r: RouteResult, shown: QuotesShownAndDropped): string {
+  const { quotesInView, notTaken = new Set() } = shown;
   const { ds, answers, glossary: seen = new Set() } = screen;
-  const entries = resultProvenance({ ...r, route: routeAsStated(r.route, notTaken) }, answers);
+  const entries = inReadingOrder(dropContainedSentences(
+    resultProvenance({ ...r, route: routeAsStated(r.route, notTaken) }, answers)));
   // A lone threshold needs no telling apart from anything, and a losing path
   // that quotes no amount leaves nothing for the reader to mistake for theirs.
   // Only where a choice of NUMBERS was actually settled ONE WAY OR THE OTHER.
@@ -120,8 +187,8 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult, notTaken: Rea
   const contested = entries.some((e) => e.amount !== undefined && e.applied === false);
   // The same line the route pages draw a quote with: its frame, and its own
   // link to its source, with the card's additions (#387).
-  const lines = distinctProvenanceLines(entries, seen, (entry, citation) =>
-    quoteLineHtml(entry.value, cardLineOptionsOf({ ds, route: r.route, contested }, entry, citation)));
+  const lines = linesInView(distinctProvenanceLines(entries, seen, (entry, citation) =>
+    quoteLineHtml(entry.value, cardLineOptionsOf({ ds, route: r.route, contested }, entry, citation))), quotesInView);
 
   // The promise on the first screen is that every value shows its quote and
   // its read date. A route that decides nothing on a number has no AMOUNT to

@@ -25,6 +25,10 @@ export const PERSONA_A: Profile = {
   salary_eur_year: "band_5", german: "a1", english: "c1", age_band: "a30to35", funds_eur_month: NO_AMOUNT,
 };
 
+/** Persona A with a recognised degree: the shortage Blue Card is met through
+ * the recognised-degree path, and quotes the IT path's sentences dimmed. */
+export const RECOGNISED_A: Profile = { ...PERSONA_A, recognition_de: "recognized" };
+
 /** Persona C of the v1.2.2 critique (W3): a Colombian passport, all four
  * countries, exploring, a degree whose recognition they do not know. */
 export const PERSONA_C: Profile = {
