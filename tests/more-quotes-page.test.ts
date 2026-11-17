@@ -26,7 +26,9 @@ const RECOGNISED_A = { ...PERSONA_A, recognition_de: "recognized" };
 const SHORTAGE_CARD = `[...document.querySelectorAll("#main article.route")]
   .find((a) => (a.querySelector("h3")?.textContent ?? "").startsWith(${JSON.stringify(routeOf(ds, "de-blue-card-shortage").name)}))`;
 
-/** The two colour schemes a reader's device may ask for, each set explicitly. */
+/** The two colour schemes a reader's device may ask for, each set explicitly.
+ * The site has no dark palette, so dark draws the light page; both run so a
+ * dark palette is checked here once the site has one. */
 const COLOUR_SCHEMES = ["light", "dark"] as const;
 type ColourScheme = (typeof COLOUR_SCHEMES)[number];
 
