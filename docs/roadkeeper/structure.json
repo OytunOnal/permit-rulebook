@@ -7229,12 +7229,22 @@
     "exported": false
    },
    {
+    "name": "isMissingSeededStepsLine",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "hasProblem",
     "kind": "fn",
     "exported": false
    },
    {
     "name": "stripNoteOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "stepsLineNoteOf",
     "kind": "fn",
     "exported": false
    },
@@ -7640,6 +7650,11 @@
    },
    {
     "name": "measureStripLines",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countStepsLineLinks",
     "kind": "fn",
     "exported": false
    },
@@ -11059,5 +11074,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "744e530502d55062f1081a9d9ffa120db9a61c3201d94577ec6e18bfe3ca7cea"
+ "digest": "1ed7f7dbd9a9b444c62b4d9e61341a522ac4016ce6d3a4161f82655c1a174c68"
 }
