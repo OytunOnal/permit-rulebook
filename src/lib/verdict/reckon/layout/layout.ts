@@ -265,6 +265,31 @@ function headlineOf(answeredDataset: AnsweredDataset, compared: Compared): Headl
   return { kind: "open", routes: whole.met.length, countries, nearest };
 }
 
+/** What one country's section, or the flat layout's one country, holds for
+ * the first screen's lines: the country, its Leverage steps, and its open
+ * routes. */
+interface CountryHolding {
+  country: string;
+  steps: number;
+  open: number;
+}
+
+/**
+ * The Steps line's counts and the Choice line's place, from each country's
+ * holding in screen order. The Steps line counts each country offering a step,
+ * unless the headline already names one (ruling 9 on #362); the Choice line
+ * stands above the first open cards on screen, where more than one route is
+ * open (ruling 8).
+ */
+function firstScreenLinesOf(headline: HeadlineLayout, holdings: CountryHolding[]): Pick<ComparedLayout, "stepsLine" | "choiceLineAbove"> {
+  const stepsLine = headline.kind === "steps"
+    ? []
+    : holdings.filter((h) => h.steps > 0).map(({ country, steps }) => ({ country, steps }));
+  const open = holdings.reduce((sum, h) => sum + h.open, 0);
+  const choiceLineAbove = open > 1 ? (holdings.find((h) => h.open > 0)?.country ?? null) : null;
+  return { stepsLine, choiceLineAbove };
+}
+
 /** Single destination: the flat layout, no country chrome. */
 function oneCountryLayoutOf(answeredDataset: AnsweredDataset, compared: ComparedWithStandings): ComparedLayout {
   const code = compared.inView.visible[0]!.code;
@@ -272,9 +297,10 @@ function oneCountryLayoutOf(answeredDataset: AnsweredDataset, compared: Compared
   const groups = groupsOf(answeredDataset, {
     grouped: compared.whole, steps, ...linesIn(compared, code), results: compared.inView.results,
   });
+  const headline = headlineOf(answeredDataset, compared);
   return {
-    kind: "one-country", country: code, strip: stripOf(compared),
-    headline: headlineOf(answeredDataset, compared), groups, standings: compared.standings,
+    kind: "one-country", country: code, strip: stripOf(compared), headline, groups, standings: compared.standings,
+    ...firstScreenLinesOf(headline, [{ country: code, steps: steps.length, open: compared.whole.met.length }]),
   };
 }
 
@@ -355,9 +381,11 @@ function countrySectionsLayoutOf(answeredDataset: AnsweredDataset, compared: Com
   const headline = headlineOf(answeredDataset, compared);
   const lead = namedCountryOf(answeredDataset.answers);
   const sections = namedFirst(visible, lead).map((country) => countrySection(answeredDataset, compared, { country, lead }));
+  const holdings = sections.map((s) => ({ country: s.country, steps: s.tally.steps, open: s.tally.open }));
   return {
     kind: "countries", strip: stripOf(compared), headline,
     lead: visible.find((country) => leads(country, lead))?.code ?? null, sections, standings: compared.standings,
+    ...firstScreenLinesOf(headline, holdings),
   };
 }
 

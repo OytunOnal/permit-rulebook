@@ -187,7 +187,7 @@ const DRAWN = [
     recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "lt2", experience_7y: "3to5",
     german: "b1", english: "c1", nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
     situation_country: "de", salary_eur_year: "unknown", funds_eur_month: "band_1",
-  }],
+  }, { stepsLine: true }],
   // Short Tallies draw one-line country headers here, and a job offer in the
   // Netherlands gathers Germany's routes into a Fold, so the floor is measured
   // on one-line country headers and on a Fold's header; its Steps line links

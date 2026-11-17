@@ -6285,6 +6285,26 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "src/lib/verdict/verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/verdict-steps.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
@@ -9732,6 +9752,26 @@
     "exported": true
    },
    {
+    "name": "STEPS_LINE_LEAD",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "stepsCountIn",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "stepsThatWouldUnlockMore",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CHOICE_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "writeJobOfferLine",
     "kind": "fn",
     "exported": true
@@ -11074,5 +11114,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "1ed7f7dbd9a9b444c62b4d9e61341a522ac4016ce6d3a4161f82655c1a174c68"
+ "digest": "ac5ace0c24f8d93637af2c50f7f0c4dfccb1e8fb2b5312ddd8aeec4bb67d7c1d"
 }

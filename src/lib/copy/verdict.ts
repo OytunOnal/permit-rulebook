@@ -348,6 +348,21 @@ export const STEPS_HEADING = "Steps that would unlock more";
 export const STEPS_HEADING_TAIL = "each re-checked against the rules";
 export const STEPS_HERE_HEADING = "Steps that would unlock more here";
 
+/** The Steps line under the headline (rulings 9–11 on #362): the Leverage
+ * steps counted per country, each count a link to that country's steps,
+ * after its lead; one count on a one-country result, the whole line. The
+ * country is the dataset's in-sentence phrase ("the Netherlands"). */
+export const STEPS_LINE_LEAD = "Steps that would unlock more:";
+export const stepsCountIn = (steps: number, country: string): string => `${steps} in ${country}`;
+export const stepsThatWouldUnlockMore = (steps: number): string =>
+  `${steps} step${steps === 1 ? "" : "s"} that would unlock more`;
+
+/** The Choice line above the open cards, where more than one route is open
+ * (rulings 8 and 11 on #362): the product checks whether each route is open,
+ * not which to apply for. */
+export const CHOICE_LINE = "Each of these is open on your answers. Which to apply for turns on things we don't "
+  + "check — compare what each also requires.";
+
 /** The job offer line: what a job offer would have checked in one country for an
  * explorer — a check, never a verdict, so never "met" or "short". The
  * offer, the country and the fields' subjects are the dataset's words. */
