@@ -144,6 +144,10 @@ describe("the rail names the threshold the reader was measured against", () => {
   });
 });
 
+/** Where a quote ends on this amount: the amount's own quote, not a statement
+ * on the same card that also names it in passing. */
+const amountQuoted = (amount: string): string => `${amount}</q>`;
+
 describe("the source list says which quote applied to this reader", () => {
   it("both quotes still render — the other threshold exists and the reader may want it", () => {
     const html = sourcesOf(drawnRouteFor(DUTCH_GRADUATE, "nl-hsm-under30"));
@@ -153,8 +157,8 @@ describe("the source list says which quote applied to this reader", () => {
 
   it("exactly one of them is marked as theirs, and the other as not", () => {
     const html = sourcesOf(drawnRouteFor(DUTCH_GRADUATE, "nl-hsm-under30"));
-    const reduced = html.slice(html.indexOf("€ 3,122.00"), html.indexOf("€ 3,122.00") + 400);
-    const full = html.slice(html.indexOf("€ 4,357.00"), html.indexOf("€ 4,357.00") + 400);
+    const reduced = html.slice(html.indexOf(amountQuoted("€ 3,122.00")), html.indexOf(amountQuoted("€ 3,122.00")) + 400);
+    const full = html.slice(html.indexOf(amountQuoted("€ 4,357.00")), html.indexOf(amountQuoted("€ 4,357.00")) + 400);
     expect(reduced).toContain(APPLIES_TO_YOU);
     expect(reduced).not.toContain(DOES_NOT_APPLY_TO_YOU);
     expect(full).toContain(DOES_NOT_APPLY_TO_YOU);
@@ -196,7 +200,7 @@ describe("the source list says which quote applied to this reader", () => {
     route.criteria.push({ op: "any", label: "living costs", paths: [{ label: "the living-costs threshold", criteria: [funds] }] });
 
     const html = sourcesOf(drawnRouteFor(DUTCH_GRADUATE, "nl-hsm-under30", twoChoices));
-    const near = (needle: string) => html.slice(html.indexOf(needle), html.indexOf(needle) + 400);
+    const near = (amount: string) => html.slice(html.indexOf(amountQuoted(amount)), html.indexOf(amountQuoted(amount)) + 400);
     // The settled choice is still marked, both ways.
     expect(near("€ 3,122.00")).toContain(APPLIES_TO_YOU);
     expect(near("€ 4,357.00")).toContain(DOES_NOT_APPLY_TO_YOU);
@@ -211,7 +215,7 @@ describe("the source list says which quote applied to this reader", () => {
     expect(fundsRow.startsWith(`"`), "an undecided row must not be dimmed as ruled out").toBe(true);
     // And the row that WAS ruled out still is, so the check above is not
     // passing because nothing is ever dimmed.
-    expect(rows.find((row) => row.includes("€ 4,357.00"))!.startsWith(" unapplied")).toBe(true);
+    expect(rows.find((row) => row.includes(amountQuoted("€ 4,357.00")))!.startsWith(" unapplied")).toBe(true);
   });
 
   it("a route with a single threshold marks nothing — there is nothing to tell apart", () => {
