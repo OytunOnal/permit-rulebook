@@ -3,7 +3,8 @@ import type { Profile } from "permit-rulebook-data";
 import {
   moreWithDifferentSituationCount, moreWithJobOfferCount, notYetCount, upToTitle,
 } from "../src/lib/copy/verdict.js";
-import { ALGERIAN, DUTCH_OFFER_ON_FOUR, PERSONA_A, PERSONA_C, PRIYA } from "./personas.js";
+import { DUTCH_OFFER_ON_FOUR } from "../scripts/seeded-results.mjs";
+import { ALGERIAN, PERSONA_A, PERSONA_C, PRIYA } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
 import { layoutPinOf, sectionNamed, summaryRowOf, verdictFor, type LayoutPin } from "./verdict-cards.js";
 

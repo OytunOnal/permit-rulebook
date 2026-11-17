@@ -306,6 +306,7 @@
   "scripts/print-report.mjs": "presentation",
   "scripts/render-assets.mjs": "infrastructure",
   "scripts/run-git.mjs": "infrastructure",
+  "scripts/seeded-results.mjs": "domain",
   "scripts/shot.mjs": "infrastructure",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure",
@@ -859,6 +860,11 @@
   {
    "from": "scripts/measure-taps.mjs",
    "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/measure-taps.mjs",
+   "to": "scripts/seeded-results.mjs",
    "kind": "dependency"
   },
   {
@@ -3708,6 +3714,11 @@
   },
   {
    "from": "tests/escaping.test.ts",
+   "to": "scripts/seeded-results.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/escaping.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
@@ -6203,6 +6214,11 @@
   },
   {
    "from": "tests/verdict-headline.test.ts",
+   "to": "scripts/seeded-results.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-headline.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
@@ -6234,6 +6250,11 @@
   {
    "from": "tests/verdict-history.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-layout.test.ts",
+   "to": "scripts/seeded-results.mjs",
    "kind": "dependency"
   },
   {
@@ -6313,6 +6334,11 @@
   },
   {
    "from": "tests/verdict-quotes-once.test.ts",
+   "to": "scripts/seeded-results.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quotes-once.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
@@ -6369,6 +6395,11 @@
   {
    "from": "tests/verdict-short-on-a-figure.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "scripts/seeded-results.mjs",
    "kind": "dependency"
   },
   {
@@ -7959,6 +7990,33 @@
    {
     "name": "runGitOrNull",
     "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/seeded-results.mjs": [
+   {
+    "name": "GERMAN_OFFER_ON_ONE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "GERMAN_OFFER_ON_FOUR",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DUTCH_OFFER_ON_FOUR",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FRENCH_OFFER_TWO_STEPS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FRENCH_OFFER_NO_STEPS",
+    "kind": "const",
     "exported": true
    }
   ],
@@ -11179,6 +11237,7 @@
   "scripts/print-report.mjs",
   "scripts/render-assets.mjs",
   "scripts/run-git.mjs",
+  "scripts/seeded-results.mjs",
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
@@ -11231,5 +11290,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "8ea5a339197435094c9fdf1ab19ba3354f27ae39b38f346e87f898a835da866f"
+ "digest": "969c529b7bc48add941537ff2479cd8efd347a6c5865f15e196121930b5792f2"
 }

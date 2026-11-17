@@ -47,6 +47,9 @@ import { PHONE, walkSite } from "./browser/browser.mjs";
 // hand goes stale the day the format moves, and this script would then
 // measure a screen the reader never sees.
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.ts";
+import {
+  DUTCH_OFFER_ON_FOUR, FRENCH_OFFER_NO_STEPS, FRENCH_OFFER_TWO_STEPS, GERMAN_OFFER_ON_FOUR, GERMAN_OFFER_ON_ONE,
+} from "./seeded-results.mjs";
 
 const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 
@@ -186,40 +189,19 @@ function listBuiltPages(dir) {
  * `{ moreQuotes: true }` says the same of a More quotes control.
  */
 const DRAWN = [
-  ["/ (results, one country)", {
-    destination: "de", citizenship: "IN", situation: "offer", qualification: "degree",
-    recognition_de: "unknown", occupation_shortage: "unknown", experience_5y: "lt2", experience_7y: "3to5",
-    german: "b1", english: "c1", age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
-    funds_eur_month: "band_1", salary_eur_year: "unknown", occupation_it: "no",
-  }],
-  ["/ (results, all four countries)", {
-    destination: "all", citizenship: "TR", situation: "offer", qualification: "degree",
-    recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "lt2", experience_7y: "3to5",
-    german: "b1", english: "c1", nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
-    situation_country: "de", salary_eur_year: "unknown", funds_eur_month: "band_1",
-  }, { stepsLine: true, moreQuotes: true }],
+  ["/ (results, one country)", GERMAN_OFFER_ON_ONE],
+  ["/ (results, all four countries)", GERMAN_OFFER_ON_FOUR, { stepsLine: true, moreQuotes: true }],
   // Short Tallies draw one-line country headers here, and a job offer in the
   // Netherlands gathers Germany's routes into a Fold, so the floor is measured
   // on one-line country headers and on a Fold's header; its Steps line links
   // to two countries' steps.
-  ["/ (results, all four countries, job offer in the Netherlands)", {
-    destination: "all", situation: "offer", situation_country: "nl", age_band: "a30to35", citizenship: "TR",
-    qualification: "degree", recognition_de: "not_assessed", experience_5y: "2plus", experience_7y: "5plus",
-    occupation_shortage: "yes", salary_eur_month: "band_5", nl_recent_grad: "no", top200_grad: "no",
-    german: "a1", funds_eur_month: "unknown",
-  }, { stepsLine: true, moreQuotes: true }],
+  ["/ (results, all four countries, job offer in the Netherlands)", DUTCH_OFFER_ON_FOUR, { stepsLine: true, moreQuotes: true }],
   // The Algerian notice's Learn link, a foot link longer than a phone's line,
   // wraps here; its Steps line is a one-country result's single link.
-  ["/ (results, France, Algerian passport)", {
-    destination: "fr", situation: "offer", qualification: "none", fr_innovative_employer: "yes", citizenship: "DZ",
-    experience_7y: "lt3", salary_eur_year: "band_0",
-  }, { stepsLine: true, moreQuotes: true }],
+  ["/ (results, France, Algerian passport)", FRENCH_OFFER_TWO_STEPS, { stepsLine: true, moreQuotes: true }],
   // A reader who does not know whether the employer is innovative meets the
   // talent card's Learn link, which wraps here.
-  ["/ (results, France, a Learn link)", {
-    destination: "fr", situation: "offer", qualification: "none", fr_innovative_employer: "unknown", citizenship: "IN",
-    experience_7y: "lt3", salary_eur_year: "unknown",
-  }],
+  ["/ (results, France, a Learn link)", FRENCH_OFFER_NO_STEPS],
 ];
 
 const seedFor = (answers) =>

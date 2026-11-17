@@ -3,8 +3,9 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, routeProvenance, routeStatements, type Dataset, type DisjunctionPath, type Profile, type Route } from "permit-rulebook-data";
 import { esc } from "../src/lib/reason.js";
 import { DOES_NOT_APPLY_TO_YOU } from "../src/lib/copy/verdict.js";
+import { DUTCH_OFFER_ON_FOUR } from "../scripts/seeded-results.mjs";
 import {
-  ALGERIAN, DENIZ, DUTCH_GRADUATE, DUTCH_OFFER_ON_FOUR, PERSONA_A, PERSONA_C, PRIYA, PRIYA_EXPLORING_ALL,
+  ALGERIAN, DENIZ, DUTCH_GRADUATE, PERSONA_A, PERSONA_C, PRIYA, PRIYA_EXPLORING_ALL,
 } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
 import { routeOf } from "./route-of.js";

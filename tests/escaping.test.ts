@@ -15,7 +15,8 @@ import {
   countryVocabulary, deriveBands, deriveQuestions, forEachCriterion, shortLabelOf, type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { figureGapSentence, shortOn } from "../src/lib/copy/verdict.js";
-import { DUTCH_OFFER_ON_FOUR, PERSONA_A, PRIYA } from "./personas.js";
+import { DUTCH_OFFER_ON_FOUR } from "../scripts/seeded-results.mjs";
+import { PERSONA_A, PRIYA } from "./personas.js";
 
 /**
  * A value going into an attribute has to be escaped for an attribute.

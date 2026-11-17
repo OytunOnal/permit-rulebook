@@ -5,7 +5,10 @@ import type { Profile } from "permit-rulebook-data";
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
 import type { Verdict } from "../src/lib/verdict/verdict.js";
 import { withSite } from "./browser-walk.js";
-import { DENIZ, DUTCH_OFFER_ON_FOUR, PERSONA_A, PRIYA_EXPLORING_ALL } from "./personas.js";
+import {
+  DUTCH_OFFER_ON_FOUR, FRENCH_OFFER_NO_STEPS, FRENCH_OFFER_TWO_STEPS, GERMAN_OFFER_ON_FOUR,
+} from "../scripts/seeded-results.mjs";
+import { DENIZ, PERSONA_A, PRIYA_EXPLORING_ALL } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 
@@ -15,30 +18,6 @@ import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verd
  * and 27 on #420), read from the result's markup at the verdict's entry, and
  * where the page paints the Steps line on a phone.
  */
-
-/** A French offer from an innovative employer, no qualification, an
- * Algerian passport: one country, two steps (a result `measure:taps` seeds). */
-const FRENCH_OFFER_TWO_STEPS: Profile = {
-  destination: "fr", situation: "offer", qualification: "none", fr_innovative_employer: "yes", citizenship: "DZ",
-  experience_7y: "lt3", salary_eur_year: "band_0",
-};
-
-/** A French offer from an employer the reader does not know is innovative:
- * nothing open, and no step (a result `measure:taps` seeds). */
-const FRENCH_OFFER_NO_STEPS: Profile = {
-  destination: "fr", situation: "offer", qualification: "none", fr_innovative_employer: "unknown", citizenship: "IN",
-  experience_7y: "lt3", salary_eur_year: "unknown",
-};
-
-/** Germany with an offer and a recognised degree on the shortage list, all
- * four countries asked, the offer in Germany: two routes open there (a
- * result `measure:taps` seeds). */
-const GERMAN_OFFER_ON_FOUR: Profile = {
-  destination: "all", citizenship: "TR", situation: "offer", qualification: "degree",
-  recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "lt2", experience_7y: "3to5",
-  german: "b1", english: "c1", nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
-  situation_country: "de", salary_eur_year: "unknown", funds_eur_month: "band_1",
-};
 
 /** An offer in France, all four countries asked, an Indian passport, a
  * degree recognised in Germany and in France: one route open in France and

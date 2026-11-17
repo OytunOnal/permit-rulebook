@@ -3,7 +3,8 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Criterion, type Dataset, type Profile, type Route } from "permit-rulebook-data";
 import { shortByUpToLine, unsettledHeadline } from "../src/lib/copy/verdict.js";
 import type { Verdict } from "../src/lib/verdict/verdict.js";
-import { ALGERIAN, DUTCH_OFFER_ON_FOUR, PERSONA_A, PERSONA_C, PRIYA } from "./personas.js";
+import { DUTCH_OFFER_ON_FOUR } from "../scripts/seeded-results.mjs";
+import { ALGERIAN, PERSONA_A, PERSONA_C, PRIYA } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
 import { groupsIn, layoutPinOf, verdictFor, verdictOn } from "./verdict-cards.js";
 
