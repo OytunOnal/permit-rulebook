@@ -173,10 +173,11 @@ describe(NOTICE_FOOT, () => {
   });
 });
 
-/** The line on the graduate's under-30 card that quotes this amount. */
+/** The line on the graduate's under-30 card whose quote ends on this amount:
+ * the amount's own quote, not a statement that also names it in passing. */
 function graduateLineQuoting(amount: string): QuoteLine {
   const lines = quoteLinesIn(blocksIn(drawnRouteOn(verdictFor(DUTCH_GRADUATE), "nl-hsm-under30"), "srcs"));
-  const line = lines.find((l) => l.html.includes(amount));
+  const line = lines.find((l) => l.html.includes(`${amount}</q>`));
   if (!line) throw new Error(`no line quotes ${amount}`);
   return line;
 }

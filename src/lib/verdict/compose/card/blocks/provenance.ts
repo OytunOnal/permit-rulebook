@@ -52,18 +52,49 @@ function amountPeriodHtml(ds: Dataset, route: Route, amount: number | undefined)
 }
 
 /** What a card adds to one value's quote line: the period its amount is
- * stated per, the applies-to-you mark and the ruled-out dimming, and the
- * citation it is given. */
+ * stated per, the applies-to-you mark on a settled choice of amounts, the
+ * does-not-apply mark and the dimming on every quote of a path not taken,
+ * and the citation it is given. */
 function cardLineOptionsOf(context: ProvenanceContext, entry: ProvenanceEntry, citation?: string): QuoteLineOptions {
   const { label, amount, applied } = entry;
   // Per entry, not per card: one settled disjunction on a route must not put
   // a ruled-out mark under a second one nobody has decided.
-  const takesMark = context.contested && amount !== undefined;
+  const ruledOut = applied === false;
+  const takesMark = ruledOut || (context.contested && amount !== undefined);
   return {
     amount, label, citation,
     afterLabelHtml: amountPeriodHtml(context.ds, context.route, amount) + (takesMark ? appliesMarkHtml(applied) : ""),
-    lineClass: takesMark && applied === false ? "unapplied" : undefined,
+    lineClass: ruledOut ? "unapplied" : undefined,
   };
+}
+
+/**
+ * A card's values in the order a reader takes them (ruling 5 on #420): the
+ * deciding path's, and every value no path decides, first; then each value of
+ * a path not taken. Within each part, the dataset's order. The engine marks
+ * each value's path; this reads the mark and decides nothing.
+ */
+function decidingPathFirst(entries: ProvenanceEntry[]): ProvenanceEntry[] {
+  return [...entries.filter((e) => e.applied !== false), ...entries.filter((e) => e.applied === false)];
+}
+
+/** Whether `longer` quotes `shorter`'s sentence inside its own, from the same page. */
+function quotesInside(longer: ProvenanceEntry, shorter: ProvenanceEntry): boolean {
+  const { quote, source_url } = shorter.value;
+  return longer.value.source_url === source_url && longer.value.quote !== quote && longer.value.quote.includes(quote);
+}
+
+/**
+ * A card's values without one whose sentence another value from the same page
+ * on the card quotes inside a longer one: the longer line carries it (ruling 4
+ * on #420). The dataset gives such a pair one legal basis and one read date,
+ * so dropping the shorter loses nothing the reader is shown. A line the
+ * reader's own path rests on is never dropped for a line of a path not taken,
+ * which is dimmed and says it does not apply to them (ruling 29 on #420).
+ */
+function withoutContainedSentences(entries: ProvenanceEntry[]): ProvenanceEntry[] {
+  return entries.filter((entry) => !entries.some((other) =>
+    quotesInside(other, entry) && (other.applied !== false || entry.applied === false)));
 }
 
 /**
@@ -105,11 +136,13 @@ function distinctProvenanceLines(
  * both unmarked left a reader free to take the lower one for theirs when they
  * do not qualify for it (human catch 2026-09-07). An item the card dropped,
  * linked to a path its route did not take (`notTaken`), is not quoted either
- * (#315, ruling 5).
+ * (#315, ruling 5). Any other value of a path not taken is quoted after the
+ * rest, dimmed and marked as not applying (ruling 5 on #420).
  */
 export function provenanceHtml(screen: CardScreen, r: RouteResult, notTaken: ReadonlySet<string> = new Set()): string {
   const { ds, answers, glossary: seen = new Set() } = screen;
-  const entries = resultProvenance({ ...r, route: routeAsStated(r.route, notTaken) }, answers);
+  const entries = decidingPathFirst(withoutContainedSentences(
+    resultProvenance({ ...r, route: routeAsStated(r.route, notTaken) }, answers)));
   // A lone threshold needs no telling apart from anything, and a losing path
   // that quotes no amount leaves nothing for the reader to mistake for theirs.
   // Only where a choice of NUMBERS was actually settled ONE WAY OR THE OTHER.

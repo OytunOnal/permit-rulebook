@@ -6282,6 +6282,31 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/verdict-quotes-once.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quotes-once.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quotes-once.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quotes-once.test.ts",
+   "to": "tests/route-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quotes-once.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/verdict-short-on-a-figure.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
@@ -11151,5 +11176,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "f66f7a44b1325b3c61ab06985f462f26145669131f479e17ed8de5a9d1a94079"
+ "digest": "3898395e842de5e3bfe7c776071e5084d9d88fce22f6335efc380e3b77e8793f"
 }
