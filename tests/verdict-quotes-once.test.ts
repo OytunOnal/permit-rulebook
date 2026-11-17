@@ -5,7 +5,7 @@ import { esc } from "../src/lib/reason.js";
 import { DOES_NOT_APPLY_TO_YOU, moreQuotes } from "../src/lib/copy/verdict.js";
 import { DUTCH_OFFER_ON_FOUR } from "../scripts/seeded-results.mjs";
 import {
-  ALGERIAN, DENIZ, DUTCH_GRADUATE, PERSONA_A, PERSONA_C, PRIYA, PRIYA_EXPLORING_ALL,
+  ALGERIAN, DENIZ, DUTCH_GRADUATE, PERSONA_A, PERSONA_C, PRIYA, PRIYA_EXPLORING_ALL, RECOGNISED_A,
 } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
 import { routeOf } from "./route-of.js";
@@ -27,9 +27,6 @@ const FRENCH_QUALIFIED_OFFER: Profile = {
   fr_degree: "yes", fr_innovative_employer: "no", fr_local_contract: "no", experience_5y: "2plus",
   experience_7y: "5plus", salary_eur_year: deriveBands(ds, "salary_eur_year").at(-1)!.id,
 };
-
-/** Persona A with a recognised degree: the shortage Blue Card is met through the recognised-degree path. */
-const RECOGNISED_A: Profile = { ...PERSONA_A, recognition_de: "recognized" };
 
 /** The readers the verdict cases use, and a reader with no answers. */
 const READERS: [string, Profile][] = [

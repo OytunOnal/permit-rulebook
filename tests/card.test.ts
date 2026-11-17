@@ -8,7 +8,7 @@ import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn, sameNumberNote } 
 import {
   APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NOT_CHECKED_HEADING, NO_OFFICIAL_WORDING_HEADING, WHAT_THIS_ROUTE_ASKS,
 } from "../src/lib/copy/verdict.js";
-import { blocksIn, drawnRouteOn, everyDrawnRouteIn, standingOn, verdictOn } from "./verdict-cards.js";
+import { blocksIn, drawnRouteOn, everyDrawnRouteIn, quoteEndingOn, standingOn, verdictOn } from "./verdict-cards.js";
 import { DUTCH_GRADUATE, bandFor } from "./personas.js";
 import { routeOf } from "./route-of.js";
 
@@ -143,10 +143,6 @@ describe("the rail names the threshold the reader was measured against", () => {
     expect(amountsTheRailAsks(profile, "de-experienced-worker")).toEqual([45630]);
   });
 });
-
-/** Where a quote ends on this amount: the amount's own quote, not a statement
- * on the same card that also names it in passing. */
-const quoteEndingOn = (amount: string): string => `${amount}</q>`;
 
 describe("the source list says which quote applied to this reader", () => {
   it("both quotes still render — the other threshold exists and the reader may want it", () => {

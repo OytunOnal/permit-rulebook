@@ -6415,17 +6415,17 @@
   },
   {
    "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
    "to": "scripts/seeded-results.mjs",
    "kind": "dependency"
   },
   {
    "from": "tests/verdict-steps-and-choice-lines.test.ts",
    "to": "src/lib/copy/verdict.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/verdict-steps-and-choice-lines.test.ts",
-   "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {

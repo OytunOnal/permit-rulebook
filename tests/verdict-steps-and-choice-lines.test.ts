@@ -1,21 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { phraseOf, type Profile } from "permit-rulebook-data";
+import { PHONE } from "../scripts/browser/browser.mjs";
 import {
   CHOICE_LINE, OPEN_HEADING, STEPS_HEADING, STEPS_HEADING_TAIL, STEPS_HERE_HEADING, STEPS_LINE_LEAD, stepsCountIn,
   stepsThatWouldUnlockMore,
 } from "../src/lib/copy/verdict.js";
-import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
 import type { Verdict } from "../src/lib/verdict/verdict.js";
 import { stepsLineHtml } from "../src/lib/verdict/compose/steps-line.js";
-import { withSite } from "./browser-walk.js";
+import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import {
   DUTCH_OFFER_ON_FOUR, FRENCH_OFFER_NO_STEPS, FRENCH_OFFER_TWO_STEPS, GERMAN_OFFER_ON_FOUR,
 } from "../scripts/seeded-results.mjs";
 import { DENIZ, PERSONA_A, PRIYA_EXPLORING_ALL } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
-import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
+import { PAINTED_AS_COMPOSED, layoutPinOf, paintedAsComposedScript, stepsIn, verdictFor } from "./verdict-cards.js";
 
 /**
  * The first screen says which steps would unlock more, and that choosing
@@ -68,7 +66,7 @@ function headingLandedOn(markup: string, href: string): string | null {
 const choiceLinesIn = (verdict: Verdict): string[] =>
   [...verdict.body.matchAll(/<p class="choice-line">([\s\S]*?)<\/p>/g)].map((m) => plainTextOf(m[1]!));
 
-describe("the Steps line under the headline (rulings 9 and 10 on #362)", () => {
+describe("the Steps line under the headline", () => {
   it("the four-country result with steps in two countries counts each, in screen order, each a link to its section's steps", () => {
     const verdict = verdictFor(DUTCH_OFFER_ON_FOUR);
     const line = stepsLineOf(verdict);
@@ -110,19 +108,19 @@ describe("a one-country layout counting steps in other than one country", () => 
   });
 });
 
-describe("where no Steps line is drawn (ruling 9 on #362)", () => {
+describe("where no Steps line is drawn", () => {
   it("a result whose headline names its nearest step draws none", () => {
-    expect(verdictFor(PRIYA_EXPLORING_ALL).action.masthead.subline).toContain("Nearest:");
+    expect(layoutPinOf(verdictFor(PRIYA_EXPLORING_ALL)).headline.step, "precondition: the headline names a step").not.toBeNull();
     expect(stepsLineOf(verdictFor(PRIYA_EXPLORING_ALL))).toBeNull();
   });
 
   it("a result with no steps draws none", () => {
-    expect(verdictFor(FRENCH_OFFER_NO_STEPS).body).not.toContain("unlockh");
+    expect(stepsIn(verdictFor(FRENCH_OFFER_NO_STEPS)), "precondition: the result offers no step").toEqual([]);
     expect(stepsLineOf(verdictFor(FRENCH_OFFER_NO_STEPS))).toBeNull();
   });
 });
 
-describe("the Choice line (ruling 8 on #362, rulings 26 and 27 on #420)", () => {
+describe("the Choice line", () => {
   /** The markup from the open group's heading to the end of its stack. */
   const openGroupOf = (markup: string): string => {
     const at = markup.indexOf(`<h2 class="ghead "><b>${OPEN_HEADING}</b>`);
@@ -161,12 +159,8 @@ describe("the Choice line (ruling 8 on #362, rulings 26 and 27 on #420)", () => 
   });
 });
 
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
-const unbuilt = !existsSync(dist);
-if (unbuilt) process.stderr.write("\n  !! the Steps line's place was not walked: no dist/. Run: npm run build && npm test\n\n");
-
-/** The phone the first screen is read on. */
-const PHONE = { viewport: { width: 390, height: 844 }, mobile: true };
+const skipped = skipReason();
+if (skipped) warnNotWalked("THE STEPS LINE'S PLACE", skipped);
 
 /** Where the page drew the Steps line and what stands around it, each box's
  * top and bottom in the document, and whether the page painted the verdict as
@@ -181,13 +175,11 @@ const PLACES = `JSON.stringify((() => {
   };
 })())`;
 
-describe.skipIf(unbuilt)("the Steps line on a phone (ruling 24 on #420)", () => {
+describe.skipIf(skipped !== null)("the Steps line on a phone", () => {
   it("stands under the masthead, before \"You declared\" and the Notice, on the first screen", async () => {
     const seen = await withSite(async ({ page, url }) => {
       await page.goto(url("/"));
-      await page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(JSON.stringify({
-        version: RECORD_VERSION, answers: DUTCH_OFFER_ON_FOUR, history: Object.keys(DUTCH_OFFER_ON_FOUR),
-      }))})`);
+      await page.evaluate(recordSeedScript(DUTCH_OFFER_ON_FOUR));
       await page.goto(url("/"));
       return {
         places: JSON.parse(await page.evaluate(PLACES)),

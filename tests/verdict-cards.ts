@@ -18,6 +18,10 @@ const ds = dataset as unknown as Dataset;
 export const verdictOn = (data: Dataset, answers: Profile, cameFrom: string | null = null): Verdict =>
   verdictOf(data, answers, { cameFrom, answered: Object.keys(answers).length });
 
+/** The markup where a quote ends on this amount: the amount's own quote, not a
+ * statement on the same card that also names it in passing. */
+export const quoteEndingOn = (amount: string): string => `${amount}</q>`;
+
 /** The verdict on the shipped dataset, with no route page behind it. */
 export const verdictFor = (answers: Profile): Verdict => verdictOn(ds, answers);
 

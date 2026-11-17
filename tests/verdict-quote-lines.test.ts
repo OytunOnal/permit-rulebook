@@ -9,7 +9,7 @@ import { glossedLearnLinkText, linkLabelOf } from "../src/lib/quote.js";
 import { APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, perPeriod } from "../src/lib/copy/verdict.js";
 import { authorityRoutePageLinksIn } from "./authority-route-page-links.js";
 import { ALGERIAN, DUTCH_GRADUATE, PRIYA_EXPLORING_ALL } from "./personas.js";
-import { blocksIn, drawnRouteOn, everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
+import { blocksIn, drawnRouteOn, everyDrawnRouteIn, quoteEndingOn, verdictFor } from "./verdict-cards.js";
 import { routeOf } from "./route-of.js";
 
 const ds = dataset as unknown as Dataset;
@@ -177,7 +177,7 @@ describe(NOTICE_FOOT, () => {
  * the amount's own quote, not a statement that also names it in passing. */
 function graduateLineQuoting(amount: string): QuoteLine {
   const lines = quoteLinesIn(blocksIn(drawnRouteOn(verdictFor(DUTCH_GRADUATE), "nl-hsm-under30"), "srcs"));
-  const line = lines.find((l) => l.html.includes(`${amount}</q>`));
+  const line = lines.find((l) => l.html.includes(quoteEndingOn(amount)));
   if (!line) throw new Error(`no line quotes ${amount}`);
   return line;
 }

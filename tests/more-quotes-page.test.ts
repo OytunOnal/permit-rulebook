@@ -5,7 +5,7 @@ import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/bro
 import { moreQuotes } from "../src/lib/copy/verdict.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
-import { PERSONA_A } from "./personas.js";
+import { RECOGNISED_A } from "./personas.js";
 import { routeOf } from "./route-of.js";
 import { distanceBetween, inksOnGroundIn, type InkOnGround, type TextBox } from "./screenshot-ink.js";
 
@@ -17,10 +17,6 @@ import { distanceBetween, inksOnGroundIn, type InkOnGround, type TextBox } from 
  */
 
 const ds = dataset as unknown as Dataset;
-
-/** Persona A with a recognised degree: the shortage Blue Card is met through
- * the recognised-degree path, and quotes the IT path's sentences dimmed. */
-const RECOGNISED_A = { ...PERSONA_A, recognition_de: "recognized" };
 
 /** The script expression for the result's full card of the shortage Blue
  * Card, found by its title as the reader finds it; undefined where none. */
