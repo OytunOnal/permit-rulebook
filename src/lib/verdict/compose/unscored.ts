@@ -88,8 +88,8 @@ export interface UnscoredVerdict {
  * explained it third in France's line, under Germany's. One function, one
  * copy — the direct path and the four-country path read the same headline
  * for the same answers, and only the rest sentence names the country, since
- * "the routes below" are four countries' here. Which country the
- * four-country result leads with is the layout's, read from the same key.
+ * "the routes below" are four countries' here. The four-country result
+ * leads with the same named country, the layout's.
  */
 export function unscoredVerdict(ds: Dataset, keyed: WrittenStateKey): UnscoredVerdict {
   const { key, named, mark, situation } = keyed;

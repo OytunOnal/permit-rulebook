@@ -3,7 +3,7 @@ import type { Profile } from "permit-rulebook-data";
 import {
   moreWithDifferentSituationCount, moreWithJobOfferCount, notYetCount, upToTitle,
 } from "../src/lib/copy/verdict.js";
-import { ALGERIAN, PERSONA_A, PERSONA_C, PRIYA } from "./personas.js";
+import { ALGERIAN, DUTCH_OFFER_ON_FOUR, PERSONA_A, PERSONA_C, PRIYA } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
 import { layoutPinOf, sectionNamed, summaryRowOf, verdictFor, type LayoutPin } from "./verdict-cards.js";
 
@@ -289,5 +289,61 @@ describe("the written state's key and each country's mark ride on the layout", (
       for (const name of ["Germany", "Spain", "Netherlands"])
         expect(sectionNamed(verdict, name).tally.mark, name).toBeNull();
     }
+  });
+});
+
+/** An intra-corporate transfer to Spain, on all four. */
+const SPANISH_TRANSFER_ON_FOUR: Profile = {
+  destination: "all", situation: "ict", situation_country: "es", citizenship: "TR", qualification: "degree",
+  recognition_de: "recognized", german: "b1", funds_eur_month: "band_1", nl_recent_grad: "no", top200_grad: "no",
+};
+/** A research hosting agreement in the Netherlands, on all four. */
+const DUTCH_HOSTING_ON_FOUR: Profile = { ...SPANISH_TRANSFER_ON_FOUR, situation: "research", situation_country: "nl" };
+
+/** The country the layout leads with, by name, or null. */
+function leadIn(answers: Profile): string | null {
+  const { lead } = layoutPinOf(verdictFor(answers));
+  if (lead === undefined) throw new Error("this verdict draws no country sections");
+  return lead;
+}
+
+/** The sections' names in the order drawn, once the first is checked open. */
+function sectionNamesWithFirstOpen(answers: Profile): string[] {
+  const sections = sectionsOpenIn(answers);
+  expect(sections[0]![1], `${sections[0]![0]} is drawn first, collapsed`).toBe(true);
+  return sections.map(([name]) => name);
+}
+
+// Ruling 1 on #362: the country named at question 3 leads and opens, whatever
+// is open elsewhere; the others keep the dataset's order.
+describe("on the four-country result, the country named at question 3 leads, open", () => {
+  it("a job offer in the Netherlands: the Netherlands first and open, then Germany, France, Spain", () => {
+    expect(sectionNamesWithFirstOpen(DUTCH_OFFER_ON_FOUR)).toEqual(["Netherlands", "Germany", "France", "Spain"]);
+    expect(leadIn(DUTCH_OFFER_ON_FOUR)).toBe("Netherlands");
+  });
+
+  it("a transfer to Spain: Spain first and open, then Germany, France, the Netherlands", () => {
+    expect(sectionNamesWithFirstOpen(SPANISH_TRANSFER_ON_FOUR)).toEqual(["Spain", "Germany", "France", "Netherlands"]);
+    expect(leadIn(SPANISH_TRANSFER_ON_FOUR)).toBe("Spain");
+  });
+
+  it("a hosting agreement in the Netherlands: the Netherlands first and open, then Germany, France, Spain", () => {
+    expect(sectionNamesWithFirstOpen(DUTCH_HOSTING_ON_FOUR)).toEqual(["Netherlands", "Germany", "France", "Spain"]);
+    expect(leadIn(DUTCH_HOSTING_ON_FOUR)).toBe("Netherlands");
+  });
+
+  it("a named country holding only not-yet rows, a route open in Germany: France first and open all the same", () => {
+    const verdict = verdictFor(FRENCH_RESEARCHER_WITH_A_GERMAN_ROUTE);
+    expect(layoutPinOf(verdict).strip.open).toBeGreaterThan(0);
+    expect(sectionNamed(verdict, "France").groups.map((g) => g.kind)).toEqual(["not-yet"]);
+    expect(sectionsOpenIn(FRENCH_RESEARCHER_WITH_A_GERMAN_ROUTE)).toEqual([
+      ["France", true], ["Germany", true], ["Spain", false], ["Netherlands", false],
+    ]);
+    expect(leadIn(FRENCH_RESEARCHER_WITH_A_GERMAN_ROUTE)).toBe("France");
+  });
+
+  it("no country named: the explorer keeps the dataset's order, and nothing leads", () => {
+    expect(sectionsOpenIn(PERSONA_C).map(([name]) => name)).toEqual(["Germany", "France", "Spain", "Netherlands"]);
+    expect(leadIn(PERSONA_C)).toBeNull();
   });
 });

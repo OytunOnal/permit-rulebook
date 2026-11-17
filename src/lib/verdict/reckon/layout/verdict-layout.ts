@@ -143,8 +143,7 @@ export type Explore = "one-country" | "several-countries";
 
 /** Where a written state stands: the answer it is keyed by, the destination
  * answer of the country the reader named at question 3 on the four-country
- * path only — the country whose section leads the result, open (s26); the
- * direct path has no list of countries to lead — the mark, and the situation. */
+ * path only (s26) — the mark, and the situation. */
 export interface WrittenStateKey {
   key: string;
   named: string | undefined;
@@ -232,8 +231,9 @@ export type ComparedLayout =
   }
   | {
     kind: "countries"; strip: Strip; headline: HeadlineLayout;
-    /** The country whose section leads, open, by its code; null where the
-     * sections keep the dataset's order. */
+    /** The country named at question 3, whose section leads, open, by its
+     * code; null where none is named and the sections keep the dataset's
+     * order. */
     lead: string | null;
     sections: CountrySection[];
     standings: RouteStandings;

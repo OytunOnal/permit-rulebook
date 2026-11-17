@@ -163,10 +163,16 @@ export const asksOrMore = (threshold: string): string => `asks ${threshold} or m
 export type PrintedShortfall =
   | { kind: "bounded"; gap: string }
   | { kind: "open-below"; line: string; band: string };
+/** The subject of the headline's emphasis: the nearest route within reach,
+ * with the phrase of its country where the result shows several ("One in
+ * Germany"), and alone where it shows one (ruling 2 on #362). */
+const nearestSubject = (country?: string): string => (country === undefined ? "One" : `One in ${country}`);
 /** The headline's emphasis on a bounded gap: "up to", as the card says it. */
-export const shortByUpToLine = (amount: string): string => `One is short by up to ${amount}.`;
+export const shortByUpToLine = (amount: string, country?: string): string =>
+  `${nearestSubject(country)} is short by up to ${amount}.`;
 /** The headline's emphasis on a band open at the bottom: the line, not an amount. */
-export const needsOrMoreLine = (threshold: string): string => `One needs ${threshold} or more.`;
+export const needsOrMoreLine = (threshold: string, country?: string): string =>
+  `${nearestSubject(country)} needs ${threshold} or more.`;
 /** The card's note on a route short on money: its stressed opening, and the
  * rest, which names the field. */
 export const shortfallNote = (shortfall: PrintedShortfall, field: string): { lead: string; rest: string } =>
@@ -209,9 +215,10 @@ export const wouldThenBeShortOnly = (gaps: PrintedFigureGap[]): string =>
  * in their band, so "€304.20/year more" is at most that (ruling 1 on #187,
  * leftover 2). */
 export const upToTitle = (title: string): string => `up to ${title}`;
-/** The headline's emphasis on the nearest such route. */
-export const shortfallHeadline = (shortfall: PrintedShortfall): string =>
-  (shortfall.kind === "bounded" ? shortByUpToLine(shortfall.gap) : needsOrMoreLine(shortfall.line));
+/** The headline's emphasis on the nearest such route, with its country's
+ * phrase where the result shows several. */
+export const shortfallHeadline = (shortfall: PrintedShortfall, country?: string): string =>
+  (shortfall.kind === "bounded" ? shortByUpToLine(shortfall.gap, country) : needsOrMoreLine(shortfall.line, country));
 /** Where the reader's band stands against one amount, on the rail's row. */
 export const upToShort = (amount: string): string => `up to ${amount} short`;
 export const ABOVE_THE_AMOUNT = "above the amount";
@@ -289,7 +296,10 @@ export const stepsWouldChangeHeadline = (steps: number): string =>
 export const NOTHING_OPEN_HEADLINE = "Nothing open on these answers.";
 export const routesOpenHeadline = (open: number, countries: number): string =>
   `${open} route${open === 1 ? "" : "s"} look${open === 1 ? "s" : ""} open${countries > 1 ? ` across ${countries} countries` : ""}.`;
-export const pointsAwayLine = (points: number): string => `One is ${points} point${points === 1 ? "" : "s"} away.`;
+/** The headline's emphasis on a route short on points, with its country's
+ * phrase where the result shows several. */
+export const pointsAwayLine = (points: number, country?: string): string =>
+  `${nearestSubject(country)} is ${points} point${points === 1 ? "" : "s"} away.`;
 
 /**
  * A verdict's subline. What the results compared, counted in routes — the

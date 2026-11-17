@@ -6151,7 +6151,17 @@
   },
   {
    "from": "tests/verdict-headline.test.ts",
+   "to": "src/lib/verdict/verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/verdict-headline.test.ts",
    "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-headline.test.ts",
+   "to": "tests/reader-pages.ts",
    "kind": "dependency"
   },
   {
@@ -9367,6 +9377,11 @@
     "exported": true
    },
    {
+    "name": "nearestSubject",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "shortByUpToLine",
     "kind": "fn",
     "exported": true
@@ -11044,5 +11059,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "c4c2c6c37142a1b2ea48651ce536fa719fae0b9069f48b5ad55870fd7e77e2b0"
+ "digest": "744e530502d55062f1081a9d9ffa120db9a61c3201d94577ec6e18bfe3ca7cea"
 }

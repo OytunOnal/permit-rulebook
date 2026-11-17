@@ -65,6 +65,16 @@ export const DUTCH_GRADUATE: Profile = {
   salary_eur_month: bandFor("salary_eur_month", 3500),
 };
 
+/** The v1.2.6 gate critique's reader (#362): all four countries, a job offer
+ * in the Netherlands, a Turkish passport, a degree not yet assessed;
+ * the answers `measure:taps` seeds. */
+export const DUTCH_OFFER_ON_FOUR: Profile = {
+  destination: "all", situation: "offer", situation_country: "nl", age_band: "a30to35", citizenship: "TR",
+  qualification: "degree", recognition_de: "not_assessed", experience_5y: "2plus", experience_7y: "5plus",
+  occupation_shortage: "yes", salary_eur_month: "band_5", nl_recent_grad: "no", top200_grad: "no",
+  german: "a1", funds_eur_month: "unknown",
+};
+
 /** The Algerian reader with a French offer, on €50,700–€59,373. */
 export const ALGERIAN: Profile = {
   destination: "fr", citizenship: "DZ", situation: "offer", situation_country: "fr",
