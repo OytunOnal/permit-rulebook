@@ -195,7 +195,9 @@ click on the tracker link. Answers never leave the device.
   after it; beside each other, `data-check` runs the data package's whole
   check at it, and `build` builds it, then the site: build, tests with a real
   browser over `dist/`, the lint, asset truth, base-path check, tap targets
-  at 390 px, the carry; `deploy` waits on both. Every pull request runs the
+  at 390 px (every built page and every seeded result, each seed proven to
+  reach the result screen, and no Strip line starting with a dot; #414), the
+  carry; `deploy` waits on both. Every pull request runs the
   same checks on its own head, on the push's paths, in a concurrency group
   of its own, and shows them on its page; it never deploys, pins, announces
   or files an issue. Every checkout leaves no token on disk, and a value read
