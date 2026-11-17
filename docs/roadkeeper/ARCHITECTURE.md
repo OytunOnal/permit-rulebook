@@ -196,7 +196,11 @@ click on the tracker link. Answers never leave the device.
   check at it, and `build` builds it, then the site: build, tests with a real
   browser over `dist/`, the lint, asset truth, base-path check, tap targets
   at 390 px (every built page and every seeded result, each seed proven to
-  reach the result screen, and no Strip line starting with a dot; #414), the
+  reach the result screen, no Strip line starting with a dot, and each
+  control a seed requires drawn, the Steps line's links and the More quotes
+  control, from one table, `scripts/required-controls.mjs`, the seeds one
+  module, `scripts/seeded-results.mjs`, that the tests import too; #414,
+  #420), the
   carry; `deploy` waits on both. Every pull request runs the
   same checks on its own head, on the push's paths, in a concurrency group
   of its own, and shows them on its page; it never deploys, pins, announces
@@ -345,7 +349,9 @@ click on the tracker link. Answers never leave the device.
   offer would open, and the layout, reckoned once as data by `layoutOf`: each
   section's groups in order, each fold's rows, which country sections open
   (any holding something the reader can act on), the strip's and each tally's
-  numbers with each country's mark, the lead country, and the headline's kind,
+  numbers with each country's mark, the lead country (the one named at
+  question 3, on the four-country result; #420), the Steps line's counts per
+  country and whether the Choice line is drawn, and the headline's kind,
   its nearest route and the written state's key. Beside the groups, each
   route's **route standing**, by its id: its money shortfall, what it is
   measured on (the deciding criterion, the reader's band, and where the band
@@ -356,7 +362,11 @@ click on the tracker link. Answers never leave the device.
   The files that draw read that layout and hold only words and cards;
   `drawn-cards.ts` draws each route's and step's card once, by its id, and
   `find-route-standing.ts` finds a route standing, a step or a step's place
-  for the drawing.
+  for the drawing. A card's quote lines come in reading order, the path it
+  was met through first and a path not taken's dimmed, a sentence contained
+  in a longer one from the same page drawn once, the first two in view and
+  the rest under "N more quotes" (`provenance.ts`); the masthead draws the
+  Steps line (`steps-line.ts`) under its rule (#420).
   A Card is one deep module inside it, `compose/card` (#184): its entry,
   `cards.ts`, draws a route's card, a Not yet row, a closed row, a step's card
   and a Notice's card, and its blocks (the route statements, the rail, the
