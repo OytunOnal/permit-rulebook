@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import type { Profile } from "permit-rulebook-data";
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
 import type { Verdict } from "../src/lib/verdict/verdict.js";
+import { stepsLineHtml } from "../src/lib/verdict/compose/steps-line.js";
 import { withSite } from "./browser-walk.js";
 import {
   DUTCH_OFFER_ON_FOUR, FRENCH_OFFER_NO_STEPS, FRENCH_OFFER_TWO_STEPS, GERMAN_OFFER_ON_FOUR,
@@ -97,6 +98,15 @@ describe("the Steps line under the headline (rulings 9 and 10 on #362)", () => {
     expect(headingLandedOn(verdict.body, links[0]!.href))
       .toBe("Steps that would unlock more — each re-checked against the rules");
     expect(plainTextOf(stepsLineOf(verdictFor(FRENCH_OFFER_TWO_STEPS))!)).toBe("2 steps that would unlock more");
+  });
+});
+
+describe("a one-country layout counting steps in other than one country", () => {
+  it("stops the Steps line with a message naming how many countries it holds", () => {
+    const layout = verdictFor(PERSONA_A).layout;
+    if (layout.kind !== "one-country") throw new Error("precondition: persona A's result is one country");
+    const twoCountries = { ...layout, stepsLine: [...layout.stepsLine, { country: "FR", steps: 1, open: 0 }] };
+    expect(() => stepsLineHtml(twoCountries)).toThrow(/one-country.*2 countries/);
   });
 });
 

@@ -22,7 +22,9 @@ export function stepsLineHtml(layout: ComparedLayout): string {
   const holdings = layout.stepsLine;
   if (!holdings.length) return "";
   if (layout.kind === "one-country") {
-    const [holding] = holdings as [CountryHolding];
+    const [holding] = holdings;
+    if (holding === undefined || holdings.length !== 1)
+      throw new Error(`a one-country result's Steps line counts steps in ${holdings.length} countries, not one`);
     return `<p class="steps-line">${stepsLinkHtml(holding, stepsThatWouldUnlockMore(holding.steps))}</p>`;
   }
   const links = holdings.map((holding) => stepsLinkHtml(holding, stepsCountIn(holding.steps, phraseOf(holding.country))));

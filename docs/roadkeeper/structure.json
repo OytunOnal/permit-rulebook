@@ -6420,6 +6420,11 @@
   },
   {
    "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "src/lib/verdict/compose/steps-line.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
    "to": "src/lib/verdict/verdict.ts",
    "kind": "type-only"
   },
@@ -11294,5 +11299,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "8d8919c958d4dac412a4ea9ed924b589cc36eefbac806e4dc9e410da43a1668c"
+ "digest": "aced10d5d029b57f00f5bbf0ebde9456a1d5b2cf778a0555cf36b2cb8098a16f"
 }
