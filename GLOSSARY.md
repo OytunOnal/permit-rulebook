@@ -456,6 +456,25 @@ route's card when the route is open, within reach or unsettled, a step's
 card, a Notice's card. A Not yet route and a route closed to the reader's
 passport are drawn as rows, not cards.
 
+**More quotes** (UI: "4 more quotes", #362):
+A card's quote lines past its first two, one tap away. The first two are the
+ones the route was met through.
+_Avoid_: fold (the not-yet rows' word), sources (a source is the page, and
+several quotes can share one)
+
+**Choice line** (UI: "Each of these is open on your answers. Which to apply
+for turns on things we don't check — compare what each also requires.", #362):
+What a verdict with more than one route open says above the open cards: the
+product checks whether each route is open, not which to apply for.
+_Avoid_: recommendation, advice; "path choice" (a Hard fail's, not this)
+
+**Steps line** (UI: "Steps that would unlock more: 2 in the Netherlands · 1 in
+Germany", #362):
+The line under the headline that counts the Leverage steps per country, each
+count leading to that country's steps; one count on a one-country verdict.
+Drawn only where the headline does not already name a step.
+_Avoid_: tabs, shortcut
+
 **Written state** (s19; UI: "No route we check in France takes a research
 hosting agreement."):
 What a verdict with nothing open says when the reader's situation is one no
