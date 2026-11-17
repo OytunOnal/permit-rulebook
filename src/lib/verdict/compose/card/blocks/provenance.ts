@@ -78,10 +78,15 @@ function decidingPathFirst(entries: ProvenanceEntry[]): ProvenanceEntry[] {
   return [...entries.filter((e) => e.applied !== false), ...entries.filter((e) => e.applied === false)];
 }
 
+// A quote ending on its sentence's full stop or an ellipsis is still contained
+// in a longer quote whose sentence runs on past that point, as the data's check reads it.
+const SENTENCE_END = /[.…]+$/;
+
 /** Whether `longer` quotes `shorter`'s sentence inside its own, from the same page. */
 function quotesInside(longer: ProvenanceEntry, shorter: ProvenanceEntry): boolean {
   const { quote, source_url } = shorter.value;
-  return longer.value.source_url === source_url && longer.value.quote !== quote && longer.value.quote.includes(quote);
+  return longer.value.source_url === source_url && longer.value.quote.length > quote.length
+    && longer.value.quote.includes(quote.replace(SENTENCE_END, ""));
 }
 
 /**

@@ -90,6 +90,17 @@ describe("a card reads each sentence once", () => {
     expect(salary, "precondition: the route quotes its salary threshold").toBeDefined();
     expect(carrying.map((q) => q.sentence)).toEqual([esc(salary!.value.quote)]);
   });
+
+  it("a shorter quote ending on its full stop is still contained in a longer one whose sentence runs on, on a written dataset", () => {
+    const opening = "Avoir un contrat de travail de plus de 3 mois";
+    const written = structuredClone(ds);
+    const shorter = routeProvenance(routeOf(written, "fr-talent-qualifie")).filter((e) => e.value.quote === opening);
+    expect(shorter.length, "precondition: values quoting the salary sentence's opening words").toBeGreaterThan(0);
+    for (const entry of shorter) entry.value.quote = `${opening}.`;
+    const carrying = printedQuotesOf(drawnRouteOn(verdictOn(written, FRENCH_QUALIFIED_OFFER), "fr-talent-qualifie"))
+      .filter((q) => q.sentence.includes(esc(opening)));
+    expect(carrying.map((q) => q.sentence)).toEqual([esc(routeProvenance(routeOf(written, "fr-talent-qualifie")).find((e) => e.amount !== undefined)!.value.quote)]);
+  });
 });
 
 /** A card's quote lines as the reader meets them: those in view, the words
