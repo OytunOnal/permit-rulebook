@@ -15,7 +15,7 @@ import type { NotScoredMark } from "../../situations.js";
 import { phraseOfAnswer, phraseOfAnswerRef } from "./answer-phrase.js";
 import { drawnRoutesHtml, drawnStepCard, type DrawnCards } from "./drawn-cards.js";
 import { notYetItemsHtml } from "./not-yet.js";
-import { stepsAnchorOf, stepsLineHtml } from "./steps-line.js";
+import { stepsAnchorOf } from "./steps-line.js";
 import type { VerdictScreen } from "./types.js";
 import { unscoredTally } from "./unscored.js";
 import type {
@@ -82,8 +82,9 @@ interface SectionChrome {
   drawsChoiceLine: boolean;
 }
 
-/** The Choice line, the open group's first line where the layout stands it
- * there (ruling 8 on #362). */
+/** The Choice line: the open group's first line on a one-country result, and
+ * once above the country sections on the four-country result (ruling 8 on
+ * #362, ruling 26 on #420). */
 const CHOICE_LINE_HTML = `<p class="choice-line">${esc(CHOICE_LINE)}</p>`;
 
 /** One group's markup. */
@@ -159,16 +160,13 @@ function tallyHtml(screen: VerdictScreen, section: CountrySection): string {
 const stepsHeadingHtml = (country: string, words: string): string =>
   `<h2 class="ghead unlockh" id="${escAttr(stepsAnchorOf(country))}">${words}</h2>`;
 
-/** The Choice line stands in this country's open group, where the layout
- * stands it there. */
-const drawsChoiceLineIn = (layout: ComparedLayout, country: string): boolean => layout.choiceLineAbove === country;
-
-function countrySectionHtml(drawing: BodyDrawing, layout: ComparedLayout, section: CountrySection): string {
+function countrySectionHtml(drawing: BodyDrawing, section: CountrySection): string {
   const said = section.tally.mark !== null;
   const name = countryOf(drawing.screen.ds, section.country).name;
+  // A section's open group never carries the Choice line: on this result it
+  // stands once, above the sections.
   const chrome: SectionChrome = {
-    stepsHeading: stepsHeadingHtml(section.country, `<b>${esc(STEPS_HERE_HEADING)}</b>`),
-    drawsChoiceLine: drawsChoiceLineIn(layout, section.country),
+    stepsHeading: stepsHeadingHtml(section.country, `<b>${esc(STEPS_HERE_HEADING)}</b>`), drawsChoiceLine: false,
   };
   return `<details class="country-sec"${section.open ? " open" : ""}>
             <summary${said ? ` class="said"` : ""}><span class="cname">${esc(name)}</span> <span class="tally${said ? " said" : ""}">${tallyHtml(drawing.screen, section)}</span></summary>
@@ -180,7 +178,7 @@ function countrySectionHtml(drawing: BodyDrawing, layout: ComparedLayout, sectio
  * layout adds. */
 const flatChromeOf = (layout: ComparedLayout & { kind: "one-country" }): SectionChrome => ({
   stepsHeading: stepsHeadingHtml(layout.country, `<b>${esc(STEPS_HEADING)}</b> — ${esc(STEPS_HEADING_TAIL)}`),
-  drawsChoiceLine: drawsChoiceLineIn(layout, layout.country),
+  drawsChoiceLine: layout.drawsChoiceLine,
 });
 
 /**
@@ -195,18 +193,17 @@ const feedbackLineHtml = (): string =>
   `<p class="say">${resultFeedbackLine(`<a href="${escAttr(url(FEEDBACK_PATH))}">${esc(FEEDBACK)}</a>`)}</p>`;
 
 /** The body under the notices, drawn from the layout and the cards drawn for
- * it: the Steps line, the strip, the flat groups or a section per country,
- * and the offer; nothing on the notice screen. */
+ * it: the strip, the flat groups or the Choice line where drawn and a section
+ * per country, and the offer; nothing on the notice screen. */
 export function bodyHtml(screen: VerdictScreen, layout: VerdictLayout, cards: DrawnCards): string {
   const drawing: BodyDrawing = { screen, cards };
   switch (layout.kind) {
     case "notice":
       return "";
     case "one-country":
-      return stepsLineHtml(layout) + stripHtml(layout.strip) + groupsHtml(drawing, layout.groups, flatChromeOf(layout))
-        + feedbackLineHtml();
+      return stripHtml(layout.strip) + groupsHtml(drawing, layout.groups, flatChromeOf(layout)) + feedbackLineHtml();
     case "countries":
-      return stepsLineHtml(layout) + stripHtml(layout.strip)
-        + layout.sections.map((s) => countrySectionHtml(drawing, layout, s)).join("") + feedbackLineHtml();
+      return stripHtml(layout.strip) + (layout.drawsChoiceLine ? CHOICE_LINE_HTML : "")
+        + layout.sections.map((s) => countrySectionHtml(drawing, s)).join("") + feedbackLineHtml();
   }
 }

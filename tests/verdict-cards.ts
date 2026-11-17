@@ -276,11 +276,12 @@ export function blocksIn(html: string, ...classes: string[]): string {
 /**
  * The script that reads, on a results screen, whether the page painted this
  * verdict as `verdictOf` and `verdictHtml` composed it: the headline, the
- * subline, and the body under the arrival line. Each composed piece is parsed
+ * subline, the Steps line under the masthead (empty where the verdict draws
+ * none), and the body under the arrival line. Each composed piece is parsed
  * into an empty copy of the box it is painted in, as the page's own `draw`
  * compares, so both sides read as the browser writes them. Its value is JSON,
- * `{ headline, subline, body }`, each true where the page shows what was
- * composed.
+ * `{ headline, subline, stepsLine, body }`, each true where the page shows
+ * what was composed.
  */
 export function paintedAsComposedScript(verdict: Verdict): string {
   const m = verdict.action.masthead;
@@ -291,10 +292,12 @@ export function paintedAsComposedScript(verdict: Verdict): string {
     const parsed = (el, html) => { const spare = el.cloneNode(false); spare.innerHTML = html; return spare.innerHTML; };
     const headline = document.getElementById("headline");
     const subline = document.getElementById("subline");
+    const stepsLine = document.getElementById("steps-line");
     const main = document.getElementById("main");
     return {
       headline: headline.innerHTML === parsed(headline, ${JSON.stringify(m.headline)}),
       subline: ${subline},
+      stepsLine: stepsLine !== null && stepsLine.innerHTML === parsed(stepsLine, ${JSON.stringify(m.stepsLineHtml ?? "")}),
       body: main.innerHTML.endsWith(parsed(main, ${JSON.stringify(verdictHtml(verdict))})),
     };
   })())`;
@@ -302,7 +305,7 @@ export function paintedAsComposedScript(verdict: Verdict): string {
 
 /** What `paintedAsComposedScript` reads on a page that painted the verdict
  * it was given. */
-export const PAINTED_AS_COMPOSED = { headline: true, subline: true, body: true };
+export const PAINTED_AS_COMPOSED = { headline: true, subline: true, stepsLine: true, body: true };
 
 /**
  * Markup with the abbreviations' explainers taken out. A verdict explains an

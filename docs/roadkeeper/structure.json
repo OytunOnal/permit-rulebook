@@ -2803,6 +2803,11 @@
   },
   {
    "from": "src/lib/verdict/verdict.ts",
+   "to": "src/lib/verdict/compose/steps-line.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/types.ts",
    "kind": "type-only"
   },
@@ -6308,8 +6313,18 @@
   },
   {
    "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
    "to": "src/lib/verdict/verdict.ts",
    "kind": "type-only"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
   },
   {
    "from": "tests/verdict-steps-and-choice-lines.test.ts",
@@ -11136,5 +11151,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "e913aa986b70aea76686361bddb31a704910a2b41a7983e4f38e22f42436783a"
+ "digest": "f66f7a44b1325b3c61ab06985f462f26145669131f479e17ed8de5a9d1a94079"
 }

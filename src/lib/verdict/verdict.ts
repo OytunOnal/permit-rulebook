@@ -21,6 +21,7 @@ import {
 import { comparedHeadlineOf } from "./compose/headline.js";
 import { bodyHtml } from "./compose/html.js";
 import { comparedMastheadOf, noticeMastheadOf } from "./compose/masthead.js";
+import { stepsLineHtml } from "./compose/steps-line.js";
 import type { InterviewSoFar, Verdict, VerdictScreen } from "./compose/types.js";
 // The verdict's look travels with its markup: the page that paints a verdict
 // links these stylesheets in its <head>. A quote line's look comes first, from
@@ -65,14 +66,18 @@ function noticesAbove(screen: VerdictScreen, inView: ResultsInView): string {
 
 /**
  * A comparison: the layout as the reckoning hands it, drawn — the notices
- * first, the masthead, then every card in the order the screen lists them, so
+ * first, the masthead with the Steps line where there is one, then every card in the order the screen lists them, so
  * a screen explains an abbreviation on its first use.
  */
 function comparedVerdictOf(screen: VerdictScreen, compared: ReckonedComparison, interview: InterviewSoFar): Verdict {
   const notices = noticesAbove(screen, compared.inView);
   const { layout } = compared;
   const headline = comparedHeadlineOf(screen, compared);
-  const masthead = comparedMastheadOf(headline, interview.answered, compared.inView.results.length);
+  const stepsLine = stepsLineHtml(layout);
+  const masthead = {
+    ...comparedMastheadOf(headline, interview.answered, compared.inView.results.length),
+    ...(stepsLine ? { stepsLineHtml: stepsLine } : {}),
+  };
   const cards = drawnCardsOf(screen, compared);
   return { action: { kind: "compare", masthead }, notices, layout, cards, body: bodyHtml(screen, layout, cards) };
 }

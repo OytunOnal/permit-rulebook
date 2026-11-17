@@ -357,11 +357,11 @@ export const stepsCountIn = (steps: number, country: string): string => `${steps
 export const stepsThatWouldUnlockMore = (steps: number): string =>
   `${steps} step${steps === 1 ? "" : "s"} that would unlock more`;
 
-/** The Choice line above the open cards, where more than one route is open
- * (rulings 8 and 11 on #362): the product checks whether each route is open,
- * not which to apply for. */
-export const CHOICE_LINE = "Each of these is open on your answers. Which to apply for turns on things we don't "
-  + "check — compare what each also requires.";
+/** The Choice line, where more than one route is open (ruling 8 on #362,
+ * ruling 27 on #420): the product checks whether each route is open, not
+ * which to apply for. One wording on both results. */
+export const CHOICE_LINE = "More than one route is open on your answers. Which to apply for turns on things we "
+  + "don't check — compare what each open route also requires.";
 
 /** The job offer line: what a job offer would have checked in one country for an
  * explorer — a check, never a verdict, so never "met" or "short". The

@@ -234,10 +234,9 @@ interface FirstScreenLines {
    * offers a Leverage step; none where no country does, or the headline
    * already names a step (ruling 9 on #362). */
   stepsLine: StepsCount[];
-  /** The country, by its code, whose open cards the Choice line stands
-   * above: the first on screen with a route open, where more than one route
-   * is open (ruling 8 on #362); null where one or none is. */
-  choiceLineAbove: string | null;
+  /** Whether the Choice line is drawn: where more than one route is open,
+   * anywhere on screen (ruling 8 on #362, ruling 26 on #420). */
+  drawsChoiceLine: boolean;
 }
 
 /** A comparison's layout: one country flat, or a section per country, the

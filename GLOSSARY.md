@@ -462,8 +462,9 @@ ones the route was met through.
 _Avoid_: fold (the not-yet rows' word), sources (a source is the page, and
 several quotes can share one)
 
-**Choice line** (UI: "Each of these is open on your answers. Which to apply
-for turns on things we don't check — compare what each also requires.", #362):
+**Choice line** (UI: "More than one route is open on your answers. Which to apply
+for turns on things we don't check — compare what each open route also
+requires.", #362):
 What a verdict with more than one route open says above the open cards: the
 product checks whether each route is open, not which to apply for.
 _Avoid_: recommendation, advice; "path choice" (a Hard fail's, not this)

@@ -31,6 +31,8 @@ export interface PageElements {
   restart: HTMLElement;
   headline: HTMLElement;
   subline: HTMLElement;
+  /** The box under the masthead's rule a verdict's Steps line is drawn in. */
+  stepsLine: HTMLElement;
   masthead: HTMLElement;
   /** The site header, whose height a narrow landing goes under. */
   head: HTMLElement | null;
@@ -67,6 +69,7 @@ function pageElementsOf(): PageElements {
     restart: byId("restart"),
     headline: byId("headline"),
     subline: byId("subline"),
+    stepsLine: byId("steps-line"),
     masthead: document.querySelector<HTMLElement>(".masthead-with-stamps")!,
     head: document.querySelector<HTMLElement>(".site-head"),
     stampLabel: byId("stamp-label"),

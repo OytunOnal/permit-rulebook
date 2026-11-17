@@ -33,13 +33,15 @@
    string does (the frame's a.tap, in frame/head/frame.css): padding out,
    margin back, so the line box the sentence wraps in does not grow with it. */
 .say a{color:var(--color-ink);display:inline-block;padding:calc((var(--tap-min) - 1.6em) / 2) 0;margin:calc((1.6em - var(--tap-min)) / 2) 0}
-/* The Steps line, first under the masthead: plain prose in ink, each count a
-   link reaching the tap floor as the closing line's word does: padding out,
+/* The Steps line, under the masthead's rule and before the declarations, with
+   the masthead's own space under it: plain prose in ink, each count a link
+   reaching the tap floor as the closing line's word does: padding out,
    margin back (#424). */
-.steps-line{font-size:.92rem;color:var(--color-ink);line-height:1.6;margin:0 0 .6rem;max-width:var(--max-prose)}
+.steps-line{font-size:.92rem;color:var(--color-ink);line-height:1.6;margin:0 0 var(--space-5);max-width:var(--max-prose)}
 .steps-line a{color:var(--color-band);display:inline-block;padding:calc((var(--tap-min) - 1.6em) / 2) 0;margin:calc((1.6em - var(--tap-min)) / 2) 0}
-/* The Choice line opens the open group, in the voice of the unsettled group's
-   line (#424). */
+/* The Choice line, in the voice of the unsettled group's line: it opens the
+   open group on a one-country result, and stands once above the country
+   sections on the four-country one (#424). */
 .choice-line{color:var(--color-prose);font-size:.88rem;max-width:var(--max-prose);margin:0 0 .2rem}
 /* A heading element, sized as the section label it always looked like. */
 h2.ghead{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-muted);

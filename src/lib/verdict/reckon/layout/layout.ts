@@ -275,19 +275,18 @@ interface CountryHolding {
 }
 
 /**
- * The Steps line's counts and the Choice line's place, from each country's
- * holding in screen order. The Steps line counts each country offering a step,
- * unless the headline already names one (ruling 9 on #362); the Choice line
- * stands above the first open cards on screen, where more than one route is
- * open (ruling 8).
+ * The Steps line's counts and whether the Choice line is drawn, from each
+ * country's holding in screen order. The Steps line counts each country
+ * offering a step, unless the headline already names one (ruling 9 on #362);
+ * the Choice line is drawn where more than one route is open, in one country
+ * or across several (ruling 8 on #362, ruling 26 on #420).
  */
-function firstScreenLinesOf(headline: HeadlineLayout, holdings: CountryHolding[]): Pick<ComparedLayout, "stepsLine" | "choiceLineAbove"> {
+function firstScreenLinesOf(headline: HeadlineLayout, holdings: CountryHolding[]): Pick<ComparedLayout, "stepsLine" | "drawsChoiceLine"> {
   const stepsLine = headline.kind === "steps"
     ? []
     : holdings.filter((h) => h.steps > 0).map(({ country, steps }) => ({ country, steps }));
   const open = holdings.reduce((sum, h) => sum + h.open, 0);
-  const choiceLineAbove = open > 1 ? (holdings.find((h) => h.open > 0)?.country ?? null) : null;
-  return { stepsLine, choiceLineAbove };
+  return { stepsLine, drawsChoiceLine: open > 1 };
 }
 
 /** Single destination: the flat layout, no country chrome. */
