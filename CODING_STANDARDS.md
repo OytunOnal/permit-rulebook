@@ -112,3 +112,5 @@ Roadkeeper's preset in `eslint.config.mjs`.
   refused too.
 - A value a workflow reads from a file or an event is checked for its shape
   before it is written to the run's outputs.
+- Every new place that prints dataset or answer text is reached by the
+  hostile-value test.
