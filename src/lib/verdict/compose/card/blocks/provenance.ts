@@ -78,15 +78,23 @@ function decidingPathFirst(entries: ProvenanceEntry[]): ProvenanceEntry[] {
   return [...entries.filter((e) => e.applied !== false), ...entries.filter((e) => e.applied === false)];
 }
 
+/** Whether `longer` quotes `shorter`'s sentence inside its own, from the same page. */
+function quotesInside(longer: ProvenanceEntry, shorter: ProvenanceEntry): boolean {
+  const { quote, source_url } = shorter.value;
+  return longer.value.source_url === source_url && longer.value.quote !== quote && longer.value.quote.includes(quote);
+}
+
 /**
  * A card's values without one whose sentence another value from the same page
  * on the card quotes inside a longer one: the longer line carries it (ruling 4
  * on #420). The dataset gives such a pair one legal basis and one read date,
- * so dropping the shorter loses nothing the reader is shown.
+ * so dropping the shorter loses nothing the reader is shown. A line the
+ * reader's own path rests on is never dropped for a line of a path not taken,
+ * which is dimmed and says it does not apply to them (ruling 29 on #420).
  */
 function withoutContainedSentences(entries: ProvenanceEntry[]): ProvenanceEntry[] {
-  return entries.filter(({ value }) => !entries.some((other) =>
-    other.value.source_url === value.source_url && other.value.quote !== value.quote && other.value.quote.includes(value.quote)));
+  return entries.filter((entry) => !entries.some((other) =>
+    quotesInside(other, entry) && (other.applied !== false || entry.applied === false)));
 }
 
 /**

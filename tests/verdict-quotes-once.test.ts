@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { deriveBands, routeProvenance, type Dataset, type Profile } from "permit-rulebook-data";
+import { deriveBands, routeProvenance, routeStatements, type Dataset, type DisjunctionPath, type Profile, type Route } from "permit-rulebook-data";
 import { esc } from "../src/lib/reason.js";
 import { DOES_NOT_APPLY_TO_YOU } from "../src/lib/copy/verdict.js";
 import {
   ALGERIAN, DENIZ, DUTCH_GRADUATE, DUTCH_OFFER_ON_FOUR, PERSONA_A, PERSONA_C, PRIYA, PRIYA_EXPLORING_ALL,
 } from "./personas.js";
 import { routeOf } from "./route-of.js";
-import { blocksIn, drawnRouteOn, everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
+import { blocksIn, drawnRouteOn, everyDrawnRouteIn, verdictFor, verdictOn } from "./verdict-cards.js";
 
 /**
  * A card reads each sentence once, and its first quotes are the ones its
@@ -92,12 +92,33 @@ describe("a card reads each sentence once", () => {
 /** The shortage Blue Card: degree or IT. */
 const SHORTAGE = "de-blue-card-shortage";
 
+/** The shortage Blue Card's IT-specialist path, on a dataset's copy of the route. */
+function itPathOf(route: Route): DisjunctionPath {
+  const marked = route.criteria.find((c) => c.op === "any" && c.paths.some((p) => p.subject === "the IT-specialist path"));
+  if (marked?.op !== "any") throw new Error("the shortage Blue Card has no IT-specialist path");
+  return marked.paths.find((p) => p.subject === "the IT-specialist path")!;
+}
+
 /** The sentences the shortage Blue Card's IT-specialist path is decided on, as the dataset writes them. */
 function itPathSentences(): string[] {
-  const marked = routeOf(ds, SHORTAGE).criteria.find((c) => c.op === "any" && c.paths.some((p) => p.subject === "the IT-specialist path"));
-  if (marked?.op !== "any") throw new Error("the shortage Blue Card has no IT-specialist path");
-  const it = marked.paths.find((p) => p.subject === "the IT-specialist path")!;
-  return routeProvenance({ ...routeOf(ds, SHORTAGE), criteria: it.criteria, statements: [] }).map((e) => e.value.quote);
+  const route = routeOf(ds, SHORTAGE);
+  return routeProvenance({ ...route, criteria: itPathOf(route).criteria, statements: [] }).map((e) => e.value.quote);
+}
+
+/**
+ * The shipped dataset with the IT path's first quote lengthened to carry,
+ * after its own words, a sentence from the same page that the shortage Blue
+ * Card states whatever path decides; and that sentence.
+ */
+function withOwnSentenceInsideNotTaken(): { written: Dataset; own: string } {
+  const written = structuredClone(ds);
+  const route = routeOf(written, SHORTAGE);
+  const notTaken = itPathOf(route).criteria.find((c) => c.source)?.source;
+  if (!notTaken) throw new Error("the IT path quotes no condition");
+  const own = routeStatements(route).find((s) => s.path === undefined && s.source?.source_url === notTaken.source_url)?.source;
+  if (!own) throw new Error("the shortage Blue Card states nothing on every path from the IT path's page");
+  notTaken.quote = `${notTaken.quote} ${own.quote}`;
+  return { written, own: own.quote };
 }
 
 describe("a card's first quotes are the ones its route was met through", () => {
@@ -118,5 +139,15 @@ describe("a card's first quotes are the ones its route was met through", () => {
       expect(q.html.startsWith('<div class="src"'), q.sentence).toBe(true);
       expect(q.html, q.sentence).not.toContain(DOES_NOT_APPLY_TO_YOU);
     }
+  });
+
+  it("a line of the reader's own path is never dropped for a dimmed line of a path not taken that contains its sentence, on a written dataset", () => {
+    const { written, own } = withOwnSentenceInsideNotTaken();
+    const quotes = printedQuotesOf(drawnRouteOn(verdictOn(written, RECOGNISED_A), SHORTAGE));
+    const containing = quotes.filter((q) => q.sentence !== esc(own) && q.sentence.includes(esc(own)));
+    expect(containing.map((q) => q.html.startsWith('<div class="src unapplied"')), "precondition: one dimmed line contains the sentence")
+      .toEqual([true]);
+    const ownLines = quotes.filter((q) => q.sentence === esc(own));
+    expect(ownLines.map((q) => q.html.startsWith('<div class="src"'))).toEqual([true]);
   });
 });
