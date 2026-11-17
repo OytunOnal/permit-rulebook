@@ -38,10 +38,14 @@ const FRENCH_OFFER_OPEN_IN_TWO: Profile = {
 function stepsLineOf(verdict: Verdict): string | null {
   const html = verdict.action.masthead.stepsLineHtml;
   if (html === undefined) return null;
-  const lines = [...html.matchAll(/<p class="steps-line">([\s\S]*?)<\/p>/g)];
+  const lines = stepsLinesIn(html);
   expect(lines.length, "the masthead carries one Steps line").toBe(1);
-  return lines[0]![1]!;
+  return lines[0]!;
 }
+
+/** The words of each Steps line element in `html`, in order. */
+const stepsLinesIn = (html: string): string[] =>
+  [...html.matchAll(/<p class="steps-line">([\s\S]*?)<\/p>/g)].map((m) => m[1]!);
 
 /** Each link on a line: its words and the fragment it leads to. */
 const linksOn = (line: string): { text: string; href: string }[] =>
@@ -83,7 +87,7 @@ describe("the Steps line under the headline", () => {
     for (const reader of [DUTCH_OFFER_ON_FOUR, PERSONA_A]) {
       const verdict = verdictFor(reader);
       expect(stepsLineOf(verdict)).not.toBeNull();
-      expect(verdict.body).not.toContain("steps-line");
+      expect(stepsLinesIn(verdict.body)).toEqual([]);
     }
   });
 
