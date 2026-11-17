@@ -14,12 +14,13 @@
  * and prints nothing: the report's lines and exit code are
  * `cli-measure-taps.mjs`'s, and `main-measure-taps.mjs` runs the two.
  *
- * It used to carry its own copy of the server and the CDP plumbing, and its own
- * cleanup at the end of the happy path only: a throw halfway through left a
- * listener and a Chrome behind, and the next run then found a port held by a
- * process nobody owned (coordinator, 2026-09-07). Both now come from
- * `browser.mjs`, and `owned.mjs` closes what they open however the process
- * leaves.
+ * The server and Chrome come from `browser.mjs`, and `owned.mjs` closes what
+ * they open however the process leaves, so a throw halfway through leaves no
+ * listener, Chrome or held port behind for the next run.
+ *
+ * It measures every page the build emits and every screen the page draws
+ * from a record: the results screen exists only once drawn, and it carries the
+ * most controls in the product.
  *
  * On each screen it also reads where the Strip wraps, and reports a Strip
  * line that starts with a separator dot.
@@ -32,16 +33,9 @@
  * compares routes draws a Strip, so one found without it fails; only a result
  * a notice answers outright has none.
  *
- * What it cannot see, and never could: whether the page is alive at all. It
- * counts elements, so a dead interview measures as "0 controls under the
- * floor". `npm run smoke` is the check for that.
- *
- * It also measured only what the BUILD emits, so the results screen — drawn by
- * the page from a record, and the screen with the most controls in the product
- * — was never measured at all. Five "Official page" links at 84×16 px and every
- * collapsed route row at 330×41 px shipped under a floor this script reported
- * clean (isolated v1-gate critique, 2026-09-08, F6). It now walks the drawn
- * screens too.
+ * What it cannot see: whether the page is alive at all. It counts elements,
+ * so a dead interview measures as "0 controls under the floor".
+ * `npm run smoke` is the check for that.
  */
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -49,7 +43,7 @@ import { fileURLToPath } from "node:url";
 import { PHONE, walkSite } from "./browser/browser.mjs";
 // The record module itself, not a copy of its constants: a seed written by
 // hand goes stale the day the format moves, and this script would then
-// measure a screen the reader never sees (Standards review, 2026-09-08).
+// measure a screen the reader never sees.
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.ts";
 
 const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
@@ -73,6 +67,8 @@ function measureControls(floor) {
     const r = el.getBoundingClientRect();
     if (r.width === 0 && r.height === 0) continue;
     controls++;
+    // Half a pixel of slack: a box laid at fractional pixels a hair under the floor reaches it on screen.
+    // 34 characters name the control on its failure line; the rest of a long label adds nothing.
     if (r.height + 0.5 < floor) bad.push(Math.round(r.height) + "px \u00b7 " + textOf(el, 34));
   }
   return { controls, bad };
@@ -103,6 +99,7 @@ function measureStripLines() {
       lineCount++;
       const beforeContent = getComputedStyle(part, "::before").content;
       const drawsSeparatorInFront = beforeContent !== "none" && beforeContent !== "normal" && beforeContent !== '""';
+      // 34 characters, as for a control: enough to name the part on its failure line.
       if (drawsSeparatorInFront) stripLinesStartingWithADot.push(beforeContent + " " + textOf(part, 34));
     }
     stripLineCounts.push(lineCount);
