@@ -197,6 +197,7 @@
     "src/lib/verdict/compose/masthead.ts",
     "src/lib/verdict/compose/not-yet.ts",
     "src/lib/verdict/compose/printed-shortfall.ts",
+    "src/lib/verdict/compose/steps-line.ts",
     "src/lib/verdict/compose/types.ts",
     "src/lib/verdict/compose/unscored.ts",
     "src/lib/verdict/verdict.css",
@@ -397,6 +398,7 @@
   "src/lib/verdict/compose/masthead.ts": "presentation",
   "src/lib/verdict/compose/not-yet.ts": "presentation",
   "src/lib/verdict/compose/printed-shortfall.ts": "presentation",
+  "src/lib/verdict/compose/steps-line.ts": "presentation",
   "src/lib/verdict/compose/types.ts": "presentation",
   "src/lib/verdict/compose/unscored.ts": "presentation",
   "src/lib/verdict/reckon/layout/figure-gaps.ts": "application",
@@ -2441,6 +2443,11 @@
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/verdict/compose/steps-line.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
    "to": "src/lib/verdict/compose/types.ts",
    "kind": "type-only"
   },
@@ -2521,6 +2528,21 @@
   },
   {
    "from": "src/lib/verdict/compose/printed-shortfall.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps-line.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps-line.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps-line.ts",
    "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
@@ -2777,6 +2799,11 @@
   {
    "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/masthead.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/verdict.ts",
+   "to": "src/lib/verdict/compose/steps-line.ts",
    "kind": "dependency"
   },
   {
@@ -6345,6 +6372,36 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "src/lib/verdict/verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps-and-choice-lines.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/verdict-steps.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
@@ -7289,6 +7346,11 @@
     "exported": false
    },
    {
+    "name": "isMissingSeededStepsLine",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "isMissingSeededMoreQuotes",
     "kind": "fn",
     "exported": false
@@ -7300,6 +7362,11 @@
    },
    {
     "name": "stripNoteOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "stepsLineNoteOf",
     "kind": "fn",
     "exported": false
    },
@@ -7710,6 +7777,11 @@
    },
    {
     "name": "measureStripLines",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countStepsLineLinks",
     "kind": "fn",
     "exported": false
    },
@@ -9797,6 +9869,26 @@
     "exported": true
    },
    {
+    "name": "STEPS_LINE_LEAD",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "stepsCountIn",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "stepsThatWouldUnlockMore",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CHOICE_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "writeJobOfferLine",
     "kind": "fn",
     "exported": true
@@ -11139,5 +11231,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "66a9698c0afa35602bc35df4aaac7c2bf8f20137d2968e213aa8350e5f0fbf2b"
+ "digest": "061d0109fdb21b208049d1910b8a403994509f23a473361256299f1aa4873a47"
 }

@@ -112,6 +112,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           The box never moves: only the words and the date inside it change. */}
       <Fragment set:html={frame.stamp} />
     </header>
+    {/* A verdict's Steps line, under the masthead's rule and before the
+        declarations and the notices, so it is on a phone's first screen
+        (ruling 24 on #420). Empty on every other screen. */}
+    <div id="steps-line"></div>
 
     <div id="app" class="cols" data-state="questions">
       {/* The question comes first in the document. On a phone the single

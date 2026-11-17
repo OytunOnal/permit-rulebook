@@ -15,17 +15,25 @@ const isComparisonWithoutStrip = (screen) => {
   return comparesRoutes && screen.stripLineCounts.length === 0;
 };
 
+/** Whether a result seeded to draw a Steps line drew none, so its links went unmeasured. */
+const isMissingSeededStepsLine = (screen) => screen.isSeededToDrawStepsLine && screen.stepsLineLinks === 0;
+
 /** Whether a result seeded to draw a More quotes control drew none, so it went unmeasured. */
 const isMissingSeededMoreQuotes = (screen) => screen.isSeededToDrawMoreQuotes && screen.moreQuotesControls === 0;
 
-/** Whether a screen has a control under the floor, scrolls sideways, has a Strip line starting with a dot, is a drawn screen that is not a result, is a comparison with no Strip, or is missing the More quotes control it was seeded to draw. */
+/** Whether a screen has a control under the floor, scrolls sideways, has a Strip line starting with a dot, is a drawn screen that is not a result, is a comparison with no Strip, or is missing the Steps line or the More quotes control it was seeded to draw. */
 const hasProblem = (screen) =>
   screen.bad.length > 0 || screen.isOverflowing || screen.stripLinesStartingWithADot.length > 0
-  || isDrawnShortOfResult(screen) || isComparisonWithoutStrip(screen) || isMissingSeededMoreQuotes(screen);
+  || isDrawnShortOfResult(screen) || isComparisonWithoutStrip(screen) || isMissingSeededStepsLine(screen)
+  || isMissingSeededMoreQuotes(screen);
 
 /** The ok line's note on how the Strip wrapped, said only where the screen draws one. */
 const stripNoteOf = (screen) =>
   screen.stripLineCounts.length === 0 ? "" : `, Strip on ${screen.stripLineCounts.join("+")} line(s), none starting with a dot`;
+
+/** The ok line's note on the Steps line's links, said only where the screen draws one. */
+const stepsLineNoteOf = (screen) =>
+  screen.stepsLineLinks === 0 ? "" : `, Steps line's ${screen.stepsLineLinks} link(s) among them`;
 
 /** The ok line's note on the More quotes controls, said only where the screen draws one. */
 const moreQuotesNoteOf = (screen) =>
@@ -34,7 +42,7 @@ const moreQuotesNoteOf = (screen) =>
 /** A screen's lines: one `ok`, or a `FAIL` and what put it there. */
 export function screenLinesOf(screen) {
   if (!hasProblem(screen))
-    return [`ok   ${screen.name} — ${screen.innerWidth}px, ${screen.controls} controls${moreQuotesNoteOf(screen)}, none under ${screen.floorPx}px, no overflow${stripNoteOf(screen)}`];
+    return [`ok   ${screen.name} — ${screen.innerWidth}px, ${screen.controls} controls${stepsLineNoteOf(screen)}${moreQuotesNoteOf(screen)}, none under ${screen.floorPx}px, no overflow${stripNoteOf(screen)}`];
   const tapMin = screen.kind === "built" ? ` · --tap-min ${screen.tapMin}` : "";
   return [
     `FAIL ${screen.name}`,
@@ -44,6 +52,7 @@ export function screenLinesOf(screen) {
     ...screen.stripLinesStartingWithADot.map((lineOpening) => `     Strip line starts with a dot: ${lineOpening}`),
     ...(isDrawnShortOfResult(screen) ? [`     not a result: stops at ${screen.questionAskedIfAny ?? "a screen with no question card"}`] : []),
     ...(isComparisonWithoutStrip(screen) ? ["     no Strip on a result that compares routes"] : []),
+    ...(isMissingSeededStepsLine(screen) ? ["     no Steps line on a result seeded to draw one"] : []),
     ...(isMissingSeededMoreQuotes(screen) ? ["     no More quotes control on a result seeded to draw one"] : []),
   ];
 }

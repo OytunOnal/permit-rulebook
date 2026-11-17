@@ -28,13 +28,17 @@ export function setStamp(page: InterviewPage, kind: "rules-read" | "record"): vo
 /**
  * Writes a screen's masthead. A question screen's is the question card's,
  * with the standing promise its screen says; a verdict carries the one the
- * verdict composed, and no standing promise (`standing` null).
+ * verdict composed, and no standing promise (`standing` null). The box under
+ * the masthead holds a verdict's Steps line where it has one, and is emptied
+ * on every other screen.
  */
 export function writeMasthead(
-  page: InterviewPage, m: Masthead & Pick<VerdictMasthead, "sublineHtml">, standing: "started" | "fresh" | null,
+  page: InterviewPage, m: Masthead & Pick<VerdictMasthead, "sublineHtml" | "stepsLineHtml">,
+  standing: "started" | "fresh" | null,
 ): void {
-  const { headline, subline, root } = page.els;
+  const { headline, subline, stepsLine, root } = page.els;
   draw(headline, m.headline);
+  draw(stepsLine, m.stepsLineHtml ?? "");
   // The build painted both standing promises and the pre-paint script seeded
   // which one shows, so a question screen sets the same attribute rather than
   // writing the text. A verdict's subline counts what was compared, so it is

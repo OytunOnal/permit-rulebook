@@ -221,10 +221,28 @@ export interface RouteStanding {
 /** Each route's standing, by the route's id. */
 export type RouteStandings = Record<string, RouteStanding>;
 
+/** One count on the Steps line: a country, by its code, and how many Leverage
+ * steps its steps group offers. */
+export interface StepsCount {
+  country: string;
+  steps: number;
+}
+
+/** What stands on the first screen beside the headline, on either layout. */
+interface FirstScreenLines {
+  /** The Steps line's counts, in screen order: each country whose steps group
+   * offers a Leverage step; none where no country does, or the headline
+   * already names a step (ruling 9 on #362). */
+  stepsLine: StepsCount[];
+  /** Whether the Choice line is drawn: where more than one route is open,
+   * anywhere on screen (ruling 8 on #362, ruling 26 on #420). */
+  drawsChoiceLine: boolean;
+}
+
 /** A comparison's layout: one country flat, or a section per country, the
  * country the headline is about first where it names one; and each route's
  * standing by its id, beside the groups that list those ids. */
-export type ComparedLayout =
+export type ComparedLayout = FirstScreenLines & (
   | {
     kind: "one-country"; country: string; strip: Strip; headline: HeadlineLayout; groups: VerdictGroup[];
     standings: RouteStandings;
@@ -237,7 +255,7 @@ export type ComparedLayout =
     lead: string | null;
     sections: CountrySection[];
     standings: RouteStandings;
-  };
+  });
 
 /** The screen's body as data: the notice screen, or a comparison's. */
 export type VerdictLayout = { kind: "notice" } | ComparedLayout;
