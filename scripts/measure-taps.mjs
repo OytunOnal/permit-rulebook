@@ -28,7 +28,9 @@
  * end on the result screen: one that stops at a question, because the
  * interview asks something its record does not answer, would measure a
  * question card under a result's name. Each screen says whether it is a
- * result, and on a question screen which question it asks.
+ * result, and on a question screen which question it asks. A result that
+ * compares routes draws a Strip, so one found without it fails; only a result
+ * a notice answers outright has none.
  *
  * What it cannot see, and never could: whether the page is alive at all. It
  * counts elements, so a dead interview measures as "0 controls under the
@@ -107,16 +109,22 @@ function measureStripLines() {
 }
 
 /**
- * Whether the page drew the result, and the question card's progress and
- * label where it drew one instead. The interview marks its box "results" when
- * it draws a verdict, and only then; a question screen keeps it "questions".
+ * Whether the page drew the result, whether that result is one a notice
+ * answers outright, and the question card's progress and label where it drew
+ * a question instead. The interview marks its box "results" when it draws a
+ * verdict, and only then; a question screen keeps it "questions". A result a
+ * notice answers outright draws its notices and no body under them; every
+ * result that compares routes ends its body on the feedback line.
  */
 function readScreenState() {
   const isResult = document.querySelector("#app[data-state='results']") !== null;
+  const drawsNotice = document.querySelector("#main article.notice") !== null;
+  const drawsFeedbackLine = document.querySelector("#main p.say") !== null;
   const questionLabel = document.querySelector(".qcard .qlabel");
   const questionProgress = document.querySelector(".qcard .qmeta");
   return {
     isResult,
+    isAnsweredByNotice: isResult && drawsNotice && !drawsFeedbackLine,
     questionAsked: questionLabel
       ? [questionProgress, questionLabel].filter(Boolean).map((el) => textOf(el)).join(" ").slice(0, 120)
       : null,
@@ -199,7 +207,8 @@ const seedFor = (answers) =>
  * The open page's measure, once it is at rest: the probe's fields, the
  * screen's name, the floor it was measured against, and `kind`, "built" for
  * a page the build emits or "drawn" for one the page draws from a record.
- * `isResult` is whether the page drew the result screen; `questionAsked` is
+ * `isResult` is whether the page drew the result screen, `isAnsweredByNotice`
+ * whether that result is one a notice answers outright; `questionAsked` is
  * the question card's progress and label where it drew one instead, else null.
  */
 async function measureAtRest(page, name, kind) {
