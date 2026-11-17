@@ -14,23 +14,28 @@
  * and prints nothing: the report's lines and exit code are
  * `cli-measure-taps.mjs`'s, and `main-measure-taps.mjs` runs the two.
  *
- * It used to carry its own copy of the server and the CDP plumbing, and its own
- * cleanup at the end of the happy path only: a throw halfway through left a
- * listener and a Chrome behind, and the next run then found a port held by a
- * process nobody owned (coordinator, 2026-09-07). Both now come from
- * `browser.mjs`, and `owned.mjs` closes what they open however the process
- * leaves.
+ * The server and Chrome come from `browser.mjs`, and `owned.mjs` closes what
+ * they open however the process leaves, so a throw halfway through leaves no
+ * listener, Chrome or held port behind for the next run.
  *
- * What it cannot see, and never could: whether the page is alive at all. It
- * counts elements, so a dead interview measures as "0 controls under the
- * floor". `npm run smoke` is the check for that.
+ * It measures every page the build emits and every screen the page draws
+ * from a record: the results screen exists only once drawn, and it carries the
+ * most controls in the product.
  *
- * It also measured only what the BUILD emits, so the results screen — drawn by
- * the page from a record, and the screen with the most controls in the product
- * — was never measured at all. Five "Official page" links at 84×16 px and every
- * collapsed route row at 330×41 px shipped under a floor this script reported
- * clean (isolated v1-gate critique, 2026-09-08, F6). It now walks the drawn
- * screens too.
+ * On each screen it also reads where the Strip wraps, and reports a Strip
+ * line that starts with a separator dot.
+ *
+ * A drawn screen is named after the result its record produces, so it must
+ * end on the result screen: one that stops at a question, because the
+ * interview asks something its record does not answer, would measure a
+ * question card under a result's name. Each screen says whether it is a
+ * result, and on a question screen which question it asks. A result that
+ * compares routes draws a Strip, so one found without it fails; only a result
+ * a notice answers outright has none.
+ *
+ * What it cannot see: whether the page is alive at all. It counts elements,
+ * so a dead interview measures as "0 controls under the floor".
+ * `npm run smoke` is the check for that.
  */
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -38,7 +43,7 @@ import { fileURLToPath } from "node:url";
 import { PHONE, walkSite } from "./browser/browser.mjs";
 // The record module itself, not a copy of its constants: a seed written by
 // hand goes stale the day the format moves, and this script would then
-// measure a screen the reader never sees (Standards review, 2026-09-08).
+// measure a screen the reader never sees.
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.ts";
 
 const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
@@ -46,25 +51,97 @@ const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 /** The token's own value, asserted against the stylesheet the page ships. */
 const TAP_MIN = 44;
 
-const PROBE = `(() => {
-  const floor = ${TAP_MIN};
+// The four functions below run in the page, not here: the probe carries their
+// source text into it, so each reads nothing from this module but the others.
+
+/** An element's words on one line, cut to `cap` characters (all of them without one). */
+function textOf(el, cap) {
+  return (el.textContent || el.tagName).trim().replace(/\s+/g, " ").slice(0, cap);
+}
+
+/** How many controls the screen shows, and each one shorter than `floor` as "<height>px \u00b7 <words>". */
+function measureControls(floor) {
   const bad = [];
-  let n = 0;
+  let controls = 0;
   for (const el of document.querySelectorAll("a, button, summary, input, select, [role='button'], [role='option']")) {
     const r = el.getBoundingClientRect();
     if (r.width === 0 && r.height === 0) continue;
-    n++;
-    if (r.height + 0.5 < floor)
-      // Doubled on purpose: this is a template literal, so a single backslash
-      // would reach the browser as /s+/g and delete the letter s from every
-      // name this script prints.
-      bad.push(Math.round(r.height) + "px \u00b7 " + (el.textContent || el.tagName).trim().replace(/\\s+/g, " ").slice(0, 34));
+    controls++;
+    // Half a pixel of slack: a box laid at fractional pixels a hair under the floor reaches it on screen.
+    // 34 characters name the control on its failure line; the rest of a long label adds nothing.
+    if (r.height + 0.5 < floor) bad.push(Math.round(r.height) + "px \u00b7 " + textOf(el, 34));
   }
+  return { controls, bad };
+}
+
+/**
+ * How many lines each Strip on screen takes, and each line that opens on a
+ * separator. The Strip wraps between its parts. A part that starts a line
+ * below the first, its left edge at the Strip's own, must not have a
+ * separator drawn in front of it: a line that opens on a dot reads as a stray
+ * mark.
+ */
+function measureStripLines() {
+  const stripLineCounts = [];
+  const stripLinesStartingWithADot = [];
+  for (const strip of document.querySelectorAll(".strip")) {
+    const stripBox = strip.getBoundingClientRect();
+    if (stripBox.width === 0 && stripBox.height === 0) continue;
+    const parts = [...strip.children].map((part) => ({ part, box: part.getBoundingClientRect() }));
+    if (parts.length === 0) continue;
+    const firstLineTop = Math.min(...parts.map(({ box }) => box.top));
+    let lineCount = 1;
+    for (const { part, box } of parts) {
+      // 1 px either way: boxes laid at fractional pixels round apart by up to
+      // one, which is neither a different edge nor a different line.
+      const isLineStart = Math.abs(box.left - stripBox.left) <= 1 && box.top > firstLineTop + 1;
+      if (!isLineStart) continue;
+      lineCount++;
+      const beforeContent = getComputedStyle(part, "::before").content;
+      const drawsSeparatorInFront = beforeContent !== "none" && beforeContent !== "normal" && beforeContent !== '""';
+      // 34 characters, as for a control: enough to name the part on its failure line.
+      if (drawsSeparatorInFront) stripLinesStartingWithADot.push(beforeContent + " " + textOf(part, 34));
+    }
+    stripLineCounts.push(lineCount);
+  }
+  return { stripLineCounts, stripLinesStartingWithADot };
+}
+
+/**
+ * Whether the page drew the result, whether that result is one a notice
+ * answers outright, and the question card's progress and label where it drew
+ * a question instead. The interview marks its box "results" when it draws a
+ * verdict, and only then; a question screen keeps it "questions". A result a
+ * notice answers outright draws its notices and no body under them; every
+ * result that compares routes ends its body on the feedback line.
+ */
+function readScreenState() {
+  const isResult = document.querySelector("#app[data-state='results']") !== null;
+  const drawsNotice = document.querySelector("#main article.notice") !== null;
+  const drawsFeedbackLine = document.querySelector("#main p.say") !== null;
+  const questionLabel = document.querySelector(".qcard .qlabel");
+  const questionProgress = document.querySelector(".qcard .qmeta");
+  return {
+    isResult,
+    isAnsweredByNotice: isResult && drawsNotice && !drawsFeedbackLine,
+    // 120 characters name the question on one failure line; a long label's rest adds nothing.
+    questionAskedIfAny: questionLabel
+      ? [questionProgress, questionLabel].filter(Boolean).map((el) => textOf(el)).join(" ").slice(0, 120)
+      : null,
+  };
+}
+
+const PROBE = `(() => {
+  ${textOf}
+  ${measureControls}
+  ${measureStripLines}
+  ${readScreenState}
   return JSON.stringify({
     innerWidth: window.innerWidth,
     scrollWidth: document.documentElement.scrollWidth,
-    controls: n,
-    bad,
+    ...measureControls(${TAP_MIN}),
+    ...measureStripLines(),
+    ...readScreenState(),
     tapMin: getComputedStyle(document.documentElement).getPropertyValue("--tap-min").trim(),
   });
 })()`;
@@ -84,19 +161,30 @@ function listBuiltPages(dir) {
 /**
  * Screens the page draws rather than the build emits, each with the record
  * that produces it. A record is written, the page is reloaded, and what the
- * reader actually taps is measured.
+ * reader actually taps is measured. Each record answers every question the
+ * interview asks on the way, so the page reloads onto the result.
  */
 const DRAWN = [
   ["/ (results, one country)", {
     destination: "de", citizenship: "IN", situation: "offer", qualification: "degree",
     recognition_de: "unknown", occupation_shortage: "unknown", experience_5y: "lt2", experience_7y: "3to5",
     german: "b1", english: "c1", age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
-    funds_eur_month: "band_1", salary_eur_year: "unknown",
+    funds_eur_month: "band_1", salary_eur_year: "unknown", occupation_it: "no",
   }],
   ["/ (results, all four countries)", {
     destination: "all", citizenship: "TR", situation: "offer", qualification: "degree",
     recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "lt2", experience_7y: "3to5",
     german: "b1", english: "c1", nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
+    situation_country: "de", salary_eur_year: "unknown", funds_eur_month: "band_1",
+  }],
+  // Short Tallies draw one-line country headers here, and a job offer in the
+  // Netherlands gathers Germany's routes into a Fold, so the floor is measured
+  // on one-line country headers and on a Fold's header.
+  ["/ (results, all four countries, job offer in the Netherlands)", {
+    destination: "all", situation: "offer", situation_country: "nl", age_band: "a30to35", citizenship: "TR",
+    qualification: "degree", recognition_de: "not_assessed", experience_5y: "2plus", experience_7y: "5plus",
+    occupation_shortage: "yes", salary_eur_month: "band_5", nl_recent_grad: "no", top200_grad: "no",
+    german: "a1", funds_eur_month: "unknown",
   }],
   // The Algerian notice's Learn link, a foot link longer than a phone's line, wraps here.
   ["/ (results, France, Algerian passport)", {
@@ -119,10 +207,14 @@ const seedFor = (answers) =>
  * The open page's measure, once it is at rest: the probe's fields, the
  * screen's name, the floor it was measured against, and `kind`, "built" for
  * a page the build emits or "drawn" for one the page draws from a record.
+ * `isResult` is whether the page drew the result screen, `isAnsweredByNotice`
+ * whether that result is one a notice answers outright; `questionAskedIfAny` is
+ * the question card's progress and label where it drew one instead, else null.
  */
 async function measureAtRest(page, name, kind) {
   await page.waitUntilAtRest();
   const measured = JSON.parse(await page.evaluate(PROBE));
+  // 1 px over the viewport is fractional layout rounded up, not a page that scrolls sideways.
   return { name, kind, floorPx: TAP_MIN, ...measured, isOverflowing: measured.scrollWidth > measured.innerWidth + 1 };
 }
 

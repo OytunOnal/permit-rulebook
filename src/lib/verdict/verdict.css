@@ -12,10 +12,12 @@
 
 /* Result summary + groups (s3). The counters are one plain line, with no
    pill, border or ground: bordered, they read as tabs and did nothing when
-   pressed (F4). Each count keeps its status colour. */
+   pressed (F4). Each count keeps its status colour. The dot follows its
+   part, so a line the Strip wraps ends on a dot and the next starts with a
+   count. */
 .strip{display:flex;gap:.6rem;margin:0 0 .4rem;flex-wrap:wrap}
 .strip span{font:600 .78rem var(--font-sans);letter-spacing:.08em;text-transform:uppercase}
-.strip span + span::before{content:"·";margin-right:.6rem;color:var(--color-muted)}
+.strip span:not(:last-child)::after{content:"·";margin-left:.6rem;color:var(--color-muted)}
 .strip .s-met{color:var(--color-met)}
 .strip .s-near{color:var(--color-near)}
 .strip .s-hold{color:var(--color-hold)}
@@ -41,8 +43,15 @@ h2.ghead{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:upp
 
 /* s5: collapsible country sections (multi-destination results).
    NB: named .country-sec — .country is the small chip on cards, and the
-   chip's uppercase/letter-spacing would inherit into the whole section. */
-details.country-sec > summary{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;cursor:pointer;list-style:none;
+   chip's uppercase/letter-spacing would inherit into the whole section.
+   The header is a control, so its row is at least the tap floor at every
+   width, its text centred in it. The name and the Tally stay on one
+   baseline, so the centring is the line's, not each item's: align-content
+   moves only the lines of a flex container that wraps, hence the wrap at
+   every width; at desk the Tally (flex below) still shrinks beside the name
+   rather than wrap under it. */
+details.country-sec > summary{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;align-content:center;gap:1rem;
+  min-height:var(--tap-min);cursor:pointer;list-style:none;
   font:700 .8rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-ink);
   border-bottom:2px solid var(--color-ink);padding-bottom:.4rem;margin:1.8rem 0 .4rem}
 details.country-sec > summary::-webkit-details-marker{display:none}
@@ -57,7 +66,7 @@ details.country-sec > summary::-webkit-details-marker{display:none}
 details.country-sec > summary > .cname{white-space:nowrap}
 details.country-sec > summary > .cname::before{content:"▸";display:inline-block;letter-spacing:0;margin-right:.35em;color:var(--color-muted)}
 details.country-sec[open] > summary > .cname::before{content:"▾"}
-.tally{font:600 .68rem var(--font-mono);letter-spacing:.06em;color:var(--color-muted);text-transform:none;text-align:right}
+.tally{flex:1 1 0;font:600 .68rem var(--font-mono);letter-spacing:.06em;color:var(--color-muted);text-transform:none;text-align:right}
 /* The steps count is not a link, so it wears no link colour: ink, like the
    step headings (ruling 9 on #55; the human's ruling on #178). */
 .tally i{font-style:normal;color:var(--color-ink)}
@@ -121,8 +130,10 @@ details.route-hold summary::-webkit-details-marker{display:none}
 .caveat.carveout b{color:var(--color-met)}
 /* s5b: the situation-gated rows, said once (critique #5b). */
 details.hold-group{margin-top:.1rem}
+/* The Fold's header is a control: at least the tap floor, its text centred. */
 details.hold-group > summary{cursor:pointer;list-style:none;font:600 .82rem var(--font-sans);color:var(--color-muted);
-  background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-hold);padding:.55rem .9rem}
+  background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-hold);padding:.55rem .9rem;
+  min-height:var(--tap-min);align-content:center}
 details.hold-group > summary::-webkit-details-marker{display:none}
 details.hold-group > summary::before{content:"▸ ";color:var(--color-muted)}
 details.hold-group[open] > summary::before{content:"▾ "}
@@ -233,12 +244,13 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
 .next::after{content:"\2060↗"}
 
 @media (--narrow){
-  details.country-sec > summary{flex-wrap:wrap;letter-spacing:.18em}
+  details.country-sec > summary{letter-spacing:.18em}
   /* The sentence takes a row of its own under the name; the name stays
      where every other country's is, at the marker (s21). */
   details.country-sec > summary.said{justify-content:flex-start}
   .tally.said{flex-basis:100%;max-width:none}
-  .tally{text-align:left}
+  /* A Tally that does not fit beside the name takes the row under it. */
+  .tally{flex:0 1 auto;text-align:left}
 }
 
 @media print{

@@ -3030,6 +3030,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/asked-for.test.ts",
+   "to": "tests/route-of.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/audit-and-runner.test.ts",
    "to": "tests/workflow-text.ts",
    "kind": "dependency"
@@ -3201,6 +3206,11 @@
   },
   {
    "from": "tests/card-path.test.ts",
+   "to": "tests/route-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/card-path.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -3217,6 +3227,11 @@
   {
    "from": "tests/card.test.ts",
    "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/card.test.ts",
+   "to": "tests/route-of.ts",
    "kind": "dependency"
   },
   {
@@ -3542,6 +3557,11 @@
   {
    "from": "tests/consolidated-text.test.ts",
    "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/consolidated-text.test.ts",
+   "to": "tests/route-of.ts",
    "kind": "dependency"
   },
   {
@@ -4270,6 +4290,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/passport-only.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/passport-only.test.ts",
+   "to": "tests/route-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/passport-only.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/paths-named.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -4712,6 +4747,11 @@
   {
    "from": "tests/route-page-provenance.test.ts",
    "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "tests/route-of.ts",
    "kind": "dependency"
   },
   {
@@ -5241,6 +5281,11 @@
   },
   {
    "from": "tests/s23-page-copy.test.ts",
+   "to": "tests/route-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23-page-copy.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -5342,6 +5387,11 @@
   {
    "from": "tests/s25.test.ts",
    "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25.test.ts",
+   "to": "tests/route-of.ts",
    "kind": "dependency"
   },
   {
@@ -5606,6 +5656,11 @@
   },
   {
    "from": "tests/s32.test.ts",
+   "to": "tests/route-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s32.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -5627,6 +5682,11 @@
   {
    "from": "tests/s5e.test.ts",
    "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s5e.test.ts",
+   "to": "tests/route-of.ts",
    "kind": "dependency"
   },
   {
@@ -5681,6 +5741,11 @@
   },
   {
    "from": "tests/s7.test.ts",
+   "to": "tests/route-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s7.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -5707,6 +5772,11 @@
   {
    "from": "tests/s8.test.ts",
    "to": "src/lib/verdict/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s8.test.ts",
+   "to": "tests/route-of.ts",
    "kind": "dependency"
   },
   {
@@ -5762,6 +5832,21 @@
   {
    "from": "tests/s9.test.ts",
    "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen-place.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen-place.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen-place.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -6151,6 +6236,11 @@
   },
   {
    "from": "tests/verdict-quote-lines.test.ts",
+   "to": "tests/route-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -6172,6 +6262,11 @@
   {
    "from": "tests/verdict-short-on-a-figure.test.ts",
    "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-short-on-a-figure.test.ts",
+   "to": "tests/route-of.ts",
    "kind": "dependency"
   },
   {
@@ -7114,7 +7209,22 @@
   "scripts/cli-deploy-finding.mjs": [],
   "scripts/cli-measure-taps.mjs": [
    {
+    "name": "isDrawnShortOfResult",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "isComparisonWithoutStrip",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "hasProblem",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "stripNoteOf",
     "kind": "fn",
     "exported": false
    },
@@ -7506,6 +7616,26 @@
    {
     "name": "TAP_MIN",
     "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "textOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "measureControls",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "measureStripLines",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readScreenState",
+    "kind": "fn",
     "exported": false
    },
    {
@@ -10914,5 +11044,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "0eab5e1912bbf39920418643e3e4a02271c205c0c1244d3519389259ef5ef3f1"
+ "digest": "c4c2c6c37142a1b2ea48651ce536fa719fae0b9069f48b5ad55870fd7e77e2b0"
 }
