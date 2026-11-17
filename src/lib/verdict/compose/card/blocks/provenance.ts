@@ -4,7 +4,7 @@ import {
 } from "permit-rulebook-data";
 import { esc } from "../../../../reason.js";
 import {
-  APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_THRESHOLD_ON_ROUTE, perPeriod,
+  APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_THRESHOLD_ON_ROUTE, moreQuotes, perPeriod,
 } from "../../../../copy/verdict.js";
 import { type Glossary, glossed } from "../../../../gloss.js";
 // One line for every quote the product shows (2026-09-08; #387).
@@ -129,6 +129,33 @@ function distinctProvenanceLines(
   return lines;
 }
 
+/** Which of a card's quote lines are in view: the first two, the rest one tap
+ * away under More quotes, as a route's card has them; or every one, as a
+ * not-yet row has them inside its own fold (rulings 6 and 13 on #420). */
+export type QuotesInView = "first-two" | "every";
+
+/** How a card's quote lines are drawn: which are in view, and the items the
+ * card dropped, linked to a path its route did not take, which are not quoted. */
+export interface ProvenanceLook {
+  quotesInView: QuotesInView;
+  notTaken?: ReadonlySet<string>;
+}
+
+/** How many quote lines a route's card shows before its More quotes control. */
+const FIRST_QUOTES_IN_VIEW = 2;
+
+/** A card's quote lines as `quotesInView` says: past the first two, under one
+ * control that says how many it holds; two or fewer draw no control. */
+function linesInView(lines: string[], quotesInView: QuotesInView): string[] {
+  if (quotesInView === "every" || lines.length <= FIRST_QUOTES_IN_VIEW) return lines;
+  const behind = lines.slice(FIRST_QUOTES_IN_VIEW);
+  return [
+    ...lines.slice(0, FIRST_QUOTES_IN_VIEW),
+    `<details class="more-quotes"><summary>${esc(moreQuotes(behind.length))}</summary>`
+    + `<div class="more-quotes-body">${behind.join("")}</div></details>`,
+  ];
+}
+
 /**
  * Every value this route rests on, quoted and dated. Where a route states two
  * thresholds and only one of them applied to this reader, both still render —
@@ -137,9 +164,11 @@ function distinctProvenanceLines(
  * do not qualify for it (human catch 2026-09-07). An item the card dropped,
  * linked to a path its route did not take (`notTaken`), is not quoted either
  * (#315, ruling 5). Any other value of a path not taken is quoted after the
- * rest, dimmed and marked as not applying (ruling 5 on #420).
+ * rest, dimmed and marked as not applying (ruling 5 on #420). Which lines are
+ * in view is the look's.
  */
-export function provenanceHtml(screen: CardScreen, r: RouteResult, notTaken: ReadonlySet<string> = new Set()): string {
+export function provenanceHtml(screen: CardScreen, r: RouteResult, look: ProvenanceLook): string {
+  const { quotesInView, notTaken = new Set() } = look;
   const { ds, answers, glossary: seen = new Set() } = screen;
   const entries = decidingPathFirst(withoutContainedSentences(
     resultProvenance({ ...r, route: routeAsStated(r.route, notTaken) }, answers)));
@@ -153,8 +182,8 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult, notTaken: Rea
   const contested = entries.some((e) => e.amount !== undefined && e.applied === false);
   // The same line the route pages draw a quote with: its frame, and its own
   // link to its source, with the card's additions (#387).
-  const lines = distinctProvenanceLines(entries, seen, (entry, citation) =>
-    quoteLineHtml(entry.value, cardLineOptionsOf({ ds, route: r.route, contested }, entry, citation)));
+  const lines = linesInView(distinctProvenanceLines(entries, seen, (entry, citation) =>
+    quoteLineHtml(entry.value, cardLineOptionsOf({ ds, route: r.route, contested }, entry, citation))), quotesInView);
 
   // The promise on the first screen is that every value shows its quote and
   // its read date. A route that decides nothing on a number has no AMOUNT to

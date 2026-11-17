@@ -232,6 +232,15 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
 .src .applies{color:var(--color-met)}
 .src.unapplied{opacity:.72}
 .src .applies-not{font-style:italic}
+/* More quotes: a route card's quote lines past its first two, one tap away.
+   Its control sits under a quote line's own dotted rule, at least the tap
+   floor, its words centred in it; the lines it opens keep the list's gap. */
+details.more-quotes > summary{cursor:pointer;list-style:none;font:600 .78rem var(--font-sans);color:var(--color-band);
+  border-top:var(--rule-dotted);display:flex;align-items:center;min-height:var(--tap-min)}
+details.more-quotes > summary::-webkit-details-marker{display:none}
+details.more-quotes > summary::before{content:"▸\00a0"}
+details.more-quotes[open] > summary::before{content:"▾\00a0"}
+.more-quotes-body{display:grid;gap:.3rem}
 /* The link at a card's foot: its box is at least the tap floor, its text
    centred in it at its own line height. A label longer than the screen is
    wide wraps (a Notice's Learn link carries the data's label), so the link is

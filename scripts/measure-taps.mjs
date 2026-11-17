@@ -23,7 +23,8 @@
  * most controls in the product.
  *
  * On each screen it also reads where the Strip wraps, and reports a Strip
- * line that starts with a separator dot.
+ * line that starts with a separator dot. It counts the More quotes controls,
+ * and a result seeded to draw one fails without it.
  *
  * A drawn screen is named after the result its record produces, so it must
  * end on the result screen: one that stops at a question, because the
@@ -107,6 +108,12 @@ function measureStripLines() {
   return { stripLineCounts, stripLinesStartingWithADot };
 }
 
+/** The More quotes controls on screen: how many, each a control the floor
+ * above already measures. */
+function countMoreQuotesControls() {
+  return { moreQuotesControls: document.querySelectorAll("details.more-quotes > summary").length };
+}
+
 /**
  * Whether the page drew the result, whether that result is one a notice
  * answers outright, and the question card's progress and label where it drew
@@ -136,11 +143,13 @@ const PROBE = `(() => {
   ${measureControls}
   ${measureStripLines}
   ${readScreenState}
+  ${countMoreQuotesControls}
   return JSON.stringify({
     innerWidth: window.innerWidth,
     scrollWidth: document.documentElement.scrollWidth,
     ...measureControls(${TAP_MIN}),
     ...measureStripLines(),
+    ...countMoreQuotesControls(),
     ...readScreenState(),
     tapMin: getComputedStyle(document.documentElement).getPropertyValue("--tap-min").trim(),
   });
@@ -162,7 +171,9 @@ function listBuiltPages(dir) {
  * Screens the page draws rather than the build emits, each with the record
  * that produces it. A record is written, the page is reloaded, and what the
  * reader actually taps is measured. Each record answers every question the
- * interview asks on the way, so the page reloads onto the result.
+ * interview asks on the way, so the page reloads onto the result. A third
+ * entry, `{ moreQuotes: true }`, says the result draws a More quotes control,
+ * so it is among the controls measured: one drawn without it fails.
  */
 const DRAWN = [
   ["/ (results, one country)", {
@@ -176,7 +187,7 @@ const DRAWN = [
     recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "lt2", experience_7y: "3to5",
     german: "b1", english: "c1", nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
     situation_country: "de", salary_eur_year: "unknown", funds_eur_month: "band_1",
-  }],
+  }, { moreQuotes: true }],
   // Short Tallies draw one-line country headers here, and a job offer in the
   // Netherlands gathers Germany's routes into a Fold, so the floor is measured
   // on one-line country headers and on a Fold's header.
@@ -185,12 +196,12 @@ const DRAWN = [
     qualification: "degree", recognition_de: "not_assessed", experience_5y: "2plus", experience_7y: "5plus",
     occupation_shortage: "yes", salary_eur_month: "band_5", nl_recent_grad: "no", top200_grad: "no",
     german: "a1", funds_eur_month: "unknown",
-  }],
+  }, { moreQuotes: true }],
   // The Algerian notice's Learn link, a foot link longer than a phone's line, wraps here.
   ["/ (results, France, Algerian passport)", {
     destination: "fr", situation: "offer", qualification: "none", fr_innovative_employer: "yes", citizenship: "DZ",
     experience_7y: "lt3", salary_eur_year: "band_0",
-  }],
+  }, { moreQuotes: true }],
   // A reader who does not know whether the employer is innovative meets the
   // talent card's Learn link, which wraps here.
   ["/ (results, France, a Learn link)", {
@@ -226,10 +237,11 @@ const listBuiltScreens = (url) => listBuiltPages(dist).map((file) => {
   return { name: path, kind: "built", open: (page) => page.goto(url(`/${path.replace(/index\.html$/, "")}`)) };
 });
 
-/** Each drawn screen: its name, its kind, and how the page opens it at the site's address `url` makes, its record written and the page reloaded. */
-const drawnScreens = (url) => DRAWN.map(([name, answers]) => ({
+/** Each drawn screen: its name, its kind, whether it is seeded to draw a More quotes control, and how the page opens it at the site's address `url` makes, its record written and the page reloaded. */
+const drawnScreens = (url) => DRAWN.map(([name, answers, drawn = {}]) => ({
   name,
   kind: "drawn",
+  isSeededToDrawMoreQuotes: drawn.moreQuotes === true,
   async open(page) {
     await page.goto(url("/"));
     await page.evaluate(seedFor(answers));
@@ -240,9 +252,9 @@ const drawnScreens = (url) => DRAWN.map(([name, answers]) => ({
 /** Each of `screens` opened and measured in turn, handed to `onScreen` as it is measured; all of them returned. */
 async function measureEach(page, screens, onScreen) {
   const measured = [];
-  for (const { name, kind, open } of screens) {
+  for (const { name, kind, isSeededToDrawMoreQuotes = false, open } of screens) {
     await open(page);
-    const screen = await measureAtRest(page, name, kind);
+    const screen = { ...await measureAtRest(page, name, kind), isSeededToDrawMoreQuotes };
     onScreen(screen);
     measured.push(screen);
   }

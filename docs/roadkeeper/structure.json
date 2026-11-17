@@ -4170,6 +4170,36 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/more-quotes-page.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/more-quotes-page.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/more-quotes-page.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/more-quotes-page.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/more-quotes-page.test.ts",
+   "to": "tests/route-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/more-quotes-page.test.ts",
+   "to": "tests/screenshot-ink.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/name-sweep.test.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
@@ -6271,6 +6301,11 @@
   },
   {
    "from": "tests/verdict-quotes-once.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quotes-once.test.ts",
    "to": "tests/route-of.ts",
    "kind": "dependency"
   },
@@ -7254,12 +7289,22 @@
     "exported": false
    },
    {
+    "name": "isMissingSeededMoreQuotes",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "hasProblem",
     "kind": "fn",
     "exported": false
    },
    {
     "name": "stripNoteOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "moreQuotesNoteOf",
     "kind": "fn",
     "exported": false
    },
@@ -7665,6 +7710,11 @@
    },
    {
     "name": "measureStripLines",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countMoreQuotesControls",
     "kind": "fn",
     "exported": false
    },
@@ -9542,6 +9592,11 @@
     "exported": true
    },
    {
+    "name": "moreQuotes",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "NO_THRESHOLD_ON_ROUTE",
     "kind": "const",
     "exported": true
@@ -11084,5 +11139,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "6f414e34ee4afd955cb208dca81413668e9687c53640b58f7a7bfc5fb8ffdf47"
+ "digest": "66a9698c0afa35602bc35df4aaac7c2bf8f20137d2968e213aa8350e5f0fbf2b"
 }

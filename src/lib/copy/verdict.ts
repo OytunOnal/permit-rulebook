@@ -250,6 +250,9 @@ export const OUR_READING_HEADING = "Our reading, not the authority's words:";
 export const perPeriod = (period: string): string => `per ${period}`;
 export const APPLIES_TO_YOU = "applies to you";
 export const DOES_NOT_APPLY_TO_YOU = "does not apply to you";
+/** The control a route's card folds its quote lines past the first two under
+ * (glossary: More quotes). */
+export const moreQuotes = (n: number): string => `${n} more quote${n === 1 ? "" : "s"}`;
 export const NO_THRESHOLD_ON_ROUTE = "No salary or points threshold on this route — nothing here to fall short of. "
   + "What it asks for is in the conditions above, each with the official wording behind it.";
 

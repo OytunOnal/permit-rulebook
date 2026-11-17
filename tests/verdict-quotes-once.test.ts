@@ -6,12 +6,15 @@ import { DOES_NOT_APPLY_TO_YOU } from "../src/lib/copy/verdict.js";
 import {
   ALGERIAN, DENIZ, DUTCH_GRADUATE, DUTCH_OFFER_ON_FOUR, PERSONA_A, PERSONA_C, PRIYA, PRIYA_EXPLORING_ALL,
 } from "./personas.js";
+import { plainTextOf } from "./reader-pages.js";
 import { routeOf } from "./route-of.js";
 import { blocksIn, drawnRouteOn, everyDrawnRouteIn, verdictFor, verdictOn } from "./verdict-cards.js";
 
 /**
  * A card reads each sentence once, and its first quotes are the ones its
- * route was met through (#423; rulings 3, 4 and 5 on #420).
+ * route was met through (#423; rulings 3, 4 and 5 on #420). A route's card
+ * shows its first two and keeps the rest under More quotes; a Notice's card
+ * and a not-yet row keep every quote (#425; rulings 6, 7 and 13 on #420).
  */
 
 const ds = dataset as unknown as Dataset;
@@ -86,6 +89,58 @@ describe("a card reads each sentence once", () => {
     const salary = routeProvenance(routeOf(ds, "fr-talent-qualifie")).find((e) => e.amount !== undefined);
     expect(salary, "precondition: the route quotes its salary threshold").toBeDefined();
     expect(carrying.map((q) => q.sentence)).toEqual([esc(salary!.value.quote)]);
+  });
+});
+
+/** A card's quote lines as the reader meets them: those in view, the words
+ * of the More quotes control (null where it draws none), and those behind it. */
+interface FoldedQuotes {
+  inView: string[];
+  control: string | null;
+  behind: string[];
+}
+
+/** The quote lines of a card's source list, split at its More quotes control. */
+function foldedQuotesOf(card: string): FoldedQuotes {
+  const sources = blocksIn(card, "srcs");
+  const fold = /<details class="more-quotes">\s*<summary>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/.exec(sources);
+  const sentencesIn = (html: string) => printedQuotesOf(`<div class="srcs">${html}</div>`).map((q) => q.sentence);
+  if (!fold) return { inView: sentencesIn(sources), control: null, behind: [] };
+  return {
+    inView: sentencesIn(sources.slice(0, fold.index)),
+    control: plainTextOf(fold[1]!),
+    behind: sentencesIn(fold[2]!),
+  };
+}
+
+describe("a route's card shows its first two quote lines, the rest under More quotes", () => {
+  for (const [route, lines, control] of [
+    ["de-experienced-worker", 6, "4 more quotes"],
+    ["de-blue-card-general", 3, "1 more quote"],
+    ["de-skilled-academic", 2, null],
+  ] as const)
+    it(`a card with ${lines} quote lines shows the first two${control ? ` and folds the rest under "${control}"` : " and draws no control"} (${route}, persona A recognised)`, () => {
+      const card = drawnRouteOn(verdictFor(RECOGNISED_A), route);
+      const all = printedQuotesOf(card).map((q) => q.sentence);
+      expect(all.length, "precondition: the card's quote lines").toBe(lines);
+      const folded = foldedQuotesOf(card);
+      expect(folded.control).toBe(control);
+      expect(folded.inView).toEqual(all.slice(0, 2));
+      expect(folded.behind).toEqual(all.slice(2));
+    });
+
+  it("a not-yet row keeps every quote line in its own row fold, with no More quotes control (de-chancenkarte, persona A)", () => {
+    const row = drawnRouteOn(verdictFor(PERSONA_A), "de-chancenkarte");
+    expect(row.trim().startsWith('<details class="route-hold"'), "precondition: a not-yet row").toBe(true);
+    expect(printedQuotesOf(row).length, "precondition: the row prints more than two quote lines").toBeGreaterThan(2);
+    expect(foldedQuotesOf(row).control).toBeNull();
+  });
+
+  it("a Notice's card keeps every quote in view (the Algerian reader's Notice)", () => {
+    const notice = /<article class="notice[\s\S]*?<\/article>/.exec(verdictFor(ALGERIAN).notices)?.[0];
+    expect(notice, "precondition: the Algerian reader's result draws a Notice").toBeDefined();
+    expect(printedQuotesOf(notice!).length, "precondition: the Notice quotes more than two lines").toBeGreaterThan(2);
+    expect(foldedQuotesOf(notice!).control).toBeNull();
   });
 });
 
