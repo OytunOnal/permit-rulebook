@@ -221,19 +221,21 @@ export interface RouteStanding {
 /** Each route's standing, by the route's id. */
 export type RouteStandings = Record<string, RouteStanding>;
 
-/** One count on the Steps line: a country, by its code, and how many Leverage
- * steps its steps group offers. */
-export interface StepsCount {
+/** What one country's section, or the flat layout's one country, holds for
+ * the first screen's lines: the country, by its code, the Leverage steps its
+ * steps group offers, and its open routes. */
+export interface CountryHolding {
   country: string;
   steps: number;
+  open: number;
 }
 
 /** What stands on the first screen beside the headline, on either layout. */
 interface FirstScreenLines {
-  /** The Steps line's counts, in screen order: each country whose steps group
-   * offers a Leverage step; none where no country does, or the headline
+  /** The Steps line's countries, in screen order: each country whose steps
+   * group offers a Leverage step; none where no country does, or the headline
    * already names a step (ruling 9 on #362). */
-  stepsLine: StepsCount[];
+  stepsLine: CountryHolding[];
   /** Whether the Choice line is drawn: where more than one route is open,
    * anywhere on screen (ruling 8 on #362, ruling 26 on #420). */
   drawsChoiceLine: boolean;

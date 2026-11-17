@@ -11,7 +11,7 @@ import {
   countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, reckonRouteWithStepTaken, titlesABoundedGap, type Step,
 } from "./steps.js";
 import type {
-  AnsweredDataset, ArrangedLine, ComparedLayout, CountrySection, HeadlineLayout, JobOfferLine, RouteGroupKind,
+  AnsweredDataset, ArrangedLine, ComparedLayout, CountryHolding, CountrySection, HeadlineLayout, JobOfferLine, RouteGroupKind,
   RouteStandings, StepPlace, Strip, Tally, VerdictGroup, WrittenStateKey,
 } from "./verdict-layout.js";
 
@@ -265,15 +265,6 @@ function headlineOf(answeredDataset: AnsweredDataset, compared: Compared): Headl
   return { kind: "open", routes: whole.met.length, countries, nearest };
 }
 
-/** What one country's section, or the flat layout's one country, holds for
- * the first screen's lines: the country, its Leverage steps, and its open
- * routes. */
-interface CountryHolding {
-  country: string;
-  steps: number;
-  open: number;
-}
-
 /**
  * The Steps line's counts and whether the Choice line is drawn, from each
  * country's holding in screen order. The Steps line counts each country
@@ -284,7 +275,7 @@ interface CountryHolding {
 function firstScreenLinesOf(headline: HeadlineLayout, holdings: CountryHolding[]): Pick<ComparedLayout, "stepsLine" | "drawsChoiceLine"> {
   const stepsLine = headline.kind === "steps"
     ? []
-    : holdings.filter((h) => h.steps > 0).map(({ country, steps }) => ({ country, steps }));
+    : holdings.filter((h) => h.steps > 0);
   const open = holdings.reduce((sum, h) => sum + h.open, 0);
   return { stepsLine, drawsChoiceLine: open > 1 };
 }
