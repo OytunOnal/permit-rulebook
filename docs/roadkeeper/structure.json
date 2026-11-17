@@ -197,6 +197,7 @@
     "src/lib/verdict/compose/masthead.ts",
     "src/lib/verdict/compose/not-yet.ts",
     "src/lib/verdict/compose/printed-shortfall.ts",
+    "src/lib/verdict/compose/steps-line.ts",
     "src/lib/verdict/compose/types.ts",
     "src/lib/verdict/compose/unscored.ts",
     "src/lib/verdict/verdict.css",
@@ -397,6 +398,7 @@
   "src/lib/verdict/compose/masthead.ts": "presentation",
   "src/lib/verdict/compose/not-yet.ts": "presentation",
   "src/lib/verdict/compose/printed-shortfall.ts": "presentation",
+  "src/lib/verdict/compose/steps-line.ts": "presentation",
   "src/lib/verdict/compose/types.ts": "presentation",
   "src/lib/verdict/compose/unscored.ts": "presentation",
   "src/lib/verdict/reckon/layout/figure-gaps.ts": "application",
@@ -2441,6 +2443,11 @@
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/verdict/compose/steps-line.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
    "to": "src/lib/verdict/compose/types.ts",
    "kind": "type-only"
   },
@@ -2521,6 +2528,21 @@
   },
   {
    "from": "src/lib/verdict/compose/printed-shortfall.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps-line.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps-line.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps-line.ts",
    "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
@@ -11114,5 +11136,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "ac5ace0c24f8d93637af2c50f7f0c4dfccb1e8fb2b5312ddd8aeec4bb67d7c1d"
+ "digest": "e913aa986b70aea76686361bddb31a704910a2b41a7983e4f38e22f42436783a"
 }

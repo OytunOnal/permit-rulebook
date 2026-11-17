@@ -2,10 +2,10 @@
 import { SITUATION_FIELD, findJobOfferAnswer, phraseOf, subjectOf, type Dataset } from "permit-rulebook-data";
 import {
   CHOICE_LINE, CLOSED_HEADING, NOT_YET_HEADING, OPEN_HEADING, SEEK_HINT, SHORT_ON_A_FIGURE_HEADING, STEPS_HEADING,
-  STEPS_HEADING_TAIL, STEPS_HERE_HEADING, STEPS_LINE_LEAD, SUMMARY_LABEL, UNSETTLED_HEADING, UNSETTLED_SECTION_LINE,
+  STEPS_HEADING_TAIL, STEPS_HERE_HEADING, SUMMARY_LABEL, UNSETTLED_HEADING, UNSETTLED_SECTION_LINE,
   arrangedLine, moreWithDifferentSituationCount, moreWithJobOfferCount, notOpenToPassportCount, notYetCount,
-  notYetWithUnknowns, openCount, resultFeedbackLine, shortOnAFigureCount, stepsCountIn, stepsThatWouldUnlockMore,
-  unlockingSteps, unsettledCount, writeJobOfferLine,
+  notYetWithUnknowns, openCount, resultFeedbackLine, shortOnAFigureCount, unlockingSteps, unsettledCount,
+  writeJobOfferLine,
 } from "../../copy/verdict.js";
 import { FEEDBACK } from "../../copy/frame.js";
 import { countryOf } from "../../countries.js";
@@ -15,10 +15,11 @@ import type { NotScoredMark } from "../../situations.js";
 import { phraseOfAnswer, phraseOfAnswerRef } from "./answer-phrase.js";
 import { drawnRoutesHtml, drawnStepCard, type DrawnCards } from "./drawn-cards.js";
 import { notYetItemsHtml } from "./not-yet.js";
+import { stepsAnchorOf, stepsLineHtml } from "./steps-line.js";
 import type { VerdictScreen } from "./types.js";
 import { unscoredTally } from "./unscored.js";
 import type {
-  ArrangedLine, ComparedLayout, CountrySection, JobOfferLine, StepsCount, Strip, Tally, VerdictGroup, VerdictLayout,
+  ArrangedLine, ComparedLayout, CountrySection, JobOfferLine, Strip, Tally, VerdictGroup, VerdictLayout,
 } from "../reckon/reckon-verdict.js";
 
 /** What the body is drawn from: the screen it words things on, and the cards
@@ -153,9 +154,6 @@ function tallyHtml(screen: VerdictScreen, section: CountrySection): string {
   ].filter(Boolean).join(" · ");
 }
 
-/** The id a country's steps heading carries, which the Steps line links to. */
-const stepsAnchorOf = (country: string): string => `steps-${country.toLowerCase()}`;
-
 /** A country's steps heading, its words markup already escaped, carrying the
  * id the Steps line links to. */
 const stepsHeadingHtml = (country: string, words: string): string =>
@@ -184,28 +182,6 @@ const flatChromeOf = (layout: ComparedLayout & { kind: "one-country" }): Section
   stepsHeading: stepsHeadingHtml(layout.country, `<b>${esc(STEPS_HEADING)}</b> — ${esc(STEPS_HEADING_TAIL)}`),
   drawsChoiceLine: drawsChoiceLineIn(layout, layout.country),
 });
-
-/** A link on the Steps line to one country's steps. */
-const stepsLinkHtml = (count: StepsCount, words: string): string =>
-  `<a href="#${escAttr(stepsAnchorOf(count.country))}">${esc(words)}</a>`;
-
-/**
- * The Steps line, first under the masthead where the layout counts steps
- * (rulings 9 and 10 on #362): on the four-country result its lead, then each
- * country's count, in screen order, a link to that country's steps; on a
- * one-country result the whole line is the one link. A section holding steps
- * is always open, so no link lands in a collapsed one.
- */
-function stepsLineHtml(layout: ComparedLayout): string {
-  const counts = layout.stepsLine;
-  if (!counts.length) return "";
-  if (layout.kind === "one-country") {
-    const [count] = counts as [StepsCount];
-    return `<p class="steps-line">${stepsLinkHtml(count, stepsThatWouldUnlockMore(count.steps))}</p>`;
-  }
-  const links = counts.map((count) => stepsLinkHtml(count, stepsCountIn(count.steps, phraseOf(count.country))));
-  return `<p class="steps-line">${esc(STEPS_LINE_LEAD)} ${links.join(" · ")}</p>`;
-}
 
 /**
  * The offer, at the end of the body: after the last section and before the
