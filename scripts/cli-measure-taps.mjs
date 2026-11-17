@@ -35,7 +35,7 @@ export function screenLinesOf(screen) {
     ...screen.bad.map((under) => `     under the floor: ${under}`),
     ...(screen.isOverflowing ? [`     horizontal overflow: ${screen.scrollWidth - screen.innerWidth}px`] : []),
     ...screen.stripLinesStartingWithADot.map((lineOpening) => `     Strip line starts with a dot: ${lineOpening}`),
-    ...(isDrawnShortOfResult(screen) ? [`     not a result: stops at ${screen.questionAsked ?? "a screen with no question card"}`] : []),
+    ...(isDrawnShortOfResult(screen) ? [`     not a result: stops at ${screen.questionAskedIfAny ?? "a screen with no question card"}`] : []),
     ...(isComparisonWithoutStrip(screen) ? ["     no Strip on a result that compares routes"] : []),
   ];
 }

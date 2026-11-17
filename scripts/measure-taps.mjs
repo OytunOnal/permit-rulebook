@@ -96,6 +96,8 @@ function measureStripLines() {
     const firstLineTop = Math.min(...parts.map(({ box }) => box.top));
     let lineCount = 1;
     for (const { part, box } of parts) {
+      // 1 px either way: boxes laid at fractional pixels round apart by up to
+      // one, which is neither a different edge nor a different line.
       const isLineStart = Math.abs(box.left - stripBox.left) <= 1 && box.top > firstLineTop + 1;
       if (!isLineStart) continue;
       lineCount++;
@@ -125,7 +127,8 @@ function readScreenState() {
   return {
     isResult,
     isAnsweredByNotice: isResult && drawsNotice && !drawsFeedbackLine,
-    questionAsked: questionLabel
+    // 120 characters name the question on one failure line; a long label's rest adds nothing.
+    questionAskedIfAny: questionLabel
       ? [questionProgress, questionLabel].filter(Boolean).map((el) => textOf(el)).join(" ").slice(0, 120)
       : null,
   };
@@ -177,10 +180,10 @@ const DRAWN = [
     german: "b1", english: "c1", nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
     situation_country: "de", salary_eur_year: "unknown", funds_eur_month: "band_1",
   }],
-  // The v1.2.6 gate critique's own walk, in the order it answered: its short
-  // Tallies draw one-line country headers, and its offer in the Netherlands
-  // gathers Germany's routes into a Fold.
-  ["/ (results, all four countries, offer in the Netherlands)", {
+  // Short Tallies draw one-line country headers here, and a job offer in the
+  // Netherlands gathers Germany's routes into a Fold, so the floor is measured
+  // on one-line country headers and on a Fold's header.
+  ["/ (results, all four countries, job offer in the Netherlands)", {
     destination: "all", situation: "offer", situation_country: "nl", age_band: "a30to35", citizenship: "TR",
     qualification: "degree", recognition_de: "not_assessed", experience_5y: "2plus", experience_7y: "5plus",
     occupation_shortage: "yes", salary_eur_month: "band_5", nl_recent_grad: "no", top200_grad: "no",
@@ -208,12 +211,13 @@ const seedFor = (answers) =>
  * screen's name, the floor it was measured against, and `kind`, "built" for
  * a page the build emits or "drawn" for one the page draws from a record.
  * `isResult` is whether the page drew the result screen, `isAnsweredByNotice`
- * whether that result is one a notice answers outright; `questionAsked` is
+ * whether that result is one a notice answers outright; `questionAskedIfAny` is
  * the question card's progress and label where it drew one instead, else null.
  */
 async function measureAtRest(page, name, kind) {
   await page.waitUntilAtRest();
   const measured = JSON.parse(await page.evaluate(PROBE));
+  // 1 px over the viewport is fractional layout rounded up, not a page that scrolls sideways.
   return { name, kind, floorPx: TAP_MIN, ...measured, isOverflowing: measured.scrollWidth > measured.innerWidth + 1 };
 }
 
