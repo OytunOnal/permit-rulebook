@@ -74,7 +74,7 @@ function cardLineOptionsOf(context: ProvenanceContext, entry: ProvenanceEntry, c
  * a path not taken. Within each part, the dataset's order. The engine marks
  * each value's path; this reads the mark and decides nothing.
  */
-function decidingPathFirst(entries: ProvenanceEntry[]): ProvenanceEntry[] {
+function inReadingOrder(entries: ProvenanceEntry[]): ProvenanceEntry[] {
   return [...entries.filter((e) => e.applied !== false), ...entries.filter((e) => e.applied === false)];
 }
 
@@ -97,7 +97,7 @@ function quotesInside(longer: ProvenanceEntry, shorter: ProvenanceEntry): boolea
  * reader's own path rests on is never dropped for a line of a path not taken,
  * which is dimmed and says it does not apply to them (ruling 29 on #420).
  */
-function withoutContainedSentences(entries: ProvenanceEntry[]): ProvenanceEntry[] {
+function dropContainedSentences(entries: ProvenanceEntry[]): ProvenanceEntry[] {
   return entries.filter((entry) => !entries.some((other) =>
     quotesInside(other, entry) && (other.applied !== false || entry.applied === false)));
 }
@@ -141,7 +141,7 @@ export type QuotesInView = "first-two" | "every";
 
 /** How a card's quote lines are drawn: which are in view, and the items the
  * card dropped, linked to a path its route did not take, which are not quoted. */
-export interface ProvenanceLook {
+export interface QuotesShownAndDropped {
   quotesInView: QuotesInView;
   notTaken?: ReadonlySet<string>;
 }
@@ -170,12 +170,12 @@ function linesInView(lines: string[], quotesInView: QuotesInView): string[] {
  * linked to a path its route did not take (`notTaken`), is not quoted either
  * (#315, ruling 5). Any other value of a path not taken is quoted after the
  * rest, dimmed and marked as not applying (ruling 5 on #420). Which lines are
- * in view is the look's.
+ * in view is `shown`'s.
  */
-export function provenanceHtml(screen: CardScreen, r: RouteResult, look: ProvenanceLook): string {
-  const { quotesInView, notTaken = new Set() } = look;
+export function provenanceHtml(screen: CardScreen, r: RouteResult, shown: QuotesShownAndDropped): string {
+  const { quotesInView, notTaken = new Set() } = shown;
   const { ds, answers, glossary: seen = new Set() } = screen;
-  const entries = decidingPathFirst(withoutContainedSentences(
+  const entries = inReadingOrder(dropContainedSentences(
     resultProvenance({ ...r, route: routeAsStated(r.route, notTaken) }, answers)));
   // A lone threshold needs no telling apart from anything, and a losing path
   // that quotes no amount leaves nothing for the reader to mistake for theirs.

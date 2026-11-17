@@ -106,14 +106,14 @@ describe("a card reads each sentence once", () => {
 
 /** A card's quote lines as the reader meets them: those in view, the words
  * of the More quotes control (null where it draws none), and those behind it. */
-interface FoldedQuotes {
+interface QuotesAsMet {
   inView: string[];
   control: string | null;
   behind: string[];
 }
 
 /** The quote lines of a card's source list, split at its More quotes control. */
-function foldedQuotesOf(card: string): FoldedQuotes {
+function quotesAsMetOf(card: string): QuotesAsMet {
   const sources = blocksIn(card, "srcs");
   const fold = /<details class="more-quotes">\s*<summary>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/.exec(sources);
   const sentencesIn = (html: string) => printedQuotesOf(`<div class="srcs">${html}</div>`).map((q) => q.sentence);
@@ -135,29 +135,29 @@ describe("a route's card shows its first two quote lines, the rest under More qu
       const card = drawnRouteOn(verdictFor(RECOGNISED_A), route);
       const all = printedQuotesOf(card).map((q) => q.sentence);
       expect(all.length, "precondition: the card's quote lines").toBe(lines);
-      const folded = foldedQuotesOf(card);
-      expect(folded.control).toBe(control);
-      expect(folded.inView).toEqual(all.slice(0, 2));
-      expect(folded.behind).toEqual(all.slice(2));
+      const asMet = quotesAsMetOf(card);
+      expect(asMet.control).toBe(control);
+      expect(asMet.inView).toEqual(all.slice(0, 2));
+      expect(asMet.behind).toEqual(all.slice(2));
     });
 
   it("a not-yet row keeps every quote line in its own row fold, with no More quotes control (de-chancenkarte, persona A)", () => {
     const row = drawnRouteOn(verdictFor(PERSONA_A), "de-chancenkarte");
     expect(row.trim().startsWith('<details class="route-hold"'), "precondition: a not-yet row").toBe(true);
     expect(printedQuotesOf(row).length, "precondition: the row prints more than two quote lines").toBeGreaterThan(2);
-    expect(foldedQuotesOf(row).control).toBeNull();
+    expect(quotesAsMetOf(row).control).toBeNull();
   });
 
   it("a Notice's card keeps every quote in view (the Algerian reader's Notice)", () => {
     const notice = /<article class="notice[\s\S]*?<\/article>/.exec(verdictFor(ALGERIAN).notices)?.[0];
     expect(notice, "precondition: the Algerian reader's result draws a Notice").toBeDefined();
     expect(printedQuotesOf(notice!).length, "precondition: the Notice quotes more than two lines").toBeGreaterThan(2);
-    expect(foldedQuotesOf(notice!).control).toBeNull();
+    expect(quotesAsMetOf(notice!).control).toBeNull();
   });
 });
 
 /** The shortage Blue Card: degree or IT. */
-const SHORTAGE = "de-blue-card-shortage";
+const SHORTAGE_ROUTE_ID = "de-blue-card-shortage";
 
 /** The shortage Blue Card's IT-specialist path, on a dataset's copy of the route. */
 function itPathOf(route: Route): DisjunctionPath {
@@ -168,7 +168,7 @@ function itPathOf(route: Route): DisjunctionPath {
 
 /** The sentences the shortage Blue Card's IT-specialist path is decided on, as the dataset writes them. */
 function itPathSentences(): string[] {
-  const route = routeOf(ds, SHORTAGE);
+  const route = routeOf(ds, SHORTAGE_ROUTE_ID);
   return routeProvenance({ ...route, criteria: itPathOf(route).criteria, statements: [] }).map((e) => e.value.quote);
 }
 
@@ -179,7 +179,7 @@ function itPathSentences(): string[] {
  */
 function withOwnSentenceInsideNotTaken(): { written: Dataset; own: string } {
   const written = structuredClone(ds);
-  const route = routeOf(written, SHORTAGE);
+  const route = routeOf(written, SHORTAGE_ROUTE_ID);
   const notTaken = itPathOf(route).criteria.find((c) => c.source)?.source;
   if (!notTaken) throw new Error("the IT path quotes no condition");
   const own = routeStatements(route).find((s) => s.path === undefined && s.source?.source_url === notTaken.source_url)?.source;
@@ -190,7 +190,7 @@ function withOwnSentenceInsideNotTaken(): { written: Dataset; own: string } {
 
 describe("a card's first quotes are the ones its route was met through", () => {
   it("the met shortage Blue Card, recognised-degree path: that path's quotes first, the IT path's after, each dimmed and marked \"does not apply to you\"", () => {
-    const quotes = printedQuotesOf(drawnRouteOn(verdictFor(RECOGNISED_A), SHORTAGE));
+    const quotes = printedQuotesOf(drawnRouteOn(verdictFor(RECOGNISED_A), SHORTAGE_ROUTE_ID));
     const itPath = itPathSentences().map(esc);
     expect(itPath.length, "precondition: the IT path quotes sentences").toBeGreaterThan(0);
     const firstNotTaken = quotes.findIndex((q) => itPath.includes(q.sentence));
@@ -210,7 +210,7 @@ describe("a card's first quotes are the ones its route was met through", () => {
 
   it("a line of the reader's own path is never dropped for a dimmed line of a path not taken that contains its sentence, on a written dataset", () => {
     const { written, own } = withOwnSentenceInsideNotTaken();
-    const quotes = printedQuotesOf(drawnRouteOn(verdictOn(written, RECOGNISED_A), SHORTAGE));
+    const quotes = printedQuotesOf(drawnRouteOn(verdictOn(written, RECOGNISED_A), SHORTAGE_ROUTE_ID));
     const containing = quotes.filter((q) => q.sentence !== esc(own) && q.sentence.includes(esc(own)));
     expect(containing.map((q) => q.html.startsWith('<div class="src unapplied"')), "precondition: one dimmed line contains the sentence")
       .toEqual([true]);

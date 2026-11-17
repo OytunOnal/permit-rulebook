@@ -11,7 +11,7 @@ import { distanceBetween, inksOnGroundIn, type InkOnGround, type TextBox } from 
 /**
  * More quotes on the page (#425; rulings 6 and 14 on #420): at 390 px, in the
  * light and the dark scheme each set explicitly, a screenshot's pixels show a
- * route's folded card drawing two quote lines and hiding the rest, one tap on
+ * route's card drawing two quote lines and hiding the rest, one tap on
  * its control drawing them all, and a quote of a path not taken drawn dimmed.
  */
 
@@ -34,10 +34,10 @@ type ColourScheme = (typeof COLOUR_SCHEMES)[number];
 
 /** How far, in RGB, a box's ink must be from its ground for text to be drawn
  * there: well above the blending at a glyph's edge, well under any text. */
-const TEXT_DRAWN = 100;
+const TEXT_CONTRAST_AT_LEAST = 100;
 /** How far, in RGB, a box's ink may be from its ground and still be blank:
  * room for a dotted rule's blending, far under any text. */
-const BLANK = 40;
+const BLANK_CONTRAST_AT_MOST = 40;
 /** How much nearer its ground, in RGB, a dimmed quote is drawn than the
  * faintest quote of the reader's own path: more than a screenshot's
  * antialiasing moves a reading, less than the dimming takes away. */
@@ -132,20 +132,20 @@ async function quoteInksOf(page: BrowserPage, count: number): Promise<QuoteInk[]
 }
 
 /** What one colour scheme showed: whether the page read it as set; the card
- * folded, its layout and, from one screenshot, the inks of the quotes drawn,
+ * before a tap, its layout and, from one screenshot, the inks of the quotes drawn,
  * the control and the space under the control; and the card after one tap on
  * the control, its layout and each quote's ink. */
 interface SchemeSeen {
   scheme: ColourScheme;
   isSet: boolean;
-  folded: LaidOutCard;
-  foldedInks: InkOnGround[];
+  beforeTap: LaidOutCard;
+  beforeTapInks: InkOnGround[];
   opened: LaidOutCard;
   openedInks: QuoteInk[];
 }
 
 /** Opens persona A's result, recognised degree, in `scheme`, reads the card
- * folded, taps its control at its centre, and reads it opened. */
+ * before a tap, taps its control at its centre, and reads it opened. */
 async function seenIn({ page, url }: PageOnSite, scheme: ColourScheme): Promise<SchemeSeen> {
   await page.emulateMedia([{ name: "prefers-color-scheme", value: scheme }]);
   await page.goto(url("/404.html"));
@@ -156,28 +156,28 @@ async function seenIn({ page, url }: PageOnSite, scheme: ColourScheme): Promise<
   const isSet = Boolean(await page.evaluate(`matchMedia("(prefers-color-scheme: ${scheme})").matches`));
   await page.evaluate(`${SHORTAGE_CARD}?.querySelector("details.more-quotes > summary")?.scrollIntoView({ block: "center" })`);
   await page.waitUntilAtRest();
-  const folded = await laidOutCard(page);
-  if (!folded.control) return { scheme, isSet, folded, foldedInks: [], opened: folded, openedInks: [] };
-  const { text, under } = folded.control;
-  const inView = folded.lines.filter((l) => isDrawn(l.quote)).map((l) => l.quote);
-  const foldedInks = await inksOnGroundIn(page, [...inView, text, under]);
+  const beforeTap = await laidOutCard(page);
+  if (!beforeTap.control) return { scheme, isSet, beforeTap, beforeTapInks: [], opened: beforeTap, openedInks: [] };
+  const { text, under } = beforeTap.control;
+  const inView = beforeTap.lines.filter((l) => isDrawn(l.quote)).map((l) => l.quote);
+  const beforeTapInks = await inksOnGroundIn(page, [...inView, text, under]);
   await page.clickAt(text.left + text.width / 2, text.top + text.height / 2);
   await page.waitUntilAtRest();
   const opened = await laidOutCard(page);
-  return { scheme, isSet, folded, foldedInks, opened, openedInks: await quoteInksOf(page, opened.lines.length) };
+  return { scheme, isSet, beforeTap, beforeTapInks, opened, openedInks: await quoteInksOf(page, opened.lines.length) };
 }
 
 const contrastOf = ({ ink, ground }: InkOnGround): number => distanceBetween(ink, ground);
 
 /** Folded: the first two quotes are laid out and drawn, the rest nowhere; the
  * control is drawn, and under it the card's ground is blank to its foot. */
-function expectFolded({ scheme, folded, foldedInks }: SchemeSeen): void {
-  expect(folded.lines.map((l) => isDrawn(l.quote)), `${scheme}: which quotes are laid out folded`)
-    .toEqual(folded.lines.map((_, i) => i < 2));
-  const [first, second, control, under] = foldedInks;
+function expectTwoInView({ scheme, beforeTap, beforeTapInks }: SchemeSeen): void {
+  expect(beforeTap.lines.map((l) => isDrawn(l.quote)), `${scheme}: which quotes are laid out before a tap`)
+    .toEqual(beforeTap.lines.map((_, i) => i < 2));
+  const [first, second, control, under] = beforeTapInks;
   for (const [what, ink] of [["the first quote", first!], ["the second quote", second!], ["the control", control!]] as const)
-    expect(contrastOf(ink), `${scheme}: ${what} is drawn`).toBeGreaterThan(TEXT_DRAWN);
-  expect(contrastOf(under!), `${scheme}: the space under the control is blank`).toBeLessThan(BLANK);
+    expect(contrastOf(ink), `${scheme}: ${what} is drawn`).toBeGreaterThan(TEXT_CONTRAST_AT_LEAST);
+  expect(contrastOf(under!), `${scheme}: the space under the control is blank`).toBeLessThan(BLANK_CONTRAST_AT_MOST);
 }
 
 /** Opened: every quote is laid out and drawn, and each quote of a path not
@@ -186,7 +186,7 @@ function expectOpenedAndDimmed({ scheme, opened, openedInks }: SchemeSeen): void
   expect(opened.lines.every((l) => isDrawn(l.quote)), `${scheme}: a quote is still hidden after the tap`).toBe(true);
   expect(openedInks.length).toBe(opened.lines.length);
   for (const [i, { ink }] of openedInks.entries())
-    expect(contrastOf(ink), `${scheme}: quote ${i + 1} is drawn`).toBeGreaterThan(TEXT_DRAWN);
+    expect(contrastOf(ink), `${scheme}: quote ${i + 1} is drawn`).toBeGreaterThan(TEXT_CONTRAST_AT_LEAST);
   const own = openedInks.filter((q) => !q.isNotTaken).map((q) => contrastOf(q.ink));
   const notTaken = openedInks.filter((q) => q.isNotTaken).map((q) => contrastOf(q.ink));
   expect(notTaken.length, `precondition, ${scheme}: the card quotes a path not taken`).toBeGreaterThan(0);
@@ -204,9 +204,9 @@ describe.skipIf(skipped !== null)("More quotes on a phone, read from a screensho
     expect(seen.map((s) => s.scheme)).toEqual([...COLOUR_SCHEMES]);
     for (const s of seen) {
       expect(s.isSet, `precondition: the ${s.scheme} scheme is set`).toBe(true);
-      expect(s.folded.lines.length, `precondition, ${s.scheme}: the card's quote lines`).toBe(5);
-      expect(s.folded.control?.words, `${s.scheme}: the card's More quotes control`).toBe("3 more quotes");
-      expectFolded(s);
+      expect(s.beforeTap.lines.length, `precondition, ${s.scheme}: the card's quote lines`).toBe(5);
+      expect(s.beforeTap.control?.words, `${s.scheme}: the card's More quotes control`).toBe("3 more quotes");
+      expectTwoInView(s);
       expectOpenedAndDimmed(s);
     }
   }, 180000);

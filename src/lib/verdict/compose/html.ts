@@ -77,7 +77,7 @@ const SEEK_HINT_HTML = `<p class="unlock-hint">${esc(SEEK_HINT)}</p>`;
 /** What one section's groups are drawn with besides their own: the steps
  * group's heading, which the layout words, and whether the Choice line stands
  * above its open cards. */
-interface SectionChrome {
+interface SectionAdditions {
   stepsHeading: string;
   drawsChoiceLine: boolean;
 }
@@ -88,16 +88,16 @@ interface SectionChrome {
 const CHOICE_LINE_HTML = `<p class="choice-line">${esc(CHOICE_LINE)}</p>`;
 
 /** One group's markup. */
-function groupHtml(drawing: BodyDrawing, group: VerdictGroup, chrome: SectionChrome): string {
+function groupHtml(drawing: BodyDrawing, group: VerdictGroup, additions: SectionAdditions): string {
   const { screen, cards } = drawing;
   switch (group.kind) {
     case "steps": {
       const line = group.jobOfferLine ? jobOfferLineHtml(screen.ds, group.jobOfferLine) : "";
       const steps = group.steps.map((s) => drawnStepCard(cards, s.id).html).join("");
-      return chrome.stepsHeading + line + steps + (group.hint ? SEEK_HINT_HTML : "");
+      return additions.stepsHeading + line + steps + (group.hint ? SEEK_HINT_HTML : "");
     }
     case "open":
-      return headedGroupHtml(HEAD.open, (chrome.drawsChoiceLine ? CHOICE_LINE_HTML : "") + drawnRoutesHtml(cards, group.routes), group.routes.length);
+      return headedGroupHtml(HEAD.open, (additions.drawsChoiceLine ? CHOICE_LINE_HTML : "") + drawnRoutesHtml(cards, group.routes), group.routes.length);
     case "arranged":
       return arrangedLineHtml(screen.ds, group);
     case "not-yet":
@@ -110,8 +110,8 @@ function groupHtml(drawing: BodyDrawing, group: VerdictGroup, chrome: SectionChr
   }
 }
 
-const groupsHtml = (drawing: BodyDrawing, groups: VerdictGroup[], chrome: SectionChrome): string =>
-  groups.map((g) => groupHtml(drawing, g, chrome)).join("");
+const groupsHtml = (drawing: BodyDrawing, groups: VerdictGroup[], additions: SectionAdditions): string =>
+  groups.map((g) => groupHtml(drawing, g, additions)).join("");
 
 function stripHtml(s: Strip): string {
   const hold = s.openUnknowns ? notYetWithUnknowns(s.notYet, s.openUnknowns) : notYetCount(s.notYet);
@@ -165,18 +165,18 @@ function countrySectionHtml(drawing: BodyDrawing, section: CountrySection): stri
   const name = countryOf(drawing.screen.ds, section.country).name;
   // A section's open group never carries the Choice line: on this result it
   // stands once, above the sections.
-  const chrome: SectionChrome = {
+  const additions: SectionAdditions = {
     stepsHeading: stepsHeadingHtml(section.country, `<b>${esc(STEPS_HERE_HEADING)}</b>`), drawsChoiceLine: false,
   };
   return `<details class="country-sec"${section.open ? " open" : ""}>
             <summary${said ? ` class="said"` : ""}><span class="cname">${esc(name)}</span> <span class="tally${said ? " said" : ""}">${tallyHtml(drawing.screen, section)}</span></summary>
-            <div class="cbody">${groupsHtml(drawing, section.groups, chrome)}</div>
+            <div class="cbody">${groupsHtml(drawing, section.groups, additions)}</div>
           </details>`;
 }
 
 /** The one-country layout's groups, its steps heading with the tail the flat
  * layout adds. */
-const flatChromeOf = (layout: ComparedLayout & { kind: "one-country" }): SectionChrome => ({
+const flatAdditionsOf = (layout: ComparedLayout & { kind: "one-country" }): SectionAdditions => ({
   stepsHeading: stepsHeadingHtml(layout.country, `<b>${esc(STEPS_HEADING)}</b> — ${esc(STEPS_HEADING_TAIL)}`),
   drawsChoiceLine: layout.drawsChoiceLine,
 });
@@ -201,7 +201,7 @@ export function bodyHtml(screen: VerdictScreen, layout: VerdictLayout, cards: Dr
     case "notice":
       return "";
     case "one-country":
-      return stripHtml(layout.strip) + groupsHtml(drawing, layout.groups, flatChromeOf(layout)) + feedbackLineHtml();
+      return stripHtml(layout.strip) + groupsHtml(drawing, layout.groups, flatAdditionsOf(layout)) + feedbackLineHtml();
     case "countries":
       return stripHtml(layout.strip) + (layout.drawsChoiceLine ? CHOICE_LINE_HTML : "")
         + layout.sections.map((s) => countrySectionHtml(drawing, s)).join("") + feedbackLineHtml();
