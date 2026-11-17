@@ -465,8 +465,10 @@ several quotes can share one)
 **Choice line** (UI: "More than one route is open on your answers. Which to apply
 for turns on things we don't check — compare what each open route also
 requires.", #362):
-What a verdict with more than one route open says above the open cards: the
-product checks whether each route is open, not which to apply for.
+What a verdict with more than one route open says: the product checks
+whether each route is open, not which to apply for. On the four-country
+result it stands once, above the country sections; on a one-country result,
+above the open cards.
 _Avoid_: recommendation, advice; "path choice" (a Hard fail's, not this)
 
 **Steps line** (UI: "Steps that would unlock more: 2 in the Netherlands · 1 in
