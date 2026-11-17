@@ -305,6 +305,7 @@
   "scripts/measure-taps.mjs": "infrastructure",
   "scripts/print-report.mjs": "presentation",
   "scripts/render-assets.mjs": "infrastructure",
+  "scripts/required-controls.mjs": "domain",
   "scripts/run-git.mjs": "infrastructure",
   "scripts/seeded-results.mjs": "domain",
   "scripts/shot.mjs": "infrastructure",
@@ -698,6 +699,11 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/cli-measure-taps.mjs",
+   "to": "scripts/required-controls.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/cli-render-assets.mjs",
    "to": "scripts/find-option-value.mjs",
    "kind": "dependency"
@@ -860,6 +866,11 @@
   {
    "from": "scripts/measure-taps.mjs",
    "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/measure-taps.mjs",
+   "to": "scripts/required-controls.mjs",
    "kind": "dependency"
   },
   {
@@ -7377,12 +7388,7 @@
     "exported": false
    },
    {
-    "name": "isMissingSeededStepsLine",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "isMissingSeededMoreQuotes",
+    "name": "missingRequiredControlsOf",
     "kind": "fn",
     "exported": false
    },
@@ -7397,12 +7403,7 @@
     "exported": false
    },
    {
-    "name": "stepsLineNoteOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "moreQuotesNoteOf",
+    "name": "requiredControlsNoteOf",
     "kind": "fn",
     "exported": false
    },
@@ -7812,12 +7813,7 @@
     "exported": false
    },
    {
-    "name": "countStepsLineLinks",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "countMoreQuotesControls",
+    "name": "requiredControlCountsOf",
     "kind": "fn",
     "exported": false
    },
@@ -7968,6 +7964,13 @@
    {
     "name": "checkAssets",
     "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/required-controls.mjs": [
+   {
+    "name": "REQUIRED_CONTROLS",
+    "kind": "const",
     "exported": true
    }
   ],
@@ -11236,6 +11239,7 @@
   "scripts/measure-taps.mjs",
   "scripts/print-report.mjs",
   "scripts/render-assets.mjs",
+  "scripts/required-controls.mjs",
   "scripts/run-git.mjs",
   "scripts/seeded-results.mjs",
   "scripts/shot.mjs",
@@ -11290,5 +11294,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "969c529b7bc48add941537ff2479cd8efd347a6c5865f15e196121930b5792f2"
+ "digest": "dc59b070f02952492dd07839aaa728f350b6973b4a0d1a8c990b7b873b19f524"
 }

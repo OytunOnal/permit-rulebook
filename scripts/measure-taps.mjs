@@ -23,9 +23,9 @@
  * most controls in the product.
  *
  * On each screen it also reads where the Strip wraps, and reports a Strip
- * line that starts with a separator dot. It counts the Steps line's links,
- * and a result seeded to draw that line fails without it; and it counts the
- * More quotes controls, and a result seeded to draw one fails without it.
+ * line that starts with a separator dot. It counts each control a seed can
+ * require (`required-controls.mjs`), and a result seeded to draw one fails
+ * without it.
  *
  * A drawn screen is named after the result its record produces, so it must
  * end on the result screen: one that stops at a question, because the
@@ -50,13 +50,14 @@ import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.ts";
 import {
   DUTCH_OFFER_ON_FOUR, FRENCH_OFFER_NO_STEPS, FRENCH_OFFER_TWO_STEPS, GERMAN_OFFER_ON_FOUR, GERMAN_OFFER_ON_ONE,
 } from "./seeded-results.mjs";
+import { REQUIRED_CONTROLS } from "./required-controls.mjs";
 
 const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 
 /** The token's own value, asserted against the stylesheet the page ships. */
 const TAP_MIN = 44;
 
-// The four functions below run in the page, not here: the probe carries their
+// The five functions below run in the page, not here: the probe carries their
 // source text into it, so each reads nothing from this module but the others.
 
 /** An element's words on one line, cut to `cap` characters (all of them without one). */
@@ -112,16 +113,12 @@ function measureStripLines() {
   return { stripLineCounts, stripLinesStartingWithADot };
 }
 
-/** The Steps line's links on screen: how many, each a control the floor
- * above already measures. */
-function countStepsLineLinks() {
-  return { stepsLineLinks: document.querySelectorAll(".steps-line a").length };
-}
-
-/** The More quotes controls on screen: how many, each a control the floor
- * above already measures. */
-function countMoreQuotesControls() {
-  return { moreQuotesControls: document.querySelectorAll("details.more-quotes > summary").length };
+/** How many of each control a seed can require are on screen, by its name,
+ * from `selectorsByName`; each a control the floor above already measures. */
+function requiredControlCountsOf(selectorsByName) {
+  const counts = {};
+  for (const [name, selector] of Object.entries(selectorsByName)) counts[name] = document.querySelectorAll(selector).length;
+  return { requiredControlCounts: counts };
 }
 
 /**
@@ -153,15 +150,13 @@ const PROBE = `(() => {
   ${measureControls}
   ${measureStripLines}
   ${readScreenState}
-  ${countStepsLineLinks}
-  ${countMoreQuotesControls}
+  ${requiredControlCountsOf}
   return JSON.stringify({
     innerWidth: window.innerWidth,
     scrollWidth: document.documentElement.scrollWidth,
     ...measureControls(${TAP_MIN}),
     ...measureStripLines(),
-    ...countStepsLineLinks(),
-    ...countMoreQuotesControls(),
+    ...requiredControlCountsOf(${JSON.stringify(Object.fromEntries(REQUIRED_CONTROLS.map((c) => [c.name, c.selector])))}),
     ...readScreenState(),
     tapMin: getComputedStyle(document.documentElement).getPropertyValue("--tap-min").trim(),
   });
@@ -184,21 +179,20 @@ function listBuiltPages(dir) {
  * that produces it. A record is written, the page is reloaded, and what the
  * reader actually taps is measured. Each record answers every question the
  * interview asks on the way, so the page reloads onto the result. A third
- * entry, `{ stepsLine: true }`, says the result draws a Steps line, so its
- * links are among the controls measured: one drawn without it fails; and
- * `{ moreQuotes: true }` says the same of a More quotes control.
+ * entry names the controls of `REQUIRED_CONTROLS` the result draws, so they
+ * are among the controls measured: one drawn without them fails.
  */
 const DRAWN = [
   ["/ (results, one country)", GERMAN_OFFER_ON_ONE],
-  ["/ (results, all four countries)", GERMAN_OFFER_ON_FOUR, { stepsLine: true, moreQuotes: true }],
+  ["/ (results, all four countries)", GERMAN_OFFER_ON_FOUR, ["Steps line", "More quotes control"]],
   // Short Tallies draw one-line country headers here, and a job offer in the
   // Netherlands gathers Germany's routes into a Fold, so the floor is measured
   // on one-line country headers and on a Fold's header; its Steps line links
   // to two countries' steps.
-  ["/ (results, all four countries, job offer in the Netherlands)", DUTCH_OFFER_ON_FOUR, { stepsLine: true, moreQuotes: true }],
+  ["/ (results, all four countries, job offer in the Netherlands)", DUTCH_OFFER_ON_FOUR, ["Steps line", "More quotes control"]],
   // The Algerian notice's Learn link, a foot link longer than a phone's line,
   // wraps here; its Steps line is a one-country result's single link.
-  ["/ (results, France, Algerian passport)", FRENCH_OFFER_TWO_STEPS, { stepsLine: true, moreQuotes: true }],
+  ["/ (results, France, Algerian passport)", FRENCH_OFFER_TWO_STEPS, ["Steps line", "More quotes control"]],
   // A reader who does not know whether the employer is innovative meets the
   // talent card's Learn link, which wraps here.
   ["/ (results, France, a Learn link)", FRENCH_OFFER_NO_STEPS],
@@ -231,12 +225,11 @@ const listBuiltScreens = (url) => listBuiltPages(dist).map((file) => {
   return { name: path, kind: "built", open: (page) => page.goto(url(`/${path.replace(/index\.html$/, "")}`)) };
 });
 
-/** Each drawn screen: its name, its kind, whether it is seeded to draw a Steps line and a More quotes control, and how the page opens it at the site's address `url` makes, its record written and the page reloaded. */
-const drawnScreens = (url) => DRAWN.map(([name, answers, drawn = {}]) => ({
+/** Each drawn screen: its name, its kind, the controls it is seeded to draw, and how the page opens it at the site's address `url` makes, its record written and the page reloaded. */
+const drawnScreens = (url) => DRAWN.map(([name, answers, requiredControls = []]) => ({
   name,
   kind: "drawn",
-  isSeededToDrawStepsLine: drawn.stepsLine === true,
-  isSeededToDrawMoreQuotes: drawn.moreQuotes === true,
+  requiredControls,
   async open(page) {
     await page.goto(url("/"));
     await page.evaluate(seedFor(answers));
@@ -247,9 +240,9 @@ const drawnScreens = (url) => DRAWN.map(([name, answers, drawn = {}]) => ({
 /** Each of `screens` opened and measured in turn, handed to `onScreen` as it is measured; all of them returned. */
 async function measureEach(page, screens, onScreen) {
   const measured = [];
-  for (const { name, kind, isSeededToDrawStepsLine = false, isSeededToDrawMoreQuotes = false, open } of screens) {
+  for (const { name, kind, requiredControls = [], open } of screens) {
     await open(page);
-    const screen = { ...await measureAtRest(page, name, kind), isSeededToDrawStepsLine, isSeededToDrawMoreQuotes };
+    const screen = { ...await measureAtRest(page, name, kind), requiredControls };
     onScreen(screen);
     measured.push(screen);
   }
