@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { moreQuotes } from "../src/lib/copy/verdict.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { PERSONA_A } from "./personas.js";
@@ -205,7 +206,7 @@ describe.skipIf(skipped !== null)("More quotes on a phone, read from a screensho
     for (const s of seen) {
       expect(s.isSet, `precondition: the ${s.scheme} scheme is set`).toBe(true);
       expect(s.beforeTap.lines.length, `precondition, ${s.scheme}: the card's quote lines`).toBe(5);
-      expect(s.beforeTap.control?.words, `${s.scheme}: the card's More quotes control`).toBe("3 more quotes");
+      expect(s.beforeTap.control?.words, `${s.scheme}: the card's More quotes control`).toBe(moreQuotes(3));
       expectTwoInView(s);
       expectOpenedAndDimmed(s);
     }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { fieldOptions, type Criterion, type Dataset, type Profile, type Route } from "permit-rulebook-data";
+import { fieldOptions, phraseOf, type Criterion, type Dataset, type Profile, type Route } from "permit-rulebook-data";
 import { shortByUpToLine, unsettledHeadline } from "../src/lib/copy/verdict.js";
 import type { Verdict } from "../src/lib/verdict/verdict.js";
 import { DUTCH_OFFER_ON_FOUR } from "../scripts/seeded-results.mjs";
@@ -96,19 +96,19 @@ describe("the headline's nearest gap says its country on the four-country result
   it("Priya on all four: the Dutch Blue Card's gap in the Netherlands, then the German Blue Card's in Germany", () => {
     const data = datasetWithRewrittenCriteria({ "de-blue-card-general": offerAnywhere });
     expect(stressedNoteOf(verdictOn(data, { ...PRIYA_EVERYWHERE, salary_eur_year: "band_1" })))
-      .toBe("One in the Netherlands is short by up to €1,585/month.");
+      .toBe(shortByUpToLine("€1,585/month", phraseOf("NL")));
     expect(stressedNoteOf(verdictOn(data, { ...PRIYA_EVERYWHERE, salary_eur_year: "band_3" })))
-      .toBe("One in Germany is short by up to €9,343.64/year.");
+      .toBe(shortByUpToLine("€9,343.64/year", phraseOf("DE")));
   });
 
   it("the critique's reader with a job offer in the Netherlands: the note names the nearest route's country", () => {
     expect(headlineRouteOf(DUTCH_OFFER_ON_FOUR)).toBe("nl-hsm-30plus");
-    expect(stressedNoteOf(verdictFor(DUTCH_OFFER_ON_FOUR))).toBe("One in the Netherlands is short by up to €1,188/month.");
+    expect(stressedNoteOf(verdictFor(DUTCH_OFFER_ON_FOUR))).toBe(shortByUpToLine("€1,188/month", phraseOf("NL")));
   });
 
   it("a one-country result names no country", () => {
-    expect(stressedNoteOf(verdictFor(PRIYA))).toBe("One is short by up to €1,585/month.");
-    expect(stressedNoteOf(verdictFor(ALGERIAN))).toBe("One is short by up to €8,673/year.");
+    expect(stressedNoteOf(verdictFor(PRIYA))).toBe(shortByUpToLine("€1,585/month"));
+    expect(stressedNoteOf(verdictFor(ALGERIAN))).toBe(shortByUpToLine("€8,673/year"));
   });
 });
 

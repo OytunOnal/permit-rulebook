@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, routeProvenance, routeStatements, type Dataset, type DisjunctionPath, type Profile, type Route } from "permit-rulebook-data";
 import { esc } from "../src/lib/reason.js";
-import { DOES_NOT_APPLY_TO_YOU } from "../src/lib/copy/verdict.js";
+import { DOES_NOT_APPLY_TO_YOU, moreQuotes } from "../src/lib/copy/verdict.js";
 import { DUTCH_OFFER_ON_FOUR } from "../scripts/seeded-results.mjs";
 import {
   ALGERIAN, DENIZ, DUTCH_GRADUATE, PERSONA_A, PERSONA_C, PRIYA, PRIYA_EXPLORING_ALL,
@@ -127,8 +127,8 @@ function quotesAsMetOf(card: string): QuotesAsMet {
 
 describe("a route's card shows its first two quote lines, the rest under More quotes", () => {
   for (const [route, lines, control] of [
-    ["de-experienced-worker", 6, "4 more quotes"],
-    ["de-blue-card-general", 3, "1 more quote"],
+    ["de-experienced-worker", 6, moreQuotes(4)],
+    ["de-blue-card-general", 3, moreQuotes(1)],
     ["de-skilled-academic", 2, null],
   ] as const)
     it(`a card with ${lines} quote lines shows the first two${control ? ` and folds the rest under "${control}"` : " and draws no control"} (${route}, persona A recognised)`, () => {

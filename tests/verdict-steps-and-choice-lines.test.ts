@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { Profile } from "permit-rulebook-data";
+import { phraseOf, type Profile } from "permit-rulebook-data";
+import {
+  CHOICE_LINE, OPEN_HEADING, STEPS_HEADING, STEPS_HEADING_TAIL, STEPS_HERE_HEADING, STEPS_LINE_LEAD, stepsCountIn,
+  stepsThatWouldUnlockMore,
+} from "../src/lib/copy/verdict.js";
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
 import type { Verdict } from "../src/lib/verdict/verdict.js";
 import { stepsLineHtml } from "../src/lib/verdict/compose/steps-line.js";
@@ -64,20 +68,17 @@ function headingLandedOn(markup: string, href: string): string | null {
 const choiceLinesIn = (verdict: Verdict): string[] =>
   [...verdict.body.matchAll(/<p class="choice-line">([\s\S]*?)<\/p>/g)].map((m) => plainTextOf(m[1]!));
 
-/** The Choice line's words, on both results, as ruling 27 on #420 writes them. */
-const CHOICE_LINE = "More than one route is open on your answers. Which to apply for turns on things we don't check — "
-  + "compare what each open route also requires.";
-
 describe("the Steps line under the headline (rulings 9 and 10 on #362)", () => {
   it("the four-country result with steps in two countries counts each, in screen order, each a link to its section's steps", () => {
     const verdict = verdictFor(DUTCH_OFFER_ON_FOUR);
     const line = stepsLineOf(verdict);
     expect(line).not.toBeNull();
-    expect(plainTextOf(line!)).toBe("Steps that would unlock more: 1 in the Netherlands · 1 in Germany");
+    const counts = [stepsCountIn(1, phraseOf("NL")), stepsCountIn(1, phraseOf("DE"))];
+    expect(plainTextOf(line!)).toBe(`${STEPS_LINE_LEAD} ${counts.join(" · ")}`);
     const links = linksOn(line!);
-    expect(links.map((l) => l.text)).toEqual(["1 in the Netherlands", "1 in Germany"]);
-    expect(headingLandedOn(sectionMarkupOf(verdict, "Netherlands"), links[0]!.href)).toBe("Steps that would unlock more here");
-    expect(headingLandedOn(sectionMarkupOf(verdict, "Germany"), links[1]!.href)).toBe("Steps that would unlock more here");
+    expect(links.map((l) => l.text)).toEqual(counts);
+    expect(headingLandedOn(sectionMarkupOf(verdict, "Netherlands"), links[0]!.href)).toBe(STEPS_HERE_HEADING);
+    expect(headingLandedOn(sectionMarkupOf(verdict, "Germany"), links[1]!.href)).toBe(STEPS_HERE_HEADING);
   });
 
   it("the line stands in the masthead, never in the body, so a Notice above the body cannot push it down", () => {
@@ -92,12 +93,11 @@ describe("the Steps line under the headline (rulings 9 and 10 on #362)", () => {
     const verdict = verdictFor(PERSONA_A);
     const line = stepsLineOf(verdict);
     expect(line).not.toBeNull();
-    expect(plainTextOf(line!)).toBe("2 steps that would unlock more");
+    expect(plainTextOf(line!)).toBe(stepsThatWouldUnlockMore(2));
     const links = linksOn(line!);
-    expect(links.map((l) => l.text)).toEqual(["2 steps that would unlock more"]);
-    expect(headingLandedOn(verdict.body, links[0]!.href))
-      .toBe("Steps that would unlock more — each re-checked against the rules");
-    expect(plainTextOf(stepsLineOf(verdictFor(FRENCH_OFFER_TWO_STEPS))!)).toBe("2 steps that would unlock more");
+    expect(links.map((l) => l.text)).toEqual([stepsThatWouldUnlockMore(2)]);
+    expect(headingLandedOn(verdict.body, links[0]!.href)).toBe(`${STEPS_HEADING} — ${STEPS_HEADING_TAIL}`);
+    expect(plainTextOf(stepsLineOf(verdictFor(FRENCH_OFFER_TWO_STEPS))!)).toBe(stepsThatWouldUnlockMore(2));
   });
 });
 
@@ -125,7 +125,7 @@ describe("where no Steps line is drawn (ruling 9 on #362)", () => {
 describe("the Choice line (ruling 8 on #362, rulings 26 and 27 on #420)", () => {
   /** The markup from the open group's heading to the end of its stack. */
   const openGroupOf = (markup: string): string => {
-    const at = markup.indexOf(`<h2 class="ghead "><b>Open — criteria met</b>`);
+    const at = markup.indexOf(`<h2 class="ghead "><b>${OPEN_HEADING}</b>`);
     expect(at, "the result draws an open group").toBeGreaterThan(-1);
     return markup.slice(at);
   };
@@ -156,7 +156,7 @@ describe("the Choice line (ruling 8 on #362, rulings 26 and 27 on #420)", () => 
   });
 
   it("a result with one route open draws none", () => {
-    expect(verdictFor(DENIZ).body).toContain("Open — criteria met");
+    expect(verdictFor(DENIZ).body).toContain(OPEN_HEADING);
     expect(choiceLinesIn(verdictFor(DENIZ))).toEqual([]);
   });
 });
