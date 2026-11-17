@@ -55,23 +55,35 @@ const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 /** The token's own value, asserted against the stylesheet the page ships. */
 const TAP_MIN = 44;
 
-const PROBE = `(() => {
-  const floor = ${TAP_MIN};
+// The four functions below run in the page, not here: the probe carries their
+// source text into it, so each reads nothing from this module but the others.
+
+/** An element's words on one line, cut to `cap` characters (all of them without one). */
+function textOf(el, cap) {
+  return (el.textContent || el.tagName).trim().replace(/\s+/g, " ").slice(0, cap);
+}
+
+/** How many controls the screen shows, and each one shorter than `floor` as "<height>px \u00b7 <words>". */
+function measureControls(floor) {
   const bad = [];
-  let n = 0;
+  let controls = 0;
   for (const el of document.querySelectorAll("a, button, summary, input, select, [role='button'], [role='option']")) {
     const r = el.getBoundingClientRect();
     if (r.width === 0 && r.height === 0) continue;
-    n++;
-    if (r.height + 0.5 < floor)
-      // Doubled on purpose: this is a template literal, so a single backslash
-      // would reach the browser as /s+/g and delete the letter s from every
-      // name this script prints.
-      bad.push(Math.round(r.height) + "px \u00b7 " + (el.textContent || el.tagName).trim().replace(/\\s+/g, " ").slice(0, 34));
+    controls++;
+    if (r.height + 0.5 < floor) bad.push(Math.round(r.height) + "px \u00b7 " + textOf(el, 34));
   }
-  // The Strip wraps between its parts. A part that starts a line below the
-  // first, its left edge at the Strip's own, must not have a separator drawn
-  // in front of it: a line that opens on a dot reads as a stray mark.
+  return { controls, bad };
+}
+
+/**
+ * How many lines each Strip on screen takes, and each line that opens on a
+ * separator. The Strip wraps between its parts. A part that starts a line
+ * below the first, its left edge at the Strip's own, must not have a
+ * separator drawn in front of it: a line that opens on a dot reads as a stray
+ * mark.
+ */
+function measureStripLines() {
   const stripLineCounts = [];
   const stripLinesStartingWithADot = [];
   for (const strip of document.querySelectorAll(".strip")) {
@@ -85,28 +97,43 @@ const PROBE = `(() => {
       const isLineStart = Math.abs(box.left - stripBox.left) <= 1 && box.top > firstLineTop + 1;
       if (!isLineStart) continue;
       lineCount++;
-      const inFront = getComputedStyle(part, "::before").content;
-      if (inFront !== "none" && inFront !== "normal" && inFront !== '""')
-        stripLinesStartingWithADot.push(inFront + " " + part.textContent.trim().replace(/\\s+/g, " ").slice(0, 34));
+      const beforeContent = getComputedStyle(part, "::before").content;
+      const drawsSeparatorInFront = beforeContent !== "none" && beforeContent !== "normal" && beforeContent !== '""';
+      if (drawsSeparatorInFront) stripLinesStartingWithADot.push(beforeContent + " " + textOf(part, 34));
     }
     stripLineCounts.push(lineCount);
   }
-  // The interview marks its box "results" when it draws a verdict, and only
-  // then; a question screen keeps it "questions".
+  return { stripLineCounts, stripLinesStartingWithADot };
+}
+
+/**
+ * Whether the page drew the result, and the question card's progress and
+ * label where it drew one instead. The interview marks its box "results" when
+ * it draws a verdict, and only then; a question screen keeps it "questions".
+ */
+function readScreenState() {
   const isResult = document.querySelector("#app[data-state='results']") !== null;
   const questionLabel = document.querySelector(".qcard .qlabel");
   const questionProgress = document.querySelector(".qcard .qmeta");
+  return {
+    isResult,
+    questionAsked: questionLabel
+      ? [questionProgress, questionLabel].filter(Boolean).map((el) => textOf(el)).join(" ").slice(0, 120)
+      : null,
+  };
+}
+
+const PROBE = `(() => {
+  ${textOf}
+  ${measureControls}
+  ${measureStripLines}
+  ${readScreenState}
   return JSON.stringify({
     innerWidth: window.innerWidth,
     scrollWidth: document.documentElement.scrollWidth,
-    controls: n,
-    bad,
-    stripLineCounts,
-    stripLinesStartingWithADot,
-    isResult,
-    questionAsked: questionLabel
-      ? [questionProgress, questionLabel].filter(Boolean).map((el) => el.textContent.trim().replace(/\\s+/g, " ")).join(" ").slice(0, 120)
-      : null,
+    ...measureControls(${TAP_MIN}),
+    ...measureStripLines(),
+    ...readScreenState(),
     tapMin: getComputedStyle(document.documentElement).getPropertyValue("--tap-min").trim(),
   });
 })()`;

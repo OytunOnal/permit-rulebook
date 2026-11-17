@@ -14,21 +14,21 @@ const hasProblem = (screen) =>
   screen.bad.length > 0 || screen.isOverflowing || screen.stripLinesStartingWithADot.length > 0
   || isDrawnShortOfResult(screen);
 
-/** How the Strip wrapped on a clean screen, said only where the screen draws one. */
-const stripWrapOf = (screen) =>
+/** The ok line's note on how the Strip wrapped, said only where the screen draws one. */
+const stripNoteOf = (screen) =>
   screen.stripLineCounts.length === 0 ? "" : `, Strip on ${screen.stripLineCounts.join("+")} line(s), none starting with a dot`;
 
 /** A screen's lines: one `ok`, or a `FAIL` and what put it there. */
 export function screenLinesOf(screen) {
   if (!hasProblem(screen))
-    return [`ok   ${screen.name} — ${screen.innerWidth}px, ${screen.controls} controls, none under ${screen.floorPx}px, no overflow${stripWrapOf(screen)}`];
+    return [`ok   ${screen.name} — ${screen.innerWidth}px, ${screen.controls} controls, none under ${screen.floorPx}px, no overflow${stripNoteOf(screen)}`];
   const tapMin = screen.kind === "built" ? ` · --tap-min ${screen.tapMin}` : "";
   return [
     `FAIL ${screen.name}`,
     `     viewport ${screen.innerWidth}px · scrollWidth ${screen.scrollWidth}px · ${screen.controls} controls${tapMin}`,
     ...screen.bad.map((under) => `     under the floor: ${under}`),
     ...(screen.isOverflowing ? [`     horizontal overflow: ${screen.scrollWidth - screen.innerWidth}px`] : []),
-    ...screen.stripLinesStartingWithADot.map((part) => `     Strip line starts with a dot: ${part}`),
+    ...screen.stripLinesStartingWithADot.map((lineOpening) => `     Strip line starts with a dot: ${lineOpening}`),
     ...(isDrawnShortOfResult(screen) ? [`     not a result: stops at ${screen.questionAsked ?? "a screen with no question card"}`] : []),
   ];
 }

@@ -7219,7 +7219,7 @@
     "exported": false
    },
    {
-    "name": "stripWrapOf",
+    "name": "stripNoteOf",
     "kind": "fn",
     "exported": false
    },
@@ -7611,6 +7611,26 @@
    {
     "name": "TAP_MIN",
     "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "textOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "measureControls",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "measureStripLines",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readScreenState",
+    "kind": "fn",
     "exported": false
    },
    {
@@ -11019,5 +11039,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "f39c2dbc78cd7741d42149ee65d8627be2e683d0682661106324ab2617ba7653"
+ "digest": "31bcb2c89289ced94094dfbde3e85753a25b32fe3f7d7558fc4a0ddc33b78dcb"
 }
