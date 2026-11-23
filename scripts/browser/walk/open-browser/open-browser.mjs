@@ -1,9 +1,9 @@
 // @level infrastructure
-import { closeChrome, launchChrome, readCpuSlowdown, sweepStaleProfiles } from "../chrome/chrome-launch.mjs";
-import { DevToolsConnection } from "../connection/devtools-connection.mjs";
-import { owned } from "../exit-register/owned.mjs";
-import { openTab } from "../tab/open-tab.mjs";
-import { WalkLog } from "./walk-log.mjs";
+import { closeChrome, launchChrome, readCpuSlowdown, sweepStaleProfiles } from "../../chrome/chrome-launch.mjs";
+import { DevToolsConnection } from "../../connection/devtools-connection.mjs";
+import { owned } from "../../exit-register/owned.mjs";
+import { openTab } from "../../tab/open-tab.mjs";
+import { WalkLog } from "../walk-log/walk-log.mjs";
 
 /**
  * Headless Chrome in a fresh profile, attached over CDP, with one tab open on

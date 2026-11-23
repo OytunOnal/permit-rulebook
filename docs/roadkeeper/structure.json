@@ -16,11 +16,7 @@
     "scripts/browser/connection/devtools-connection.mjs",
     "scripts/browser/exit-register/owned.mjs",
     "scripts/browser/static-server/html-in-pieces.mjs",
-    "scripts/browser/static-server/static-server.mjs",
-    "scripts/browser/walk/open-browser.mjs",
-    "scripts/browser/walk/screens.mjs",
-    "scripts/browser/walk/walk-log.mjs",
-    "scripts/browser/walk/walk-site.mjs"
+    "scripts/browser/static-server/static-server.mjs"
    ]
   },
   {
@@ -38,6 +34,21 @@
     "scripts/browser/tab/page/tab-gestures.mjs",
     "scripts/browser/tab/page/tab-page.mjs",
     "scripts/browser/tab/page/tab-waits.mjs"
+   ]
+  },
+  {
+   "path": "scripts/browser/walk",
+   "entries": [
+    {
+     "file": "scripts/browser/walk/walk-site.mjs",
+     "level": "infrastructure"
+    }
+   ],
+   "files": [
+    "scripts/browser/walk/open-browser/open-browser.mjs",
+    "scripts/browser/walk/screens/screens.mjs",
+    "scripts/browser/walk/walk-log/walk-log.mjs",
+    "scripts/browser/walk/walk-site.mjs"
    ]
   },
   {
@@ -262,9 +273,9 @@
   "scripts/browser/tab/page/tab-gestures.mjs": "infrastructure",
   "scripts/browser/tab/page/tab-page.mjs": "infrastructure",
   "scripts/browser/tab/page/tab-waits.mjs": "infrastructure",
-  "scripts/browser/walk/open-browser.mjs": "infrastructure",
-  "scripts/browser/walk/screens.mjs": "infrastructure",
-  "scripts/browser/walk/walk-log.mjs": "infrastructure",
+  "scripts/browser/walk/open-browser/open-browser.mjs": "infrastructure",
+  "scripts/browser/walk/screens/screens.mjs": "infrastructure",
+  "scripts/browser/walk/walk-log/walk-log.mjs": "infrastructure",
   "scripts/browser/walk/walk-site.mjs": "infrastructure",
   "scripts/build-directory-on-disk.mjs": "infrastructure",
   "scripts/carry-assets.mjs": "main",
@@ -465,16 +476,6 @@
   },
   {
    "from": "scripts/browser/browser.mjs",
-   "to": "scripts/browser/walk/screens.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/browser/browser.mjs",
-   "to": "scripts/browser/walk/walk-log.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/browser/browser.mjs",
    "to": "scripts/browser/walk/walk-site.mjs",
    "kind": "dependency"
   },
@@ -529,28 +530,28 @@
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/walk/open-browser.mjs",
+   "from": "scripts/browser/walk/open-browser/open-browser.mjs",
    "to": "scripts/browser/chrome/chrome-launch.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/walk/open-browser.mjs",
+   "from": "scripts/browser/walk/open-browser/open-browser.mjs",
    "to": "scripts/browser/connection/devtools-connection.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/walk/open-browser.mjs",
+   "from": "scripts/browser/walk/open-browser/open-browser.mjs",
    "to": "scripts/browser/exit-register/owned.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/walk/open-browser.mjs",
+   "from": "scripts/browser/walk/open-browser/open-browser.mjs",
    "to": "scripts/browser/tab/open-tab.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/walk/open-browser.mjs",
-   "to": "scripts/browser/walk/walk-log.mjs",
+   "from": "scripts/browser/walk/open-browser/open-browser.mjs",
+   "to": "scripts/browser/walk/walk-log/walk-log.mjs",
    "kind": "dependency"
   },
   {
@@ -560,7 +561,17 @@
   },
   {
    "from": "scripts/browser/walk/walk-site.mjs",
-   "to": "scripts/browser/walk/open-browser.mjs",
+   "to": "scripts/browser/walk/open-browser/open-browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/walk-site.mjs",
+   "to": "scripts/browser/walk/screens/screens.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/walk-site.mjs",
+   "to": "scripts/browser/walk/walk-log/walk-log.mjs",
    "kind": "dependency"
   },
   {
@@ -6538,6 +6549,68 @@
     "exported": false
    }
   ],
+  "scripts/browser/walk/walk-site.mjs": [
+   {
+    "name": "LAID_OUT_WIDTH",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "openSite",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "WidthFailure",
+    "kind": "class",
+    "exported": true
+   },
+   {
+    "name": "widthCheckOn",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "checkingWidthOnDraw",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "errorReport",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "failOnErrors",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "addTheWalksErrors",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "returnedBy",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "measuredAtTheEnd",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "walkInBrowser",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "walkSite",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/carry-assets/carry.mjs": [
    {
     "name": "ORIGIN_VAR",
@@ -11309,5 +11382,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "21c82331184c33dbbdcbf1253f07d452b2f7cc3d845d6bdc245d3923a3d45b99"
+ "digest": "a99b4f326435f2d0f8db39e94c9ba2e1b1c7f582786416dc21660cd1367a77c0"
 }

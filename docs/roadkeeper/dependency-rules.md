@@ -4,6 +4,7 @@
 <!-- a deep module's folder per line, or none; `folder/*` declares every folder directly under it -->
 - `scripts/browser`
 - `scripts/browser/tab`
+- `scripts/browser/walk`
 - `scripts/carry-assets`
 - `src/lib/country-search`
 - `src/lib/dataset-facts`
