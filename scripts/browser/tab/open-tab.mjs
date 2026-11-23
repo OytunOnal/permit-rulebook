@@ -1,4 +1,5 @@
 // @level infrastructure
+import { answeringPausedRequests, pauseAnsweredRequests } from "./answered-requests/answered-requests.mjs";
 import { TabEvents } from "./page/tab-events.mjs";
 import { TabGestures } from "./page/tab-gestures.mjs";
 import { TabPage } from "./page/tab-page.mjs";
@@ -11,6 +12,7 @@ import { TabWaits } from "./page/tab-waits.mjs";
  * @typedef {import("./page/tab-page.mjs").BrowserPage} BrowserPage
  * @typedef {import("./page/tab-page.mjs").SentRequest} SentRequest
  * @typedef {import("./layout-shifts/layout-shift-reading.mjs").LayoutShifts} LayoutShifts
+ * @typedef {import("./answered-requests/answered-requests.mjs").AnsweredRequests} AnsweredRequests
  */
 
 /**
@@ -19,9 +21,10 @@ import { TabWaits } from "./page/tab-waits.mjs";
  * page.
  *
  * `setup`: the `screen`, whether to keep the requests
- * (`network`), the factor every tab is slowed by (`cpuSlowdown`), and the
- * region whose shifts are marked (`shiftRegion`, a selector or null), and
- * the browser's `WalkLog`, which every tab's errors and fronting reach.
+ * (`network`), the factor every tab is slowed by (`cpuSlowdown`), the
+ * region whose shifts are marked (`shiftRegion`, a selector or null), the
+ * requests the tab answers itself (`answeredRequests`, an `AnsweredRequests`),
+ * and the browser's `WalkLog`, which every tab's errors and fronting reach.
  */
 export async function openTab(connection, setup) {
   const { targetId } = await connection.send("Target.createTarget", { url: "about:blank" });
@@ -30,9 +33,11 @@ export async function openTab(connection, setup) {
   const events = new TabEvents(sendToTab, { network: setup.network, walkLog: setup.walkLog });
   const waits = new TabWaits(sendToTab);
   const gestures = new TabGestures(sendToTab, waits);
+  const answerPausedRequest = answeringPausedRequests(sendToTab, setup.answeredRequests, setup.walkLog);
   connection.listenToTab(sessionId, (message) => {
     waits.watch(message);
     events.record(message);
+    answerPausedRequest(message);
   });
   await setUpTab(sendToTab, setup);
   return new TabPage(sendToTab, {
@@ -40,8 +45,9 @@ export async function openTab(connection, setup) {
   });
 }
 
-/** Enables the events the tab is read by, and sets its CPU and its screen. */
-async function setUpTab(sendToTab, { screen, cpuSlowdown }) {
+/** Enables the events the tab is read by, pauses the requests it answers itself, and sets its CPU and its screen. */
+async function setUpTab(sendToTab, { screen, cpuSlowdown, answeredRequests }) {
+  await pauseAnsweredRequests(sendToTab, answeredRequests);
   await sendToTab("Page.enable", {});
   await sendToTab("Runtime.enable", {});
   await sendToTab("Log.enable", {});

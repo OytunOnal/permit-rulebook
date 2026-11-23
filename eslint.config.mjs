@@ -4,8 +4,10 @@ import astro from "eslint-plugin-astro";
 import tseslint from "typescript-eslint";
 import { preset } from "./roadkeeper-lint/lint.mjs";
 
-/** What `docs/roadkeeper/dependency-rules.md`'s `## Ignore` skips, and Roadkeeper's own copy. */
-const IGNORED = ["src/*.d.ts", "dist/**", ".astro/**", ".run/**", "docs/**", ".claude/**", "roadkeeper-lint/**"];
+/** What `docs/roadkeeper/dependency-rules.md`'s `## Ignore` skips, Roadkeeper's own copy, and the copy of Cloudflare's traffic counter. */
+const IGNORED = [
+  "src/*.d.ts", "dist/**", ".astro/**", ".run/**", "docs/**", ".claude/**", "tests/traffic-counter/beacon.min.js", "roadkeeper-lint/**",
+];
 
 /** TypeScript: the `.ts` files and the scripts inside the pages. */
 const TYPESCRIPT = ["src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts", "src/pages/**/*.astro/*.ts"];
