@@ -4,7 +4,7 @@ import { at, siteBase } from "../../site-base.mjs";
 import { openBrowser } from "./open-browser/open-browser.mjs";
 
 export { DESK, PHONE } from "./screens/screens.mjs";
-export { TRAFFIC_COUNTER_COPY, TRAFFIC_COUNTER_SCRIPT } from "./traffic-counter/traffic-counter.mjs";
+export { TRAFFIC_COUNTER_COPY, TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT } from "./traffic-counter/traffic-counter.mjs";
 export { ERRORS_KEPT } from "./walk-log/walk-log.mjs";
 
 /**
@@ -29,10 +29,11 @@ export { ERRORS_KEPT } from "./walk-log/walk-log.mjs";
  * @property {Site} site
  * @property {Screen} screen `DESK` or `PHONE`.
  * @property {boolean} [network] Keep the list of the page's requests.
- * @property {"stub" | "cloudflare's copy"} [trafficCounter] What answers the traffic counter's
- *   script and reports inside the browser: an empty script (`"stub"`, the default), or the
- *   committed copy of Cloudflare's script, for a walk that checks what the counter sends.
- *   Either way its reports get an empty reply, and no walk loads the counter from Cloudflare.
+ * @property {import("./traffic-counter/traffic-counter.mjs").TrafficCounter} [trafficCounter] What
+ *   answers the traffic counter's script inside the browser: an empty script (`"stub"`, the
+ *   default), or the committed copy of Cloudflare's script (`"cloudflare's copy"`), for a walk
+ *   that checks what the counter sends. Either way its reports get an empty reply there, and no
+ *   walk loads the counter from Cloudflare.
  * @property {boolean} [scrollbars] Show the platform's scrollbars.
  * @property {boolean} [errorsExpected] Return the pages' errors rather than fail on them.
  * @property {string | null} [shiftRegion] A selector whose shifts are marked; a live walk names none.
@@ -54,6 +55,9 @@ export { ERRORS_KEPT } from "./walk-log/walk-log.mjs";
  * @property {WalkError[]} errors The walk's errors, across its navigations and tabs, each with its address: the first 100.
  * @property {number} errorsLeftOut How many more errors there were, not kept.
  */
+
+/** The options a walk leaves out, at their defaults; `trafficCounter`'s is the traffic counter's own. */
+const WALK_DEFAULTS = { network: false, scrollbars: false, errorsExpected: false, shiftRegion: null };
 
 /** The width a page laid out at, or null on a tab that has opened no page yet. */
 const LAID_OUT_WIDTH = 'location.href === "about:blank" ? null : innerWidth';
@@ -147,12 +151,12 @@ async function measuredAtTheEnd(walkLog, returned, { checkWidth, errorsExpected 
 
 /** The walk in a browser opened for it, on the site `opened`: its origin, and what makes its addresses. */
 async function walkInBrowser(walk, opened, walker) {
-  const { screen, network = false, trafficCounter = "stub", scrollbars = false, errorsExpected = false, shiftRegion = null } = walk;
-  const browser = await openBrowser({ screen, network, scrollbars, shiftRegion, trafficCounter, siteOrigin: opened.origin });
+  const options = { ...WALK_DEFAULTS, ...walk };
+  const browser = await openBrowser(options, opened.origin);
   try {
-    const checkWidth = widthCheckOn(screen);
+    const checkWidth = widthCheckOn(options.screen);
     const returned = await returnedBy(walker, { page: checkingWidthOnDraw(browser.page, checkWidth), url: opened.url }, browser.walkLog);
-    return await measuredAtTheEnd(browser.walkLog, returned, { checkWidth, errorsExpected });
+    return await measuredAtTheEnd(browser.walkLog, returned, { checkWidth, errorsExpected: options.errorsExpected });
   } finally {
     browser.close();
   }
@@ -163,8 +167,8 @@ async function walkInBrowser(walk, opened, walker) {
  * hands `walker` the page and the site's addresses, and returns what it
  * measured. The traffic counter's requests are answered inside the browser,
  * as `walk.trafficCounter` asks; a request to any other origin than the
- * site's own is refused there, and is one of the walk's errors, under its
- * address. It fails, naming both widths, when a page it draws is not
+ * site's own, from the page or from a tab or worker it opens, is refused
+ * there, and is one of the walk's errors, under its address. It fails, naming both widths, when a page it draws is not
  * the screen's width, and, listing them, on the pages' errors unless
  * `walk.errorsExpected`. A failure of the walker's own, or of the width,
  * lists the pages' errors under its message.

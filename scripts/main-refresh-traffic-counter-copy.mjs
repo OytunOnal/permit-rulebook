@@ -5,11 +5,11 @@
  * the report `cli-refresh-traffic-counter-copy.mjs` makes of it, and exits
  * with its code.
  */
-import { refreshReportOf } from "./cli-refresh-traffic-counter-copy.mjs";
+import { reportTheRefresh } from "./cli-refresh-traffic-counter-copy.mjs";
 import { printReport } from "./print-report.mjs";
 import { refreshTrafficCounterCopy } from "./refresh-traffic-counter-copy.mjs";
 
 const today = new Date().toISOString().slice(0, 10);
-const report = refreshReportOf(await refreshTrafficCounterCopy(today), today);
+const report = reportTheRefresh(await refreshTrafficCounterCopy(today), today);
 printReport(report);
 process.exit(report.exitCode);

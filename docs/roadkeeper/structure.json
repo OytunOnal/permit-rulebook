@@ -6562,11 +6562,6 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/walk-site.test.ts",
-   "to": "tests/wire.ts",
-   "kind": "dependency"
-  },
-  {
    "from": "tests/watch-state-at.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
@@ -6584,7 +6579,7 @@
   {
    "from": "tests/wire.ts",
    "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
    "from": "vitest.config.ts",
@@ -6607,6 +6602,11 @@
    }
   ],
   "scripts/browser/walk/walk-site.mjs": [
+   {
+    "name": "WALK_DEFAULTS",
+    "kind": "const",
+    "exported": false
+   },
    {
     "name": "LAID_OUT_WIDTH",
     "kind": "const",
@@ -7565,7 +7565,7 @@
   ],
   "scripts/cli-refresh-traffic-counter-copy.mjs": [
    {
-    "name": "refreshReportOf",
+    "name": "reportTheRefresh",
     "kind": "fn",
     "exported": true
    }
@@ -8041,7 +8041,7 @@
   ],
   "scripts/refresh-traffic-counter-copy.mjs": [
    {
-    "name": "NOTE",
+    "name": "COPY_NOTE",
     "kind": "const",
     "exported": false
    },
@@ -11493,5 +11493,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "c304b0078fdba891647cc8a71e508d9ad00663019da44734151a7bfd04a05563"
+ "digest": "33c5bafcc5ffbeea29e299a577e84bcf73df4d29516798147e3e45dd2c8f684d"
 }

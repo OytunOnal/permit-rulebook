@@ -1,13 +1,16 @@
 // @level infrastructure
-import { answeringPausedRequests, pauseEveryRequest } from "./answered-requests/answered-requests.mjs";
+import { answerPausedRequest, pauseEveryRequest } from "./answered-requests/answered-requests.mjs";
 import { TabEvents } from "./page/tab-events.mjs";
 import { TabGestures } from "./page/tab-gestures.mjs";
 import { TabPage } from "./page/tab-page.mjs";
 import { TabWaits } from "./page/tab-waits.mjs";
 
+export { answerRequestsOfWhatThePageOpens } from "./answered-requests/answered-requests.mjs";
+
 /**
- * The tab's entry, the one way into it: `openTab`, and the types a caller
- * reads off what it returns.
+ * The tab's entry, the one way into it: `openTab`; `answerRequestsOfWhatThePageOpens`,
+ * which gives a tab or worker a page opens the same request handling; and the
+ * types a caller reads off what they return.
  *
  * @typedef {import("./page/tab-page.mjs").BrowserPage} BrowserPage
  * @typedef {import("./page/tab-page.mjs").SentRequest} SentRequest
@@ -34,11 +37,11 @@ export async function openTab(connection, setup) {
   const events = new TabEvents(sendToTab, { network: setup.network, walkLog: setup.walkLog });
   const waits = new TabWaits(sendToTab);
   const gestures = new TabGestures(sendToTab, waits);
-  const answerPausedRequest = answeringPausedRequests(sendToTab, setup.answeredRequests, setup.walkLog);
+  const requestHandling = { sendToTab, answers: setup.answeredRequests, walkLog: setup.walkLog };
   connection.listenToTab(sessionId, (message) => {
     waits.watch(message);
     events.record(message);
-    answerPausedRequest(message);
+    answerPausedRequest(requestHandling, message);
   });
   await setUpTab(sendToTab, setup);
   return new TabPage(sendToTab, {

@@ -2,17 +2,16 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { PHONE, walkSite } from "../scripts/browser/browser.mjs";
-import { renderTrafficCounterTag } from "../src/lib/site.js";
+import { PHONE, TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT, walkSite } from "../scripts/browser/browser.mjs";
+import * as site from "../src/lib/site.js";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 import { MOVES_EARLY_AND_ON_A_TAP, tapAndWaitUntilAtRest, waitUntilItsEarlyMoveIsReported } from "./layout-shifts.js";
-import { TRAFFIC_COUNTER_REPORTS } from "./wire.js";
 
 /**
  * The browser walk (`walkSite`, from `scripts/browser/browser.mjs`), over
  * fixture pages served from a temporary folder: what a walker sees of the
- * width it was promised, of the pages' errors, and of the shifts of the page
- * it ends on.
+ * width it was promised, of the pages' errors, of the requests it answers or
+ * refuses, and of the shifts of the page it ends on.
  */
 
 const skipped = skipReason();
@@ -37,7 +36,12 @@ const COUNTER_RAN = 'typeof window.__cfBeacon === "object"';
 
 /** The statuses the page's reports to the counter were answered with, as the page's own resource timing reads them. */
 const REPORT_ANSWERS = `JSON.stringify(performance.getEntriesByType("resource")
-  .filter((e) => e.name === ${JSON.stringify(TRAFFIC_COUNTER_REPORTS)}).map((e) => e.responseStatus))`;
+  .filter((e) => e.name === ${JSON.stringify(site.TRAFFIC_COUNTER_REPORTS)}).map((e) => e.responseStatus))`;
+
+/** How many requests a page aborts on each path to its own origin and the counter: the race between a page dropping a request and the walk answering it showed in 114 of 300. */
+const ABORTED = 300;
+/** How many it aborts to another origin: each refusal is an error, so few enough that every error is kept, under the walk's 100. */
+const ABORTED_OUTSIDE = 30;
 
 /** The fixture pages, by file name, and the icon Chrome asks every site for, so its absence is no error. */
 const PAGES = {
@@ -50,7 +54,29 @@ const PAGES = {
 for (let i = 0; i < ${ERRORS_LOGGED}; i++) console.error("logged error " + i);
 window.__logged = true;
 </script></body></html>`,
-  "counted.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>counted</p>${renderTrafficCounterTag()}</body></html>`,
+  "counted.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>counted</p>${site.renderTrafficCounterTag()}</body></html>`,
+  "aborts.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>aborts its requests</p><script>
+const sent = [];
+const abortSoon = (address, init) => {
+  const controller = new AbortController();
+  sent.push(fetch(address, { ...init, signal: controller.signal }).catch(() => {}));
+  setTimeout(() => controller.abort(), 0);
+};
+const outside = new URLSearchParams(location.search).get("outside");
+for (let i = 0; i < (outside ? ${ABORTED_OUTSIDE} : ${ABORTED}); i++) {
+  if (outside) abortSoon(outside + "?n=" + i, { mode: "no-cors" });
+  else {
+    abortSoon("/quiet.html?n=" + i, {});
+    abortSoon(${JSON.stringify(site.TRAFFIC_COUNTER_REPORTS)} + "?n=" + i, { method: "POST", body: "{}" });
+  }
+}
+Promise.all(sent).then(() => { window.__aborted = true; });
+</script></body></html>`,
+  "opens-outside.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><button id="open">open</button><script>
+document.getElementById("open").addEventListener("click", () => {
+  window.__opened = window.open(new URLSearchParams(location.search).get("open"));
+});
+</script></body></html>`,
   "fetches-outside.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>fetches the address it is given</p><script>
 fetch(new URLSearchParams(location.search).get("fetch"), { mode: "no-cors" })
   .catch(() => {})
@@ -63,7 +89,7 @@ fetch(new URLSearchParams(location.search).get("fetch"), { mode: "no-cors" })
  * the same server named `localhost`, so a walk that does not refuse it
  * reaches it without the network.
  */
-const onAnotherOrigin = (inSite: string): string => {
+const moveToAnotherOrigin = (inSite: string): string => {
   const address = new URL(inSite);
   address.hostname = "localhost";
   return address.href;
@@ -153,9 +179,9 @@ describe.skipIf(skipped !== null)("the browser walk's traffic counter", () => {
     });
     expect(returned, "Cloudflare's script ran on a walk that asked for none").toBe(false);
     expect(errors).toEqual([]);
-  }, 60000);
+  });
 
-  it("a page loading the counter, walked with Cloudflare's copy and its requests kept, shows the copy's report POST, answered inside the browser", async () => {
+  it("a page loading the counter, walked with Cloudflare's copy and its requests kept, shows the copy's report POST for this site, answered inside the browser", async () => {
     const walk = { site: { folder }, screen: PHONE, network: true, trafficCounter: "cloudflare's copy" } as const;
     const { returned } = await walkSite(walk, async ({ page, url }) => {
       await page.goto(url("/counted.html"));
@@ -164,26 +190,77 @@ describe.skipIf(skipped !== null)("the browser walk's traffic counter", () => {
       return { ran: await page.evaluate(COUNTER_RAN), answers, sent: page.requests() };
     });
     expect(returned.ran, "the copy of Cloudflare's script did not run").toBe(true);
-    const reports = returned.sent.filter((r) => r.url === TRAFFIC_COUNTER_REPORTS && r.method === "POST");
+    const reports = returned.sent.filter((r) => r.url === site.TRAFFIC_COUNTER_REPORTS && r.method === "POST");
     expect(reports.length, "the copy sent no report").toBeGreaterThan(0);
-    expect(JSON.parse(reports[0]!.postData), "the report is not the counter's").toHaveProperty("siteToken");
+    const report = JSON.parse(reports[0]!.postData) as { siteToken?: unknown };
+    expect(report.siteToken, "the report does not count this site").toBe(site.TRAFFIC_COUNTER_TOKEN);
     expect(returned.answers, "the report was not answered inside the browser").toContain(204);
-  }, 60000);
+  });
 });
 
+/** The addresses of `errors`, each with how many errors it holds. */
+const errorsByAddress = (errors: { address: string }[]): Map<string, number> => {
+  const counts = new Map<string, number>();
+  for (const { address } of errors) counts.set(address, (counts.get(address) ?? 0) + 1);
+  return counts;
+};
+
 describe.skipIf(skipped !== null)("the browser walk's outside requests", () => {
-  it("a page fetching an address on another origin fails its walk, with one line naming that address", async () => {
+  it("a page fetching an address on another origin fails its walk: one of its errors, under that address", async () => {
     let outside = "";
-    const failure = await failureOf(walkSite({ site: { folder }, screen: PHONE }, async ({ page, url }) => {
+    const walked = await walkSite({ site: { folder }, screen: PHONE, errorsExpected: true }, async ({ page, url }) => {
       const inSite = url("/quiet.html");
-      outside = onAnotherOrigin(inSite);
+      outside = moveToAnotherOrigin(inSite);
       expect(new URL(outside).origin, "the outside address is on the site's own origin").not.toBe(new URL(inSite).origin);
       await page.goto(`${url("/fetches-outside.html")}?fetch=${encodeURIComponent(outside)}`);
       await page.waitUntil("window.__fetched === true", "the page's fetch never settled");
-    }));
-    expect(failure, "the walk passed").not.toBe("");
-    expect(failure.split("\n").filter((line) => line.startsWith(`  ${outside}: `)), failure).toHaveLength(1);
-  }, 60000);
+    });
+    expect(errorsByAddress(walked.errors).get(outside), JSON.stringify(walked.errors)).toBe(1);
+  });
+
+  it("a page opening an address on another origin in a new tab fails its walk: one of its errors, under that address", async () => {
+    let outside = "";
+    const walked = await walkSite({ site: { folder }, screen: PHONE, errorsExpected: true }, async ({ page, url }) => {
+      outside = moveToAnotherOrigin(url("/quiet.html"));
+      await page.goto(`${url("/opens-outside.html")}?open=${encodeURIComponent(outside)}`);
+      await page.tapOn("#open");
+      // The new tab's page is readable from here until another origin's, or
+      // the error page of a refused load, stands in it.
+      await page.waitUntil("(() => { try { window.__opened.location.href; return false; } catch { return true; } })()",
+        "the new tab never left its blank page");
+    });
+    expect(errorsByAddress(walked.errors).get(outside), JSON.stringify(walked.errors)).toBe(1);
+  });
+});
+
+describe.skipIf(skipped !== null)("the browser walk's requests a page drops", () => {
+  it("a page aborting its requests to its own origin and to the counter before the walk answers them returns no error", async () => {
+    const { errors } = await walkSite({ site: { folder }, screen: PHONE, errorsExpected: true }, async ({ page, url }) => {
+      await page.goto(url("/aborts.html"));
+      await page.waitUntil("window.__aborted === true", "the page's aborted requests never settled");
+    });
+    expect(errors, JSON.stringify(errors.slice(0, 3))).toEqual([]);
+  });
+
+  it("a page aborting its requests to another origin has each refused at most once, under its address", async () => {
+    const walked = await walkSite({ site: { folder }, screen: PHONE, errorsExpected: true }, async ({ page, url }) => {
+      const outside = moveToAnotherOrigin(url("/quiet.html"));
+      await page.goto(`${url("/aborts.html")}?outside=${encodeURIComponent(outside)}`);
+      await page.waitUntil("window.__aborted === true", "the page's aborted requests never settled");
+      return outside;
+    });
+    expect(walked.errorsLeftOut, "the walk left errors out, which may hide a second line under an address").toBe(0);
+    const counts = errorsByAddress(walked.errors.filter((e) => e.address.startsWith(walked.returned)));
+    expect(counts.size, "no outside request reached the walk to be refused").toBeGreaterThan(0);
+    expect([...counts.values()].filter((count) => count > 1), JSON.stringify(walked.errors)).toEqual([]);
+  });
+});
+
+describe("the traffic counter's addresses", () => {
+  it("the harness answers the same two addresses every page loads the counter from and reports to", () => {
+    expect(TRAFFIC_COUNTER_SCRIPT).toBe(site.TRAFFIC_COUNTER_SCRIPT);
+    expect(TRAFFIC_COUNTER_REPORTS).toBe(site.TRAFFIC_COUNTER_REPORTS);
+  });
 });
 
 describe.skipIf(skipped !== null)("the browser walk's shifts", () => {

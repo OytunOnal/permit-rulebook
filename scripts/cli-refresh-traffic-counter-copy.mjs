@@ -7,7 +7,7 @@
  */
 
 /** What the command prints, and the code it exits with: 0 once the copy is refreshed, 1 when nothing was written. */
-export function refreshReportOf(result, today) {
+export function reportTheRefresh(result, today) {
   if (!result.refreshed) return { err: [`the copy of Cloudflare's traffic counter was not refreshed: ${result.why}`], exitCode: 1 };
   return {
     out: [`refreshed the copy of Cloudflare's traffic counter: ${result.bytes} bytes, fetched on ${today}; read its diff before committing it`],

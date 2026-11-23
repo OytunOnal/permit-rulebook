@@ -8,8 +8,10 @@ import { RECORD_MAX_LENGTH, RECORD_VERSION,
   type RecordStore,
 } from "../src/lib/record.js";
 import { answerWith } from "./browser-walk.js";
-import { TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT, expectNothingLeft } from "./wire.js";
-import { PHONE, chromePath, walkSite, type SentRequest } from "../scripts/browser/browser.mjs";
+import { expectNothingLeft } from "./wire.js";
+import {
+  PHONE, TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT, chromePath, walkSite, type SentRequest,
+} from "../scripts/browser/browser.mjs";
 
 const dataset = rawDataset as unknown as Dataset;
 const known = deriveQuestions(dataset);
@@ -186,8 +188,8 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
  * Since 2026-09-08 the pages carry a cookieless traffic counter (Cloudflare Web
  * Analytics, the human's decision), so "nothing leaves" is no longer the same
  * sentence as "no request leaves". Exactly two addresses outside this site are
- * allowed — the beacon script, and the beacon's own endpoint — and what the
- * beacon SENDS is read back off the wire and checked: the page's address, the
+ * allowed — the counter's script, and the address it reports to — and what the
+ * counter SENDS is read back off the wire and checked: the page's address, the
  * browser, the site token, and nothing a reader answered.
  *
  * This used to be checked by reading the page's own source for `fetch`,
@@ -275,7 +277,7 @@ describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave 
     for (const [where, sent] of [["the walk", seen.walk], ["the edit", seen.afterEdit]] as const)
       expectNothingLeft(sent, { origin, where, declared: seen.declared, routes: seen.routes });
 
-    // The counter was actually running: a blocked beacon would make every
+    // The counter was actually running: a blocked counter would make every
     // assertion above pass by having nothing to check (Security review).
     const fetched = seen.walk.filter((r) => r.url.startsWith(TRAFFIC_COUNTER_SCRIPT));
     const reports = [...seen.walk, ...seen.afterEdit]
@@ -348,7 +350,7 @@ function expectReportCarriesNoAnswer(request: SentRequest, declared: string[]): 
   for (const answer of declared) {
     const token = new RegExp(`(^|[^a-z0-9])${
       answer.toLowerCase().replace(/[^a-z0-9]/g, "[^a-z0-9]")}([^a-z0-9]|$)`);
-    expect(token.test(body.toLowerCase()), `${answer} reached the beacon`).toBe(false);
+    expect(token.test(body.toLowerCase()), `${answer} reached the counter`).toBe(false);
   }
 }
 

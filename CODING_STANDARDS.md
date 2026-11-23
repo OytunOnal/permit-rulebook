@@ -109,7 +109,7 @@ Roadkeeper's preset in `eslint.config.mjs`.
   before a connection is made.
 - A shared device keeps nothing of a reader after Start over.
 - The Content-Security-Policy names every script the page runs: `'self'`, the
-  analytics beacon, and each inline script by its hash.
+  traffic counter's script, and each inline script by its hash.
 - A path built from outside text, such as a request's path, is decoded,
   resolved, and refused unless it stays inside the folder it was built on.
   The inside check runs on real paths, every link followed: the file's
