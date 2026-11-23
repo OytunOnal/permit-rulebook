@@ -1,10 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readdirSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readLock } from "../scripts/data-pin.mjs";
-import { cloneShortfallOf } from "../scripts/clone-shortfall.mjs";
-import { shortfallSentenceOf } from "../scripts/cli-data-check.mjs";
+import { readLock } from "../scripts/data-lock/data-lock.mjs";
 import { readAssetNames } from "../scripts/carry-assets/carry.mjs";
 import { LF } from "./throwaway-folder.js";
 import {
@@ -82,12 +81,15 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
     expect(lock.datasetVersion, "data.lock has no dataset version").toMatch(/^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$/);
   });
 
-  // The rule the green's first step asks, `npm run data:check`, so the step
-  // and the suite never disagree; a red reads as the step's sentence.
+  // The green's first step itself, `npm run data:check`, run as it runs, so
+  // the step and the suite never disagree; a red shows what the step printed,
+  // its sentence and its remedy.
   it("the data clone holds the lock's commit", () => {
-    const shortfall = cloneShortfallOf();
-    expect(shortfall, shortfall ? shortfallSentenceOf(shortfall) : undefined).toBeNull();
-  });
+    const words = String(JSON.parse(readFileSync(join(root, "package.json"), "utf8")).scripts["data:check"] ?? "").split(" ").filter(Boolean);
+    expect(words[0], "package.json's data:check is not a node command").toBe("node");
+    const run = spawnSync(process.execPath, words.slice(1), { cwd: root, encoding: "utf8" });
+    expect(run.status, `${run.stdout}${run.stderr}`).toBe(0);
+  }, 60000);
 
   it("the workflow builds a push against the lock, and the daily runs against the newest", () => {
     expect(pages).toContain("locked=$(sed -n 's/^sha=//p' data.lock)");

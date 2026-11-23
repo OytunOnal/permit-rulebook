@@ -73,6 +73,39 @@
    ]
   },
   {
+   "path": "scripts/data-lock",
+   "entries": [
+    {
+     "file": "scripts/data-lock/data-lock.mjs",
+     "level": "infrastructure"
+    }
+   ],
+   "files": [
+    "scripts/data-lock/data-lock.mjs",
+    "scripts/data-lock/disk/clone-questions.mjs",
+    "scripts/data-lock/disk/data-clone.mjs",
+    "scripts/data-lock/disk/lock-file.mjs",
+    "scripts/data-lock/rules/lock-text.mjs",
+    "scripts/data-lock/rules/shortfall.mjs"
+   ]
+  },
+  {
+   "path": "scripts/data-lock-run",
+   "entries": [
+    {
+     "file": "scripts/data-lock-run/data-lock-run.mjs",
+     "level": "main"
+    }
+   ],
+   "files": [
+    "scripts/data-lock-run/check/cli-data-check.mjs",
+    "scripts/data-lock-run/check/run-check.mjs",
+    "scripts/data-lock-run/data-lock-run.mjs",
+    "scripts/data-lock-run/pin/cli-data-pin.mjs",
+    "scripts/data-lock-run/pin/run-pin.mjs"
+   ]
+  },
+  {
    "path": "src/lib/country-search",
    "entries": [
     {
@@ -294,16 +327,23 @@
   "scripts/check-base.mjs": "infrastructure",
   "scripts/child-env.mjs": "infrastructure",
   "scripts/cli-check-base.mjs": "presentation",
-  "scripts/cli-data-check.mjs": "presentation",
-  "scripts/cli-data-pin.mjs": "presentation",
   "scripts/cli-deploy-finding.mjs": "presentation",
   "scripts/cli-measure-taps.mjs": "presentation",
   "scripts/cli-refresh-traffic-counter-copy.mjs": "presentation",
   "scripts/cli-render-assets.mjs": "presentation",
   "scripts/cli-shot.mjs": "presentation",
   "scripts/cli-smoke.mjs": "presentation",
-  "scripts/clone-shortfall.mjs": "domain infrastructure",
-  "scripts/data-pin.mjs": "domain infrastructure",
+  "scripts/data-lock-run/check/cli-data-check.mjs": "presentation",
+  "scripts/data-lock-run/check/run-check.mjs": "main",
+  "scripts/data-lock-run/data-lock-run.mjs": "main",
+  "scripts/data-lock-run/pin/cli-data-pin.mjs": "presentation",
+  "scripts/data-lock-run/pin/run-pin.mjs": "main",
+  "scripts/data-lock/data-lock.mjs": "infrastructure",
+  "scripts/data-lock/disk/clone-questions.mjs": "infrastructure",
+  "scripts/data-lock/disk/data-clone.mjs": "infrastructure",
+  "scripts/data-lock/disk/lock-file.mjs": "infrastructure",
+  "scripts/data-lock/rules/lock-text.mjs": "domain",
+  "scripts/data-lock/rules/shortfall.mjs": "domain",
   "scripts/decode-png-size.mjs": "domain",
   "scripts/deploy-finding.mjs": "domain presentation",
   "scripts/dev-server.mjs": "infrastructure",
@@ -312,8 +352,6 @@
   "scripts/live-site-over-http.mjs": "infrastructure",
   "scripts/log-wording.mjs": "domain",
   "scripts/main-check-base.mjs": "main",
-  "scripts/main-data-check.mjs": "main",
-  "scripts/main-data-pin.mjs": "main",
   "scripts/main-measure-taps.mjs": "main",
   "scripts/main-refresh-traffic-counter-copy.mjs": "main",
   "scripts/main-render-assets.mjs": "main",
@@ -717,16 +755,6 @@
    "kind": "dependency"
   },
   {
-   "from": "scripts/cli-data-check.mjs",
-   "to": "scripts/find-option-value.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/cli-data-pin.mjs",
-   "to": "scripts/find-option-value.mjs",
-   "kind": "dependency"
-  },
-  {
    "from": "scripts/cli-deploy-finding.mjs",
    "to": "scripts/deploy-finding.mjs",
    "kind": "dependency"
@@ -747,18 +775,88 @@
    "kind": "dependency"
   },
   {
-   "from": "scripts/clone-shortfall.mjs",
-   "to": "scripts/data-pin.mjs",
+   "from": "scripts/data-lock-run/check/cli-data-check.mjs",
+   "to": "scripts/find-option-value.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/clone-shortfall.mjs",
+   "from": "scripts/data-lock-run/check/run-check.mjs",
+   "to": "scripts/data-lock-run/check/cli-data-check.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/check/run-check.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/check/run-check.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/pin/run-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/pin/cli-data-pin.mjs",
+   "to": "scripts/find-option-value.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/pin/run-pin.mjs",
+   "to": "scripts/data-lock-run/pin/cli-data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/pin/run-pin.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/disk/clone-questions.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/disk/data-clone.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/disk/lock-file.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/rules/lock-text.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/rules/shortfall.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/disk/clone-questions.mjs",
    "to": "scripts/run-git.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/data-pin.mjs",
+   "from": "scripts/data-lock/disk/data-clone.mjs",
    "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/rules/shortfall.mjs",
+   "to": "scripts/data-lock/rules/lock-text.mjs",
    "kind": "dependency"
   },
   {
@@ -788,36 +886,6 @@
   },
   {
    "from": "scripts/main-check-base.mjs",
-   "to": "scripts/print-report.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/main-data-check.mjs",
-   "to": "scripts/cli-data-check.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/main-data-check.mjs",
-   "to": "scripts/clone-shortfall.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/main-data-check.mjs",
-   "to": "scripts/print-report.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/main-data-pin.mjs",
-   "to": "scripts/cli-data-pin.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/main-data-pin.mjs",
-   "to": "scripts/data-pin.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/main-data-pin.mjs",
    "to": "scripts/print-report.mjs",
    "kind": "dependency"
   },
@@ -3698,7 +3766,7 @@
   },
   {
    "from": "tests/data-clone-path.test.ts",
-   "to": "scripts/data-pin.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
   {
@@ -3713,7 +3781,7 @@
   },
   {
    "from": "tests/data-commit.test.ts",
-   "to": "scripts/data-pin.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
   {
@@ -3734,6 +3802,11 @@
   {
    "from": "tests/data-commit.test.ts",
    "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/data-lock.test.ts",
+   "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
   {
@@ -4093,7 +4166,12 @@
   },
   {
    "from": "tests/hand-run-commands.test.ts",
-   "to": "scripts/data-pin.mjs",
+   "to": "scripts/data-lock-run/data-lock-run.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/hand-run-commands.test.ts",
+   "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
   {
@@ -4488,17 +4566,7 @@
   },
   {
    "from": "tests/pipeline.test.ts",
-   "to": "scripts/cli-data-check.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/pipeline.test.ts",
-   "to": "scripts/clone-shortfall.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/pipeline.test.ts",
-   "to": "scripts/data-pin.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
   {
@@ -6715,6 +6783,50 @@
     "exported": false
    }
   ],
+  "scripts/data-lock/data-lock.mjs": [
+   {
+    "name": "readLock",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "pinData",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "lockAndCloneOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "cloneShortfallOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/data-lock-run/data-lock-run.mjs": [
+   {
+    "name": "SUBCOMMANDS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "SUBCOMMAND_NAMES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "isProcessScript",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "runSubcommand",
+    "kind": "fn",
+    "exported": false
+   }
+  ],
   "src/lib/country-search/country-search.ts": [],
   "src/lib/dataset-facts/reckon-dataset-facts.ts": [
    {
@@ -7471,55 +7583,6 @@
     "exported": true
    }
   ],
-  "scripts/cli-data-check.mjs": [
-   {
-    "name": "DATA_REPOSITORY_URL",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "dataCheckOptionsOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "LACK_WORDS",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "REMEDY_WORDS",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "remedyOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "shortfallSentenceOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "dataCheckReportOf",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/cli-data-pin.mjs": [
-   {
-    "name": "pinOptionsOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "pinReportOf",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
   "scripts/cli-deploy-finding.mjs": [],
   "scripts/cli-measure-taps.mjs": [
    {
@@ -7617,80 +7680,6 @@
    },
    {
     "name": "smokeReportOf",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/clone-shortfall.mjs": [
-   {
-    "name": "FULL_SHA",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "hasCommit",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "lockAndCloneOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "isAncestor",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "isAheadOfOriginMaster",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "headShortfallKindOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "hasDiverged",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "cloneShortfallOf",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/data-pin.mjs": [
-   {
-    "name": "root",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "siteLockPath",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "mainCheckoutOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "dataClonePath",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "readLock",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "pinData",
     "kind": "fn",
     "exported": true
    }
@@ -7870,25 +7859,6 @@
    }
   ],
   "scripts/main-check-base.mjs": [
-   {
-    "name": "report",
-    "kind": "const",
-    "exported": false
-   }
-  ],
-  "scripts/main-data-check.mjs": [
-   {
-    "name": "lockAndClone",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "report",
-    "kind": "const",
-    "exported": false
-   }
-  ],
-  "scripts/main-data-pin.mjs": [
    {
     "name": "report",
     "kind": "const",
@@ -11409,16 +11379,12 @@
   "scripts/check-base.mjs",
   "scripts/child-env.mjs",
   "scripts/cli-check-base.mjs",
-  "scripts/cli-data-check.mjs",
-  "scripts/cli-data-pin.mjs",
   "scripts/cli-deploy-finding.mjs",
   "scripts/cli-measure-taps.mjs",
   "scripts/cli-refresh-traffic-counter-copy.mjs",
   "scripts/cli-render-assets.mjs",
   "scripts/cli-shot.mjs",
   "scripts/cli-smoke.mjs",
-  "scripts/clone-shortfall.mjs",
-  "scripts/data-pin.mjs",
   "scripts/decode-png-size.mjs",
   "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
@@ -11427,8 +11393,6 @@
   "scripts/live-site-over-http.mjs",
   "scripts/log-wording.mjs",
   "scripts/main-check-base.mjs",
-  "scripts/main-data-check.mjs",
-  "scripts/main-data-pin.mjs",
   "scripts/main-measure-taps.mjs",
   "scripts/main-refresh-traffic-counter-copy.mjs",
   "scripts/main-render-assets.mjs",
@@ -11493,5 +11457,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "33c5bafcc5ffbeea29e299a577e84bcf73df4d29516798147e3e45dd2c8f684d"
+ "digest": "109018454d29865e4352f1956b14062daa02bd0f63946e395cc71117cfa1c44b"
 }

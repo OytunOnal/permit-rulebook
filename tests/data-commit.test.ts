@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readLock } from "../scripts/data-pin.mjs";
+import { readLock } from "../scripts/data-lock/data-lock.mjs";
 import { runGit } from "../scripts/run-git.mjs";
 import { posixShellPath } from "./posix-shell.js";
 import { LF, commitInThrowaway, inThrowawayFolder, initThrowawayRepository } from "./throwaway-folder.js";
