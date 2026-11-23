@@ -8,7 +8,7 @@ import type { Dataset } from "permit-rulebook-data";
 import { interviewFrameAlone } from "./frame-alone.js";
 import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
 import { COPY_SCRIPT } from "../src/lib/clipboard.js";
-import { ANALYTICS_BEACON, ANALYTICS_SCRIPT } from "../src/lib/site.js";
+import { TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT } from "../src/lib/site.js";
 
 /**
  * The traffic counter is the first third-party script this site runs
@@ -79,8 +79,8 @@ describe("every page states what may run on it", () => {
   it("names the counter's two hosts and nothing else off this site", () => {
     expect(pages.length, "nothing is built — run npm run build").toBeGreaterThan(25);
     const policy = shipped();
-    expect(policy).toContain(`script-src 'self' ${ANALYTICS_SCRIPT}`);
-    expect(policy).toContain(`connect-src 'self' ${new URL(ANALYTICS_BEACON).origin}`);
+    expect(policy).toContain(`script-src 'self' ${TRAFFIC_COUNTER_SCRIPT}`);
+    expect(policy).toContain(`connect-src 'self' ${new URL(TRAFFIC_COUNTER_REPORTS).origin}`);
     expect(policy).toContain("default-src 'self'");
     expect(policy).toContain("object-src 'none'");
     expect(policy).toContain("form-action 'none'");
@@ -149,6 +149,6 @@ describe("every page states what may run on it", () => {
     for (const page of pages)
       for (const src of [...page.html.matchAll(/<script[^>]*\ssrc="([^"]*)"/g)].map((m) => m[1]!))
         if (src.startsWith("http"))
-          expect(src, `${page.path}: ${src}`).toBe(ANALYTICS_SCRIPT);
+          expect(src, `${page.path}: ${src}`).toBe(TRAFFIC_COUNTER_SCRIPT);
   });
 });

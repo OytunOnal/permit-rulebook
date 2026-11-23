@@ -1,12 +1,16 @@
 // @level infrastructure
 import { serve } from "../static-server/static-server.mjs";
 import { at, siteBase } from "../../site-base.mjs";
-import { openBrowser } from "./open-browser.mjs";
+import { openBrowser } from "./open-browser/open-browser.mjs";
+
+export { DESK, PHONE } from "./screens/screens.mjs";
+export { TRAFFIC_COUNTER_COPY, TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT } from "./traffic-counter/traffic-counter.mjs";
+export { ERRORS_KEPT } from "./walk-log/walk-log.mjs";
 
 /**
  * @typedef {import("../tab/open-tab.mjs").BrowserPage} BrowserPage
- * @typedef {import("./screens.mjs").Screen} Screen
- * @typedef {import("./walk-log.mjs").WalkError} WalkError
+ * @typedef {import("./screens/screens.mjs").Screen} Screen
+ * @typedef {import("./walk-log/walk-log.mjs").WalkError} WalkError
  * @typedef {import("../tab/open-tab.mjs").LayoutShifts} LayoutShifts
  */
 
@@ -25,6 +29,11 @@ import { openBrowser } from "./open-browser.mjs";
  * @property {Site} site
  * @property {Screen} screen `DESK` or `PHONE`.
  * @property {boolean} [network] Keep the list of the page's requests.
+ * @property {import("./traffic-counter/traffic-counter.mjs").TrafficCounter} [trafficCounter] What
+ *   answers the traffic counter's script inside the browser: an empty script (`"stub"`, the
+ *   default), or the committed copy of Cloudflare's script (`"cloudflare's copy"`), for a walk
+ *   that checks what the counter sends. Either way its reports get an empty reply there, and no
+ *   walk loads the counter from Cloudflare.
  * @property {boolean} [scrollbars] Show the platform's scrollbars.
  * @property {boolean} [errorsExpected] Return the pages' errors rather than fail on them.
  * @property {string | null} [shiftRegion] A selector whose shifts are marked; a live walk names none.
@@ -47,18 +56,21 @@ import { openBrowser } from "./open-browser.mjs";
  * @property {number} errorsLeftOut How many more errors there were, not kept.
  */
 
+/** The options a walk leaves out, at their defaults; `trafficCounter`'s is the traffic counter's own. */
+const WALK_DEFAULTS = { network: false, scrollbars: false, errorsExpected: false, shiftRegion: null };
+
 /** The width a page laid out at, or null on a tab that has opened no page yet. */
 const LAID_OUT_WIDTH = 'location.href === "about:blank" ? null : innerWidth';
 
-/** The site `site` names, open for the walk: what makes its addresses, and what closes it. */
+/** The site `site` names, open for the walk: its origin, what makes its addresses, and what closes it. */
 async function openSite(site) {
   if ("address" in site) {
     const { origin } = new URL(site.address);
-    return { url: (path) => at(origin, siteBase(site.address), path), close: () => {} };
+    return { origin, url: (path) => at(origin, siteBase(site.address), path), close: () => {} };
   }
   const { folder, ...serving } = site;
   const server = await serve(folder, serving);
-  return { url: server.url, close: server.close };
+  return { origin: server.origin, url: server.url, close: server.close };
 }
 
 /** The width check's failure: a page laid out at another width than its screen's, both named. */
@@ -137,14 +149,14 @@ async function measuredAtTheEnd(walkLog, returned, { checkWidth, errorsExpected 
   return { returned, shifts: await onScreen.readLayoutShifts(), errors: walkLog.errors(), errorsLeftOut: walkLog.errorsLeftOut() };
 }
 
-/** The walk in a browser opened for it, on the site whose addresses `url` makes. */
-async function walkInBrowser(walk, url, walker) {
-  const { screen, network = false, scrollbars = false, errorsExpected = false, shiftRegion = null } = walk;
-  const browser = await openBrowser({ screen, network, scrollbars, shiftRegion });
+/** The walk in a browser opened for it, on the site `opened`: its origin, and what makes its addresses. */
+async function walkInBrowser(walk, opened, walker) {
+  const options = { ...WALK_DEFAULTS, ...walk };
+  const browser = await openBrowser(options, opened.origin);
   try {
-    const checkWidth = widthCheckOn(screen);
-    const returned = await returnedBy(walker, { page: checkingWidthOnDraw(browser.page, checkWidth), url }, browser.walkLog);
-    return await measuredAtTheEnd(browser.walkLog, returned, { checkWidth, errorsExpected });
+    const checkWidth = widthCheckOn(options.screen);
+    const returned = await returnedBy(walker, { page: checkingWidthOnDraw(browser.page, checkWidth), url: opened.url }, browser.walkLog);
+    return await measuredAtTheEnd(browser.walkLog, returned, { checkWidth, errorsExpected: options.errorsExpected });
   } finally {
     browser.close();
   }
@@ -153,7 +165,10 @@ async function walkInBrowser(walk, url, walker) {
 /**
  * The browser walk: opens `walk.site` at `walk.screen` in a fresh profile,
  * hands `walker` the page and the site's addresses, and returns what it
- * measured. It fails, naming both widths, when a page it draws is not
+ * measured. The traffic counter's requests are answered inside the browser,
+ * as `walk.trafficCounter` asks; a request to any other origin than the
+ * site's own, from the page or from a tab or worker it opens, is refused
+ * there, and is one of the walk's errors, under its address. It fails, naming both widths, when a page it draws is not
  * the screen's width, and, listing them, on the pages' errors unless
  * `walk.errorsExpected`. A failure of the walker's own, or of the width,
  * lists the pages' errors under its message.
@@ -166,7 +181,7 @@ async function walkInBrowser(walk, url, walker) {
 export async function walkSite(walk, walker) {
   const opened = await openSite(walk.site);
   try {
-    return await walkInBrowser(walk, opened.url, walker);
+    return await walkInBrowser(walk, opened, walker);
   } finally {
     opened.close();
   }

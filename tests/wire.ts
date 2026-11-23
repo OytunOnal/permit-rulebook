@@ -1,5 +1,5 @@
 import { expect } from "vitest";
-import type { SentRequest } from "../scripts/browser/browser.mjs";
+import { TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT, type SentRequest } from "../scripts/browser/browser.mjs";
 
 /**
  * What a page sent, read off the wire — and the one assertion the promise
@@ -11,12 +11,9 @@ import type { SentRequest } from "../scripts/browser/browser.mjs";
  * watched, and the check it makes has to be this one — reused, not re-typed,
  * or the two drift the first time a field is added to the allow-list
  * (Security review of s26, 2026-09-17). A request's shape is the harness's
- * `SentRequest`.
+ * `SentRequest`, and the two addresses outside this site a page may talk to,
+ * the traffic counter's, are the harness's too.
  */
-
-/** The two addresses outside this site that a page may talk to, and no others. */
-export const BEACON_SCRIPT = "https://static.cloudflareinsights.com/beacon.min.js";
-export const BEACON_ENDPOINT = "https://cloudflareinsights.com/cdn-cgi/rum";
 
 /**
  * Every field the counter's report is allowed to carry, measured off the wire
@@ -25,12 +22,12 @@ export const BEACON_ENDPOINT = "https://cloudflareinsights.com/cdn-cgi/rum";
  *
  * What each is: when the page loaded and an id for that load (`startTime`,
  * `pageloadId`, `st`, `eventType`, `nt`), the address (`location`), the
- * beacon's own version (`versions`), the browser engine and its version plus
+ * counter's own version (`versions`), the browser engine and its version plus
  * the OS version (`bi`), the site's public id (`siteToken`), paint and
  * navigation timings (`firstPaint`, `firstContentfulPaint`, `timingsV2`) and
  * the tab's JS heap figures (`memory`). None of it is an answer.
  */
-export const BEACON_FIELDS = [
+export const TRAFFIC_COUNTER_REPORT_FIELDS = [
   "startTime", "pageloadId", "eventType", "nt", "location", "versions", "bi",
   "siteToken", "st", "memory", "firstPaint", "firstContentfulPaint", "timingsV2",
 ];
@@ -53,17 +50,17 @@ export function expectNothingLeft(
 ): void {
   for (const request of sent) {
     // The counter, and only the counter.
-    if (request.url.startsWith(BEACON_SCRIPT)) {
-      expect(request.method, `${where}: the beacon script was fetched with ${request.method}`).toBe("GET");
-      expect(request.url, `${where}: a query string on the beacon script`).toBe(BEACON_SCRIPT);
-      expect(request.hasPostData, `${where}: a body was sent to the beacon script`).toBe(false);
+    if (request.url.startsWith(TRAFFIC_COUNTER_SCRIPT)) {
+      expect(request.method, `${where}: the counter's script was fetched with ${request.method}`).toBe("GET");
+      expect(request.url, `${where}: a query string on the counter's script`).toBe(TRAFFIC_COUNTER_SCRIPT);
+      expect(request.hasPostData, `${where}: a body was sent to the counter's script`).toBe(false);
       continue;
     }
-    if (request.url.startsWith(BEACON_ENDPOINT)) {
+    if (request.url.startsWith(TRAFFIC_COUNTER_REPORTS)) {
       // The preflight and the report itself, and nothing smuggled into
       // the address.
-      expect(["POST", "OPTIONS"], `${where}: ${request.method} to the beacon`).toContain(request.method);
-      expect(request.url, `${where}: a query string on the beacon`).toBe(BEACON_ENDPOINT);
+      expect(["POST", "OPTIONS"], `${where}: ${request.method} to the counter`).toContain(request.method);
+      expect(request.url, `${where}: a query string on the counter's report`).toBe(TRAFFIC_COUNTER_REPORTS);
       if (request.method === "OPTIONS") continue;
       // What it actually sends, read off the wire.
       const raw = String(request.postData ?? "");
@@ -73,14 +70,14 @@ export function expectNothingLeft(
       // an answer there would be a leak (Security review, 2026-09-08).
       const body = raw.replace(/"location":"([^"?]*)([^"]*)"/g, (_m, _p, query) => `"location":"${query}"`);
       for (const answer of declared)
-        expect(token(answer).test(body.toLowerCase()), `${where}: ${answer} reached the beacon`).toBe(false);
+        expect(token(answer).test(body.toLowerCase()), `${where}: ${answer} reached the counter`).toBe(false);
       for (const route of routes)
-        expect(body.toLowerCase().includes(route.toLowerCase()), `${where}: ${route} reached the beacon`)
+        expect(body.toLowerCase().includes(route.toLowerCase()), `${where}: ${route} reached the counter`)
           .toBe(false);
       // And every field it carries is one a person has looked at.
       const fields = Object.keys(JSON.parse(raw) as Record<string, unknown>);
       for (const field of fields)
-        expect(BEACON_FIELDS, `${where}: the counter sent a field nobody has reviewed: ${field}`)
+        expect(TRAFFIC_COUNTER_REPORT_FIELDS, `${where}: the counter sent a field nobody has reviewed: ${field}`)
           .toContain(field);
       continue;
     }

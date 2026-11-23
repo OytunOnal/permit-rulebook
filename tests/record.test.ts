@@ -8,8 +8,10 @@ import { RECORD_MAX_LENGTH, RECORD_VERSION,
   type RecordStore,
 } from "../src/lib/record.js";
 import { answerWith } from "./browser-walk.js";
-import { BEACON_ENDPOINT, BEACON_SCRIPT, expectNothingLeft } from "./wire.js";
-import { PHONE, chromePath, walkSite, type SentRequest } from "../scripts/browser/browser.mjs";
+import { expectNothingLeft } from "./wire.js";
+import {
+  PHONE, TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT, chromePath, walkSite, type SentRequest,
+} from "../scripts/browser/browser.mjs";
 
 const dataset = rawDataset as unknown as Dataset;
 const known = deriveQuestions(dataset);
@@ -186,8 +188,8 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
  * Since 2026-09-08 the pages carry a cookieless traffic counter (Cloudflare Web
  * Analytics, the human's decision), so "nothing leaves" is no longer the same
  * sentence as "no request leaves". Exactly two addresses outside this site are
- * allowed — the beacon script, and the beacon's own endpoint — and what the
- * beacon SENDS is read back off the wire and checked: the page's address, the
+ * allowed — the counter's script, and the address it reports to — and what the
+ * counter SENDS is read back off the wire and checked: the page's address, the
  * browser, the site token, and nothing a reader answered.
  *
  * This used to be checked by reading the page's own source for `fetch`,
@@ -195,7 +197,9 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
  * those: a bundled dependency, an inlined helper or a renamed call would walk
  * straight past it, and the promise is about what the page DOES. So the page is
  * driven in a real browser with the network watched, and the only thing
- * asserted is what it actually sent (human, 2026-09-08).
+ * asserted is what it actually sent (human, 2026-09-08). The walks are served
+ * the committed copy of Cloudflare's script, its reports answered inside the
+ * browser, so the check runs on Cloudflare's code with no network.
  */
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -226,7 +230,8 @@ const ANSWER_ONE = `(() => {
 describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave the device", () => {
   it("a whole walk, and an answer changed after it, sends nothing but this page's own files", async () => {
     const screen = { viewport: { width: 1100, height: 900 }, mobile: false };
-    const { returned } = await walkSite({ site: { folder: dist }, screen, network: true }, async ({ page, url }) => {
+    const walk = { site: { folder: dist }, screen, network: true, trafficCounter: "cloudflare's copy" } as const;
+    const { returned } = await walkSite(walk, async ({ page, url }) => {
       await page.goto(url("/"));
       const answered: string[] = [];
       for (let step = 0; step < 25; step++) {
@@ -272,11 +277,11 @@ describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave 
     for (const [where, sent] of [["the walk", seen.walk], ["the edit", seen.afterEdit]] as const)
       expectNothingLeft(sent, { origin, where, declared: seen.declared, routes: seen.routes });
 
-    // The counter was actually running: a blocked beacon would make every
+    // The counter was actually running: a blocked counter would make every
     // assertion above pass by having nothing to check (Security review).
-    const fetched = seen.walk.filter((r) => r.url.startsWith(BEACON_SCRIPT));
+    const fetched = seen.walk.filter((r) => r.url.startsWith(TRAFFIC_COUNTER_SCRIPT));
     const reports = [...seen.walk, ...seen.afterEdit]
-      .filter((r) => r.url.startsWith(BEACON_ENDPOINT) && r.method === "POST");
+      .filter((r) => r.url.startsWith(TRAFFIC_COUNTER_REPORTS) && r.method === "POST");
     expect(fetched.length, "the counter's script was never fetched").toBeGreaterThan(0);
     expect(reports.length, "the counter sent no report at all").toBeGreaterThan(0);
     // One report per page LOAD, not per answered question. Cloudflare's
@@ -345,7 +350,7 @@ function expectReportCarriesNoAnswer(request: SentRequest, declared: string[]): 
   for (const answer of declared) {
     const token = new RegExp(`(^|[^a-z0-9])${
       answer.toLowerCase().replace(/[^a-z0-9]/g, "[^a-z0-9]")}([^a-z0-9]|$)`);
-    expect(token.test(body.toLowerCase()), `${answer} reached the beacon`).toBe(false);
+    expect(token.test(body.toLowerCase()), `${answer} reached the counter`).toBe(false);
   }
 }
 
@@ -357,7 +362,8 @@ function expectReportCarriesNoAnswer(request: SentRequest, declared: string[]): 
  */
 describe.skipIf(skipped !== null)("arriving pre-scoped sends no more than arriving cold", () => {
   it("a walk that starts at /?route=… still sends only the counter's own report", async () => {
-    const { returned } = await walkSite({ site: { folder: dist }, screen: PHONE, network: true }, async ({ page, url }) => {
+    const walk = { site: { folder: dist }, screen: PHONE, network: true, trafficCounter: "cloudflare's copy" } as const;
+    const { returned } = await walkSite(walk, async ({ page, url }) => {
       await page.goto(url("/"));
       await page.evaluate('localStorage.removeItem("permit-rulebook.record.v1")');
       await page.goto(`${url("/")}?route=de-blue-card-general`);
@@ -372,13 +378,13 @@ describe.skipIf(skipped !== null)("arriving pre-scoped sends no more than arrivi
     const seen = returned as { sent: SentRequest[]; declared: string[]; origin: string };
 
     const { origin } = seen;
-    const reports = seen.sent.filter((r) => r.url.startsWith(BEACON_ENDPOINT) && r.method === "POST");
+    const reports = seen.sent.filter((r) => r.url.startsWith(TRAFFIC_COUNTER_REPORTS) && r.method === "POST");
     expect(seen.declared.length, "the pre-scoped walk answered nothing").toBeGreaterThan(3);
     expect(reports.length, `${reports.length} reports for one page load`).toBeLessThanOrEqual(2);
 
     for (const request of seen.sent) {
-      if (request.url.startsWith(BEACON_SCRIPT)) continue;
-      if (request.url.startsWith(BEACON_ENDPOINT)) {
+      if (request.url.startsWith(TRAFFIC_COUNTER_SCRIPT)) continue;
+      if (request.url.startsWith(TRAFFIC_COUNTER_REPORTS)) {
         expectReportCarriesNoAnswer(request, seen.declared);
         continue;
       }

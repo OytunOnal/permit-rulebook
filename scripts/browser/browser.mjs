@@ -8,6 +8,10 @@
  * is what the walk's page fails with when a page lays out wider or narrower
  * than the screen, so a walker can keep that failure and throw any other.
  * `ERRORS_KEPT` is how many errors a walk keeps; it counts the rest.
+ * `TRAFFIC_COUNTER_SCRIPT` and `TRAFFIC_COUNTER_REPORTS` are the traffic
+ * counter's two addresses the walk answers, for the tests that read its
+ * requests; `TRAFFIC_COUNTER_COPY` is the committed copy of its script, for
+ * the hand-run command that refreshes it.
  *
  * Beside the walk: `chromePath`, Chrome found for a caller that renders with
  * it, and `serve`, the built site's server for a caller that sends plain HTTP
@@ -22,13 +26,13 @@
 
 export { chromePath } from "./chrome/chrome.mjs";
 export { serve } from "./static-server/static-server.mjs";
-export { DESK, PHONE } from "./walk/screens.mjs";
-export { ERRORS_KEPT } from "./walk/walk-log.mjs";
-export { WidthFailure, walkSite } from "./walk/walk-site.mjs";
+export {
+  DESK, ERRORS_KEPT, PHONE, TRAFFIC_COUNTER_COPY, TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT, WidthFailure, walkSite,
+} from "./walk/walk-site.mjs";
 
 /** @typedef {import("./tab/open-tab.mjs").BrowserPage} BrowserPage */
 /** @typedef {import("./tab/open-tab.mjs").SentRequest} SentRequest */
 /** @typedef {import("./walk/walk-site.mjs").PageOnSite} PageOnSite */
-/** @typedef {import("./walk/screens.mjs").Screen} Screen */
+/** @typedef {import("./walk/walk-site.mjs").Screen} Screen */
 /** @typedef {import("./tab/open-tab.mjs").LayoutShifts} LayoutShifts */
-/** @typedef {import("./walk/walk-log.mjs").WalkError} WalkError */
+/** @typedef {import("./walk/walk-site.mjs").WalkError} WalkError */

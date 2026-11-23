@@ -16,6 +16,8 @@ export class DevToolsConnection {
    * shared by every tab).
    */
   #tabs = new Map();
+  /** What hears the browser's own messages, the ones no tab's session carries. */
+  #hearBrowser = null;
 
   constructor(socket) {
     this.#socket = socket;
@@ -45,6 +47,11 @@ export class DevToolsConnection {
     this.#tabs.set(sessionId, hear);
   }
 
+  /** Hands every message of the browser's own, one no tab's session carries, to `hear`. */
+  listenToBrowser(hear) {
+    this.#hearBrowser = hear;
+  }
+
   /** Closes the connection. */
   close() {
     try { this.#socket.close(); } catch { /* already closed */ }
@@ -52,8 +59,8 @@ export class DevToolsConnection {
 
   #receive = (event) => {
     const message = JSON.parse(event.data);
-    const hear = this.#tabs.get(message.sessionId);
-    // An event from no tab of ours — the browser's own — has no list to go on.
+    const hear = message.sessionId === undefined ? this.#hearBrowser : this.#tabs.get(message.sessionId);
+    // An event no listener of ours hears has no list to go on.
     if (message.method && !hear) return;
     if (hear) hear(message);
     // An event answers no command.

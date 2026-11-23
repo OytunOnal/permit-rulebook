@@ -4,7 +4,7 @@ import { FIRST_PAINT_SCRIPT } from "../../first-paint.js";
 import { MENU_SCRIPT } from "../body/menu-script.js";
 import { COPY_SCRIPT } from "../../clipboard.js";
 import { escAttr } from "../../reason.js";
-import { ANALYTICS_BEACON, ANALYTICS_SCRIPT } from "../../site.js";
+import { TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT } from "../../site.js";
 
 /**
  * The content-security policy every page carries, as a meta element.
@@ -49,12 +49,12 @@ export function contentSecurityPolicy(inlineScripts: string[] = INLINE_SCRIPTS):
   // where it is proven: `npm run smoke` and the CSP cases both walk `dist`
   // (2026-09-08).
   if (import.meta.env?.DEV) return "";
-  const scripts = ["'self'", ANALYTICS_SCRIPT, ...inlineScripts.map(sha256)];
+  const scripts = ["'self'", TRAFFIC_COUNTER_SCRIPT, ...inlineScripts.map(sha256)];
   const policy = [
     "default-src 'self'",
     `script-src ${scripts.join(" ")}`,
     "style-src 'self' 'unsafe-inline'",
-    `connect-src 'self' ${new URL(ANALYTICS_BEACON).origin}`,
+    `connect-src 'self' ${new URL(TRAFFIC_COUNTER_REPORTS).origin}`,
     "img-src 'self' data:",
     "font-src 'self'",
     "base-uri 'self'",

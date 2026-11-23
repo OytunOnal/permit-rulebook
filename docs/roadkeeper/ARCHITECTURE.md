@@ -225,8 +225,15 @@ click on the tracker link. Answers never leave the device.
   error check of its own. Only the walk's own error cases and smoke expect
   errors: the lint refuses `errorsExpected` in any other test, and smoke
   words each page's errors from the walk's one list, failing on an error it
-  cannot place or one past the 100. The walk's log drops exactly the
-  traffic counter's two local CORS lines (#353). Beside it the entry
+  cannot place or one past the 100. No walk loads the traffic counter from
+  Cloudflare: every tab answers the counter's script and reports inside the
+  browser, with an empty script by default, or, for the walks that check
+  what the counter sends, the committed copy of Cloudflare's script under
+  `tests/traffic-counter/` (the walk's `trafficCounter` option, explained on
+  `Walk` in `walk-site.mjs`), refreshed by hand with
+  `npm run traffic-counter:refresh` (#441). Any other request to another
+  origin, from the page or from a tab or worker it opens, is refused and
+  fails the walk, naming its address (#442). Beside it the entry
   offers `chromePath` and `serve`, kept for the server's own HTTP tests
   (#245): `serve` serves only what is inside its folder, so an escaped `../`
   or a link leading out is not found and a path it cannot decode is a bad

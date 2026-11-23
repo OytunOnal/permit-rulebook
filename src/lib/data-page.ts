@@ -6,11 +6,11 @@ import {
 import { esc, escAttr } from "./reason.js";
 import { framedPageHtml } from "./frame/framed-page.js";
 import {
-  ANALYTICS_NOTE, CHECKS_HEADING, COUNTRIES_JSON_LINK, DAILY_CHECK_CLAIM, DATASET_VERSION, DATA_HEADLINE,
+  CHECKS_HEADING, COUNTRIES_JSON_LINK, DAILY_CHECK_CLAIM, DATASET_VERSION, DATA_HEADLINE,
   DATA_LEDE_CLOSE_TAIL, DATA_PAGE_TITLE, DOWNLOADS_LABEL, FRESHNESS_HUMAN_HAND, GATES_LEAD, HOLDS_HEADING,
   LAST_CHECKED, NEWEST_VALUE_CHANGED, PROSE_OURS_TAIL, PROSE_PROVENANCE, QUOTED_VALUES, QUOTE_FIDELITY,
   QUOTE_FIDELITY_LINE, ROUTES_TERM, SCHEMA_VALIDATION, SCHEMA_VALIDATION_LINE, SCHEMA_VERSION, SENTENCES_OF_OURS,
-  SERVED_ON_ITS_OWN, STATUS_ALIAS_LEDE, STATUS_ALIAS_TITLE, TAKE_HEADING, TRANSLATION_POLICY, WATCH_COVERAGE,
+  SERVED_ON_ITS_OWN, STATUS_ALIAS_LEDE, STATUS_ALIAS_TITLE, TAKE_HEADING, TRAFFIC_COUNTER_NOTE, TRANSLATION_POLICY, WATCH_COVERAGE,
   WATCH_COVERAGE_LINE, WHOLE_DATASET_AS_JSON, countryAsJsonLabel, dataLedeClose, dataLedeOpen, dataMetaDescription,
   movedHeadingHtml, proseProvenanceCounts, proseProvenanceLine, quotedValuesCount, routesCount,
   statusAliasDescription,
@@ -170,7 +170,7 @@ function checksSectionHtml(context: DataPageContext): string {
         <li><b>${esc(PROSE_PROVENANCE)}</b> — ${
     esc(proseProvenanceLine(proseProvenanceCounts(prose.with_provenance, prose.ours, prose.declared_unsourced)))}</li>
       </ul>
-      <p class="lede">${esc(ANALYTICS_NOTE)}</p>
+      <p class="lede">${esc(TRAFFIC_COUNTER_NOTE)}</p>
       <p class="lede">${esc(TRANSLATION_POLICY)}</p>
       <p class="lede">${dailyCheckHtml(facts.watchRun)}</p>
     </section>`;

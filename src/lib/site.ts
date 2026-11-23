@@ -149,13 +149,13 @@ export const SPONSOR_URL = "https://github.com/sponsors/OytunOnal";
  * site id that identifies the site to Cloudflare, not a secret: it ships inside
  * the page, as Cloudflare's own snippet does.
  */
-export const ANALYTICS_TOKEN = "50d203a6cbed4e3a84ba3629843d6ac9";
+export const TRAFFIC_COUNTER_TOKEN = "50d203a6cbed4e3a84ba3629843d6ac9";
 
 /** Where the beacon comes from, named once so a test can allow exactly it. */
-export const ANALYTICS_SCRIPT = "https://static.cloudflareinsights.com/beacon.min.js";
+export const TRAFFIC_COUNTER_SCRIPT = "https://static.cloudflareinsights.com/beacon.min.js";
 
 /** Where the beacon reports to — the one other address this site talks to. */
-export const ANALYTICS_BEACON = "https://cloudflareinsights.com/cdn-cgi/rum";
+export const TRAFFIC_COUNTER_REPORTS = "https://cloudflareinsights.com/cdn-cgi/rum";
 
 /**
  * The counter, exactly as Cloudflare issued it. One source, every page: a page
@@ -174,9 +174,9 @@ export const ANALYTICS_BEACON = "https://cloudflareinsights.com/cdn-cgi/rum";
  * late and the smoke check found no question on the screen (2026-09-08). A
  * traffic counter may never be in front of the product.
  */
-export const analyticsBeacon = (): string =>
-  `<script type="module" src="${escAttr(ANALYTICS_SCRIPT)}" data-cf-beacon='${
-    escAttr(JSON.stringify({ token: ANALYTICS_TOKEN, spa: false }))}'></script>`;
+export const renderTrafficCounterTag = (): string =>
+  `<script type="module" src="${escAttr(TRAFFIC_COUNTER_SCRIPT)}" data-cf-beacon='${
+    escAttr(JSON.stringify({ token: TRAFFIC_COUNTER_TOKEN, spa: false }))}'></script>`;
 
 /** The dataset licence, linked rather than stated as unlinked text (the mock's
  * P4: a door with no handle). */

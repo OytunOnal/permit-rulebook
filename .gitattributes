@@ -17,3 +17,7 @@ docs/roadkeeper/structure.json text eol=lf
 # sets the `ours` driver once with `git config merge.ours.driver true`
 # (CODING_STANDARDS.md, Structure).
 docs/roadkeeper/structure.json merge=ours
+
+# The copy of Cloudflare's traffic counter keeps the bytes it was fetched
+# with, so the walks run Cloudflare's script as Cloudflare serves it.
+tests/traffic-counter/beacon.min.js -text

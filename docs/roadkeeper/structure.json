@@ -16,11 +16,7 @@
     "scripts/browser/connection/devtools-connection.mjs",
     "scripts/browser/exit-register/owned.mjs",
     "scripts/browser/static-server/html-in-pieces.mjs",
-    "scripts/browser/static-server/static-server.mjs",
-    "scripts/browser/walk/open-browser.mjs",
-    "scripts/browser/walk/screens.mjs",
-    "scripts/browser/walk/walk-log.mjs",
-    "scripts/browser/walk/walk-site.mjs"
+    "scripts/browser/static-server/static-server.mjs"
    ]
   },
   {
@@ -32,12 +28,29 @@
     }
    ],
    "files": [
+    "scripts/browser/tab/answered-requests/answered-requests.mjs",
     "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs",
     "scripts/browser/tab/open-tab.mjs",
     "scripts/browser/tab/page/tab-events.mjs",
     "scripts/browser/tab/page/tab-gestures.mjs",
     "scripts/browser/tab/page/tab-page.mjs",
     "scripts/browser/tab/page/tab-waits.mjs"
+   ]
+  },
+  {
+   "path": "scripts/browser/walk",
+   "entries": [
+    {
+     "file": "scripts/browser/walk/walk-site.mjs",
+     "level": "infrastructure"
+    }
+   ],
+   "files": [
+    "scripts/browser/walk/open-browser/open-browser.mjs",
+    "scripts/browser/walk/screens/screens.mjs",
+    "scripts/browser/walk/traffic-counter/traffic-counter.mjs",
+    "scripts/browser/walk/walk-log/walk-log.mjs",
+    "scripts/browser/walk/walk-site.mjs"
    ]
   },
   {
@@ -256,15 +269,17 @@
   "scripts/browser/exit-register/owned.mjs": "infrastructure",
   "scripts/browser/static-server/html-in-pieces.mjs": "infrastructure",
   "scripts/browser/static-server/static-server.mjs": "infrastructure",
+  "scripts/browser/tab/answered-requests/answered-requests.mjs": "infrastructure",
   "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs": "infrastructure",
   "scripts/browser/tab/open-tab.mjs": "infrastructure",
   "scripts/browser/tab/page/tab-events.mjs": "infrastructure",
   "scripts/browser/tab/page/tab-gestures.mjs": "infrastructure",
   "scripts/browser/tab/page/tab-page.mjs": "infrastructure",
   "scripts/browser/tab/page/tab-waits.mjs": "infrastructure",
-  "scripts/browser/walk/open-browser.mjs": "infrastructure",
-  "scripts/browser/walk/screens.mjs": "infrastructure",
-  "scripts/browser/walk/walk-log.mjs": "infrastructure",
+  "scripts/browser/walk/open-browser/open-browser.mjs": "infrastructure",
+  "scripts/browser/walk/screens/screens.mjs": "infrastructure",
+  "scripts/browser/walk/traffic-counter/traffic-counter.mjs": "infrastructure",
+  "scripts/browser/walk/walk-log/walk-log.mjs": "infrastructure",
   "scripts/browser/walk/walk-site.mjs": "infrastructure",
   "scripts/build-directory-on-disk.mjs": "infrastructure",
   "scripts/carry-assets.mjs": "main",
@@ -283,6 +298,7 @@
   "scripts/cli-data-pin.mjs": "presentation",
   "scripts/cli-deploy-finding.mjs": "presentation",
   "scripts/cli-measure-taps.mjs": "presentation",
+  "scripts/cli-refresh-traffic-counter-copy.mjs": "presentation",
   "scripts/cli-render-assets.mjs": "presentation",
   "scripts/cli-shot.mjs": "presentation",
   "scripts/cli-smoke.mjs": "presentation",
@@ -299,11 +315,13 @@
   "scripts/main-data-check.mjs": "main",
   "scripts/main-data-pin.mjs": "main",
   "scripts/main-measure-taps.mjs": "main",
+  "scripts/main-refresh-traffic-counter-copy.mjs": "main",
   "scripts/main-render-assets.mjs": "main",
   "scripts/main-shot.mjs": "main",
   "scripts/main-smoke.mjs": "main",
   "scripts/measure-taps.mjs": "infrastructure",
   "scripts/print-report.mjs": "presentation",
+  "scripts/refresh-traffic-counter-copy.mjs": "infrastructure",
   "scripts/render-assets.mjs": "infrastructure",
   "scripts/required-controls.mjs": "domain",
   "scripts/run-git.mjs": "infrastructure",
@@ -465,16 +483,6 @@
   },
   {
    "from": "scripts/browser/browser.mjs",
-   "to": "scripts/browser/walk/screens.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/browser/browser.mjs",
-   "to": "scripts/browser/walk/walk-log.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/browser/browser.mjs",
    "to": "scripts/browser/walk/walk-site.mjs",
    "kind": "dependency"
   },
@@ -505,6 +513,11 @@
   },
   {
    "from": "scripts/browser/tab/open-tab.mjs",
+   "to": "scripts/browser/tab/answered-requests/answered-requests.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/tab/open-tab.mjs",
    "to": "scripts/browser/tab/page/tab-events.mjs",
    "kind": "dependency"
   },
@@ -529,28 +542,33 @@
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/walk/open-browser.mjs",
+   "from": "scripts/browser/walk/open-browser/open-browser.mjs",
    "to": "scripts/browser/chrome/chrome-launch.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/walk/open-browser.mjs",
+   "from": "scripts/browser/walk/open-browser/open-browser.mjs",
    "to": "scripts/browser/connection/devtools-connection.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/walk/open-browser.mjs",
+   "from": "scripts/browser/walk/open-browser/open-browser.mjs",
    "to": "scripts/browser/exit-register/owned.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/walk/open-browser.mjs",
+   "from": "scripts/browser/walk/open-browser/open-browser.mjs",
    "to": "scripts/browser/tab/open-tab.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/walk/open-browser.mjs",
-   "to": "scripts/browser/walk/walk-log.mjs",
+   "from": "scripts/browser/walk/open-browser/open-browser.mjs",
+   "to": "scripts/browser/walk/traffic-counter/traffic-counter.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/open-browser/open-browser.mjs",
+   "to": "scripts/browser/walk/walk-log/walk-log.mjs",
    "kind": "dependency"
   },
   {
@@ -560,7 +578,22 @@
   },
   {
    "from": "scripts/browser/walk/walk-site.mjs",
-   "to": "scripts/browser/walk/open-browser.mjs",
+   "to": "scripts/browser/walk/open-browser/open-browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/walk-site.mjs",
+   "to": "scripts/browser/walk/screens/screens.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/walk-site.mjs",
+   "to": "scripts/browser/walk/traffic-counter/traffic-counter.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/walk-site.mjs",
+   "to": "scripts/browser/walk/walk-log/walk-log.mjs",
    "kind": "dependency"
   },
   {
@@ -804,6 +837,21 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/main-refresh-traffic-counter-copy.mjs",
+   "to": "scripts/cli-refresh-traffic-counter-copy.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-refresh-traffic-counter-copy.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-refresh-traffic-counter-copy.mjs",
+   "to": "scripts/refresh-traffic-counter-copy.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/main-render-assets.mjs",
    "to": "scripts/cli-render-assets.mjs",
    "kind": "dependency"
@@ -881,6 +929,16 @@
   {
    "from": "scripts/measure-taps.mjs",
    "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/refresh-traffic-counter-copy.mjs",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/refresh-traffic-counter-copy.mjs",
+   "to": "scripts/live-site-over-http.mjs",
    "kind": "dependency"
   },
   {
@@ -6490,6 +6548,11 @@
   },
   {
    "from": "tests/walk-site.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/walk-site.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
@@ -6516,7 +6579,7 @@
   {
    "from": "tests/wire.ts",
    "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
    "from": "vitest.config.ts",
@@ -6536,6 +6599,73 @@
     "name": "setUpTab",
     "kind": "fn",
     "exported": false
+   }
+  ],
+  "scripts/browser/walk/walk-site.mjs": [
+   {
+    "name": "WALK_DEFAULTS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "LAID_OUT_WIDTH",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "openSite",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "WidthFailure",
+    "kind": "class",
+    "exported": true
+   },
+   {
+    "name": "widthCheckOn",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "checkingWidthOnDraw",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "errorReport",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "failOnErrors",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "addTheWalksErrors",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "returnedBy",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "measuredAtTheEnd",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "walkInBrowser",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "walkSite",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "scripts/carry-assets/carry.mjs": [
@@ -7433,6 +7563,13 @@
     "exported": true
    }
   ],
+  "scripts/cli-refresh-traffic-counter-copy.mjs": [
+   {
+    "name": "reportTheRefresh",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/cli-render-assets.mjs": [
    {
     "name": "assetsAskedBy",
@@ -7770,6 +7907,18 @@
     "exported": false
    }
   ],
+  "scripts/main-refresh-traffic-counter-copy.mjs": [
+   {
+    "name": "today",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "report",
+    "kind": "const",
+    "exported": false
+   }
+  ],
   "scripts/main-render-assets.mjs": [
    {
     "name": "asked",
@@ -7886,6 +8035,38 @@
   "scripts/print-report.mjs": [
    {
     "name": "printReport",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/refresh-traffic-counter-copy.mjs": [
+   {
+    "name": "COPY_NOTE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "FETCHED_ON_LINE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "BYTE_CEILING",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "TIMEOUT_MS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "whyNotAScript",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "refreshTrafficCounterCopy",
     "kind": "fn",
     "exported": true
    }
@@ -8496,7 +8677,7 @@
     "exported": true
    },
    {
-    "name": "ANALYTICS_NOTE",
+    "name": "TRAFFIC_COUNTER_NOTE",
     "kind": "const",
     "exported": true
    },
@@ -10834,22 +11015,22 @@
     "exported": true
    },
    {
-    "name": "ANALYTICS_TOKEN",
+    "name": "TRAFFIC_COUNTER_TOKEN",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "ANALYTICS_SCRIPT",
+    "name": "TRAFFIC_COUNTER_SCRIPT",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "ANALYTICS_BEACON",
+    "name": "TRAFFIC_COUNTER_REPORTS",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "analyticsBeacon",
+    "name": "renderTrafficCounterTag",
     "kind": "fn",
     "exported": true
    },
@@ -11232,6 +11413,7 @@
   "scripts/cli-data-pin.mjs",
   "scripts/cli-deploy-finding.mjs",
   "scripts/cli-measure-taps.mjs",
+  "scripts/cli-refresh-traffic-counter-copy.mjs",
   "scripts/cli-render-assets.mjs",
   "scripts/cli-shot.mjs",
   "scripts/cli-smoke.mjs",
@@ -11248,11 +11430,13 @@
   "scripts/main-data-check.mjs",
   "scripts/main-data-pin.mjs",
   "scripts/main-measure-taps.mjs",
+  "scripts/main-refresh-traffic-counter-copy.mjs",
   "scripts/main-render-assets.mjs",
   "scripts/main-shot.mjs",
   "scripts/main-smoke.mjs",
   "scripts/measure-taps.mjs",
   "scripts/print-report.mjs",
+  "scripts/refresh-traffic-counter-copy.mjs",
   "scripts/render-assets.mjs",
   "scripts/required-controls.mjs",
   "scripts/run-git.mjs",
@@ -11309,5 +11493,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "21c82331184c33dbbdcbf1253f07d452b2f7cc3d845d6bdc245d3923a3d45b99"
+ "digest": "33c5bafcc5ffbeea29e299a577e84bcf73df4d29516798147e3e45dd2c8f684d"
 }

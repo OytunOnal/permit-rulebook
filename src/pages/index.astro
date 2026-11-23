@@ -33,7 +33,7 @@ import {
 } from "../lib/copy/frame.js";
 import { START_OVER, YOU_DECLARED, declarationCount } from "../lib/copy/interview.js";
 import { reckonDatasetFacts } from "../lib/dataset-facts/reckon-dataset-facts.js";
-import { analyticsBeacon, headMeta, watchState } from "../lib/site.js";
+import { headMeta, renderTrafficCounterTag, watchState } from "../lib/site.js";
 
 // Boundary validation: an invalid dataset must kill the build, loudly.
 const dataset = assertValidDataset(rawDataset);
@@ -165,6 +165,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     startInterview({ browserHistory: browserHistoryOf(window), store });
   </script>
-  <Fragment set:html={analyticsBeacon()} />
+  <Fragment set:html={renderTrafficCounterTag()} />
 </body>
 </html>
