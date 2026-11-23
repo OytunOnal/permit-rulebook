@@ -14,6 +14,17 @@ export function parseLock(text) {
   return { sha: value("sha"), datasetVersion: value("dataset_version") };
 }
 
+/**
+ * The lock's one sha, checked: it refuses a lock whose `sha=` lines are not
+ * exactly one, naming a full commit sha as it stands, since a second line
+ * would hand on a second value.
+ */
+export function lockedShaOf(text) {
+  const shas = [...text.matchAll(/^sha=(.*)$/gm)].map((match) => match[1]);
+  if (shas.length !== 1 || !FULL_SHA.test(shas[0])) throw new Error("the lock names no single 40-hex sha: run npm run data:pin and commit it");
+  return shas[0];
+}
+
 /** `lockText` with its `sha=` line naming `sha` and its `dataset_version=` line naming `datasetVersion`; every other line kept. */
 export function pinnedLockTextOf(lockText, { sha, datasetVersion }) {
   return lockText

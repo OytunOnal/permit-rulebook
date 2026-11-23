@@ -84,7 +84,9 @@
     "scripts/data-lock/data-lock.mjs",
     "scripts/data-lock/disk/clone-questions.mjs",
     "scripts/data-lock/disk/data-clone.mjs",
+    "scripts/data-lock/disk/data-master.mjs",
     "scripts/data-lock/disk/lock-file.mjs",
+    "scripts/data-lock/rules/data-commit.mjs",
     "scripts/data-lock/rules/lock-text.mjs",
     "scripts/data-lock/rules/shortfall.mjs"
    ]
@@ -100,6 +102,8 @@
    "files": [
     "scripts/data-lock-run/check/cli-data-check.mjs",
     "scripts/data-lock-run/check/run-check.mjs",
+    "scripts/data-lock-run/choose-commit/cli-choose-commit.mjs",
+    "scripts/data-lock-run/choose-commit/run-choose-commit.mjs",
     "scripts/data-lock-run/data-lock-run.mjs",
     "scripts/data-lock-run/pin/cli-data-pin.mjs",
     "scripts/data-lock-run/pin/run-pin.mjs"
@@ -335,13 +339,17 @@
   "scripts/cli-smoke.mjs": "presentation",
   "scripts/data-lock-run/check/cli-data-check.mjs": "presentation",
   "scripts/data-lock-run/check/run-check.mjs": "main",
+  "scripts/data-lock-run/choose-commit/cli-choose-commit.mjs": "presentation",
+  "scripts/data-lock-run/choose-commit/run-choose-commit.mjs": "main",
   "scripts/data-lock-run/data-lock-run.mjs": "main",
   "scripts/data-lock-run/pin/cli-data-pin.mjs": "presentation",
   "scripts/data-lock-run/pin/run-pin.mjs": "main",
   "scripts/data-lock/data-lock.mjs": "infrastructure",
   "scripts/data-lock/disk/clone-questions.mjs": "infrastructure",
   "scripts/data-lock/disk/data-clone.mjs": "infrastructure",
+  "scripts/data-lock/disk/data-master.mjs": "infrastructure",
   "scripts/data-lock/disk/lock-file.mjs": "infrastructure",
+  "scripts/data-lock/rules/data-commit.mjs": "domain",
   "scripts/data-lock/rules/lock-text.mjs": "domain",
   "scripts/data-lock/rules/shortfall.mjs": "domain",
   "scripts/decode-png-size.mjs": "domain",
@@ -790,8 +798,23 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/data-lock-run/choose-commit/run-choose-commit.mjs",
+   "to": "scripts/data-lock-run/choose-commit/cli-choose-commit.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/choose-commit/run-choose-commit.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/data-lock-run/data-lock-run.mjs",
    "to": "scripts/data-lock-run/check/run-check.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/choose-commit/run-choose-commit.mjs",
    "kind": "dependency"
   },
   {
@@ -831,7 +854,17 @@
   },
   {
    "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/disk/data-master.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
    "to": "scripts/data-lock/disk/lock-file.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/rules/data-commit.mjs",
    "kind": "dependency"
   },
   {
@@ -852,6 +885,16 @@
   {
    "from": "scripts/data-lock/disk/data-clone.mjs",
    "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/disk/data-master.mjs",
+   "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/rules/data-commit.mjs",
+   "to": "scripts/data-lock/rules/lock-text.mjs",
    "kind": "dependency"
   },
   {
@@ -6800,6 +6843,11 @@
     "exported": true
    },
    {
+    "name": "chooseDataCommit",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "cloneShortfallOf",
     "kind": "fn",
     "exported": true
@@ -6818,6 +6866,11 @@
    },
    {
     "name": "isProcessScript",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "writeStepOutputs",
     "kind": "fn",
     "exported": false
    },
@@ -11457,5 +11510,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "109018454d29865e4352f1956b14062daa02bd0f63946e395cc71117cfa1c44b"
+ "digest": "482051c2dd4161778906470312e0b525273ca5a8160dd7ca2c552a7d8f125a43"
 }

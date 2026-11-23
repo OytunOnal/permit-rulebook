@@ -7,8 +7,11 @@ import { readLock } from "../scripts/data-lock/data-lock.mjs";
 import { readAssetNames } from "../scripts/carry-assets/carry.mjs";
 import { LF } from "./throwaway-folder.js";
 import {
-  checkoutRefOf, jobConditionOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepsOf, workflowPaths,
+  checkoutRefOf, jobConditionOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepRunLineOf, stepsOf, workflowPaths,
 } from "./workflow-text.js";
+
+/** Whether a step's one-line `run:` runs the lock's run module. */
+const runsRunModule = (step: string): boolean => /\bscripts\/data-lock-run\/data-lock-run\.mjs\b/.test(stepRunLineOf(step));
 
 /**
  * The pipeline's own security and the data it builds against (Spine
@@ -91,17 +94,37 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
     expect(run.status, `${run.stdout}${run.stderr}`).toBe(0);
   }, 60000);
 
-  it("the workflow builds a push against the lock, and the daily runs against the newest", () => {
-    expect(pages).toContain("locked=$(sed -n 's/^sha=//p' data.lock)");
+  // Which commit each event and attempt builds, and every refusal, is the run
+  // module's, run as a process by `tests/data-commit.test.ts`; here, that the
+  // step runs exactly that and nothing beside it in shell.
+  it("data-commit chooses the data commit with the run module's choose-commit alone", () => {
+    const choosing = stepsOf(jobOf(pages, "data-commit")).filter((step) => /^ {8}id: data$/m.test(step));
+    expect(choosing, "data-commit has no step, or more than one, with id: data").toHaveLength(1);
+    expect(stepRunLineOf(choosing[0]!)).toBe("node scripts/data-lock-run/data-lock-run.mjs choose-commit");
     expect(pages).toContain("ref: ${{ needs.data-commit.outputs.sha }}");
     // The payload is a stranger's string: it arrives through the environment,
-    // never interpolated into the script body, and is checked for 40 hex
-    // characters before anything is checked out (Security review, 2026-09-08).
+    // never interpolated into a step's body, and the run module checks it for
+    // 40 hex characters before anything is checked out (Security review,
+    // 2026-09-08).
     expect(pages.match(/client_payload/g), "the payload is read anywhere but the step's environment")
       .toEqual(["client_payload"]);
-    expect(pages).toContain("PAYLOAD_SHA: ${{ github.event.client_payload.sha }}");
-    expect(pages).toContain('repository_dispatch:yes) sha="$PAYLOAD_SHA"');
-    expect(pages).toContain("refusing to check anything out");
+    expect(choosing[0]).toContain("PAYLOAD_SHA: ${{ github.event.client_payload.sha }}");
+  });
+
+  // The run module runs on the node the suite runs on, set up by the one
+  // pinned commit every job uses.
+  it("every job that runs the run module sets up node 22 first, at the workflow's one pinned setup-node", () => {
+    const setupNodes = new Set([...pages.matchAll(/uses: (actions\/setup-node@\S+)/g)].map((match) => match[1]));
+    expect(setupNodes.size, "the workflow's jobs set up node from more than one pinned commit, or none").toBe(1);
+    const runningJobs = jobNamesOf(pages).filter((name) => stepsOf(jobOf(pages, name)).some(runsRunModule));
+    expect(runningJobs, "no job runs the run module").toContain("data-commit");
+    for (const name of runningJobs) {
+      const steps = stepsOf(jobOf(pages, name));
+      const setup = steps.findIndex((step) => step.startsWith("uses: actions/setup-node@"));
+      expect(setup, `${name} sets up no node`).toBeGreaterThanOrEqual(0);
+      expect(steps[setup], `${name} sets up a node other than 22`).toMatch(/^ {8}with: \{ node-version: 22 \}$/m);
+      expect(setup, `${name} runs the run module before it sets up node`).toBeLessThan(steps.findIndex(runsRunModule));
+    }
   });
 
   /**
@@ -111,11 +134,9 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
    * 2026-09-08).
    */
   it("only a first attempt of the two newest-data triggers may advance the lock", () => {
-    // data-commit's choice of the data commit reads the attempt.
+    // data-commit's choice of the data commit reads the attempt; what it
+    // makes of it is the run module's, run by `tests/data-commit.test.ts`.
     expect(pages).toContain("RUN_ATTEMPT: ${{ github.run_attempt }}");
-    expect(pages).toContain('first_attempt=$([ "$RUN_ATTEMPT" = "1" ] && echo yes || echo no)');
-    expect(pages).toContain('case "$EVENT_NAME:$first_attempt" in');
-    expect(pages).toContain("schedule:yes)");
     // And so does the job that writes it back.
     const job = (name: string) => pages.slice(pages.indexOf(`${LF}  ${name}:`));
     const pin = job("pin").slice(0, job("pin").indexOf(`${LF}  deploy:`));

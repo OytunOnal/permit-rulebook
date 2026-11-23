@@ -8,16 +8,17 @@ import { runGit } from "../scripts/run-git.mjs";
 import { posixShellPath } from "./posix-shell.js";
 import { LF, commitInThrowaway, inThrowawayFolder, initThrowawayRepository } from "./throwaway-folder.js";
 import {
-  checkoutRefOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepScriptOf, stepsOf,
+  checkoutRefOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepRunLineOf, stepScriptOf, stepsOf,
 } from "./workflow-text.js";
 
 /**
  * Which data commit a run builds is chosen once, in `data-commit`, and handed
  * on as one 40-hex sha: `data-check` runs the data package's whole check at
  * it, beside `build`, which builds the site against it (rulings 13 and 14 on
- * #343). The choice is the workflow's own shell, run here on throwaway
- * folders as the runner would; where each job reads it is read from the text,
- * a workflow being a file no test can run.
+ * #343). The choice is the run module's `choose-commit`, run here as the
+ * step's own line runs it, a process in a throwaway site folder; the build's
+ * step is still its own shell, run as the runner would. Where each job reads
+ * the choice is read from the text, a workflow being a file no test can run.
  */
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -38,8 +39,11 @@ function choosingStep(): string {
   return steps[0]!;
 }
 
-/** What one run of a step's script wrote to the run's outputs, and how it ended. */
-interface StepRun { exitCode: number | null; outputLines: string[] }
+/** What one run of a step wrote to the run's outputs, and how it ended. */
+interface StepRun { exitCode: number | null; outputLines: string[]; printed: string }
+
+/** The lines a step's run wrote to the outputs file at `outputFile`. */
+const outputLinesOf = (outputFile: string): string[] => readFileSync(outputFile, "utf8").split(LF).filter((line) => line !== "");
 
 /** A step's script run in `folder` as the runner runs it (`bash -e`), under `env`, its outputs file beside it. */
 function runStepScript(step: string, folder: string, env: Record<string, string>): StepRun {
@@ -50,22 +54,40 @@ function runStepScript(step: string, folder: string, env: Record<string, string>
     env: { ...process.env, ...env, GITHUB_OUTPUT: outputFile.split("\\").join("/") },
     encoding: "utf8",
   });
-  return { exitCode: run.status, outputLines: readFileSync(outputFile, "utf8").split(LF).filter((line) => line !== "") };
+  return { exitCode: run.status, outputLines: outputLinesOf(outputFile), printed: `${run.stdout}${run.stderr}` };
+}
+
+/**
+ * A step's one-line `run:` run as a process in `folder`, as the runner runs
+ * it from the site's checkout: node on the site's own file the line names,
+ * with the line's arguments, under `env`, its outputs file beside it.
+ */
+function runStepCommand(step: string, folder: string, env: Record<string, string>): StepRun {
+  const [program, script, ...args] = stepRunLineOf(step).split(" ");
+  expect(program, `the step runs no node command: ${step}`).toBe("node");
+  const outputFile = `${folder}.github-output`;
+  writeFileSync(outputFile, "");
+  const run = spawnSync(process.execPath, [join(root, script!), ...args], {
+    cwd: folder,
+    env: { ...process.env, ...env, GITHUB_OUTPUT: outputFile },
+    encoding: "utf8",
+  });
+  return { exitCode: run.status, outputLines: outputLinesOf(outputFile), printed: `${run.stdout}${run.stderr}` };
 }
 
 /** The site's files the choice reads, each the repository's own unless a case hands its own. */
 interface SiteFiles { lock?: string; manifest?: string }
 
-/** The choice's script run in a site folder of `folder` made of `site`, under `env` as the step's environment. */
+/** The choosing step run in a site folder of `folder` made of `site`, under `env` as the step's environment. */
 function runChoice(folder: string, env: Record<string, string>, site: SiteFiles = {}): StepRun {
   const siteFolder = join(folder, "site");
   mkdirSync(siteFolder);
   writeFileSync(join(siteFolder, "data.lock"), site.lock ?? lockText);
   writeFileSync(join(siteFolder, "package.json"), site.manifest ?? manifestText);
-  return runStepScript(choosingStep(), siteFolder, { RUN_ATTEMPT: "1", PAYLOAD_SHA: "", ...env });
+  return runStepCommand(choosingStep(), siteFolder, { RUN_ATTEMPT: "1", PAYLOAD_SHA: "", ...env });
 }
 
-describe.skipIf(!posixShellPath)("the data commit is chosen once, by data-commit's own shell", () => {
+describe("the data commit is chosen once, by the run module's choose-commit", () => {
   it("the step that chooses it is in data-commit", () => {
     expect(stepsOf(jobOf(pages, "data-commit"))).toContain(choosingStep());
   });
@@ -74,17 +96,17 @@ describe.skipIf(!posixShellPath)("the data commit is chosen once, by data-commit
     ["push", "1"], ["pull_request", "1"], ["workflow_dispatch", "1"], ["schedule", "2"], ["repository_dispatch", "2"],
   ])("a %s run, attempt %s, hands on the lock's commit", async (event, attempt) => {
     await inThrowawayFolder((folder) => {
-      const { exitCode, outputLines } = runChoice(folder, { EVENT_NAME: event, RUN_ATTEMPT: attempt, PAYLOAD_SHA: PAYLOAD });
-      expect(exitCode).toBe(0);
+      const { exitCode, outputLines, printed } = runChoice(folder, { EVENT_NAME: event, RUN_ATTEMPT: attempt, PAYLOAD_SHA: PAYLOAD });
+      expect(exitCode, printed).toBe(0);
       expect(outputLines).toEqual(["dir=permit-rulebook-data", `locked=${LOCKED}`, `sha=${LOCKED}`]);
     });
   });
 
   it("a dispatch's first attempt hands on its payload's commit", async () => {
     await inThrowawayFolder((folder) => {
-      const { exitCode, outputLines } = runChoice(folder, { EVENT_NAME: "repository_dispatch", PAYLOAD_SHA: PAYLOAD });
-      expect(exitCode).toBe(0);
-      expect(outputLines).toContain(`sha=${PAYLOAD}`);
+      const { exitCode, outputLines, printed } = runChoice(folder, { EVENT_NAME: "repository_dispatch", PAYLOAD_SHA: PAYLOAD });
+      expect(exitCode, printed).toBe(0);
+      expect(outputLines).toEqual(["dir=permit-rulebook-data", `locked=${LOCKED}`, `sha=${PAYLOAD}`]);
     });
   });
 
@@ -96,11 +118,9 @@ describe.skipIf(!posixShellPath)("the data commit is chosen once, by data-commit
       initThrowawayRepository(dataRepository);
       commitInThrowaway(dataRepository, "--allow-empty", "-m", "the newest data");
       const newest = runGit(dataRepository, "rev-parse", "HEAD");
-      const { exitCode, outputLines } = runChoice(folder, {
-        EVENT_NAME: "schedule", DATA_REPOSITORY_URL: dataRepository.split("\\").join("/"),
-      });
-      expect(exitCode).toBe(0);
-      expect(outputLines).toContain(`sha=${newest}`);
+      const { exitCode, outputLines, printed } = runChoice(folder, { EVENT_NAME: "schedule", DATA_REPOSITORY_URL: dataRepository });
+      expect(exitCode, printed).toBe(0);
+      expect(outputLines).toEqual(["dir=permit-rulebook-data", `locked=${LOCKED}`, `sha=${newest}`]);
     });
   });
 });
@@ -111,7 +131,7 @@ describe.skipIf(!posixShellPath)("the data commit is chosen once, by data-commit
  * would be a second output. Each is checked for its shape first, on every
  * event (review of #345, Security 1).
  */
-describe.skipIf(!posixShellPath)("the choice writes nothing it has not checked", () => {
+describe("the choice writes nothing it has not checked", () => {
   const twoLineLock = `sha=${LOCKED}${LF}sha=dir=../elsewhere${LF}`;
   it.each([
     ...["push", "pull_request", "schedule", "repository_dispatch"].map((event) => [event, "not 40 hex", "sha=main\n"]),
