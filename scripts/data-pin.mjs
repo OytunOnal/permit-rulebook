@@ -1,4 +1,4 @@
-// @level infrastructure
+// @level domain infrastructure
 /**
  * Write the data clone's HEAD into `data.lock`.
  *

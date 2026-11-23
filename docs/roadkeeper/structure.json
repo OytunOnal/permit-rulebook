@@ -45,7 +45,7 @@
    "entries": [
     {
      "file": "scripts/carry-assets/carry.mjs",
-     "level": "application"
+     "level": "application presentation"
     }
    ],
    "files": [
@@ -268,14 +268,14 @@
   "scripts/browser/walk/walk-site.mjs": "infrastructure",
   "scripts/build-directory-on-disk.mjs": "infrastructure",
   "scripts/carry-assets.mjs": "main",
-  "scripts/carry-assets/carry.mjs": "application",
+  "scripts/carry-assets/carry.mjs": "application presentation",
   "scripts/carry-assets/generation/asset-names.mjs": "domain",
   "scripts/carry-assets/generation/digest-list.mjs": "domain",
   "scripts/carry-assets/live-deploy/attested-assets.mjs": "application",
   "scripts/carry-assets/live-deploy/ceilings.mjs": "domain",
   "scripts/carry-assets/live-deploy/live-digests.mjs": "application",
   "scripts/carry-assets/live-deploy/live-page.mjs": "application",
-  "scripts/carry-assets/outcome/outcome-lines.mjs": "domain",
+  "scripts/carry-assets/outcome/outcome-lines.mjs": "domain presentation",
   "scripts/check-base.mjs": "infrastructure",
   "scripts/child-env.mjs": "infrastructure",
   "scripts/cli-check-base.mjs": "presentation",
@@ -286,10 +286,10 @@
   "scripts/cli-render-assets.mjs": "presentation",
   "scripts/cli-shot.mjs": "presentation",
   "scripts/cli-smoke.mjs": "presentation",
-  "scripts/clone-shortfall.mjs": "infrastructure",
-  "scripts/data-pin.mjs": "infrastructure",
+  "scripts/clone-shortfall.mjs": "domain infrastructure",
+  "scripts/data-pin.mjs": "domain infrastructure",
   "scripts/decode-png-size.mjs": "domain",
-  "scripts/deploy-finding.mjs": "domain",
+  "scripts/deploy-finding.mjs": "domain presentation",
   "scripts/dev-server.mjs": "infrastructure",
   "scripts/find-on-path.mjs": "infrastructure",
   "scripts/find-option-value.mjs": "presentation",
@@ -310,7 +310,7 @@
   "scripts/seeded-results.mjs": "domain",
   "scripts/shot.mjs": "infrastructure",
   "scripts/site-base.mjs": "infrastructure",
-  "scripts/smoke.mjs": "infrastructure",
+  "scripts/smoke.mjs": "infrastructure presentation",
   "src/lib/arrival-line.ts": "presentation",
   "src/lib/breakpoint-widths.ts": "presentation",
   "src/lib/browser-history.ts": "infrastructure",
@@ -421,7 +421,7 @@
   "src/pages/data.astro": "presentation",
   "src/pages/dataset.json.ts": "presentation",
   "src/pages/feedback.astro": "presentation",
-  "src/pages/index.astro": "main",
+  "src/pages/index.astro": "presentation main",
   "src/pages/robots.txt.ts": "presentation",
   "src/pages/sitemap.xml.ts": "presentation",
   "src/pages/status.astro": "presentation",
@@ -11309,5 +11309,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "3972df66055a22dd5b321d07b7d714c312be54232933d862d86b9affad69a1da"
+ "digest": "21c82331184c33dbbdcbf1253f07d452b2f7cc3d845d6bdc245d3923a3d45b99"
 }

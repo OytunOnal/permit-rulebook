@@ -1,4 +1,4 @@
-// @level infrastructure
+// @level domain infrastructure
 /**
  * How the data clone falls short of the lock, or nothing: the rule the green's
  * first step (`npm run data:check`) and the pipeline's lock cases both ask.

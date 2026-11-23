@@ -1,4 +1,4 @@
-// @level domain
+// @level domain presentation
 import { boundedList, oneLine } from "../../log-wording.mjs";
 
 /**
