@@ -2,9 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync, readdirSync } from "node:fs";
 import { basename, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readLock } from "../scripts/data-pin.mjs";
-import { cloneShortfallOf } from "../scripts/clone-shortfall.mjs";
-import { shortfallSentenceOf } from "../scripts/cli-data-check.mjs";
+import { cloneShortfallOf, readLock } from "../scripts/data-lock/data-lock.mjs";
 import { readAssetNames } from "../scripts/carry-assets/carry.mjs";
 import { LF } from "./throwaway-folder.js";
 import {
@@ -83,10 +81,10 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
   });
 
   // The rule the green's first step asks, `npm run data:check`, so the step
-  // and the suite never disagree; a red reads as the step's sentence.
+  // and the suite never disagree; a red names the shortfall, and the step
+  // words it with its remedy.
   it("the data clone holds the lock's commit", () => {
-    const shortfall = cloneShortfallOf();
-    expect(shortfall, shortfall ? shortfallSentenceOf(shortfall) : undefined).toBeNull();
+    expect(cloneShortfallOf()).toBeNull();
   });
 
   it("the workflow builds a push against the lock, and the daily runs against the newest", () => {

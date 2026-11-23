@@ -16,8 +16,8 @@
     "smoke": "node scripts/main-smoke.mjs",
     "smoke:dev": "node scripts/main-smoke.mjs --dev",
     "check:base": "node scripts/main-check-base.mjs",
-    "data:pin": "node scripts/main-data-pin.mjs",
-    "data:check": "node scripts/main-data-check.mjs",
+    "data:pin": "node scripts/data-lock-run/data-lock-run.mjs pin",
+    "data:check": "node scripts/data-lock-run/data-lock-run.mjs check",
     "traffic-counter:refresh": "node scripts/main-refresh-traffic-counter-copy.mjs"
   },
   "dependencies": {

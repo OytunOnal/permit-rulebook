@@ -1,14 +1,14 @@
 // @level presentation
 /**
  * The data pin's command line: the lock `--lock` names, as `pinData`'s
- * option in `data-pin.mjs`, and the report line of what it returned. It
- * reads, runs and prints nothing; `main-data-pin.mjs` prints what it returns.
+ * option in the `data-lock` module, and the report line of what it returned.
+ * It reads, runs and prints nothing; `run-pin.mjs` returns what it makes.
  *
  *   npm run data:pin [-- --lock <path>]
  *
  * `--lock` names another lock file to write, which must exist already.
  */
-import { findOptionValue } from "./find-option-value.mjs";
+import { findOptionValue } from "../../find-option-value.mjs";
 
 /** The pin's options from the command's arguments: the lock after `--lock`, else none, and the site's own is written. */
 export function pinOptionsOf(argv) {

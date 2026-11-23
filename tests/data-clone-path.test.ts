@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { dataClonePath } from "../scripts/data-pin.mjs";
+import { dataClonePath } from "../scripts/data-lock/data-lock.mjs";
 import { runGit } from "../scripts/run-git.mjs";
 import { commitInThrowaway, initThrowawayRepository, inThrowawayFolder } from "./throwaway-folder.js";
 

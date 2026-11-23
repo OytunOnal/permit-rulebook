@@ -6,6 +6,8 @@
 - `scripts/browser/tab`
 - `scripts/browser/walk`
 - `scripts/carry-assets`
+- `scripts/data-lock`
+- `scripts/data-lock-run`
 - `src/lib/country-search`
 - `src/lib/dataset-facts`
 - `src/lib/frame`
@@ -38,8 +40,6 @@
 - `scripts/deploy-finding.mjs` — decides the deploy's finding and words its Kept issue; the words move to `cli-deploy-finding.mjs` in #221 (v1.2.13)
 - `scripts/carry-assets/outcome/outcome-lines.mjs` — decides the carry's outcomes and words its log lines; the words move to a CLI file in #221 (v1.2.13)
 - `scripts/carry-assets/carry.mjs` — runs the carry and words its digest list's log lines; the words move to a CLI file in #221 (v1.2.13)
-- `scripts/data-pin.mjs` — parses and writes the lock's text beside its disk and git calls; one module in #359 (v1.2.9)
-- `scripts/clone-shortfall.mjs` — the shortfall's kind rule beside its disk and git calls; one module in #359 (v1.2.9)
 - `scripts/smoke.mjs` — walks the pages and words every failure; the words move to `cli-smoke.mjs` in #361 (v1.2.9)
 - `scripts/smoke.mjs` → `scripts/browser/browser.mjs` — smoke's words make it presentation beside its infrastructure walk; gone when the words move in #361 (v1.2.9)
 - `scripts/smoke.mjs` → `scripts/dev-server.mjs` — the same, for the server it starts (v1.2.9)
