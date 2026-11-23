@@ -1,12 +1,15 @@
 // @level infrastructure
 import { serve } from "../static-server/static-server.mjs";
 import { at, siteBase } from "../../site-base.mjs";
-import { openBrowser } from "./open-browser.mjs";
+import { openBrowser } from "./open-browser/open-browser.mjs";
+
+export { DESK, PHONE } from "./screens/screens.mjs";
+export { ERRORS_KEPT } from "./walk-log/walk-log.mjs";
 
 /**
  * @typedef {import("../tab/open-tab.mjs").BrowserPage} BrowserPage
- * @typedef {import("./screens.mjs").Screen} Screen
- * @typedef {import("./walk-log.mjs").WalkError} WalkError
+ * @typedef {import("./screens/screens.mjs").Screen} Screen
+ * @typedef {import("./walk-log/walk-log.mjs").WalkError} WalkError
  * @typedef {import("../tab/open-tab.mjs").LayoutShifts} LayoutShifts
  */
 

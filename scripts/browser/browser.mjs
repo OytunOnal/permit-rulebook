@@ -22,13 +22,11 @@
 
 export { chromePath } from "./chrome/chrome.mjs";
 export { serve } from "./static-server/static-server.mjs";
-export { DESK, PHONE } from "./walk/screens.mjs";
-export { ERRORS_KEPT } from "./walk/walk-log.mjs";
-export { WidthFailure, walkSite } from "./walk/walk-site.mjs";
+export { DESK, ERRORS_KEPT, PHONE, WidthFailure, walkSite } from "./walk/walk-site.mjs";
 
 /** @typedef {import("./tab/open-tab.mjs").BrowserPage} BrowserPage */
 /** @typedef {import("./tab/open-tab.mjs").SentRequest} SentRequest */
 /** @typedef {import("./walk/walk-site.mjs").PageOnSite} PageOnSite */
-/** @typedef {import("./walk/screens.mjs").Screen} Screen */
+/** @typedef {import("./walk/walk-site.mjs").Screen} Screen */
 /** @typedef {import("./tab/open-tab.mjs").LayoutShifts} LayoutShifts */
-/** @typedef {import("./walk/walk-log.mjs").WalkError} WalkError */
+/** @typedef {import("./walk/walk-site.mjs").WalkError} WalkError */
