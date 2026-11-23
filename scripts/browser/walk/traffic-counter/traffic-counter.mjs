@@ -4,10 +4,10 @@ import { fileURLToPath } from "node:url";
 
 /** @typedef {import("../../tab/open-tab.mjs").AnsweredRequests} AnsweredRequests */
 
-/** The counter's script, as every page loads it: `ANALYTICS_SCRIPT` in `src/lib/site.ts`, which a script cannot import. */
+/** The counter's script, as every page loads it: `TRAFFIC_COUNTER_SCRIPT` in `src/lib/site.ts`, which a script cannot import. */
 export const TRAFFIC_COUNTER_SCRIPT = "https://static.cloudflareinsights.com/beacon.min.js";
 
-/** Where the counter sends its reports: `ANALYTICS_BEACON` in `src/lib/site.ts`. */
+/** Where the counter sends its reports: `TRAFFIC_COUNTER_REPORTS` in `src/lib/site.ts`. */
 const TRAFFIC_COUNTER_REPORTS = "https://cloudflareinsights.com/cdn-cgi/rum";
 
 /** The committed copy of Cloudflare's script; `README.md` beside it says where it came from and when. */

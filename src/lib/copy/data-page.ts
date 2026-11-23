@@ -174,7 +174,7 @@ export const PROSE_PROVENANCE = "Prose provenance"; // the fourth gate's name
 /** What the fourth gate holds, after its name; `counts` is `proseProvenanceCounts`'s. */
 export const proseProvenanceLine = (counts: string): string =>
   `anything in quotation marks carries the source it is quoting, and what is ours is declared ours: ${counts}.`;
-export const ANALYTICS_NOTE = // the line under the gates: what the counter records, and what it never does
+export const TRAFFIC_COUNTER_NOTE = // the line under the gates: what the counter records, and what it never does
   "A cookieless counter (Cloudflare Web Analytics) records each page load: the page's address, where you came from, your country, and your browser and operating system versions; nothing you answer, nothing that identifies you, and nothing while you answer.";
 
 /** Where to take the dataset: the section's heading, its downloads, and the line over every route's own JSON. */

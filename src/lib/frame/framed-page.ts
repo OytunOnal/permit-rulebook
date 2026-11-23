@@ -4,7 +4,7 @@ import { esc } from "../reason.js";
 import type { DatasetFacts } from "../dataset-facts/reckon-dataset-facts.js";
 import { RULES_READ } from "../copy/frame.js";
 import { stamps } from "../identity.js";
-import { analyticsBeacon, headMeta } from "../site.js";
+import { headMeta, renderTrafficCounterTag } from "../site.js";
 import { contentSecurityPolicy } from "./head/csp.js";
 import { footerFacts } from "./body/footer-facts.js";
 import { FRAME_SHEET, withLineFeedEndings } from "./head/frame-sheet.js";
@@ -72,7 +72,7 @@ function headerAndFooterOf(dataset: Dataset, place: PagePlace, facts: DatasetFac
 function bodyOf(dataset: Dataset, page: PageInFrame): string {
   const { header, footer } = headerAndFooterOf(dataset, page.place ?? {}, page.facts);
   const scripts = [MENU_SCRIPT, ...(page.scripts ?? [])].map((source) => `<script>${source}</script>\n`).join("");
-  return `<div class="wrap">\n\n  ${header}\n\n  ${page.content}\n\n  ${footer}\n\n</div>\n${scripts}${analyticsBeacon()}`;
+  return `<div class="wrap">\n\n  ${header}\n\n  ${page.content}\n\n  ${footer}\n\n</div>\n${scripts}${renderTrafficCounterTag()}`;
 }
 
 /** A page built as a string, in the frame: the whole document. */

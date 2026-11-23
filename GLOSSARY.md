@@ -813,6 +813,12 @@ whoever decides it decides where the site's own links and carried files come
 from.
 _Avoid_: site URL (as a setting), domain, host
 
+**Traffic counter**:
+The cookieless counter of page views every page carries: Cloudflare's
+script, which counts each page load and sends one report of it to Cloudflare.
+It carries nothing a reader answered.
+_Avoid_: analytics, beacon
+
 **Carry** (verb):
 To copy an asset the LIVE site still references into the fresh `dist/` about
 to replace it — byte-identical, under the same name — so a page a reader's

@@ -3,10 +3,10 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PHONE, walkSite } from "../scripts/browser/browser.mjs";
-import { analyticsBeacon } from "../src/lib/site.js";
+import { renderTrafficCounterTag } from "../src/lib/site.js";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 import { MOVES_EARLY_AND_ON_A_TAP, tapAndWaitUntilAtRest, waitUntilItsEarlyMoveIsReported } from "./layout-shifts.js";
-import { BEACON_ENDPOINT } from "./wire.js";
+import { TRAFFIC_COUNTER_REPORTS } from "./wire.js";
 
 /**
  * The browser walk (`walkSite`, from `scripts/browser/browser.mjs`), over
@@ -37,7 +37,7 @@ const COUNTER_RAN = 'typeof window.__cfBeacon === "object"';
 
 /** The statuses the page's reports to the counter were answered with, as the page's own resource timing reads them. */
 const REPORT_ANSWERS = `JSON.stringify(performance.getEntriesByType("resource")
-  .filter((e) => e.name === ${JSON.stringify(BEACON_ENDPOINT)}).map((e) => e.responseStatus))`;
+  .filter((e) => e.name === ${JSON.stringify(TRAFFIC_COUNTER_REPORTS)}).map((e) => e.responseStatus))`;
 
 /** The fixture pages, by file name, and the icon Chrome asks every site for, so its absence is no error. */
 const PAGES = {
@@ -50,7 +50,7 @@ const PAGES = {
 for (let i = 0; i < ${ERRORS_LOGGED}; i++) console.error("logged error " + i);
 window.__logged = true;
 </script></body></html>`,
-  "counted.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>counted</p>${analyticsBeacon()}</body></html>`,
+  "counted.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>counted</p>${renderTrafficCounterTag()}</body></html>`,
   "fetches-outside.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>fetches the address it is given</p><script>
 fetch(new URLSearchParams(location.search).get("fetch"), { mode: "no-cors" })
   .catch(() => {})
@@ -164,7 +164,7 @@ describe.skipIf(skipped !== null)("the browser walk's traffic counter", () => {
       return { ran: await page.evaluate(COUNTER_RAN), answers, sent: page.requests() };
     });
     expect(returned.ran, "the copy of Cloudflare's script did not run").toBe(true);
-    const reports = returned.sent.filter((r) => r.url === BEACON_ENDPOINT && r.method === "POST");
+    const reports = returned.sent.filter((r) => r.url === TRAFFIC_COUNTER_REPORTS && r.method === "POST");
     expect(reports.length, "the copy sent no report").toBeGreaterThan(0);
     expect(JSON.parse(reports[0]!.postData), "the report is not the counter's").toHaveProperty("siteToken");
     expect(returned.answers, "the report was not answered inside the browser").toContain(204);

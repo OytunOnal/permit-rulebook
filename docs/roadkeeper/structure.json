@@ -8677,7 +8677,7 @@
     "exported": true
    },
    {
-    "name": "ANALYTICS_NOTE",
+    "name": "TRAFFIC_COUNTER_NOTE",
     "kind": "const",
     "exported": true
    },
@@ -11015,22 +11015,22 @@
     "exported": true
    },
    {
-    "name": "ANALYTICS_TOKEN",
+    "name": "TRAFFIC_COUNTER_TOKEN",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "ANALYTICS_SCRIPT",
+    "name": "TRAFFIC_COUNTER_SCRIPT",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "ANALYTICS_BEACON",
+    "name": "TRAFFIC_COUNTER_REPORTS",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "analyticsBeacon",
+    "name": "renderTrafficCounterTag",
     "kind": "fn",
     "exported": true
    },
@@ -11493,5 +11493,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "349665dd0a02c5b44fa4196895c69cff237d8c82dbbf50514ac58baf2ccfc590"
+ "digest": "c304b0078fdba891647cc8a71e508d9ad00663019da44734151a7bfd04a05563"
 }

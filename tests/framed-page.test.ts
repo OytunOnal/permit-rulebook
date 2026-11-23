@@ -6,7 +6,7 @@ import { dataPage, statusAlias } from "../src/lib/data-page.js";
 import { feedbackPage } from "../src/lib/feedback-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { routePage, routePages } from "../src/lib/route-page/route-page.js";
-import { DATA_PATH, FEEDBACK_PATH, analyticsBeacon, url } from "../src/lib/site.js";
+import { DATA_PATH, FEEDBACK_PATH, renderTrafficCounterTag, url } from "../src/lib/site.js";
 import { countryPath, routeAddresses } from "../src/lib/slug.js";
 import { footerIn, frameAlone, headerIn, interviewFrameAlone, styleIn } from "./frame-alone.js";
 
@@ -112,7 +112,7 @@ describe("what a page hands the frame lands where the interface puts it", () => 
   it("runs a page's own scripts after the menu and before the counter", () => {
     const frame = interviewFrameAlone(ds);
     const html = frameAlone(ds, { scripts: ["window.ownScript = 1;"] });
-    expect(html).toContain(`<script>${frame.menuScript}</script>\n<script>window.ownScript = 1;</script>\n${analyticsBeacon()}`);
+    expect(html).toContain(`<script>${frame.menuScript}</script>\n<script>window.ownScript = 1;</script>\n${renderTrafficCounterTag()}`);
   });
 
   it("places the content between the header and the footer", () => {

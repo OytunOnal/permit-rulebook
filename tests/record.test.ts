@@ -8,7 +8,7 @@ import { RECORD_MAX_LENGTH, RECORD_VERSION,
   type RecordStore,
 } from "../src/lib/record.js";
 import { answerWith } from "./browser-walk.js";
-import { BEACON_ENDPOINT, BEACON_SCRIPT, expectNothingLeft } from "./wire.js";
+import { TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT, expectNothingLeft } from "./wire.js";
 import { PHONE, chromePath, walkSite, type SentRequest } from "../scripts/browser/browser.mjs";
 
 const dataset = rawDataset as unknown as Dataset;
@@ -277,9 +277,9 @@ describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave 
 
     // The counter was actually running: a blocked beacon would make every
     // assertion above pass by having nothing to check (Security review).
-    const fetched = seen.walk.filter((r) => r.url.startsWith(BEACON_SCRIPT));
+    const fetched = seen.walk.filter((r) => r.url.startsWith(TRAFFIC_COUNTER_SCRIPT));
     const reports = [...seen.walk, ...seen.afterEdit]
-      .filter((r) => r.url.startsWith(BEACON_ENDPOINT) && r.method === "POST");
+      .filter((r) => r.url.startsWith(TRAFFIC_COUNTER_REPORTS) && r.method === "POST");
     expect(fetched.length, "the counter's script was never fetched").toBeGreaterThan(0);
     expect(reports.length, "the counter sent no report at all").toBeGreaterThan(0);
     // One report per page LOAD, not per answered question. Cloudflare's
@@ -376,13 +376,13 @@ describe.skipIf(skipped !== null)("arriving pre-scoped sends no more than arrivi
     const seen = returned as { sent: SentRequest[]; declared: string[]; origin: string };
 
     const { origin } = seen;
-    const reports = seen.sent.filter((r) => r.url.startsWith(BEACON_ENDPOINT) && r.method === "POST");
+    const reports = seen.sent.filter((r) => r.url.startsWith(TRAFFIC_COUNTER_REPORTS) && r.method === "POST");
     expect(seen.declared.length, "the pre-scoped walk answered nothing").toBeGreaterThan(3);
     expect(reports.length, `${reports.length} reports for one page load`).toBeLessThanOrEqual(2);
 
     for (const request of seen.sent) {
-      if (request.url.startsWith(BEACON_SCRIPT)) continue;
-      if (request.url.startsWith(BEACON_ENDPOINT)) {
+      if (request.url.startsWith(TRAFFIC_COUNTER_SCRIPT)) continue;
+      if (request.url.startsWith(TRAFFIC_COUNTER_REPORTS)) {
         expectReportCarriesNoAnswer(request, seen.declared);
         continue;
       }

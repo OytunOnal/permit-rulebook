@@ -15,8 +15,8 @@ import type { SentRequest } from "../scripts/browser/browser.mjs";
  */
 
 /** The two addresses outside this site that a page may talk to, and no others. */
-export const BEACON_SCRIPT = "https://static.cloudflareinsights.com/beacon.min.js";
-export const BEACON_ENDPOINT = "https://cloudflareinsights.com/cdn-cgi/rum";
+export const TRAFFIC_COUNTER_SCRIPT = "https://static.cloudflareinsights.com/beacon.min.js";
+export const TRAFFIC_COUNTER_REPORTS = "https://cloudflareinsights.com/cdn-cgi/rum";
 
 /**
  * Every field the counter's report is allowed to carry, measured off the wire
@@ -30,7 +30,7 @@ export const BEACON_ENDPOINT = "https://cloudflareinsights.com/cdn-cgi/rum";
  * navigation timings (`firstPaint`, `firstContentfulPaint`, `timingsV2`) and
  * the tab's JS heap figures (`memory`). None of it is an answer.
  */
-export const BEACON_FIELDS = [
+export const TRAFFIC_COUNTER_REPORT_FIELDS = [
   "startTime", "pageloadId", "eventType", "nt", "location", "versions", "bi",
   "siteToken", "st", "memory", "firstPaint", "firstContentfulPaint", "timingsV2",
 ];
@@ -53,17 +53,17 @@ export function expectNothingLeft(
 ): void {
   for (const request of sent) {
     // The counter, and only the counter.
-    if (request.url.startsWith(BEACON_SCRIPT)) {
+    if (request.url.startsWith(TRAFFIC_COUNTER_SCRIPT)) {
       expect(request.method, `${where}: the beacon script was fetched with ${request.method}`).toBe("GET");
-      expect(request.url, `${where}: a query string on the beacon script`).toBe(BEACON_SCRIPT);
+      expect(request.url, `${where}: a query string on the beacon script`).toBe(TRAFFIC_COUNTER_SCRIPT);
       expect(request.hasPostData, `${where}: a body was sent to the beacon script`).toBe(false);
       continue;
     }
-    if (request.url.startsWith(BEACON_ENDPOINT)) {
+    if (request.url.startsWith(TRAFFIC_COUNTER_REPORTS)) {
       // The preflight and the report itself, and nothing smuggled into
       // the address.
       expect(["POST", "OPTIONS"], `${where}: ${request.method} to the beacon`).toContain(request.method);
-      expect(request.url, `${where}: a query string on the beacon`).toBe(BEACON_ENDPOINT);
+      expect(request.url, `${where}: a query string on the beacon`).toBe(TRAFFIC_COUNTER_REPORTS);
       if (request.method === "OPTIONS") continue;
       // What it actually sends, read off the wire.
       const raw = String(request.postData ?? "");
@@ -80,7 +80,7 @@ export function expectNothingLeft(
       // And every field it carries is one a person has looked at.
       const fields = Object.keys(JSON.parse(raw) as Record<string, unknown>);
       for (const field of fields)
-        expect(BEACON_FIELDS, `${where}: the counter sent a field nobody has reviewed: ${field}`)
+        expect(TRAFFIC_COUNTER_REPORT_FIELDS, `${where}: the counter sent a field nobody has reviewed: ${field}`)
           .toContain(field);
       continue;
     }
