@@ -18,10 +18,10 @@ import { resolve } from "node:path";
 import { cloneQuestionsOf } from "./disk/clone-questions.mjs";
 import { cloneDatasetVersionOf, cloneHeadOf, dataClonePath } from "./disk/data-clone.mjs";
 import { readLockText, siteLockPath, writeLockText } from "./disk/lock-file.mjs";
-import { parseLock, pinnedLockTextOf } from "./rules/lock-text.mjs";
+import { parseLock, PIN_REFUSALS, pinnedLockTextOf } from "./rules/lock-text.mjs";
 import { shortfallOf } from "./rules/shortfall.mjs";
 
-export { dataClonePath, pinnedLockTextOf };
+export { dataClonePath, PIN_REFUSALS, pinnedLockTextOf };
 
 /** What the lock's `text` says (the site's own lock by default): its sha and its dataset version. */
 export function readLock(text = readLockText()) {
@@ -29,14 +29,16 @@ export function readLock(text = readLockText()) {
 }
 
 /**
- * Writes the data clone's HEAD and dataset version into the lock at
- * `lockPath` (the site's own `data.lock` by default, a relative path read from
- * the working folder), and returns the sha it named before, the sha it names
- * now and the dataset version.
+ * Writes the HEAD and dataset version of the data clone at `clonePath` (the
+ * site's own data clone by default) into the lock at `lockPath` (the site's
+ * own `data.lock` by default), relative paths read from the working folder,
+ * and returns the sha it named before, the sha it names now and the dataset
+ * version. A HEAD or dataset version of the wrong shape is refused, and the
+ * lock left unwritten.
  */
-export function pinData({ lockPath = siteLockPath } = {}) {
+export function pinData({ lockPath = siteLockPath, clonePath } = {}) {
   const target = resolve(lockPath);
-  const dir = dataClonePath();
+  const dir = clonePath === undefined ? dataClonePath() : resolve(clonePath);
   const sha = cloneHeadOf(dir);
   const datasetVersion = cloneDatasetVersionOf(dir);
   const lockText = readLockText(target);

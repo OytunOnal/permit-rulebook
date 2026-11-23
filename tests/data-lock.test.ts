@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
+import { PIN_REFUSALS, pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
 
 /**
  * The lock's format, checked against lock texts written here by hand: the
@@ -39,5 +39,27 @@ describe("a pinned lock's text is written", () => {
   it("read back as what it was written with", () => {
     expect(readLock(pinnedLockTextOf(LOCK, { sha: OTHER_SHA, datasetVersion: "2026.11.18" })))
       .toEqual({ sha: OTHER_SHA, datasetVersion: "2026.11.18" });
+  });
+});
+
+describe("a pinned lock's text is refused, and none written", () => {
+  it.each([
+    ["dashes for dots", "2026-11-18"],
+    ["a one-digit day", "2026.11.8"],
+    ["a two-digit year", "26.11.18"],
+    ["a line after it", "2026.11.18\nsha=" + SHA],
+    ["nothing", ""],
+  ])("for a dataset version not YYYY.MM.DD: %s", (_what, datasetVersion) => {
+    expect(() => pinnedLockTextOf(LOCK, { sha: OTHER_SHA, datasetVersion })).toThrow(PIN_REFUSALS.datasetVersion);
+  });
+
+  it.each([
+    ["upper-case hex", OTHER_SHA.toUpperCase()],
+    ["39 characters", OTHER_SHA.slice(1)],
+    ["41 characters", `${OTHER_SHA}0`],
+    ["a letter past f", `g${OTHER_SHA.slice(1)}`],
+    ["nothing", ""],
+  ])("for a commit not 40 lower-case hex: %s", (_what, sha) => {
+    expect(() => pinnedLockTextOf(LOCK, { sha, datasetVersion: "2026.11.18" })).toThrow(PIN_REFUSALS.commit);
   });
 });
