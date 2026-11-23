@@ -111,6 +111,24 @@ describe("npm run data:pin", () => {
   }, 60000);
 });
 
+describe("the lock's run entry refuses a subcommand it does not name", () => {
+  // The entry data:pin and data:check both run, without their subcommand.
+  const entry = () => scriptArgumentsOf("data:pin")[0]!;
+
+  it.each([["a missing", []], ["an unknown", ["unpin"]]])("%s subcommand: exits non-zero, names the known ones, writes no lock", async (_what, words) => {
+    await expectSiteLockUnwrittenBy(() => inThrowawayFolder(async (folder) => {
+      const lock = join(folder, "data.lock");
+      const lockText = pinnedLockTextOf(siteLockText, { sha: "0".repeat(40), datasetVersion: "2000.01.01" });
+      writeFileSync(lock, lockText);
+      const run = await nodeRun([entry(), ...words, "--lock", lock]);
+      expect(run.status, run.out).not.toBe(0);
+      expect(run.out).toMatch(/\bpin\b/);
+      expect(run.out).toMatch(/\bcheck\b/);
+      expect(readFileSync(lock, "utf8"), "the given lock was written").toBe(lockText);
+    }));
+  }, 60000);
+});
+
 /** A throwaway data clone at `clone` on master, with `count` empty commits; their shas, oldest first. */
 function cloneWithCommits(clone: string, count: number): string[] {
   initThrowawayRepository(clone);
