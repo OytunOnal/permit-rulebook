@@ -51,6 +51,22 @@ for (let i = 0; i < ${ERRORS_LOGGED}; i++) console.error("logged error " + i);
 window.__logged = true;
 </script></body></html>`,
   "counted.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>counted</p>${analyticsBeacon()}</body></html>`,
+  "fetches-outside.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>fetches the address it is given</p><script>
+fetch(new URLSearchParams(location.search).get("fetch"), { mode: "no-cors" })
+  .catch(() => {})
+  .finally(() => { window.__fetched = true; });
+</script></body></html>`,
+};
+
+/**
+ * An address on another origin than the served folder's `127.0.0.1:<port>`:
+ * the same server named `localhost`, so a walk that does not refuse it
+ * reaches it without the network.
+ */
+const onAnotherOrigin = (inSite: string): string => {
+  const address = new URL(inSite);
+  address.hostname = "localhost";
+  return address.href;
 };
 
 /** A walker that opens the page logging many errors and returns once it has logged them all. */
@@ -152,6 +168,21 @@ describe.skipIf(skipped !== null)("the browser walk's traffic counter", () => {
     expect(reports.length, "the copy sent no report").toBeGreaterThan(0);
     expect(JSON.parse(reports[0]!.postData), "the report is not the counter's").toHaveProperty("siteToken");
     expect(returned.answers, "the report was not answered inside the browser").toContain(204);
+  }, 60000);
+});
+
+describe.skipIf(skipped !== null)("the browser walk's outside requests", () => {
+  it("a page fetching an address on another origin fails its walk, with one line naming that address", async () => {
+    let outside = "";
+    const failure = await failureOf(walkSite({ site: { folder }, screen: PHONE }, async ({ page, url }) => {
+      const inSite = url("/quiet.html");
+      outside = onAnotherOrigin(inSite);
+      expect(new URL(outside).origin, "the outside address is on the site's own origin").not.toBe(new URL(inSite).origin);
+      await page.goto(`${url("/fetches-outside.html")}?fetch=${encodeURIComponent(outside)}`);
+      await page.waitUntil("window.__fetched === true", "the page's fetch never settled");
+    }));
+    expect(failure, "the walk passed").not.toBe("");
+    expect(failure.split("\n").filter((line) => line.startsWith(`  ${outside}: `)), failure).toHaveLength(1);
   }, 60000);
 });
 
