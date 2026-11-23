@@ -1,5 +1,5 @@
 // @level infrastructure
-import { answeringPausedRequests, pauseAnsweredRequests } from "./answered-requests/answered-requests.mjs";
+import { answeringPausedRequests, pauseEveryRequest } from "./answered-requests/answered-requests.mjs";
 import { TabEvents } from "./page/tab-events.mjs";
 import { TabGestures } from "./page/tab-gestures.mjs";
 import { TabPage } from "./page/tab-page.mjs";
@@ -23,7 +23,8 @@ import { TabWaits } from "./page/tab-waits.mjs";
  * `setup`: the `screen`, whether to keep the requests
  * (`network`), the factor every tab is slowed by (`cpuSlowdown`), the
  * region whose shifts are marked (`shiftRegion`, a selector or null), the
- * requests the tab answers itself (`answeredRequests`, an `AnsweredRequests`),
+ * requests the tab answers itself and the ones it lets go on to the network,
+ * refusing the rest (`answeredRequests`, an `AnsweredRequests`),
  * and the browser's `WalkLog`, which every tab's errors and fronting reach.
  */
 export async function openTab(connection, setup) {
@@ -45,9 +46,9 @@ export async function openTab(connection, setup) {
   });
 }
 
-/** Enables the events the tab is read by, pauses the requests it answers itself, and sets its CPU and its screen. */
-async function setUpTab(sendToTab, { screen, cpuSlowdown, answeredRequests }) {
-  await pauseAnsweredRequests(sendToTab, answeredRequests);
+/** Enables the events the tab is read by, pauses every request for it to answer, let go on or refuse, and sets its CPU and its screen. */
+async function setUpTab(sendToTab, { screen, cpuSlowdown }) {
+  await pauseEveryRequest(sendToTab);
   await sendToTab("Page.enable", {});
   await sendToTab("Runtime.enable", {});
   await sendToTab("Log.enable", {});

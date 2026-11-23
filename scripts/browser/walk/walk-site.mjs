@@ -58,15 +58,15 @@ export { ERRORS_KEPT } from "./walk-log/walk-log.mjs";
 /** The width a page laid out at, or null on a tab that has opened no page yet. */
 const LAID_OUT_WIDTH = 'location.href === "about:blank" ? null : innerWidth';
 
-/** The site `site` names, open for the walk: what makes its addresses, and what closes it. */
+/** The site `site` names, open for the walk: its origin, what makes its addresses, and what closes it. */
 async function openSite(site) {
   if ("address" in site) {
     const { origin } = new URL(site.address);
-    return { url: (path) => at(origin, siteBase(site.address), path), close: () => {} };
+    return { origin, url: (path) => at(origin, siteBase(site.address), path), close: () => {} };
   }
   const { folder, ...serving } = site;
   const server = await serve(folder, serving);
-  return { url: server.url, close: server.close };
+  return { origin: server.origin, url: server.url, close: server.close };
 }
 
 /** The width check's failure: a page laid out at another width than its screen's, both named. */
@@ -145,13 +145,13 @@ async function measuredAtTheEnd(walkLog, returned, { checkWidth, errorsExpected 
   return { returned, shifts: await onScreen.readLayoutShifts(), errors: walkLog.errors(), errorsLeftOut: walkLog.errorsLeftOut() };
 }
 
-/** The walk in a browser opened for it, on the site whose addresses `url` makes. */
-async function walkInBrowser(walk, url, walker) {
+/** The walk in a browser opened for it, on the site `opened`: its origin, and what makes its addresses. */
+async function walkInBrowser(walk, opened, walker) {
   const { screen, network = false, trafficCounter = "stub", scrollbars = false, errorsExpected = false, shiftRegion = null } = walk;
-  const browser = await openBrowser({ screen, network, scrollbars, shiftRegion, trafficCounter });
+  const browser = await openBrowser({ screen, network, scrollbars, shiftRegion, trafficCounter, siteOrigin: opened.origin });
   try {
     const checkWidth = widthCheckOn(screen);
-    const returned = await returnedBy(walker, { page: checkingWidthOnDraw(browser.page, checkWidth), url }, browser.walkLog);
+    const returned = await returnedBy(walker, { page: checkingWidthOnDraw(browser.page, checkWidth), url: opened.url }, browser.walkLog);
     return await measuredAtTheEnd(browser.walkLog, returned, { checkWidth, errorsExpected });
   } finally {
     browser.close();
@@ -162,7 +162,9 @@ async function walkInBrowser(walk, url, walker) {
  * The browser walk: opens `walk.site` at `walk.screen` in a fresh profile,
  * hands `walker` the page and the site's addresses, and returns what it
  * measured. The traffic counter's requests are answered inside the browser,
- * as `walk.trafficCounter` asks. It fails, naming both widths, when a page it draws is not
+ * as `walk.trafficCounter` asks; a request to any other origin than the
+ * site's own is refused there, and is one of the walk's errors, under its
+ * address. It fails, naming both widths, when a page it draws is not
  * the screen's width, and, listing them, on the pages' errors unless
  * `walk.errorsExpected`. A failure of the walker's own, or of the width,
  * lists the pages' errors under its message.
@@ -175,7 +177,7 @@ async function walkInBrowser(walk, url, walker) {
 export async function walkSite(walk, walker) {
   const opened = await openSite(walk.site);
   try {
-    return await walkInBrowser(walk, opened.url, walker);
+    return await walkInBrowser(walk, opened, walker);
   } finally {
     opened.close();
   }

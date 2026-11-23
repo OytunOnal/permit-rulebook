@@ -40,20 +40,24 @@ const reportResponse = ({ headers }) => ({
 });
 
 /**
- * The requests a walk answers for the traffic counter, so no walk loads it
- * from Cloudflare: its script, with an empty one for `"stub"` and the
- * committed copy of Cloudflare's for `"cloudflare's copy"`; and its reports
- * with an empty reply. Anything else as `trafficCounter` throws, naming it.
+ * The answers a walk gives the traffic counter, so no walk loads it from
+ * Cloudflare: its script, with an empty one for `"stub"` and the committed
+ * copy of Cloudflare's for `"cloudflare's copy"`; and its reports with an
+ * empty reply. Any other request gets none. Anything else as `trafficCounter`
+ * throws, naming it.
  *
  * @param {"stub" | "cloudflare's copy"} trafficCounter
- * @returns {AnsweredRequests}
+ * @returns {Pick<AnsweredRequests, "responseTo">}
  */
 export function answersForTheTrafficCounter(trafficCounter) {
   if (!TRAFFIC_COUNTERS.includes(trafficCounter))
     throw new Error(`a walk's trafficCounter is "stub" or "cloudflare's copy", not ${JSON.stringify(trafficCounter)}`);
   const script = trafficCounter === "stub" ? Buffer.alloc(0) : readFileSync(TRAFFIC_COUNTER_COPY);
   return {
-    urlPatterns: [`${TRAFFIC_COUNTER_SCRIPT}*`, `${TRAFFIC_COUNTER_REPORTS}*`],
-    responseTo: (request) => (request.url.startsWith(TRAFFIC_COUNTER_SCRIPT) ? scriptResponse(script) : reportResponse(request)),
+    responseTo: (request) => {
+      if (request.url.startsWith(TRAFFIC_COUNTER_SCRIPT)) return scriptResponse(script);
+      if (request.url.startsWith(TRAFFIC_COUNTER_REPORTS)) return reportResponse(request);
+      return null;
+    },
   };
 }
