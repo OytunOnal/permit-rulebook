@@ -18,10 +18,10 @@ import { resolve } from "node:path";
 import { cloneQuestionsOf } from "./disk/clone-questions.mjs";
 import { cloneDatasetVersionOf, cloneHeadOf, dataClonePath } from "./disk/data-clone.mjs";
 import { readLockText, siteLockPath, writeLockText } from "./disk/lock-file.mjs";
-import { parseLock, pinnedLockTextOf } from "./rules/lock-text.mjs";
+import { parseLock, PIN_REFUSALS, pinnedLockTextOf } from "./rules/lock-text.mjs";
 import { shortfallOf } from "./rules/shortfall.mjs";
 
-export { dataClonePath, pinnedLockTextOf };
+export { dataClonePath, PIN_REFUSALS, pinnedLockTextOf };
 
 /** What the lock's `text` says (the site's own lock by default): its sha and its dataset version. */
 export function readLock(text = readLockText()) {

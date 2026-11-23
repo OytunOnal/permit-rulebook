@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
+import { PIN_REFUSALS, pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
 
 /**
  * The lock's format, checked against lock texts written here by hand: the
@@ -50,7 +50,7 @@ describe("a pinned lock's text is refused, and none written", () => {
     ["a line after it", "2026.11.18\nsha=" + SHA],
     ["nothing", ""],
   ])("for a dataset version not YYYY.MM.DD: %s", (_what, datasetVersion) => {
-    expect(() => pinnedLockTextOf(LOCK, { sha: OTHER_SHA, datasetVersion })).toThrow();
+    expect(() => pinnedLockTextOf(LOCK, { sha: OTHER_SHA, datasetVersion })).toThrow(PIN_REFUSALS.datasetVersion);
   });
 
   it.each([
@@ -60,6 +60,6 @@ describe("a pinned lock's text is refused, and none written", () => {
     ["a letter past f", `g${OTHER_SHA.slice(1)}`],
     ["nothing", ""],
   ])("for a commit not 40 lower-case hex: %s", (_what, sha) => {
-    expect(() => pinnedLockTextOf(LOCK, { sha, datasetVersion: "2026.11.18" })).toThrow();
+    expect(() => pinnedLockTextOf(LOCK, { sha, datasetVersion: "2026.11.18" })).toThrow(PIN_REFUSALS.commit);
   });
 });

@@ -4,7 +4,7 @@ import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "n
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromePath } from "../scripts/browser/browser.mjs";
-import { dataClonePath, pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
+import { dataClonePath, PIN_REFUSALS, pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
 import { SUBCOMMAND_NAMES } from "../scripts/data-lock-run/data-lock-run.mjs";
 import { runGit } from "../scripts/run-git.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
@@ -122,7 +122,7 @@ describe("npm run data:pin", () => {
     }));
   }, 60000);
 
-  it("refuses a data clone whose dataset version is not YYYY.MM.DD: exits non-zero, names it, leaves the lock as it was", async () => {
+  it("refuses a data clone whose dataset version is not YYYY.MM.DD: exits non-zero, says why without the value, leaves the lock as it was", async () => {
     await expectSiteLockUnwrittenBy(() => inThrowawayFolder(async (folder) => {
       const malformed = "2001-02-03";
       cloneCarryingVersion(join(folder, "permit-rulebook-data"), malformed);
@@ -131,7 +131,8 @@ describe("npm run data:pin", () => {
       writeFileSync(lock, lockText);
       const run = await nodeRun([...scriptArgumentsOf("data:pin"), "--lock", lock, "--clone", join(folder, "permit-rulebook-data")]);
       expect(run.status, run.out).not.toBe(0);
-      expect(run.out, "the refusal does not name the version it refused").toContain(malformed);
+      expect(run.out, "the refusal does not say why").toContain(PIN_REFUSALS.datasetVersion);
+      expect(run.out, "the refusal prints the value it refused").not.toContain(malformed);
       expect(readFileSync(lock, "utf8"), "the given lock was written").toBe(lockText);
     }));
   }, 60000);

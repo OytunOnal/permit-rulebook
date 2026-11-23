@@ -18,15 +18,23 @@ export function parseLock(text) {
 }
 
 /**
+ * Why a pinned lock is refused, by the value of the wrong shape. A refusal
+ * names the rule, never the value: the value is a stranger's text.
+ */
+export const PIN_REFUSALS = Object.freeze({
+  commit: "the commit is not 40 lower-case hex characters",
+  datasetVersion: "the dataset version is not YYYY.MM.DD",
+});
+
+/**
  * `lockText` with its `sha=` line naming `sha` and its `dataset_version=` line
  * naming `datasetVersion`; every other line kept. It refuses a `sha` not 40
  * lower-case hex and a `datasetVersion` not YYYY.MM.DD, so no lock of the
  * wrong shape is written.
  */
 export function pinnedLockTextOf(lockText, { sha, datasetVersion }) {
-  if (!FULL_SHA.test(sha)) throw new Error(`a pinned lock cannot name ${JSON.stringify(sha)}: its commit must be a sha of 40 lower-case hex characters`);
-  if (!DATASET_VERSION.test(datasetVersion))
-    throw new Error(`a pinned lock cannot name the dataset version ${JSON.stringify(datasetVersion)}: it must read YYYY.MM.DD`);
+  if (!FULL_SHA.test(sha)) throw new Error(`a pinned lock is refused: ${PIN_REFUSALS.commit}`);
+  if (!DATASET_VERSION.test(datasetVersion)) throw new Error(`a pinned lock is refused: ${PIN_REFUSALS.datasetVersion}`);
   return lockText
     .replace(/^sha=.*$/m, `sha=${sha}`)
     .replace(/^dataset_version=.*$/m, `dataset_version=${datasetVersion}`);
