@@ -195,7 +195,9 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
  * those: a bundled dependency, an inlined helper or a renamed call would walk
  * straight past it, and the promise is about what the page DOES. So the page is
  * driven in a real browser with the network watched, and the only thing
- * asserted is what it actually sent (human, 2026-09-08).
+ * asserted is what it actually sent (human, 2026-09-08). The walks are served
+ * the committed copy of Cloudflare's script, its reports answered inside the
+ * browser, so the check runs on Cloudflare's code with no network.
  */
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -226,7 +228,8 @@ const ANSWER_ONE = `(() => {
 describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave the device", () => {
   it("a whole walk, and an answer changed after it, sends nothing but this page's own files", async () => {
     const screen = { viewport: { width: 1100, height: 900 }, mobile: false };
-    const { returned } = await walkSite({ site: { folder: dist }, screen, network: true }, async ({ page, url }) => {
+    const walk = { site: { folder: dist }, screen, network: true, trafficCounter: "cloudflare's copy" } as const;
+    const { returned } = await walkSite(walk, async ({ page, url }) => {
       await page.goto(url("/"));
       const answered: string[] = [];
       for (let step = 0; step < 25; step++) {
@@ -357,7 +360,8 @@ function expectReportCarriesNoAnswer(request: SentRequest, declared: string[]): 
  */
 describe.skipIf(skipped !== null)("arriving pre-scoped sends no more than arriving cold", () => {
   it("a walk that starts at /?route=… still sends only the counter's own report", async () => {
-    const { returned } = await walkSite({ site: { folder: dist }, screen: PHONE, network: true }, async ({ page, url }) => {
+    const walk = { site: { folder: dist }, screen: PHONE, network: true, trafficCounter: "cloudflare's copy" } as const;
+    const { returned } = await walkSite(walk, async ({ page, url }) => {
       await page.goto(url("/"));
       await page.evaluate('localStorage.removeItem("permit-rulebook.record.v1")');
       await page.goto(`${url("/")}?route=de-blue-card-general`);

@@ -58,6 +58,7 @@
 - `.run/**`
 - `docs/**`
 - `.claude/**`
+- `tests/traffic-counter/beacon.min.js`
 
 ## Relations
 <!-- association, aggregation or composition, where the code cannot show them -->

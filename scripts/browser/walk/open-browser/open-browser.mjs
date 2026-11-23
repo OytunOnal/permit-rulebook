@@ -3,19 +3,22 @@ import { closeChrome, launchChrome, readCpuSlowdown, sweepStaleProfiles } from "
 import { DevToolsConnection } from "../../connection/devtools-connection.mjs";
 import { owned } from "../../exit-register/owned.mjs";
 import { openTab } from "../../tab/open-tab.mjs";
+import { answersForTheTrafficCounter } from "../traffic-counter/traffic-counter.mjs";
 import { WalkLog } from "../walk-log/walk-log.mjs";
 
 /**
  * Headless Chrome in a fresh profile, attached over CDP, with one tab open on
  * `screen`: that tab's page, the log its tabs keep across the walk, and the
- * close that ends the browser.
+ * close that ends the browser. Every tab answers the traffic counter's
+ * requests itself, as `trafficCounter` asks.
  *
  * The viewport is set through CDP's `Emulation.setDeviceMetricsOverride`,
  * because `--window-size` does not reach a `--dump-dom` render — the first cut
  * of the tap harness reported `innerWidth 500` while claiming 390.
  * `BROWSER_CPU_SLOWDOWN` slows every tab.
  */
-export async function openBrowser({ screen, network, scrollbars, shiftRegion }) {
+export async function openBrowser({ screen, network, scrollbars, shiftRegion, trafficCounter }) {
+  const answeredRequests = answersForTheTrafficCounter(trafficCounter);
   sweepStaleProfiles();
   const cpuSlowdown = readCpuSlowdown();
   const chrome = await launchChrome({ scrollbars });
@@ -25,7 +28,7 @@ export async function openBrowser({ screen, network, scrollbars, shiftRegion }) 
     closeChrome(chrome);
   });
   const walkLog = new WalkLog();
-  const page = await openTab(connection, { screen, network, cpuSlowdown, shiftRegion, walkLog });
+  const page = await openTab(connection, { screen, network, cpuSlowdown, shiftRegion, answeredRequests, walkLog });
   walkLog.showTab(page);
   return { page, walkLog, close };
 }

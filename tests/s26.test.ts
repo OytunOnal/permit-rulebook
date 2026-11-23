@@ -416,7 +416,8 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
     ["1280x900", { width: 1280, height: 900 }, false],
   ] as const) {
     it(`${name}: all four → research → France → nothing open reads France's written state, France's section first and open; a German route opening reads the open headline; nothing leaves the device`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, network: true }, async ({ page, url: addressOf }) => ({
+      const walk = { site: { folder: dist }, screen: { viewport, mobile }, network: true, trafficCounter: "cloudflare's copy" } as const;
+      const seen = (await walkSite(walk, async ({ page, url: addressOf }) => ({
         nothingOpen: await walkFrom(page, addressOf("/"), { taps: ["none", "TR", "no", "no"], reader: WALKED_TO_NOTHING_OPEN }),
         opened: await walkFrom(page, addressOf("/"), {
           taps: ["degree", "TR", "recognized", "no", "no", "a1", "band_1"], reader: WALKED_TO_A_GERMAN_ROUTE,
