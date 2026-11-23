@@ -97,6 +97,11 @@ Roadkeeper's preset in `eslint.config.mjs`.
 - Secrets live in `.env` (Security): also in the data repository's Actions
   secrets, because the watch's dispatch to the site runs in GitHub Actions
   with `DISPATCH_TOKEN`, and Actions has no `.env`.
+- Code copied from upstream keeps its attribution line and its licence file
+  (Rules): the copy of Cloudflare's traffic counter script,
+  `tests/traffic-counter/beacon.min.js`, keeps an attribution note beside it
+  (`tests/traffic-counter/README.md`) and no licence file, because Cloudflare
+  publishes none for it, and only tests read it.
 
 ## Security
 
