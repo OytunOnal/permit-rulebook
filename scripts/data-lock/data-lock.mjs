@@ -29,14 +29,15 @@ export function readLock(text = readLockText()) {
 }
 
 /**
- * Writes the data clone's HEAD and dataset version into the lock at
- * `lockPath` (the site's own `data.lock` by default, a relative path read from
- * the working folder), and returns the sha it named before, the sha it names
- * now and the dataset version.
+ * Writes the HEAD and dataset version of the data clone at `clonePath` (the
+ * site's own data clone by default) into the lock at `lockPath` (the site's
+ * own `data.lock` by default), relative paths read from the working folder,
+ * and returns the sha it named before, the sha it names now and the dataset
+ * version.
  */
-export function pinData({ lockPath = siteLockPath } = {}) {
+export function pinData({ lockPath = siteLockPath, clonePath } = {}) {
   const target = resolve(lockPath);
-  const dir = dataClonePath();
+  const dir = clonePath === undefined ? dataClonePath() : resolve(clonePath);
   const sha = cloneHeadOf(dir);
   const datasetVersion = cloneDatasetVersionOf(dir);
   const lockText = readLockText(target);

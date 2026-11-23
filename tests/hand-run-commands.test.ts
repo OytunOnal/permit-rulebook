@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { execFile } from "node:child_process";
-import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromePath } from "../scripts/browser/browser.mjs";
@@ -110,7 +110,33 @@ describe("npm run data:pin", () => {
       expect(readLock(readFileSync(lock, "utf8"))).toEqual({ sha: head, datasetVersion: version });
     }));
   }, 60000);
+
+  it("writes the HEAD and dataset version of the data clone --clone names", async () => {
+    await expectSiteLockUnwrittenBy(() => inThrowawayFolder(async (folder) => {
+      const head = cloneCarryingVersion(join(folder, "permit-rulebook-data"), "2001.02.03");
+      const lock = join(folder, "data.lock");
+      writeFileSync(lock, pinnedLockTextOf(siteLockText, { sha: "0".repeat(40), datasetVersion: "2000.01.01" }));
+      const run = await nodeRun([...scriptArgumentsOf("data:pin"), "--lock", lock, "--clone", join(folder, "permit-rulebook-data")]);
+      expect(run.status, run.out).toBe(0);
+      expect(readLock(readFileSync(lock, "utf8"))).toEqual({ sha: head, datasetVersion: "2001.02.03" });
+    }));
+  }, 60000);
 });
+
+/**
+ * A throwaway data clone at `clone` whose one commit carries the real data
+ * clone's `data/dataset.json` with its dataset version set to `version`; its
+ * HEAD.
+ */
+function cloneCarryingVersion(clone: string, version: string): string {
+  const dataset = JSON.parse(readFileSync(join(dataClone, "data", "dataset.json"), "utf8"));
+  initThrowawayRepository(clone);
+  mkdirSync(join(clone, "data"));
+  writeFileSync(join(clone, "data", "dataset.json"), JSON.stringify({ ...dataset, dataset_version: version }));
+  runGit(clone, "add", "data");
+  commitInThrowaway(clone, "-m", `dataset version ${version}`);
+  return runGit(clone, "rev-parse", "HEAD");
+}
 
 describe("the lock's run entry refuses a subcommand it does not name", () => {
   // The entry data:pin and data:check both run, without their subcommand.
