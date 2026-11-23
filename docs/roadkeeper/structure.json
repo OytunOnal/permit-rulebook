@@ -3805,6 +3805,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/data-lock.test.ts",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/dataset-ld.test.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
@@ -11452,5 +11457,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "cd4dd4de03dfd88447a9f9db33ca528e6d138a0039707470315bc9183ba41009"
+ "digest": "390a9cf448a8d3f3bb8977c771efc4cf51b297bcbbd2f023ab6e590ba992389b"
 }

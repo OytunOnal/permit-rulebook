@@ -4,7 +4,7 @@ import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromePath } from "../scripts/browser/browser.mjs";
-import { dataClonePath } from "../scripts/data-lock/data-lock.mjs";
+import { dataClonePath, pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
 import { runGit } from "../scripts/run-git.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 import { commitInThrowaway, initThrowawayRepository, inThrowawayFolder, LF } from "./throwaway-folder.js";
@@ -86,9 +86,8 @@ function pngSizeOf(file: string): string {
   return `${png.readUInt32BE(16)}x${png.readUInt32BE(20)}`;
 }
 
-/** The value a lock's `key=` line holds. */
-const lockValueOf = (text: string, key: string): string | undefined =>
-  new RegExp(`^${key}=(.+)$`, "m").exec(text)?.[1]?.trim();
+/** The site's own lock's text, which every throwaway lock copies. */
+const siteLockText = readFileSync(join(root, "data.lock"), "utf8");
 
 /** `body` run, then the site's own `data.lock` asserted unwritten by it. */
 async function expectSiteLockUnwrittenBy(body: () => Promise<void>): Promise<void> {
@@ -104,13 +103,10 @@ describe("npm run data:pin", () => {
     await expectSiteLockUnwrittenBy(() => inThrowawayFolder(async (folder) => {
       // The site's lock, copied, its pin moved off the clone so the write shows.
       const lock = join(folder, "data.lock");
-      writeFileSync(lock, readFileSync(join(root, "data.lock"), "utf8")
-        .replace(/^sha=.*$/m, `sha=${"0".repeat(40)}`).replace(/^dataset_version=.*$/m, "dataset_version=0"));
+      writeFileSync(lock, pinnedLockTextOf(siteLockText, { sha: "0".repeat(40), datasetVersion: "2000.01.01" }));
       const run = await nodeRun([...scriptArgumentsOf("data:pin"), "--lock", lock]);
       expect(run.status, run.out).toBe(0);
-      const written = readFileSync(lock, "utf8");
-      expect(lockValueOf(written, "sha")).toBe(head);
-      expect(lockValueOf(written, "dataset_version")).toBe(version);
+      expect(readLock(readFileSync(lock, "utf8"))).toEqual({ sha: head, datasetVersion: version });
     }));
   }, 60000);
 });
@@ -127,7 +123,7 @@ function cloneWithCommits(clone: string, count: number): string[] {
 /** The site's lock copied into `folder`, naming `sha`; its path. */
 function lockNaming(folder: string, sha: string): string {
   const lock = join(folder, "data.lock");
-  writeFileSync(lock, readFileSync(join(root, "data.lock"), "utf8").replace(/^sha=.*$/m, `sha=${sha}`));
+  writeFileSync(lock, pinnedLockTextOf(siteLockText, { sha, datasetVersion: readLock(siteLockText).datasetVersion }));
   return lock;
 }
 
