@@ -5,6 +5,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromePath } from "../scripts/browser/browser.mjs";
 import { dataClonePath, pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
+import { SUBCOMMAND_NAMES } from "../scripts/data-lock-run/data-lock-run.mjs";
 import { runGit } from "../scripts/run-git.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 import { commitInThrowaway, initThrowawayRepository, inThrowawayFolder, LF } from "./throwaway-folder.js";
@@ -115,15 +116,26 @@ describe("the lock's run entry refuses a subcommand it does not name", () => {
   // The entry data:pin and data:check both run, without their subcommand.
   const entry = () => scriptArgumentsOf("data:pin")[0]!;
 
-  it.each([["a missing", []], ["an unknown", ["unpin"]]])("%s subcommand: exits non-zero, names the known ones, writes no lock", async (_what, words) => {
+  /** A refusal's run asserted: a non-zero exit, and every subcommand the entry knows named as a word of what it printed. */
+  function expectRefusalNamingEverySubcommand(run: CommandRun): void {
+    expect(run.status, run.out).not.toBe(0);
+    expect(SUBCOMMAND_NAMES.length, "the entry declares no subcommand").toBeGreaterThan(0);
+    const printedWords = run.out.split(/\W+/);
+    for (const name of SUBCOMMAND_NAMES) expect(printedWords, `the refusal does not name ${name}: ${run.out}`).toContain(name);
+  }
+
+  it("with no arguments at all: exits non-zero, names every subcommand, writes no lock", async () => {
+    await expectSiteLockUnwrittenBy(async () => {
+      expectRefusalNamingEverySubcommand(await nodeRun([entry()]));
+    });
+  }, 60000);
+
+  it.each([["a missing", []], ["an unknown", ["unpin"]]])("%s subcommand: exits non-zero, names every subcommand, writes no lock", async (_what, words) => {
     await expectSiteLockUnwrittenBy(() => inThrowawayFolder(async (folder) => {
       const lock = join(folder, "data.lock");
       const lockText = pinnedLockTextOf(siteLockText, { sha: "0".repeat(40), datasetVersion: "2000.01.01" });
       writeFileSync(lock, lockText);
-      const run = await nodeRun([entry(), ...words, "--lock", lock]);
-      expect(run.status, run.out).not.toBe(0);
-      expect(run.out).toMatch(/\bpin\b/);
-      expect(run.out).toMatch(/\bcheck\b/);
+      expectRefusalNamingEverySubcommand(await nodeRun([entry(), ...words, "--lock", lock]));
       expect(readFileSync(lock, "utf8"), "the given lock was written").toBe(lockText);
     }));
   }, 60000);

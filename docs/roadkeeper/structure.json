@@ -4166,6 +4166,11 @@
   },
   {
    "from": "tests/hand-run-commands.test.ts",
+   "to": "scripts/data-lock-run/data-lock-run.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/hand-run-commands.test.ts",
    "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
@@ -6807,23 +6812,18 @@
     "exported": false
    },
    {
-    "name": "subcommand",
+    "name": "SUBCOMMAND_NAMES",
     "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "isProcessScript",
+    "kind": "fn",
     "exported": false
    },
    {
-    "name": "args",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "run",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "report",
-    "kind": "const",
+    "name": "runSubcommand",
+    "kind": "fn",
     "exported": false
    }
   ],
@@ -11457,5 +11457,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "e104603875a30c9d79c6a5217b5c4cdb4d7a8b76a16a1771210fe86bef712937"
+ "digest": "109018454d29865e4352f1956b14062daa02bd0f63946e395cc71117cfa1c44b"
 }
