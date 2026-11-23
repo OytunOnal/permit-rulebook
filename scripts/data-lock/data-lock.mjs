@@ -33,7 +33,8 @@ export function readLock(text = readLockText()) {
  * site's own data clone by default) into the lock at `lockPath` (the site's
  * own `data.lock` by default), relative paths read from the working folder,
  * and returns the sha it named before, the sha it names now and the dataset
- * version.
+ * version. A HEAD or dataset version of the wrong shape is refused, and the
+ * lock left unwritten.
  */
 export function pinData({ lockPath = siteLockPath, clonePath } = {}) {
   const target = resolve(lockPath);
