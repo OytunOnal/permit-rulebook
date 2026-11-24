@@ -135,6 +135,10 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   to wait on a run stops builders trying a Monitor loop the shell hook
   refuses (#445, from the retro of #439, the human's word 2026-11-23). —
   `untested`
+- **A36 — a reason beside each constant makes changing it safer.** A
+  maintainer changing a constant or a long condition that says why it holds
+  its value, or what it asks, changes it at less risk than one changed blind
+  (#452, from Q318 during #446's build, 2026-11-24). — `untested`
 
 ## The journey beyond the first permit (candidate bets, human's idea 2026-09-11)
 
