@@ -3,7 +3,7 @@
   "green": [
     ["npm", "run", "data:check"],
     ["npm", "run", "build"],
-    ["npm", "test"],
+    ["{tests}"],
     ["npm", "run", "lint"],
     ["npm", "run", "assets:check"],
     ["npm", "run", "check:base"],
