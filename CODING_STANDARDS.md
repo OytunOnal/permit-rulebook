@@ -80,6 +80,11 @@ pull request.
   script reads its words from `data-` attributes the template renders. No
   country name, route name or dataset value inside an inline script.
 - Naming: files and ids are kebab-case.
+- A slice pays the debt of the code it rewrites: a lint suppression
+  (`eslint-suppressions.json`) or a line ceiling (`docs/roadkeeper/ceilings.json`)
+  on a function or file the slice rewrites is paid in that slice, its count
+  lowered in the same change; debt in code a slice does not rewrite stays with
+  the slice that names it.
 
 ## Tests
 
