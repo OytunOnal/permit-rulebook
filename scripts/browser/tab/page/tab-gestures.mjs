@@ -22,12 +22,18 @@ export class TabGestures {
   #sendToTab;
   #waits;
   #front;
+  #countTabsOpened;
 
-  /** `waits` is the same tab's `TabWaits`; `front` makes the same tab the one the browser shows, and the walk's tab on screen. */
-  constructor(sendToTab, { waits, front }) {
+  /**
+   * `waits` is the same tab's `TabWaits`; `front` makes the same tab the one the
+   * browser shows, and the walk's tab on screen; `countTabsOpened` says how many
+   * tabs its page has opened so far.
+   */
+  constructor(sendToTab, { waits, front, countTabsOpened }) {
     this.#sendToTab = sendToTab;
     this.#waits = waits;
     this.#front = front;
+    this.#countTabsOpened = countTabsOpened;
   }
 
   /** A mouse click at a point of the viewport. */
@@ -55,16 +61,18 @@ export class TabGestures {
   /**
    * Reads the document the gesture leaves, sends the gesture with `send`, brings
    * this tab to the front as the walk's tab on screen, and waits until that
-   * document has reported its first input, or the tab stands on another: the
-   * gesture loaded one.
+   * document has reported its first input, or the tab stands on another (the
+   * gesture loaded one), or the page has opened a tab since.
    *
-   * A gesture that opens a new tab can hide this one, and a hidden page presents
-   * no frame, so it never reports the input (#453).
+   * A gesture that opens a new tab can hide this page before it presents its
+   * next frame, and Chrome then never records that first input, even once the
+   * page is in front again (#453).
    */
   async #sendFrontAndWaitUntilReported(send) {
     const left = await this.#waits.readDocumentShown();
+    const tabsOpenedBefore = this.#countTabsOpened();
     await send();
     await this.#front();
-    await this.#waits.waitUntilFirstInputReportedOrLeft(left);
+    await this.#waits.waitUntilFirstInputReportedOrLeft(left, () => this.#countTabsOpened() > tabsOpenedBefore);
   }
 }
