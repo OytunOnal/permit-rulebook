@@ -173,6 +173,30 @@ describe("the choice writes nothing it has not checked", () => {
 });
 
 /**
+ * A refusal prints one structured error line and no stack trace; under
+ * Actions it also prints `::error::` with its reason, so it shows on the
+ * run's page (Q306, Q310 on #446).
+ */
+describe("a refusal is one error line, with an annotation under Actions", () => {
+  it.each([["outside Actions", "", false], ["under Actions", "true", true]])("%s", async (_where, githubActions, annotated) => {
+    await inThrowawayFolder((folder) => {
+      const reason = CHOOSE_COMMIT_REFUSALS.chosenCommit;
+      const run = runChoice(folder, { EVENT_NAME: "repository_dispatch", PAYLOAD_SHA: "main", GITHUB_ACTIONS: githubActions });
+      expect(run.exitCode, run.printed).toBe(1);
+      const lines = run.printed.split(LF).map((line) => line.trimEnd()).filter((line) => line !== "");
+      expect(lines, "the refusal printed more than its line, or its annotation").toHaveLength(annotated ? 2 : 1);
+      const errorLines = lines.filter((line) => line.startsWith("{")).map((line) => JSON.parse(line) as { level: string; msg: string });
+      expect(errorLines).toHaveLength(1);
+      expect(errorLines[0]!.level).toBe("error");
+      expect(errorLines[0]!.msg).toContain(reason);
+      const annotations = lines.filter((line) => line.startsWith("::error::"));
+      expect(annotations).toHaveLength(annotated ? 1 : 0);
+      if (annotated) expect(annotations[0]).toContain(reason);
+    });
+  });
+});
+
+/**
  * The build hands on the commit it checked out and the dataset version it
  * read from the data's own file; the pin writes both into data.lock. The
  * version is checked for its shape before it becomes an output.

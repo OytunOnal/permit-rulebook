@@ -106,7 +106,8 @@
     "scripts/data-lock-run/choose-commit/run-choose-commit.mjs",
     "scripts/data-lock-run/data-lock-run.mjs",
     "scripts/data-lock-run/pin/cli-data-pin.mjs",
-    "scripts/data-lock-run/pin/run-pin.mjs"
+    "scripts/data-lock-run/pin/run-pin.mjs",
+    "scripts/data-lock-run/refusal/cli-refusal.mjs"
    ]
   },
   {
@@ -344,6 +345,7 @@
   "scripts/data-lock-run/data-lock-run.mjs": "main",
   "scripts/data-lock-run/pin/cli-data-pin.mjs": "presentation",
   "scripts/data-lock-run/pin/run-pin.mjs": "main",
+  "scripts/data-lock-run/refusal/cli-refusal.mjs": "presentation",
   "scripts/data-lock/data-lock.mjs": "infrastructure",
   "scripts/data-lock/disk/clone-questions.mjs": "infrastructure",
   "scripts/data-lock/disk/data-clone.mjs": "infrastructure",
@@ -820,6 +822,11 @@
   {
    "from": "scripts/data-lock-run/data-lock-run.mjs",
    "to": "scripts/data-lock-run/pin/run-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/refusal/cli-refusal.mjs",
    "kind": "dependency"
   },
   {
@@ -6878,6 +6885,11 @@
     "name": "runSubcommand",
     "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "reportOfRun",
+    "kind": "fn",
+    "exported": false
    }
   ],
   "src/lib/country-search/country-search.ts": [],
@@ -11510,5 +11522,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "89f829dc0c1eea04756bf82388abc793c91f24c430bb741577949a494c25c0bf"
+ "digest": "9243cf213cdfec14ae011d97f0239cf2689ebdf57b7812edafa3c6dc84660b53"
 }

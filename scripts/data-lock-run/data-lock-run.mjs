@@ -12,13 +12,17 @@
  *
  * It refuses a subcommand it does not name, before running anything; a
  * subcommand that refuses throws before its report exists, so no output is
- * written. Imported, it runs nothing: a subcommand runs only when this file
- * is the process's own script, and an importer reads `SUBCOMMAND_NAMES` alone.
+ * written. Every refusal, the usage one included, is printed as one JSON
+ * error line, with no stack, and an `::error::` line under GitHub Actions
+ * (`refusal/cli-refusal.mjs`), and exits 1. Imported, it runs nothing: a subcommand
+ * runs only when this file is the process's own script, and an importer
+ * reads `SUBCOMMAND_NAMES` alone.
  */
 import { appendFileSync, realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { printReport } from "../print-report.mjs";
 import { runCheck } from "./check/run-check.mjs";
+import { refusalReportOf } from "./refusal/cli-refusal.mjs";
 import { runChooseCommit } from "./choose-commit/run-choose-commit.mjs";
 import { runPin } from "./pin/run-pin.mjs";
 
@@ -45,7 +49,7 @@ function writeStepOutputs(outputs) {
   appendFileSync(outputFile, Object.entries(outputs).map(([name, value]) => `${name}=${value}\n`).join(""), "utf8");
 }
 
-/** Runs the subcommand `argv` names on the arguments after it, writes its step outputs, prints its report and exits with its code. */
+/** Runs the subcommand `argv` names on the arguments after it, writes its step outputs, and returns its report. */
 function runSubcommand(argv) {
   const [subcommand, ...args] = argv;
   const run = SUBCOMMANDS.get(subcommand);
@@ -53,8 +57,20 @@ function runSubcommand(argv) {
     throw new Error(`${JSON.stringify(subcommand ?? "")} is not a subcommand: node scripts/data-lock-run/data-lock-run.mjs <${SUBCOMMAND_NAMES.join(" | ")}> ...`);
   const report = run(args);
   if (report.outputs !== undefined) writeStepOutputs(report.outputs);
+  return report;
+}
+
+/** The report of the run `argv` names, or of its refusal: whatever it throws, its message as one error line, no stack. */
+function reportOfRun(argv) {
+  try {
+    return runSubcommand(argv);
+  } catch (error) {
+    return refusalReportOf(error.message, { isUnderActions: process.env.GITHUB_ACTIONS === "true" });
+  }
+}
+
+if (isProcessScript()) {
+  const report = reportOfRun(process.argv.slice(2));
   printReport(report);
   process.exit(report.exitCode);
 }
-
-if (isProcessScript()) runSubcommand(process.argv.slice(2));
