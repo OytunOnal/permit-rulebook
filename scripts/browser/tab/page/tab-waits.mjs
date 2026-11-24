@@ -125,13 +125,14 @@ const isNewDocumentDrawn = (left) => `${DOCUMENT_SHOWN} !== ${JSON.stringify(lef
   && document.readyState !== "loading" && !document.querySelector(".stand-in")`;
 
 /**
- * "document left" when the tab stands on a document other than `left`, else
- * "first input reported" once `left` has reported its first input, else false.
- * Chrome hands a page its layout shifts as soon as a frame is laid out, but
- * its first input only once the frame is presented, so a read made before then
- * finds no input and counts a gesture's own shift (#269).
+ * The expression that answers "document left" when the tab stands on a
+ * document other than `left`, else "first input reported" once `left` has
+ * reported its first input, else false. Chrome hands a page its layout shifts
+ * as soon as a frame is laid out, but its first input only once the frame is
+ * presented, so a read made before then finds no input and counts a gesture's
+ * own shift (#269).
  */
-const readFirstInputReportedOrLeft = (left) => `(${DOCUMENT_SHOWN} !== ${JSON.stringify(left)} && "document left")
+const firstInputReportedOrLeft = (left) => `(${DOCUMENT_SHOWN} !== ${JSON.stringify(left)} && "document left")
   || (performance.getEntriesByType("first-input").length > 0 && "first input reported")`;
 
 /** Whether the page is hidden: a hidden page presents no frame, so it reports no first input (#453). */
@@ -250,7 +251,7 @@ export class TabWaits {
     const read = async () => {
       // A gesture that opened a tab took effect; the page may never record its first input (#453).
       if (hasOpenedATab()) return { held: "tab opened" };
-      const seen = await this.#readOnce(readFirstInputReportedOrLeft(left));
+      const seen = await this.#readOnce(firstInputReportedOrLeft(left));
       if (!seen?.held) lastReadHidden = (await this.#readOnce(IS_HIDDEN))?.held === true;
       return seen;
     };
