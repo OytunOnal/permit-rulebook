@@ -58,17 +58,23 @@ export function lockedShaOf(text) {
 export const PIN_REFUSALS = Object.freeze({
   commit: "the commit is not 40 lower-case hex characters",
   datasetVersion: "the dataset version is not YYYY.MM.DD",
+  lock: "the lock has no sha= line or no dataset_version= line to write",
 });
+
+/** Whether `lockText` holds both lines a pin writes over, a `sha=` line and a `dataset_version=` line. */
+const hasBothLockLines = (lockText) => /^sha=/m.test(lockText) && /^dataset_version=/m.test(lockText);
 
 /**
  * `lockText` with its `sha=` line naming `sha` and its `dataset_version=` line
  * naming `datasetVersion`; every other line kept. It refuses a `sha` not 40
- * lower-case hex and a `datasetVersion` not YYYY.MM.DD, so no lock of the
- * wrong shape is written.
+ * lower-case hex, a `datasetVersion` not YYYY.MM.DD, and a lock missing either
+ * line, which the pin could not write, so no lock of the wrong shape is
+ * written.
  */
 export function pinnedLockTextOf(lockText, { sha, datasetVersion }) {
   if (!isFullSha(sha)) throw new LockRefusal(PIN_REFUSALS.commit, "a pinned lock is refused");
   if (!isDatasetVersion(datasetVersion)) throw new LockRefusal(PIN_REFUSALS.datasetVersion, "a pinned lock is refused");
+  if (!hasBothLockLines(lockText)) throw new LockRefusal(PIN_REFUSALS.lock, "a pinned lock is refused");
   return lockText
     .replace(/^sha=.*$/m, `sha=${sha}`)
     .replace(/^dataset_version=.*$/m, `dataset_version=${datasetVersion}`);

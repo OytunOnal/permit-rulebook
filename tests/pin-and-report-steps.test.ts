@@ -100,6 +100,17 @@ describe("pin-built writes nothing it has not checked", () => {
     });
   });
 
+  // A line the pin cannot find is a line it cannot write (Q326).
+  it.each([
+    ["sha=", (line: string) => !line.startsWith("sha=")],
+    ["dataset_version=", (line: string) => !line.startsWith("dataset_version=")],
+  ])("a lock missing its %s line is refused, the lock unwritten and no output", async (_line, isKept) => {
+    const lock = lockText.split(LF).filter(isKept).join(LF);
+    await inThrowawayFolder((folder) => {
+      expectRefused(runPinBuilt(folder, {}, lock), { lock, reason: PIN_BUILT_REFUSALS.lock });
+    });
+  });
+
   it("a refusal under Actions also prints its annotation", async () => {
     await inThrowawayFolder((folder) => {
       const run = runPinBuilt(folder, { VERSION: "2026-11-24", GITHUB_ACTIONS: "true" });
