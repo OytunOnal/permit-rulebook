@@ -17,6 +17,9 @@
   "scripts/carry-assets/generation/digest-list.mjs": {
     "roadkeeper/constant-reason": {
       "count": 1
+    },
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
     }
   },
   "scripts/carry-assets/live-deploy/ceilings.mjs": {
@@ -79,8 +82,38 @@
       "count": 25
     }
   },
+  "src/lib/countries.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
   "src/lib/country-search/control/controller.ts": {
     "roadkeeper/constant-reason": {
+      "count": 1
+    }
+  },
+  "src/lib/dataset-facts/dataset-wide/dataset-counts.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
+  "src/lib/dataset-facts/dataset-wide/read-range.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
+  "src/lib/dataset-facts/dataset-wide/watch-run.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
+  "src/lib/dataset-facts/per-page/reckon-route-facts.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
+  "src/lib/dataset-facts/reckon-dataset-facts.ts": {
+    "roadkeeper/inner-levels-pure": {
       "count": 1
     }
   },
@@ -97,11 +130,24 @@
   "src/lib/interview/flow/interview-after.ts": {
     "roadkeeper/constant-reason": {
       "count": 2
+    },
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
     }
   },
   "src/lib/quote.ts": {
     "roadkeeper/named-condition": {
       "count": 1
+    }
+  },
+  "src/lib/record.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
+  "src/lib/scope.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 2
     }
   },
   "src/lib/site.ts": {
@@ -110,7 +156,55 @@
     }
   },
   "src/lib/situations.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    },
     "roadkeeper/named-condition": {
+      "count": 1
+    }
+  },
+  "src/lib/verdict/reckon/layout/figure-gaps.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
+  "src/lib/verdict/reckon/layout/in-view.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
+  "src/lib/verdict/reckon/layout/layout.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
+  "src/lib/verdict/reckon/layout/money-shortfall.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
+  "src/lib/verdict/reckon/layout/not-yet-group.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
+  "src/lib/verdict/reckon/layout/route-standing.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
+  "src/lib/verdict/reckon/layout/steps.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
+  "src/lib/verdict/reckon/layout/verdict-layout.ts": {
+    "roadkeeper/inner-levels-pure": {
+      "count": 1
+    }
+  },
+  "src/lib/verdict/reckon/reckon-verdict.ts": {
+    "roadkeeper/inner-levels-pure": {
       "count": 1
     }
   },
