@@ -6,6 +6,7 @@
  * them in its one error line.
  */
 import { LockRefusal } from "../../data-lock/data-lock.mjs";
+import { OptionMissing } from "../../find-option-value.mjs";
 
 /** Why a run is refused before the lock's rules are asked; a reason names the rule, never a value. */
 export const RUN_REFUSALS = Object.freeze({
@@ -13,8 +14,20 @@ export const RUN_REFUSALS = Object.freeze({
   stepOutputs: "GITHUB_OUTPUT names no file, so the step's outputs have nowhere to go",
 });
 
-/** Refuses `argv` when it gives `--lock` with no path after it, as its last or an empty argument. */
-export function refuseBareLockOption(argv) {
-  const at = argv.indexOf("--lock");
-  if (at !== -1 && !argv[at + 1]) throw new LockRefusal(RUN_REFUSALS.lockPath, "the command line is refused");
+/** The reason an option given with no value is refused for, by the option; a Map, since the option is the command line's text. */
+const MISSING_OPTION_REFUSALS = new Map([["--lock", RUN_REFUSALS.lockPath]]);
+
+/**
+ * What `readOptions` returns; an `OptionMissing` it throws for an option of
+ * `MISSING_OPTION_REFUSALS` is refused as a `LockRefusal` with that option's
+ * reason, and any other error is thrown on as it is.
+ */
+export function optionsRefusingMissing(readOptions) {
+  try {
+    return readOptions();
+  } catch (error) {
+    const reason = error instanceof OptionMissing ? MISSING_OPTION_REFUSALS.get(error.option) : undefined;
+    if (reason === undefined) throw error;
+    throw new LockRefusal(reason, "the command line is refused");
+  }
 }

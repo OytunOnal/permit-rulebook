@@ -879,6 +879,11 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/data-lock-run/refusal/run-refusals.mjs",
+   "to": "scripts/find-option-value.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/data-lock/data-lock.mjs",
    "to": "scripts/data-lock/disk/clone-questions.mjs",
    "kind": "dependency"
@@ -7958,6 +7963,11 @@
   ],
   "scripts/find-option-value.mjs": [
    {
+    "name": "OptionMissing",
+    "kind": "class",
+    "exported": true
+   },
+   {
     "name": "findOptionValue",
     "kind": "fn",
     "exported": true
@@ -11596,5 +11606,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "8ffcd8e897cc5acef2541dc51e23ef181d774931401659a76d0156965b122ac5"
+ "digest": "6ecf17ba459f8ad950e654ab0b8731d00c4d72d0869674861158fba8af693ea9"
 }
