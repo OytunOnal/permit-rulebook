@@ -29,6 +29,7 @@
    ],
    "files": [
     "scripts/browser/tab/answered-requests/answered-requests.mjs",
+    "scripts/browser/tab/attached-target/attached-target.mjs",
     "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs",
     "scripts/browser/tab/open-tab.mjs",
     "scripts/browser/tab/page/tab-events.mjs",
@@ -270,6 +271,7 @@
   "scripts/browser/static-server/html-in-pieces.mjs": "infrastructure",
   "scripts/browser/static-server/static-server.mjs": "infrastructure",
   "scripts/browser/tab/answered-requests/answered-requests.mjs": "infrastructure",
+  "scripts/browser/tab/attached-target/attached-target.mjs": "infrastructure",
   "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs": "infrastructure",
   "scripts/browser/tab/open-tab.mjs": "infrastructure",
   "scripts/browser/tab/page/tab-events.mjs": "infrastructure",
@@ -512,8 +514,18 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/browser/tab/answered-requests/answered-requests.mjs",
+   "to": "scripts/browser/tab/attached-target/attached-target.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/browser/tab/open-tab.mjs",
    "to": "scripts/browser/tab/answered-requests/answered-requests.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/tab/open-tab.mjs",
+   "to": "scripts/browser/tab/attached-target/attached-target.mjs",
    "kind": "dependency"
   },
   {
@@ -6596,7 +6608,7 @@
     "exported": true
    },
    {
-    "name": "countTabsOpenedBy",
+    "name": "watchTabsOpenedBy",
     "kind": "fn",
     "exported": false
    },
@@ -11402,6 +11414,8 @@
    }
   ]
  },
+ "impure": [],
+ "impureBaseline": [],
  "loose": [
   "astro.config.mjs",
   "eslint.config.mjs",
@@ -11498,5 +11512,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "ab1bf0c0e53d05d8371b2d15156e8042e61cccf3e963d69b59736f46cb2930d4"
+ "digest": "f1d307f2ddd663185216ed4cd80e5698c05143afe0e2b220a107e5ab02a1b734"
 }

@@ -24,18 +24,18 @@ export class TabGestures {
   #sendToTab;
   #waits;
   #front;
-  #countTabsOpened;
+  #watchForTabOpened;
 
   /**
    * `waits` is the same tab's `TabWaits`; `front` makes the same tab the one the
-   * browser shows, and the walk's tab on screen; `countTabsOpened` says how many
-   * tabs its page has opened so far.
+   * browser shows, and the walk's tab on screen; `watchForTabOpened` starts a
+   * watch and returns whether its page has opened a tab since.
    */
-  constructor(sendToTab, { waits, front, countTabsOpened }) {
+  constructor(sendToTab, { waits, front, watchForTabOpened }) {
     this.#sendToTab = sendToTab;
     this.#waits = waits;
     this.#front = front;
-    this.#countTabsOpened = countTabsOpened;
+    this.#watchForTabOpened = watchForTabOpened;
   }
 
   /** A mouse click at a point of the viewport. */
@@ -72,9 +72,9 @@ export class TabGestures {
    */
   async #sendFrontAndWaitUntilReportedOrLeftOrTabOpened(send) {
     const left = await this.#waits.readDocumentShown();
-    const tabsOpenedBefore = this.#countTabsOpened();
+    const hasOpenedATab = this.#watchForTabOpened();
     await send();
     await this.#front();
-    await this.#waits.waitUntilFirstInputReportedOrLeftOrTabOpened(left, () => this.#countTabsOpened() > tabsOpenedBefore);
+    await this.#waits.waitUntilFirstInputReportedOrLeftOrTabOpened(left, hasOpenedATab);
   }
 }
