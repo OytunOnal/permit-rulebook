@@ -6,7 +6,7 @@
  * exits with its code. It reaches the lock's rules only through the
  * `data-lock` module's entry.
  *
- *   node scripts/data-lock-run/data-lock-run.mjs pin [--lock <path>]                    # npm run data:pin
+ *   node scripts/data-lock-run/data-lock-run.mjs pin [--lock <path>] [--clone <path>]   # npm run data:pin
  *   node scripts/data-lock-run/data-lock-run.mjs check [--lock <path>] [--clone <path>] # npm run data:check
  *   node scripts/data-lock-run/data-lock-run.mjs choose-commit                          # the deploy's data-commit step
  *
