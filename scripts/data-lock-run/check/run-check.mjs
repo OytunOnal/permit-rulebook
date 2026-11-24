@@ -6,10 +6,11 @@
  * report `cli-data-check.mjs` makes of it.
  */
 import { cloneShortfallOf, lockAndCloneOf } from "../../data-lock/data-lock.mjs";
+import { optionsRefusingMissing } from "../refusal/run-refusals.mjs";
 import { dataCheckOptionsOf, dataCheckReportOf } from "./cli-data-check.mjs";
 
-/** The check run on the arguments after `check`, as its report. */
+/** The check run on the arguments after `check`, as its report; an option with no value is refused as `optionsRefusingMissing` says. */
 export function runCheck(argv) {
-  const lockAndClone = lockAndCloneOf(dataCheckOptionsOf(argv));
+  const lockAndClone = lockAndCloneOf(optionsRefusingMissing(() => dataCheckOptionsOf(argv)));
   return dataCheckReportOf(lockAndClone, cloneShortfallOf(lockAndClone));
 }

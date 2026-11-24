@@ -161,7 +161,8 @@ describe("the lock's run entry refuses a subcommand it does not name", () => {
   function expectRefusalNamingEverySubcommand(run: CommandRun): void {
     expect(run.status, run.out).not.toBe(0);
     expect(SUBCOMMAND_NAMES.length, "the entry declares no subcommand").toBeGreaterThan(0);
-    const printedWords = run.out.split(/\W+/);
+    // A subcommand's name may hold a hyphen (`choose-commit`), so a word may too.
+    const printedWords = run.out.split(/[^\w-]+/);
     for (const name of SUBCOMMAND_NAMES) expect(printedWords, `the refusal does not name ${name}: ${run.out}`).toContain(name);
   }
 

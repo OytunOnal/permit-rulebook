@@ -125,69 +125,28 @@ jobs:
           # No token on disk for a stranger's pull request to read.
           persist-credentials: false
 
-      # Where the data has to end up is a fact the site's own manifest already
-      # holds. It is read from there rather than typed here: the directory still
-      # carries the working name — the folders are the human's to rename — and a
-      # workflow that spells it out is one more place to keep in step.
-      #
-      # Every value this step writes to its outputs comes from a file a pull
-      # request may change or from an event's payload, and a second line in one
-      # would be a second output: each is checked for its shape first, on every
-      # event (`tests/data-commit.test.ts` runs this script).
+      # The run module runs on the node the suite runs on.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
+        with: { node-version: 22 }
+
+      # The data's folder, read from the site's manifest, the lock's commit,
+      # and the commit this run builds: the lock's, or on a schedule's or a
+      # dispatch's first attempt the newest data (why, and every refusal, in
+      # `scripts/data-lock/rules/data-commit.mjs`). Every value comes from a
+      # file a pull request may change or from an event's payload, and is
+      # checked for its shape before it is written to the outputs
+      # (`tests/data-commit.test.ts` runs this line). On a pull request this
+      # runs the pull request's own code, as the build does
+      # (docs/roadkeeper/threats.md).
       - name: Where the manifest expects the data, and which commit of it
         id: data
         env:
-          # Through the environment, never interpolated into the script body.
+          # Through the environment, never interpolated into the command.
           EVENT_NAME: ${{ github.event_name }}
           RUN_ATTEMPT: ${{ github.run_attempt }}
           PAYLOAD_SHA: ${{ github.event.client_payload.sha }}
           DATA_REPOSITORY_URL: https://github.com/OytunOnal/permit-rulebook-data.git
-        run: |
-          is_commit() {
-            case "$1" in
-              [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) return 0 ;;
-              *) return 1 ;;
-            esac
-          }
-          path=$(node -p "require('./package.json').dependencies['permit-rulebook-data'].replace(/^file:/, '')")
-          dir=$(basename "$path")
-          # The folder becomes the build's checkout path and working directory.
-          case "$dir" in
-            "" | *[!a-z0-9-]*) echo "::error::the manifest names no plain folder for the data — refusing to check anything out."; exit 1 ;;
-          esac
-          # `data.lock` names the data commit this site is built against, and a
-          # push, a pull request or a manual run builds against exactly that:
-          # re-running a green deploy rebuilds what deployed, and no data commit
-          # can break a deploy that changed nothing here.
-          #
-          # The daily schedule and the watch's dispatch are the deliberate
-          # exception — they exist to build against the newest data — and they
-          # write the SHA they used back into the lock when the run goes green,
-          # so the lock always names a combination that actually deployed.
-          locked=$(sed -n 's/^sha=//p' data.lock)
-          if ! is_commit "$locked"; then
-            echo "::error::data.lock names no 40-hex sha — run npm run data:pin and commit it."
-            exit 1
-          fi
-          # A RERUN of a scheduled or dispatched run keeps its event name, so it
-          # would build against today's data and then pin it — the float this
-          # lock exists to end, on the trigger that fires daily. Only a first
-          # attempt may advance the lock (Spec review, 2026-09-08).
-          first_attempt=$([ "$RUN_ATTEMPT" = "1" ] && echo yes || echo no)
-          case "$EVENT_NAME:$first_attempt" in
-            schedule:yes)            sha=$(git ls-remote "$DATA_REPOSITORY_URL" refs/heads/master | cut -f1) ;;
-            repository_dispatch:yes) sha="$PAYLOAD_SHA" ;;
-            *)                       sha="$locked" ;;
-          esac
-          # The dispatch's payload is a stranger's string until it is checked,
-          # and the data repository's answer is checked as the lock is.
-          if ! is_commit "$sha"; then
-            echo "::error::the $EVENT_NAME run chose no 40-hex data commit — refusing to check anything out."
-            exit 1
-          fi
-          echo "dir=$dir" >> "$GITHUB_OUTPUT"
-          echo "locked=$locked" >> "$GITHUB_OUTPUT"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+        run: node scripts/data-lock-run/data-lock-run.mjs choose-commit
 
   # The data package's own whole check, at the commit `data-commit` chose. A
   # job of its own beside the build: the data's check and the site's tests

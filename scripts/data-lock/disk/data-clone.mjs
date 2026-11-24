@@ -32,6 +32,13 @@ function mainCheckoutOf(siteDir) {
   }
 }
 
+/** What the manifest of the site at `siteDir` names for the data package: its `file:` path. A manifest naming none throws. */
+export function dataDependencyOf(siteDir) {
+  const dependency = JSON.parse(readFileSync(join(siteDir, "package.json"), "utf8")).dependencies?.["permit-rulebook-data"];
+  if (typeof dependency !== "string") throw new Error(`the manifest at ${siteDir} names no permit-rulebook-data dependency`);
+  return dependency;
+}
+
 /**
  * The data clone of the site at `siteDir` (this code's own site by default):
  * where the manifest's `file:` path for the data package points from the
@@ -40,8 +47,7 @@ function mainCheckoutOf(siteDir) {
  */
 export function dataClonePath(siteDir = root) {
   const mainCheckout = mainCheckoutOf(siteDir);
-  const manifest = JSON.parse(readFileSync(join(siteDir, "package.json"), "utf8"));
-  return resolve(mainCheckout, manifest.dependencies["permit-rulebook-data"].replace(/^file:/, ""));
+  return resolve(mainCheckout, dataDependencyOf(siteDir).replace(/^file:/, ""));
 }
 
 /** The HEAD commit of the data clone at `clonePath`. */
