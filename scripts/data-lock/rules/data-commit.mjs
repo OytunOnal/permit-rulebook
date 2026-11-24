@@ -17,7 +17,6 @@
  * returned, and a value of the wrong shape is refused with a reason from
  * `CHOOSE_COMMIT_REFUSALS`, never echoed.
  */
-import { posix } from "node:path";
 import { LockRefusal, REFUSAL_CONTEXTS } from "./lock-refusal.mjs";
 import { isFullSha, LOCKED_SHA_REFUSAL, lockedShaOf } from "./lock-text.mjs";
 
@@ -33,7 +32,8 @@ export const CHOOSE_COMMIT_REFUSALS = Object.freeze({
 
 /** The folder the data is checked out into: the last part of the manifest's path for the data package, refused unless a plain name. */
 function dataFolderOf(dependencyPath) {
-  const folder = posix.basename(dependencyPath);
+  // The last part of a `/`-separated path, as posix's basename reads it, kept here so this domain file imports nothing outside.
+  const folder = dependencyPath.replace(/\/+$/, "").split("/").pop() ?? "";
   if (!PLAIN_FOLDER.test(folder)) throw new LockRefusal(CHOOSE_COMMIT_REFUSALS.dataFolder, REFUSAL_CONTEXTS.chosenCommit);
   return folder;
 }
