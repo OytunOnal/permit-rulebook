@@ -258,10 +258,12 @@
  "levels": {
   "astro.config.mjs": "main",
   "eslint.config.mjs": "main",
-  "roadkeeper-lint/lint.mjs": "domain",
-  "roadkeeper-lint/rules/ceiling-paid-off.mjs": "domain",
-  "roadkeeper-lint/rules/constant-reason.mjs": "domain",
-  "roadkeeper-lint/rules/named-condition.mjs": "domain",
+  "roadkeeper-lint/limits/shape-limits.mjs": "domain",
+  "roadkeeper-lint/lint.mjs": "infrastructure",
+  "roadkeeper-lint/rules/ceiling-paid-off.mjs": "infrastructure",
+  "roadkeeper-lint/rules/constant-reason.mjs": "infrastructure",
+  "roadkeeper-lint/rules/inner-levels-pure.mjs": "infrastructure",
+  "roadkeeper-lint/rules/named-condition.mjs": "infrastructure",
   "scripts/browser/browser.mjs": "infrastructure",
   "scripts/browser/chrome/chrome-launch.mjs": "infrastructure",
   "scripts/browser/chrome/chrome.mjs": "infrastructure",
@@ -458,12 +460,22 @@
   },
   {
    "from": "roadkeeper-lint/lint.mjs",
+   "to": "roadkeeper-lint/limits/shape-limits.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "roadkeeper-lint/lint.mjs",
    "to": "roadkeeper-lint/rules/ceiling-paid-off.mjs",
    "kind": "dependency"
   },
   {
    "from": "roadkeeper-lint/lint.mjs",
    "to": "roadkeeper-lint/rules/constant-reason.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "roadkeeper-lint/lint.mjs",
+   "to": "roadkeeper-lint/rules/inner-levels-pure.mjs",
    "kind": "dependency"
   },
   {
@@ -7248,19 +7260,21 @@
     "exported": true
    }
   ],
-  "roadkeeper-lint/lint.mjs": [
+  "roadkeeper-lint/limits/shape-limits.mjs": [
    {
     "name": "FILE_LINES",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "plugin",
+    "name": "SHAPE_RULES",
     "kind": "const",
     "exported": true
-   },
+   }
+  ],
+  "roadkeeper-lint/lint.mjs": [
    {
-    "name": "SHAPE_RULES",
+    "name": "plugin",
     "kind": "const",
     "exported": true
    },
@@ -7310,6 +7324,63 @@
    },
    {
     "name": "constantReason",
+    "kind": "const",
+    "exported": true
+   }
+  ],
+  "roadkeeper-lint/rules/inner-levels-pure.mjs": [
+   {
+    "name": "LEVEL_TAG",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "RELATIVE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "INNER_LEVELS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "inInnerLevel",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "sourceText",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "reportOutside",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "globalReferences",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "READS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "globalThisMember",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "impureUse",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "innerLevelsPure",
     "kind": "const",
     "exported": true
    }
@@ -11397,9 +11468,11 @@
  "loose": [
   "astro.config.mjs",
   "eslint.config.mjs",
+  "roadkeeper-lint/limits/shape-limits.mjs",
   "roadkeeper-lint/lint.mjs",
   "roadkeeper-lint/rules/ceiling-paid-off.mjs",
   "roadkeeper-lint/rules/constant-reason.mjs",
+  "roadkeeper-lint/rules/inner-levels-pure.mjs",
   "roadkeeper-lint/rules/named-condition.mjs",
   "scripts/build-directory-on-disk.mjs",
   "scripts/carry-assets.mjs",
@@ -11490,5 +11563,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "76564b922f7247d0575dbf52cb520045240efb242363a4df03854abaa0d32bcc"
+ "digest": "52c29b8bfa635a9375848d6a91bcef8207e41dbe1363e9a7c5cd240fc75b1a5f"
 }
