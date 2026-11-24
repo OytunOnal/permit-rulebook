@@ -16,10 +16,7 @@
  * Beside the walk: `chromePath`, Chrome found for a caller that renders with
  * it, and `serve`, the built site's server for a caller that sends plain HTTP
  * and opens no browser (#245). The waits, the gestures, the layout-shift
- * reading and the error log stay inside the module; `TabWaits` and
- * `DevToolsConnection` are handed out only for the cases that pin them on a
- * stand-in tab and a stand-in socket (#453), and every walk reaches them
- * through `walkSite`.
+ * reading and the error log stay inside the module.
  *
  * The site is served over HTTP, because a module script does not run from
  * `file://` and the interview would measure as a handful of static links. The
@@ -28,8 +25,6 @@
  */
 
 export { chromePath } from "./chrome/chrome.mjs";
-export { DevToolsConnection } from "./connection/devtools-connection.mjs";
-export { TabWaits } from "./tab/open-tab.mjs";
 export { serve } from "./static-server/static-server.mjs";
 export {
   DESK, ERRORS_KEPT, PHONE, TRAFFIC_COUNTER_COPY, TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT, WidthFailure, walkSite,
