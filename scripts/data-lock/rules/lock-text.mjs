@@ -4,6 +4,7 @@
  * against, and its `dataset_version=` line, the version that commit carried.
  * It reads and writes text only; the lock's file is `lock-file.mjs`'s.
  */
+import { LockRefusal } from "./lock-refusal.mjs";
 
 /** A full commit sha, the only form a lock names. */
 export const FULL_SHA = /^[0-9a-f]{40}$/;
@@ -27,7 +28,7 @@ export const LOCKED_SHA_REFUSAL = "the lock names no single 40-hex sha (run npm 
  */
 export function lockedShaOf(text) {
   const shas = [...text.matchAll(/^sha=(.*)$/gm)].map((match) => match[1]);
-  if (shas.length !== 1 || !FULL_SHA.test(shas[0])) throw new Error(`a locked commit is refused: ${LOCKED_SHA_REFUSAL}`);
+  if (shas.length !== 1 || !FULL_SHA.test(shas[0])) throw new LockRefusal(LOCKED_SHA_REFUSAL, "a locked commit is refused");
   return shas[0];
 }
 
@@ -47,8 +48,8 @@ export const PIN_REFUSALS = Object.freeze({
  * wrong shape is written.
  */
 export function pinnedLockTextOf(lockText, { sha, datasetVersion }) {
-  if (!FULL_SHA.test(sha)) throw new Error(`a pinned lock is refused: ${PIN_REFUSALS.commit}`);
-  if (!DATASET_VERSION.test(datasetVersion)) throw new Error(`a pinned lock is refused: ${PIN_REFUSALS.datasetVersion}`);
+  if (!FULL_SHA.test(sha)) throw new LockRefusal(PIN_REFUSALS.commit, "a pinned lock is refused");
+  if (!DATASET_VERSION.test(datasetVersion)) throw new LockRefusal(PIN_REFUSALS.datasetVersion, "a pinned lock is refused");
   return lockText
     .replace(/^sha=.*$/m, `sha=${sha}`)
     .replace(/^dataset_version=.*$/m, `dataset_version=${datasetVersion}`);

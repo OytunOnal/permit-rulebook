@@ -18,6 +18,7 @@
  * `CHOOSE_COMMIT_REFUSALS`, never echoed.
  */
 import { posix } from "node:path";
+import { LockRefusal } from "./lock-refusal.mjs";
 import { FULL_SHA, LOCKED_SHA_REFUSAL, lockedShaOf } from "./lock-text.mjs";
 
 /** A data folder the build may check out into and work in: the shape the manifest's folder has always had. */
@@ -33,7 +34,7 @@ export const CHOOSE_COMMIT_REFUSALS = Object.freeze({
 /** The folder the data is checked out into: the last part of the manifest's `file:` path for the data package, refused unless a plain name. */
 function dataFolderOf(dependency) {
   const folder = posix.basename(dependency.replace(/^file:/, ""));
-  if (!PLAIN_FOLDER.test(folder)) throw new Error(`no data commit is chosen: ${CHOOSE_COMMIT_REFUSALS.dataFolder}`);
+  if (!PLAIN_FOLDER.test(folder)) throw new LockRefusal(CHOOSE_COMMIT_REFUSALS.dataFolder, "no data commit is chosen");
   return folder;
 }
 
@@ -58,6 +59,6 @@ export function dataCommitOf(run, newestMasterSha) {
   const dir = dataFolderOf(run.dependency);
   const locked = lockedShaOf(run.lockText);
   const sha = chosenShaOf(run, locked, newestMasterSha);
-  if (!FULL_SHA.test(sha)) throw new Error(`no data commit is chosen: ${CHOOSE_COMMIT_REFUSALS.chosenCommit}`);
+  if (!FULL_SHA.test(sha)) throw new LockRefusal(CHOOSE_COMMIT_REFUSALS.chosenCommit, "no data commit is chosen");
   return { dir, locked, sha };
 }

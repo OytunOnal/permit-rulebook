@@ -87,6 +87,7 @@
     "scripts/data-lock/disk/data-master.mjs",
     "scripts/data-lock/disk/lock-file.mjs",
     "scripts/data-lock/rules/data-commit.mjs",
+    "scripts/data-lock/rules/lock-refusal.mjs",
     "scripts/data-lock/rules/lock-text.mjs",
     "scripts/data-lock/rules/shortfall.mjs"
    ]
@@ -352,6 +353,7 @@
   "scripts/data-lock/disk/data-master.mjs": "infrastructure",
   "scripts/data-lock/disk/lock-file.mjs": "infrastructure",
   "scripts/data-lock/rules/data-commit.mjs": "domain",
+  "scripts/data-lock/rules/lock-refusal.mjs": "domain",
   "scripts/data-lock/rules/lock-text.mjs": "domain",
   "scripts/data-lock/rules/shortfall.mjs": "domain",
   "scripts/decode-png-size.mjs": "domain",
@@ -881,6 +883,11 @@
   },
   {
    "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/rules/lock-refusal.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
    "to": "scripts/data-lock/rules/lock-text.mjs",
    "kind": "dependency"
   },
@@ -906,7 +913,17 @@
   },
   {
    "from": "scripts/data-lock/rules/data-commit.mjs",
+   "to": "scripts/data-lock/rules/lock-refusal.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/rules/data-commit.mjs",
    "to": "scripts/data-lock/rules/lock-text.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/rules/lock-text.mjs",
+   "to": "scripts/data-lock/rules/lock-refusal.mjs",
    "kind": "dependency"
   },
   {
@@ -6887,16 +6904,6 @@
     "exported": false
    },
    {
-    "name": "DECLARED_REFUSALS",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "isDeclaredRefusal",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "refusedRunReportOf",
     "kind": "fn",
     "exported": false
@@ -11542,5 +11549,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "7c0abff2f65d17c0b285f3ac377d8b6cda803d5e43092d6b646aec01f4e2478f"
+ "digest": "a1efc4d50fd1d1aaa77295ae5b8fd00a471ed3e3e22a141c06338d926df265d7"
 }
