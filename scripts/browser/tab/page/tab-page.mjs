@@ -70,7 +70,8 @@ export class TabPage {
   /**
    * A second tab in the same browser — the same profile, so the same
    * origin's storage — for what one tab does to another (s37: a record
-   * grown in another tab). It is not brought to the front; `front()` does.
+   * grown in another tab). It is not brought to the front; `front()` does,
+   * and so does a gesture on it.
    * What it asks for is its own: `requests()` on each tab reads that tab
    * alone. What it throws goes to the walk's one list, under its address.
    */
