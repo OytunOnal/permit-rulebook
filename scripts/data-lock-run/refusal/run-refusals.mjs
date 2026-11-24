@@ -11,11 +11,12 @@ import { OptionMissing } from "../../find-option-value.mjs";
 /** Why a run is refused before the lock's rules are asked; a reason names the rule, never a value. */
 export const RUN_REFUSALS = Object.freeze({
   lockPath: "--lock names no path (--lock <path>)",
+  clonePath: "--clone names no path (--clone <path>)",
   stepOutputs: "GITHUB_OUTPUT names no file, so the step's outputs have nowhere to go",
 });
 
 /** The reason an option given with no value is refused for, by the option; a Map, since the option is the command line's text. */
-const MISSING_OPTION_REFUSALS = new Map([["--lock", RUN_REFUSALS.lockPath]]);
+const MISSING_OPTION_REFUSALS = new Map([["--lock", RUN_REFUSALS.lockPath], ["--clone", RUN_REFUSALS.clonePath]]);
 
 /**
  * What `readOptions` returns; an `OptionMissing` it throws for an option of

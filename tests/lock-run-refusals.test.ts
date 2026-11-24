@@ -45,9 +45,12 @@ function expectOneRefusalLine(run: { status: number | null; out: string }, reaso
 const siteLockWritten = (): number => statSync(join(root, "data.lock")).mtimeMs;
 
 describe("the hand runs refuse a malformed command line or lock in one line", () => {
-  it.each(["data:pin", "data:check"])("npm run %s -- --lock with no path", (script) => {
+  it.each([
+    ["data:pin", "--lock", "lockPath"], ["data:check", "--lock", "lockPath"],
+    ["data:pin", "--clone", "clonePath"], ["data:check", "--clone", "clonePath"],
+  ] as const)("npm run %s -- %s with no path", (script, option, refusal) => {
     const before = siteLockWritten();
-    expectOneRefusalLine(scriptRun(script, "--lock"), RUN_REFUSALS.lockPath);
+    expectOneRefusalLine(scriptRun(script, option), RUN_REFUSALS[refusal]);
     expect(siteLockWritten(), "the site's data.lock was written").toBe(before);
   });
 
