@@ -139,6 +139,15 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   maintainer changing a constant or a long condition that says why it holds
   its value, or what it asks, changes it at less risk than one changed blind
   (#452, from Q318 during #446's build, 2026-11-24). — `untested`
+- **A37 — a rate under load stops a lucky flaky fix and a lucky blame.** A
+  fix or a blame for a test that fails now and then, stated as before and
+  after rates under the same load with a zero luck gives under 5%, would have
+  stopped both #454's incomplete merge and its needless revert (#466, from
+  the retros of #453 and #455, the human's word 2026-11-25). — `untested`
+- **A38 — the runner's Chrome named in the log settles "did CI change".**
+  The Chrome version printed in each deploy's log turns a guess about the
+  runner into a fact the next time the browser tests fail on it alone (#467,
+  from the retro of #453, the human's word 2026-11-25). — `untested`
 
 ## The journey beyond the first permit (candidate bets, human's idea 2026-09-11)
 
