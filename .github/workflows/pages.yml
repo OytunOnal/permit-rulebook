@@ -316,7 +316,8 @@ jobs:
       # What the step is: the last thing before the artifact is sealed, because
       # it adds files to `dist/` and a file carried after the upload is a file
       # nobody deploys — this is where that reason is kept, and the case in
-      # `tests/pipeline.test.ts` that pins this step's position points here.
+      # `tests/carry-assets/carry-step.test.ts` that pins this step's position
+      # points here.
       # Two kinds of file: the assets it carries forward, and `asset-digests.txt`,
       # the list of what THIS build made, which is the only thing the next
       # deploy will check a carried byte against. No new action and no new
@@ -331,8 +332,8 @@ jobs:
       # whole mechanism off with every deploy still green. The reading is in
       # `site/scripts/carry-assets.mjs`'s own header, under "Where the address
       # comes from". Nothing may be appended to the `run:` line either, for the
-      # reason `tests/pipeline.test.ts` keeps beside its verbatim pin of this
-      # block.
+      # reason `tests/carry-assets/carry-step.test.ts` keeps beside its verbatim
+      # pin of this block.
       - name: Carry the live site's assets forward, so a cached page still finds them
         if: github.event_name != 'pull_request'
         working-directory: site

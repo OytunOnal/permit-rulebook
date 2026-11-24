@@ -92,7 +92,7 @@ export const PLAIN_NAME = new RegExp(`^${NAME_PATTERN}$`);
  * than the page holds, carries fewer files than the reader needs, and says
  * NOTHING — no request, no problem line, no annotation, which is precisely the
  * silent window the carry exists to close. So the boundary is not left to a
- * comment: `tests/pipeline.test.ts` reads the real built page with this very
+ * comment: `tests/carry-assets/carry-step.test.ts` reads the real built page with this very
  * function and asserts it finds every file the build put in `_astro/`, and
  * goes red the day a shape it cannot read appears in our own output.
  */

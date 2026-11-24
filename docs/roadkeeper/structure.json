@@ -3653,6 +3653,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/carry-assets/carry-step.test.ts",
+   "to": "scripts/carry-assets/carry.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-step.test.ts",
+   "to": "tests/throwaway-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-step.test.ts",
+   "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/carry-assets/carry-takes-the-live-generation-forward.test.ts",
    "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
@@ -4700,11 +4715,6 @@
   {
    "from": "tests/paths-named.test.ts",
    "to": "tests/verdict-cards.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/pipeline.test.ts",
-   "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
   },
   {
@@ -11630,5 +11640,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "2fd70a77b9fcb0aa8e0bfebb82b8413b9872a9ae7991b8d52510fbbaca62034a"
+ "digest": "daedb21c733fc02ebbd9eebb1ce6c59e03b3fe342a4e5c376d96caadfdfe869e"
 }
