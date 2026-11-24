@@ -51,13 +51,17 @@ export class TabGestures {
   };
 
   /**
-   * Reads the document the gesture leaves, sends the gesture with `send`, and
-   * waits until that document has reported its first input, or the tab stands
-   * on another: the gesture loaded one.
+   * Reads the document the gesture leaves, sends the gesture with `send`, brings
+   * the walked tab back to the front, and waits until that document has reported
+   * its first input, or the tab stands on another: the gesture loaded one.
+   *
+   * A gesture that opens a new tab can hide this one, and a hidden page presents
+   * no frame, so it never reports the input (#453).
    */
   async #sendAndWaitUntilReported(send) {
     const left = await this.#waits.readDocumentShown();
     await send();
+    await this.#sendToTab("Page.bringToFront", {});
     await this.#waits.waitUntilFirstInputReportedOrLeft(left);
   }
 }
