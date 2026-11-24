@@ -46,6 +46,9 @@ export async function openBrowser(walk, siteOrigin) {
     closeChrome(chrome);
   });
   const walkLog = new WalkLog();
+  // Before any tab: the connection hands a browser message to its listeners in
+  // the order they came, so the request handling hears a tab a page opened, and
+  // pauses its requests, before a gesture's wait can end on that tab.
   await answerRequestsOfWhatThePageOpens(connection, { answers: answeredRequests, walkLog });
   const page = await openTab(connection, { screen, network, cpuSlowdown, shiftRegion, answeredRequests, walkLog });
   walkLog.showTab(page);
