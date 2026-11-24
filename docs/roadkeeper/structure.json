@@ -6488,11 +6488,6 @@
   },
   {
    "from": "tests/verdict-steps-and-choice-lines.test.ts",
-   "to": "src/lib/verdict/compose/steps-line.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/verdict-steps-and-choice-lines.test.ts",
    "to": "src/lib/verdict/verdict.ts",
    "kind": "type-only"
   },
@@ -11397,6 +11392,8 @@
    }
   ]
  },
+ "impure": [],
+ "impureBaseline": [],
  "loose": [
   "astro.config.mjs",
   "eslint.config.mjs",
@@ -11493,5 +11490,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "33c5bafcc5ffbeea29e299a577e84bcf73df4d29516798147e3e45dd2c8f684d"
+ "digest": "76564b922f7247d0575dbf52cb520045240efb242363a4df03854abaa0d32bcc"
 }
