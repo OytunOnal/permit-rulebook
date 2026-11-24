@@ -59,7 +59,7 @@ pull request.
 - The data package owns the rules: the dataset, the schema, the engine
   (`evaluate`, the scope words, the watch). The site imports it as
   `permit-rulebook-data` and pins its commit in `data.lock`; a data change
-  reaches the site only through a pin.
+  reaches the site only once its commit is pinned there.
 - The site owns the screens: `src/lib/*` renders, `src/pages/*.astro`
   composes, one bundled module drives the interview in the browser. Nothing in
   `src/` decides a rule.

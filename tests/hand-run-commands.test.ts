@@ -102,7 +102,7 @@ describe("npm run data:pin", () => {
     const head = runGit(dataClone, "rev-parse", "HEAD");
     const version = JSON.parse(readFileSync(join(dataClone, "data", "dataset.json"), "utf8")).dataset_version;
     await expectSiteLockUnwrittenBy(() => inThrowawayFolder(async (folder) => {
-      // The site's lock, copied, its pin moved off the clone so the write shows.
+      // The site's lock, copied, pinned off the clone's commit so the write shows.
       const lock = join(folder, "data.lock");
       writeFileSync(lock, pinnedLockTextOf(siteLockText, { sha: "0".repeat(40), datasetVersion: "2000.01.01" }));
       const run = await nodeRun([...scriptArgumentsOf("data:pin"), "--lock", lock]);

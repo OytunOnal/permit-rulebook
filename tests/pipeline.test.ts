@@ -39,7 +39,7 @@ function expectNoSecretInPlainText(): void {
       // own automatic token, and from nowhere else — never as a literal.
       expect(line, `${file}: ${line.trim()}`).toMatch(/\$\{\{\s*(secrets|github)\./);
     }
-    // And no 40-hex string outside a `uses:` pin, no PAT prefixes.
+    // And no 40-hex string outside a pinned `uses:`, no PAT prefixes.
     expect(yaml, `${file}: a GitHub token prefix`).not.toMatch(/gh[pousr]_[A-Za-z0-9]{16,}/);
   }
 }
@@ -156,12 +156,12 @@ function expectOnlyFirstAttemptAdvancesLock(): void {
 function expectPinByPinBuiltThenCommitInShell(): void {
   const steps = stepsOf(jobOf(pages, "pin"));
   const writes = steps.filter((step) => /^ {8}id: pinned$/m.test(step));
-  expect(writes, "pin has no step, or more than one, with id: pinned").toHaveLength(1);
+  expect(writes, "the pin job has no step, or more than one, with id: pinned").toHaveLength(1);
   const at = steps.indexOf(writes[0]!);
   expect(stepRunLineOf(steps[at]!)).toBe("node scripts/data-lock-run/data-lock-run.mjs pin-built");
   expect(steps[at]).toContain("BUILT: ${{ needs.build.outputs.built }}");
   expect(steps[at]).toContain("VERSION: ${{ needs.build.outputs.version }}");
-  expect(steps.length, "pin runs no step, or more than one, after its write").toBe(at + 2);
+  expect(steps.length, "the pin job runs no step, or more than one, after its write").toBe(at + 2);
   const commit = steps[at + 1]!;
   expect(commit).toContain("PINNED_SHA: ${{ steps.pinned.outputs.sha }}");
   expect(commit).toContain("PINNED_VERSION: ${{ steps.pinned.outputs.version }}");
@@ -174,7 +174,7 @@ function expectPinByPinBuiltThenCommitInShell(): void {
   ]);
 }
 
-describe("the data commit is pinned, and the pin is a commit that exists", () => {
+describe("the data commit is pinned, to a commit that exists", () => {
   // The lock's shape is the data-lock module's rule, asked through its entry.
   it("data.lock names a 40-hex sha and the dataset version it carried", () => {
     const lockText = readFileSync(join(root, "data.lock"), "utf8");

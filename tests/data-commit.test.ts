@@ -195,7 +195,7 @@ describe("a run with nowhere to write its outputs", () => {
 
 /**
  * The build hands on the commit it checked out and the dataset version it
- * read from the data's own file; the pin writes both into data.lock. The
+ * read from the data's own file; the pin job writes both into data.lock. The
  * version is checked for its shape before it becomes an output. The step is
  * the run module's `read-built-commit`, run here as the step's own line runs
  * it: a process in the site's checkout, the data checked out beside it, under

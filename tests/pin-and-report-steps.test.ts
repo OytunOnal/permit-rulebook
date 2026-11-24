@@ -13,7 +13,7 @@ import { jobOf, pagesYaml as pages, readText, stepsOf } from "./workflow-text.js
  * The deploy's write of the lock and the report's read of it, each the run
  * module's subcommand, run here as the step's own line runs it: a process in a
  * throwaway site, under the environment the step passes, its outputs file
- * beside it. `pin` writes the commit and version the build reported into the
+ * beside it. The pin job writes the commit and version the build reported into the
  * lock (`pin-built`); `report` hands on the lock's commit (`read-locked-commit`).
  * Where each step sits, and what runs beside it, is `tests/pipeline.test.ts`'s.
  */
@@ -51,7 +51,7 @@ function runLockStep(step: string, folder: string, { lock, env }: { lock: string
   return { ...run, lockAfter: readFileSync(join(site, "data.lock"), "utf8") };
 }
 
-/** `pin`'s write run on a site holding `lock` (the site's own by default), its BUILT and VERSION laid over the good ones. */
+/** The pin job's write run on a site holding `lock` (the site's own by default), its BUILT and VERSION laid over the good ones. */
 const runPinBuilt = (folder: string, env: Record<string, string> = {}, lock = lockText): LockStepRun =>
   runLockStep(stepWithId("pin", "pinned"), folder, { lock, env: { BUILT, VERSION, GITHUB_ACTIONS: "", ...env } });
 

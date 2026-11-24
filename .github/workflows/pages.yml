@@ -81,7 +81,7 @@ on:
 
 # The floor for the whole workflow, and the ceiling for every job that does not
 # raise it: a build that only reads two repositories needs nothing else. The
-# deploy job asks for the two Pages tokens where it needs them, the pin for
+# deploy job asks for the two Pages tokens where it needs them, the pin job for
 # its one commit and the report for its one issue, and nowhere above (Spine
 # steward-40, 2026-09-08).
 permissions:
@@ -332,8 +332,8 @@ jobs:
       # whole mechanism off with every deploy still green. The reading is in
       # `site/scripts/carry-assets.mjs`'s own header, under "Where the address
       # comes from". Nothing may be appended to the `run:` line either, for the
-      # reason `tests/carry-assets/carry-step.test.ts` keeps beside its verbatim
-      # pin of this block.
+      # reason `tests/carry-assets/carry-step.test.ts` keeps beside the case
+      # that pins this block verbatim.
       - name: Carry the live site's assets forward, so a cached page still finds them
         if: github.event_name != 'pull_request'
         working-directory: site
