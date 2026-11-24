@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { readLock } from "../scripts/data-lock/data-lock.mjs";
 import { LF } from "./throwaway-folder.js";
 import {
-  checkoutRefOf, jobConditionOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepRunLineOf, stepsOf, workflowPaths,
+  checkoutRefOf, jobConditionOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepRunLineOf, stepScriptOf, stepsOf, workflowPaths,
 } from "./workflow-text.js";
 
 /** Whether a step's one-line `run:` runs the lock's run module. */
@@ -111,7 +111,8 @@ function expectNode22BeforeRunModule(): void {
   const setupNodes = new Set([...pages.matchAll(/uses: (actions\/setup-node@\S+)/g)].map((match) => match[1]));
   expect(setupNodes.size, "the workflow's jobs set up node from more than one pinned commit, or none").toBe(1);
   const runningJobs = jobNamesOf(pages).filter((name) => stepsOf(jobOf(pages, name)).some(runsRunModule));
-  expect(runningJobs, "a job that runs the run module is not found running it").toEqual(expect.arrayContaining(["data-commit", "build"]));
+  expect(runningJobs, "a job that runs the run module is not found running it")
+    .toEqual(expect.arrayContaining(["data-commit", "build", "pin", "report"]));
   for (const name of runningJobs) {
     const steps = stepsOf(jobOf(pages, name));
     const setup = steps.findIndex((step) => step.startsWith("uses: actions/setup-node@"));
@@ -145,6 +146,34 @@ function expectOnlyFirstAttemptAdvancesLock(): void {
   expect(build, "the build job can write to the repository").not.toMatch(/contents: write/);
 }
 
+/**
+ * The deploy's write of the lock is the run module's `pin-built`, run as a
+ * process by `tests/pin-and-report-steps.test.ts`; here, that the step runs
+ * that alone, on the build's two outputs, and that the git commit and push
+ * after it touch the lock only to add it, with a message read from what the
+ * write handed on (Q283 on #359). Nothing runs after the push.
+ */
+function expectPinByPinBuiltThenCommitInShell(): void {
+  const steps = stepsOf(jobOf(pages, "pin"));
+  const writes = steps.filter((step) => /^ {8}id: pinned$/m.test(step));
+  expect(writes, "pin has no step, or more than one, with id: pinned").toHaveLength(1);
+  const at = steps.indexOf(writes[0]!);
+  expect(stepRunLineOf(steps[at]!)).toBe("node scripts/data-lock-run/data-lock-run.mjs pin-built");
+  expect(steps[at]).toContain("BUILT: ${{ needs.build.outputs.built }}");
+  expect(steps[at]).toContain("VERSION: ${{ needs.build.outputs.version }}");
+  expect(steps.length, "pin runs no step, or more than one, after its write").toBe(at + 2);
+  const commit = steps[at + 1]!;
+  expect(commit).toContain("PINNED_SHA: ${{ steps.pinned.outputs.sha }}");
+  expect(commit).toContain("PINNED_VERSION: ${{ steps.pinned.outputs.version }}");
+  expect(stepScriptOf(commit).split(LF).filter((line) => !line.startsWith("#"))).toEqual([
+    'git config user.name "github-actions[bot]"',
+    'git config user.email "41898282+github-actions[bot]@users.noreply.github.com"',
+    "git add data.lock",
+    'git commit -m "data.lock: built and deployed against $PINNED_SHA ($PINNED_VERSION)"',
+    "git push",
+  ]);
+}
+
 describe("the data commit is pinned, and the pin is a commit that exists", () => {
   const lock = readLock();
 
@@ -167,6 +196,8 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
   it("every job that runs the run module sets up node 22 first, at the workflow's one pinned setup-node", expectNode22BeforeRunModule);
 
   it("only a first attempt of the two newest-data triggers may advance the lock", expectOnlyFirstAttemptAdvancesLock);
+
+  it("pin writes the lock with the run module's pin-built alone, then commits and pushes it in shell", expectPinByPinBuiltThenCommitInShell);
 });
 
 /**
@@ -199,9 +230,12 @@ function expectReportBuildsFromLockedCommit(): void {
   const dataCheckout = steps.find((step) => /^\s{10}repository: OytunOnal\/permit-rulebook-data$/m.test(step)) ?? "";
   expect(dataCheckout, "report checks out no data").toMatch(/^(?:name:.*\n\s{8})?uses: actions\/checkout@/);
   expect(checkoutRefOf(dataCheckout)).toBe("${{ steps.lock.outputs.sha }}");
-  // The step that gives that sha reads it out of data.lock.
-  const lockStep = steps.find((step) => /^ {8}id: lock$/m.test(step)) ?? "";
-  expect(lockStep, "no step reads the sha out of data.lock").toMatch(/^ {10}.*\bdata\.lock\b/m);
+  // The step that gives that sha reads it out of data.lock, through the run
+  // module alone; its outputs and refusals are run by
+  // `tests/pin-and-report-steps.test.ts`.
+  const lockSteps = steps.filter((step) => /^ {8}id: lock$/m.test(step));
+  expect(lockSteps, "report has no step, or more than one, with id: lock").toHaveLength(1);
+  expect(stepRunLineOf(lockSteps[0]!)).toBe("node scripts/data-lock-run/data-lock-run.mjs read-locked-commit");
   // Never the run's own data checkout, never a dispatch's sha.
   expect(report).not.toMatch(/client_payload|steps\.data\.outputs|needs\.build\.outputs/);
   // Only the CLI is built, with no install script run beside the write token.
