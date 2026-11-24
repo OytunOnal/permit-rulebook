@@ -16,8 +16,8 @@ export class DevToolsConnection {
    * shared by every tab).
    */
   #tabs = new Map();
-  /** What hears the browser's own messages, the ones no tab's session carries. */
-  #hearBrowser = null;
+  /** What hears the browser's own messages, the ones no tab's session carries: each listener, in the order it came. */
+  #hearBrowser = [];
 
   constructor(socket) {
     this.#socket = socket;
@@ -47,9 +47,9 @@ export class DevToolsConnection {
     this.#tabs.set(sessionId, hear);
   }
 
-  /** Hands every message of the browser's own, one no tab's session carries, to `hear`. */
+  /** Hands every message of the browser's own, one no tab's session carries, to `hear`, beside any listener already there. */
   listenToBrowser(hear) {
-    this.#hearBrowser = hear;
+    this.#hearBrowser.push(hear);
   }
 
   /** Closes the connection. */
@@ -59,13 +59,20 @@ export class DevToolsConnection {
 
   #receive = (event) => {
     const message = JSON.parse(event.data);
-    const hear = message.sessionId === undefined ? this.#hearBrowser : this.#tabs.get(message.sessionId);
+    const hearers = this.#hearersOf(message);
     // An event no listener of ours hears has no list to go on.
-    if (message.method && !hear) return;
-    if (hear) hear(message);
+    if (message.method && hearers.length === 0) return;
+    for (const hear of hearers) hear(message);
     // An event answers no command.
     if (!message.method) this.#settleReply(message);
   };
+
+  /** The listeners that hear `message`: the browser's when no tab's session carries it, else its tab's, if ours. */
+  #hearersOf(message) {
+    if (message.sessionId === undefined) return this.#hearBrowser;
+    const hearTab = this.#tabs.get(message.sessionId);
+    return hearTab ? [hearTab] : [];
+  }
 
   /** Settles the command `reply` answers with its result, or its error. */
   #settleReply(reply) {

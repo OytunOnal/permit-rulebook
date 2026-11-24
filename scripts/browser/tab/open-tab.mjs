@@ -36,8 +36,12 @@ export async function openTab(connection, setup) {
   const sendToTab = (method, params) => connection.send(method, params, sessionId);
   const events = new TabEvents(sendToTab, { network: setup.network, walkLog: setup.walkLog });
   const waits = new TabWaits(sendToTab);
+  let tabsOpened = 0;
+  connection.listenToBrowser(({ method, params }) => {
+    if (method === "Target.attachedToTarget" && params.targetInfo.openerId === targetId) tabsOpened++;
+  });
   // A gesture fronts its tab through the page's own `front()`, built below; it runs only on a gesture.
-  const gestures = new TabGestures(sendToTab, { waits, front: () => page.front() });
+  const gestures = new TabGestures(sendToTab, { waits, front: () => page.front(), countTabsOpened: () => tabsOpened });
   const requestHandling = { sendToTab, answers: setup.answeredRequests, walkLog: setup.walkLog };
   connection.listenToTab(sessionId, (message) => {
     waits.watch(message);

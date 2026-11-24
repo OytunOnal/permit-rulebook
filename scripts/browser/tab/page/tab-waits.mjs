@@ -237,14 +237,17 @@ export class TabWaits {
 
   /**
    * Waits until the document `left` has reported its first input, or the tab
-   * stands on another: a gesture on `left` loaded one. Once a document has
+   * stands on another (a gesture on `left` loaded one), or `hasOpenedATab()`
+   * says the page opened a tab since the gesture. Once a document has
    * reported its first input, the wait reads once. It keeps the document the
    * tab was last seen on as it was, so `waitUntilNewDocumentDrawn` after it
    * still waits for a document other than `left`.
    */
-  waitUntilFirstInputReportedOrLeft = async (left) => {
+  waitUntilFirstInputReportedOrLeft = async (left, hasOpenedATab) => {
     let lastReadHidden = false;
     const read = async () => {
+      // A gesture that opened a tab took effect; the page may never record its first input (#453).
+      if (hasOpenedATab()) return { held: true };
       const seen = await this.#readOnce(isFirstInputReportedOrLeft(left));
       if (!seen?.held) lastReadHidden = (await this.#readOnce(IS_HIDDEN))?.held === true;
       return seen;
