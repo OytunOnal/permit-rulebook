@@ -478,7 +478,17 @@
   },
   {
    "from": "scripts/browser/browser.mjs",
+   "to": "scripts/browser/connection/devtools-connection.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/browser.mjs",
    "to": "scripts/browser/static-server/static-server.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/browser.mjs",
+   "to": "scripts/browser/tab/open-tab.mjs",
    "kind": "dependency"
   },
   {
@@ -3767,6 +3777,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/devtools-connection.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/door-label-centred.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -6219,6 +6234,11 @@
   {
    "from": "tests/static-server.test.ts",
    "to": "tests/served-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/tab-waits.test.ts",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -11498,5 +11518,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "62082c0b6edea10b06c0c3bae32aebfc87afff04d42184a1b4e77e5c5ee87d21"
+ "digest": "18b99571ad49eb125a7c0b6f362fec4200aeae7aa68e7fdb3c52c376c2a3f1ee"
 }

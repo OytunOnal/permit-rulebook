@@ -6,10 +6,12 @@ import { TabPage } from "./page/tab-page.mjs";
 import { TabWaits } from "./page/tab-waits.mjs";
 
 export { answerRequestsOfWhatThePageOpens } from "./answered-requests/answered-requests.mjs";
+export { TabWaits };
 
 /**
  * The tab's entry, the one way into it: `openTab`; `answerRequestsOfWhatThePageOpens`,
- * which gives a tab or worker a page opens the same request handling; and the
+ * which gives a tab or worker a page opens the same request handling;
+ * `TabWaits`, only for the case that pins its waits on a stand-in tab; and the
  * types a caller reads off what they return.
  *
  * @typedef {import("./page/tab-page.mjs").BrowserPage} BrowserPage
