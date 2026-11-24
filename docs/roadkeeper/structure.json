@@ -29,6 +29,7 @@
    ],
    "files": [
     "scripts/browser/tab/answered-requests/answered-requests.mjs",
+    "scripts/browser/tab/attached-target/attached-target.mjs",
     "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs",
     "scripts/browser/tab/open-tab.mjs",
     "scripts/browser/tab/page/tab-events.mjs",
@@ -306,10 +307,12 @@
  "levels": {
   "astro.config.mjs": "main",
   "eslint.config.mjs": "main",
-  "roadkeeper-lint/lint.mjs": "domain",
-  "roadkeeper-lint/rules/ceiling-paid-off.mjs": "domain",
-  "roadkeeper-lint/rules/constant-reason.mjs": "domain",
-  "roadkeeper-lint/rules/named-condition.mjs": "domain",
+  "roadkeeper-lint/limits/shape-limits.mjs": "domain",
+  "roadkeeper-lint/lint.mjs": "infrastructure",
+  "roadkeeper-lint/rules/ceiling-paid-off.mjs": "infrastructure",
+  "roadkeeper-lint/rules/constant-reason.mjs": "infrastructure",
+  "roadkeeper-lint/rules/inner-levels-pure.mjs": "infrastructure",
+  "roadkeeper-lint/rules/named-condition.mjs": "infrastructure",
   "scripts/browser/browser.mjs": "infrastructure",
   "scripts/browser/chrome/chrome-launch.mjs": "infrastructure",
   "scripts/browser/chrome/chrome.mjs": "infrastructure",
@@ -318,6 +321,7 @@
   "scripts/browser/static-server/html-in-pieces.mjs": "infrastructure",
   "scripts/browser/static-server/static-server.mjs": "infrastructure",
   "scripts/browser/tab/answered-requests/answered-requests.mjs": "infrastructure",
+  "scripts/browser/tab/attached-target/attached-target.mjs": "infrastructure",
   "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs": "infrastructure",
   "scripts/browser/tab/open-tab.mjs": "infrastructure",
   "scripts/browser/tab/page/tab-events.mjs": "infrastructure",
@@ -526,12 +530,22 @@
   },
   {
    "from": "roadkeeper-lint/lint.mjs",
+   "to": "roadkeeper-lint/limits/shape-limits.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "roadkeeper-lint/lint.mjs",
    "to": "roadkeeper-lint/rules/ceiling-paid-off.mjs",
    "kind": "dependency"
   },
   {
    "from": "roadkeeper-lint/lint.mjs",
    "to": "roadkeeper-lint/rules/constant-reason.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "roadkeeper-lint/lint.mjs",
+   "to": "roadkeeper-lint/rules/inner-levels-pure.mjs",
    "kind": "dependency"
   },
   {
@@ -580,8 +594,18 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/browser/tab/answered-requests/answered-requests.mjs",
+   "to": "scripts/browser/tab/attached-target/attached-target.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/browser/tab/open-tab.mjs",
    "to": "scripts/browser/tab/answered-requests/answered-requests.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/tab/open-tab.mjs",
+   "to": "scripts/browser/tab/attached-target/attached-target.mjs",
    "kind": "dependency"
   },
   {
@@ -6856,11 +6880,6 @@
   },
   {
    "from": "tests/verdict-steps-and-choice-lines.test.ts",
-   "to": "src/lib/verdict/compose/steps-line.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/verdict-steps-and-choice-lines.test.ts",
    "to": "src/lib/verdict/verdict.ts",
    "kind": "type-only"
   },
@@ -6962,6 +6981,11 @@
     "name": "openTab",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "watchTabsOpenedBy",
+    "kind": "fn",
+    "exported": false
    },
    {
     "name": "setUpTab",
@@ -7705,19 +7729,21 @@
     "exported": true
    }
   ],
-  "roadkeeper-lint/lint.mjs": [
+  "roadkeeper-lint/limits/shape-limits.mjs": [
    {
     "name": "FILE_LINES",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "plugin",
+    "name": "SHAPE_RULES",
     "kind": "const",
     "exported": true
-   },
+   }
+  ],
+  "roadkeeper-lint/lint.mjs": [
    {
-    "name": "SHAPE_RULES",
+    "name": "plugin",
     "kind": "const",
     "exported": true
    },
@@ -7767,6 +7793,63 @@
    },
    {
     "name": "constantReason",
+    "kind": "const",
+    "exported": true
+   }
+  ],
+  "roadkeeper-lint/rules/inner-levels-pure.mjs": [
+   {
+    "name": "LEVEL_TAG",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "RELATIVE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "INNER_LEVELS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "inInnerLevel",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "sourceText",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "reportOutside",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "globalReferences",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "READS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "globalThisMember",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "impureUse",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "innerLevelsPure",
     "kind": "const",
     "exported": true
    }
@@ -11712,12 +11795,16 @@
    }
   ]
  },
+ "impure": [],
+ "impureBaseline": [],
  "loose": [
   "astro.config.mjs",
   "eslint.config.mjs",
+  "roadkeeper-lint/limits/shape-limits.mjs",
   "roadkeeper-lint/lint.mjs",
   "roadkeeper-lint/rules/ceiling-paid-off.mjs",
   "roadkeeper-lint/rules/constant-reason.mjs",
+  "roadkeeper-lint/rules/inner-levels-pure.mjs",
   "roadkeeper-lint/rules/named-condition.mjs",
   "scripts/build-directory-on-disk.mjs",
   "scripts/carry-assets.mjs",
@@ -11802,5 +11889,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "dd48d6d610045a2a4c10bad0e2e67bbbf0666fadb323f66ee9799c4a9baacbc2"
+ "digest": "bcaa2d321db646ceadc029f64a1ae2afc255eee610a4cb026bb6a5e07e5cb077"
 }
