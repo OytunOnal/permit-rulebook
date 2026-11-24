@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseLock } from "../scripts/data-lock/data-lock.mjs";
+import { isDatasetVersion, lockedShaOf, parseLock } from "../scripts/data-lock/data-lock.mjs";
 import { LF } from "./throwaway-folder.js";
 import {
   checkoutRefOf, jobConditionOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepRunLineOf, stepScriptOf, stepsOf, workflowPaths,
@@ -175,11 +175,11 @@ function expectPinByPinBuiltThenCommitInShell(): void {
 }
 
 describe("the data commit is pinned, and the pin is a commit that exists", () => {
-  const lock = parseLock(readFileSync(join(root, "data.lock"), "utf8"));
-
+  // The lock's shape is the data-lock module's rule, asked through its entry.
   it("data.lock names a 40-hex sha and the dataset version it carried", () => {
-    expect(lock.sha, "data.lock has no sha").toMatch(/^[0-9a-f]{40}$/);
-    expect(lock.datasetVersion, "data.lock has no dataset version").toMatch(/^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$/);
+    const lockText = readFileSync(join(root, "data.lock"), "utf8");
+    expect(() => lockedShaOf(lockText), "data.lock names no single 40-hex sha").not.toThrow();
+    expect(isDatasetVersion(parseLock(lockText).datasetVersion), "data.lock has no YYYY.MM.DD dataset version").toBe(true);
   });
 
   it("the data clone holds the lock's commit", expectDataCloneHoldsLockedCommit, 60000);
