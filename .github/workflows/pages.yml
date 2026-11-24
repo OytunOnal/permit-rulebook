@@ -81,7 +81,7 @@ on:
 
 # The floor for the whole workflow, and the ceiling for every job that does not
 # raise it: a build that only reads two repositories needs nothing else. The
-# deploy job asks for the two Pages tokens where it needs them, the pin for
+# deploy job asks for the two Pages tokens where it needs them, the pin job for
 # its one commit and the report for its one issue, and nowhere above (Spine
 # steward-40, 2026-09-08).
 permissions:
@@ -125,69 +125,28 @@ jobs:
           # No token on disk for a stranger's pull request to read.
           persist-credentials: false
 
-      # Where the data has to end up is a fact the site's own manifest already
-      # holds. It is read from there rather than typed here: the directory still
-      # carries the working name — the folders are the human's to rename — and a
-      # workflow that spells it out is one more place to keep in step.
-      #
-      # Every value this step writes to its outputs comes from a file a pull
-      # request may change or from an event's payload, and a second line in one
-      # would be a second output: each is checked for its shape first, on every
-      # event (`tests/data-commit.test.ts` runs this script).
+      # The run module runs on the node the suite runs on.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
+        with: { node-version: 22 }
+
+      # The data's folder, read from the site's manifest, the lock's commit,
+      # and the commit this run builds: the lock's, or on a schedule's or a
+      # dispatch's first attempt the newest data (why, and every refusal, in
+      # `scripts/data-lock/rules/data-commit.mjs`). Every value comes from a
+      # file a pull request may change or from an event's payload, and is
+      # checked for its shape before it is written to the outputs
+      # (`tests/data-commit.test.ts` runs this line). On a pull request this
+      # runs the pull request's own code, as the build does
+      # (docs/roadkeeper/threats.md).
       - name: Where the manifest expects the data, and which commit of it
         id: data
         env:
-          # Through the environment, never interpolated into the script body.
+          # Through the environment, never interpolated into the command.
           EVENT_NAME: ${{ github.event_name }}
           RUN_ATTEMPT: ${{ github.run_attempt }}
           PAYLOAD_SHA: ${{ github.event.client_payload.sha }}
           DATA_REPOSITORY_URL: https://github.com/OytunOnal/permit-rulebook-data.git
-        run: |
-          is_commit() {
-            case "$1" in
-              [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) return 0 ;;
-              *) return 1 ;;
-            esac
-          }
-          path=$(node -p "require('./package.json').dependencies['permit-rulebook-data'].replace(/^file:/, '')")
-          dir=$(basename "$path")
-          # The folder becomes the build's checkout path and working directory.
-          case "$dir" in
-            "" | *[!a-z0-9-]*) echo "::error::the manifest names no plain folder for the data — refusing to check anything out."; exit 1 ;;
-          esac
-          # `data.lock` names the data commit this site is built against, and a
-          # push, a pull request or a manual run builds against exactly that:
-          # re-running a green deploy rebuilds what deployed, and no data commit
-          # can break a deploy that changed nothing here.
-          #
-          # The daily schedule and the watch's dispatch are the deliberate
-          # exception — they exist to build against the newest data — and they
-          # write the SHA they used back into the lock when the run goes green,
-          # so the lock always names a combination that actually deployed.
-          locked=$(sed -n 's/^sha=//p' data.lock)
-          if ! is_commit "$locked"; then
-            echo "::error::data.lock names no 40-hex sha — run npm run data:pin and commit it."
-            exit 1
-          fi
-          # A RERUN of a scheduled or dispatched run keeps its event name, so it
-          # would build against today's data and then pin it — the float this
-          # lock exists to end, on the trigger that fires daily. Only a first
-          # attempt may advance the lock (Spec review, 2026-09-08).
-          first_attempt=$([ "$RUN_ATTEMPT" = "1" ] && echo yes || echo no)
-          case "$EVENT_NAME:$first_attempt" in
-            schedule:yes)            sha=$(git ls-remote "$DATA_REPOSITORY_URL" refs/heads/master | cut -f1) ;;
-            repository_dispatch:yes) sha="$PAYLOAD_SHA" ;;
-            *)                       sha="$locked" ;;
-          esac
-          # The dispatch's payload is a stranger's string until it is checked,
-          # and the data repository's answer is checked as the lock is.
-          if ! is_commit "$sha"; then
-            echo "::error::the $EVENT_NAME run chose no 40-hex data commit — refusing to check anything out."
-            exit 1
-          fi
-          echo "dir=$dir" >> "$GITHUB_OUTPUT"
-          echo "locked=$locked" >> "$GITHUB_OUTPUT"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+        run: node scripts/data-lock-run/data-lock-run.mjs choose-commit
 
   # The data package's own whole check, at the commit `data-commit` chose. A
   # job of its own beside the build: the data's check and the site's tests
@@ -259,27 +218,21 @@ jobs:
           # No token on disk, as the site's checkout above.
           persist-credentials: false
 
-      # The dataset version is read from the data's own file, and the pin
-      # writes it into data.lock: it is checked for its shape before it
-      # becomes an output, as data-commit's values are.
-      - name: Which data commit this run is building
-        id: built
-        env:
-          DATA_DIR: ${{ needs.data-commit.outputs.dir }}
-          LOCKED: ${{ needs.data-commit.outputs.locked }}
-        run: |
-          sha=$(git -C "$DATA_DIR" rev-parse HEAD)
-          version=$(node -p "require('./$DATA_DIR/data/dataset.json').dataset_version")
-          case "$version" in
-            [0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]) ;;
-            *) echo "::error::the data names no YYYY.MM.DD dataset version."; exit 1 ;;
-          esac
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "Building against data $sha (lock says $LOCKED)"
-
+      # The run module runs on the node the suite runs on.
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
         with: { node-version: 22 }
+
+      # The commit checked out and the dataset version read from the data's
+      # own file, which the pin job writes into data.lock: the version is checked
+      # for its shape before either becomes an output, as data-commit's values
+      # are (`tests/data-commit.test.ts` runs this line). The data sits beside
+      # the site, under the plain folder name data-commit checked.
+      - name: Which data commit this run is building
+        id: built
+        working-directory: site
+        env:
+          DATA_DIR: ../${{ needs.data-commit.outputs.dir }}
+        run: node scripts/data-lock-run/data-lock-run.mjs read-built-commit
 
       # Only what the site's `file:` dependency reads: the package built. Its
       # whole check is `data-check`'s, beside this job.
@@ -363,7 +316,8 @@ jobs:
       # What the step is: the last thing before the artifact is sealed, because
       # it adds files to `dist/` and a file carried after the upload is a file
       # nobody deploys — this is where that reason is kept, and the case in
-      # `tests/pipeline.test.ts` that pins this step's position points here.
+      # `tests/carry-assets/carry-step.test.ts` that pins this step's position
+      # points here.
       # Two kinds of file: the assets it carries forward, and `asset-digests.txt`,
       # the list of what THIS build made, which is the only thing the next
       # deploy will check a carried byte against. No new action and no new
@@ -378,8 +332,8 @@ jobs:
       # whole mechanism off with every deploy still green. The reading is in
       # `site/scripts/carry-assets.mjs`'s own header, under "Where the address
       # comes from". Nothing may be appended to the `run:` line either, for the
-      # reason `tests/pipeline.test.ts` keeps beside its verbatim pin of this
-      # block.
+      # reason `tests/carry-assets/carry-step.test.ts` keeps beside the case
+      # that pins this block verbatim.
       - name: Carry the live site's assets forward, so a cached page still finds them
         if: github.event_name != 'pull_request'
         working-directory: site
@@ -434,23 +388,36 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
+
+      # The run module runs on the node the suite runs on.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
+        with: { node-version: 22 }
+
+      # The built commit and the dataset version it carried, written into
+      # data.lock by the run module, which refuses either of the wrong shape
+      # before the lock is written, and hands on the two it wrote
+      # (`tests/pin-and-report-steps.test.ts` runs this line). It never
+      # pushes: the commit and the push are the next step's.
       - name: Record the data commit that just proved itself
+        id: pinned
         env:
           BUILT: ${{ needs.build.outputs.built }}
           VERSION: ${{ needs.build.outputs.version }}
+        run: node scripts/data-lock-run/data-lock-run.mjs pin-built
+
+      # A step's outputs reach only the steps after it, so the commit message,
+      # read from what the write handed on, is a step of its own.
+      - name: Commit and push the lock
+        env:
+          PINNED_SHA: ${{ steps.pinned.outputs.sha }}
+          PINNED_VERSION: ${{ steps.pinned.outputs.version }}
         run: |
-          case "$BUILT" in
-            [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) ;;
-            *) echo "::error::the build reported no 40-hex data commit."; exit 1 ;;
-          esac
-          sed -i "s/^sha=.*/sha=$BUILT/" data.lock
-          sed -i "s/^dataset_version=.*/dataset_version=$VERSION/" data.lock
           # The canonical bot, so an automated commit is attributed to the
           # automation and not to whichever account owns a noreply login.
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data.lock
-          git commit -m "data.lock: built and deployed against $BUILT ($VERSION)"
+          git commit -m "data.lock: built and deployed against $PINNED_SHA ($PINNED_VERSION)"
           git push
 
   deploy:
@@ -558,16 +525,18 @@ jobs:
           path: site
           persist-credentials: false
 
+      # The run module runs on the node the suite runs on.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
+        with: { node-version: 22 }
+
+      # The commit data.lock names, read by the run module, which refuses a
+      # lock that names no single 40-hex commit before any output, so there is
+      # no kept-issue CLI to build from it (`tests/pin-and-report-steps.test.ts`
+      # runs this line).
       - name: The data commit data.lock names
         id: lock
         working-directory: site
-        run: |
-          sha=$(sed -n 's/^sha=//p' data.lock)
-          case "$sha" in
-            [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) ;;
-            *) echo "::error::data.lock names no 40-hex commit, so there is no kept-issue CLI to build."; exit 1 ;;
-          esac
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+        run: node scripts/data-lock-run/data-lock-run.mjs read-locked-commit
 
       - name: Check out the data at that commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
@@ -576,9 +545,6 @@ jobs:
           ref: ${{ steps.lock.outputs.sha }}
           path: data-at-lock
           persist-credentials: false
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
-        with: { node-version: 22 }
 
       # Only the compiler is needed, and this job holds a write token: no
       # dependency's install script runs here.

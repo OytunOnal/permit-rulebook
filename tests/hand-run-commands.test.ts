@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { execFile } from "node:child_process";
-import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromePath } from "../scripts/browser/browser.mjs";
-import { dataClonePath } from "../scripts/data-pin.mjs";
+import { dataClonePath, parseLock, PIN_REFUSALS, pinnedLockTextOf } from "../scripts/data-lock/data-lock.mjs";
+import { SUBCOMMAND_NAMES } from "../scripts/data-lock-run/data-lock-run.mjs";
 import { runGit } from "../scripts/run-git.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 import { commitInThrowaway, initThrowawayRepository, inThrowawayFolder, LF } from "./throwaway-folder.js";
@@ -86,9 +87,8 @@ function pngSizeOf(file: string): string {
   return `${png.readUInt32BE(16)}x${png.readUInt32BE(20)}`;
 }
 
-/** The value a lock's `key=` line holds. */
-const lockValueOf = (text: string, key: string): string | undefined =>
-  new RegExp(`^${key}=(.+)$`, "m").exec(text)?.[1]?.trim();
+/** The site's own lock's text, which every throwaway lock copies. */
+const siteLockText = readFileSync(join(root, "data.lock"), "utf8");
 
 /** `body` run, then the site's own `data.lock` asserted unwritten by it. */
 async function expectSiteLockUnwrittenBy(body: () => Promise<void>): Promise<void> {
@@ -102,15 +102,83 @@ describe("npm run data:pin", () => {
     const head = runGit(dataClone, "rev-parse", "HEAD");
     const version = JSON.parse(readFileSync(join(dataClone, "data", "dataset.json"), "utf8")).dataset_version;
     await expectSiteLockUnwrittenBy(() => inThrowawayFolder(async (folder) => {
-      // The site's lock, copied, its pin moved off the clone so the write shows.
+      // The site's lock, copied, pinned off the clone's commit so the write shows.
       const lock = join(folder, "data.lock");
-      writeFileSync(lock, readFileSync(join(root, "data.lock"), "utf8")
-        .replace(/^sha=.*$/m, `sha=${"0".repeat(40)}`).replace(/^dataset_version=.*$/m, "dataset_version=0"));
+      writeFileSync(lock, pinnedLockTextOf(siteLockText, { sha: "0".repeat(40), datasetVersion: "2000.01.01" }));
       const run = await nodeRun([...scriptArgumentsOf("data:pin"), "--lock", lock]);
       expect(run.status, run.out).toBe(0);
-      const written = readFileSync(lock, "utf8");
-      expect(lockValueOf(written, "sha")).toBe(head);
-      expect(lockValueOf(written, "dataset_version")).toBe(version);
+      expect(parseLock(readFileSync(lock, "utf8"))).toEqual({ sha: head, datasetVersion: version });
+    }));
+  }, 60000);
+
+  it("writes the HEAD and dataset version of the data clone --clone names", async () => {
+    await expectSiteLockUnwrittenBy(() => inThrowawayFolder(async (folder) => {
+      const head = cloneCarryingVersion(join(folder, "permit-rulebook-data"), "2001.02.03");
+      const lock = join(folder, "data.lock");
+      writeFileSync(lock, pinnedLockTextOf(siteLockText, { sha: "0".repeat(40), datasetVersion: "2000.01.01" }));
+      const run = await nodeRun([...scriptArgumentsOf("data:pin"), "--lock", lock, "--clone", join(folder, "permit-rulebook-data")]);
+      expect(run.status, run.out).toBe(0);
+      expect(parseLock(readFileSync(lock, "utf8"))).toEqual({ sha: head, datasetVersion: "2001.02.03" });
+    }));
+  }, 60000);
+
+  it("refuses a data clone whose dataset version is not YYYY.MM.DD: exits non-zero, says why without the value, leaves the lock as it was", async () => {
+    await expectSiteLockUnwrittenBy(() => inThrowawayFolder(async (folder) => {
+      const malformed = "2001-02-03";
+      cloneCarryingVersion(join(folder, "permit-rulebook-data"), malformed);
+      const lock = join(folder, "data.lock");
+      const lockText = pinnedLockTextOf(siteLockText, { sha: "0".repeat(40), datasetVersion: "2000.01.01" });
+      writeFileSync(lock, lockText);
+      const run = await nodeRun([...scriptArgumentsOf("data:pin"), "--lock", lock, "--clone", join(folder, "permit-rulebook-data")]);
+      expect(run.status, run.out).not.toBe(0);
+      expect(run.out, "the refusal does not say why").toContain(PIN_REFUSALS.datasetVersion);
+      expect(run.out, "the refusal prints the value it refused").not.toContain(malformed);
+      expect(readFileSync(lock, "utf8"), "the given lock was written").toBe(lockText);
+    }));
+  }, 60000);
+});
+
+/**
+ * A throwaway data clone at `clone` whose one commit carries the real data
+ * clone's `data/dataset.json` with its dataset version set to `version`; its
+ * HEAD.
+ */
+function cloneCarryingVersion(clone: string, version: string): string {
+  const dataset = JSON.parse(readFileSync(join(dataClone, "data", "dataset.json"), "utf8"));
+  initThrowawayRepository(clone);
+  mkdirSync(join(clone, "data"));
+  writeFileSync(join(clone, "data", "dataset.json"), JSON.stringify({ ...dataset, dataset_version: version }));
+  runGit(clone, "add", "data");
+  commitInThrowaway(clone, "-m", `dataset version ${version}`);
+  return runGit(clone, "rev-parse", "HEAD");
+}
+
+describe("the lock's run entry refuses a subcommand it does not name", () => {
+  // The entry data:pin and data:check both run, without their subcommand.
+  const entry = () => scriptArgumentsOf("data:pin")[0]!;
+
+  /** A refusal's run asserted: a non-zero exit, and every subcommand the entry knows named as a word of what it printed. */
+  function expectRefusalNamingEverySubcommand(run: CommandRun): void {
+    expect(run.status, run.out).not.toBe(0);
+    expect(SUBCOMMAND_NAMES.length, "the entry declares no subcommand").toBeGreaterThan(0);
+    // A subcommand's name may hold a hyphen (`choose-commit`), so a word may too.
+    const printedWords = run.out.split(/[^\w-]+/);
+    for (const name of SUBCOMMAND_NAMES) expect(printedWords, `the refusal does not name ${name}: ${run.out}`).toContain(name);
+  }
+
+  it("with no arguments at all: exits non-zero, names every subcommand, writes no lock", async () => {
+    await expectSiteLockUnwrittenBy(async () => {
+      expectRefusalNamingEverySubcommand(await nodeRun([entry()]));
+    });
+  }, 60000);
+
+  it.each([["a missing", []], ["an unknown", ["unpin"]]])("%s subcommand: exits non-zero, names every subcommand, writes no lock", async (_what, words) => {
+    await expectSiteLockUnwrittenBy(() => inThrowawayFolder(async (folder) => {
+      const lock = join(folder, "data.lock");
+      const lockText = pinnedLockTextOf(siteLockText, { sha: "0".repeat(40), datasetVersion: "2000.01.01" });
+      writeFileSync(lock, lockText);
+      expectRefusalNamingEverySubcommand(await nodeRun([entry(), ...words, "--lock", lock]));
+      expect(readFileSync(lock, "utf8"), "the given lock was written").toBe(lockText);
     }));
   }, 60000);
 });
@@ -127,7 +195,7 @@ function cloneWithCommits(clone: string, count: number): string[] {
 /** The site's lock copied into `folder`, naming `sha`; its path. */
 function lockNaming(folder: string, sha: string): string {
   const lock = join(folder, "data.lock");
-  writeFileSync(lock, readFileSync(join(root, "data.lock"), "utf8").replace(/^sha=.*$/m, `sha=${sha}`));
+  writeFileSync(lock, pinnedLockTextOf(siteLockText, { sha, datasetVersion: parseLock(siteLockText).datasetVersion }));
   return lock;
 }
 

@@ -21,8 +21,8 @@
  * nothing to check a carried byte against — this step off, every deploy
  * green. A value cannot become a flag. `--dist` and `--dry-run` are the
  * surface a test and a person at a terminal drive this by, and the deploy
- * passes no argv at all, which `tests/pipeline.test.ts` pins along with the
- * rest of the step's block.
+ * passes no argv at all, which `tests/carry-assets/carry-step.test.ts` pins
+ * along with the rest of the step's block.
  *
  * There is no built-in fallback address: an origin this was not given is an
  * origin it does not have, and it says so and carries nothing rather than

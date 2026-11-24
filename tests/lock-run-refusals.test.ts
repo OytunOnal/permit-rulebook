@@ -1,0 +1,141 @@
+import { describe, expect, it } from "vitest";
+import { spawnSync } from "node:child_process";
+import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { CHOOSE_COMMIT_REFUSALS, PIN_REFUSALS } from "../scripts/data-lock/data-lock.mjs";
+import { RUN_REFUSALS } from "../scripts/data-lock-run/data-lock-run.mjs";
+import { runGit } from "../scripts/run-git.mjs";
+import { CUT_SHA_LENGTH, goodLockText, withLineDropped, withSecondLine, withShaCutShort } from "./broken-lock.js";
+import { commitInThrowaway, initThrowawayRepository, inThrowawayFolder, LF } from "./throwaway-folder.js";
+
+/**
+ * The hand runs' declared refusals of a malformed command line or lock, run
+ * as `npm run data:pin` and `data:check` run them: each prints one JSON
+ * error line saying its reason, no stack, and exits 1 (Q306, Q317 on #446).
+ * Outside Actions, so no annotation is printed even on CI.
+ */
+
+const root = fileURLToPath(new URL("..", import.meta.url));
+
+/** What `npm run <name>` hands node: the script's words after `node`. */
+function scriptArgumentsOf(name: string): string[] {
+  const words = String(JSON.parse(readFileSync(join(root, "package.json"), "utf8")).scripts[name] ?? "").split(" ").filter(Boolean);
+  expect(words[0], `package.json's script ${name} is not a node command`).toBe("node");
+  return words.slice(1);
+}
+
+/** node run on `args` from the site's root and outside Actions: its exit code and everything it printed. */
+function nodeRun(args: string[]): { status: number | null; out: string } {
+  const run = spawnSync(process.execPath, args, { cwd: root, encoding: "utf8", env: { ...process.env, GITHUB_ACTIONS: "" } });
+  return { status: run.status, out: `${run.stdout}${run.stderr}` };
+}
+
+/** `npm run <script>` with `args` after it, run as `nodeRun` runs it. */
+const scriptRun = (script: string, ...args: string[]): { status: number | null; out: string } => nodeRun([...scriptArgumentsOf(script), ...args]);
+
+/** A refusal asserted: exit 1, and all it printed one JSON error line saying `reason`. */
+function expectOneRefusalLine(run: { status: number | null; out: string }, reason: string): void {
+  expect(run.status, run.out).toBe(1);
+  const lines = run.out.split(LF).map((line) => line.trimEnd()).filter((line) => line !== "");
+  expect(lines, "the refusal printed more than its one line").toHaveLength(1);
+  const line = JSON.parse(lines[0]!) as { level: string; msg: string };
+  expect(line.level).toBe("error");
+  expect(line.msg).toContain(reason);
+}
+
+/** The site's own data.lock's last write, so a case can say it was not written. */
+const siteLockWritten = (): number => statSync(join(root, "data.lock")).mtimeMs;
+
+// The argument is a stranger's text: the refusal names the rule and the subcommands, never it (Q307).
+describe("the run entry refuses a subcommand it does not name in one line", () => {
+  it("an unknown subcommand, saying why without the argument", () => {
+    const refused = "no-such-subcommand";
+    // The entry data:pin runs, without its subcommand.
+    const run = nodeRun([scriptArgumentsOf("data:pin")[0]!, refused]);
+    expect(run.out, "the refusal prints the argument it refused").not.toContain(refused);
+    expectOneRefusalLine(run, RUN_REFUSALS.subcommand);
+  });
+});
+
+describe("the hand runs refuse a malformed command line or lock in one line", () => {
+  it.each([
+    ["data:pin", "--lock", "lockPath"], ["data:check", "--lock", "lockPath"],
+    ["data:pin", "--clone", "clonePath"], ["data:check", "--clone", "clonePath"],
+  ] as const)("npm run %s -- %s with no path", (script, option, refusal) => {
+    const before = siteLockWritten();
+    expectOneRefusalLine(scriptRun(script, option), RUN_REFUSALS[refusal]);
+    expect(siteLockWritten(), "the site's data.lock was written").toBe(before);
+  });
+
+  it("npm run data:check on a lock whose sha is not 40 hex, saying why without the value", async () => {
+    await inThrowawayFolder((folder) => {
+      const clone = join(folder, "permit-rulebook-data");
+      initThrowawayRepository(clone);
+      commitInThrowaway(clone, "--allow-empty", "-m", "the data");
+      const head = runGit(clone, "rev-parse", "HEAD");
+      const lock = join(folder, "data.lock");
+      writeFileSync(lock, withShaCutShort(goodLockText({ sha: head, datasetVersion: "2026.11.17" })));
+      const run = scriptRun("data:check", "--lock", lock, "--clone", clone);
+      expectOneRefusalLine(run, CHOOSE_COMMIT_REFUSALS.lock);
+      expect(run.out, "the refusal prints the value it refused").not.toContain(head.slice(0, CUT_SHA_LENGTH));
+    });
+  });
+
+  // The clone holds the first sha's commit, so only the second line refuses it (Q319).
+  it("npm run data:check on a lock with a second sha= line, saying why without the value", async () => {
+    await inThrowawayFolder((folder) => {
+      const clone = join(folder, "permit-rulebook-data");
+      initThrowawayRepository(clone);
+      commitInThrowaway(clone, "--allow-empty", "-m", "the data");
+      const head = runGit(clone, "rev-parse", "HEAD");
+      const lock = join(folder, "data.lock");
+      writeFileSync(lock, withSecondLine(goodLockText({ sha: head, datasetVersion: "2026.11.17" }), "sha", "second-line"));
+      const run = scriptRun("data:check", "--lock", lock, "--clone", clone);
+      expectOneRefusalLine(run, CHOOSE_COMMIT_REFUSALS.lock);
+      expect(run.out, "the refusal prints the value it refused").not.toContain("second-line");
+    });
+  });
+});
+
+/** A throwaway data clone at `clone` whose one commit carries a YYYY.MM.DD dataset version, so only the lock can refuse pinning from it. */
+function cloneWithGoodVersion(clone: string): void {
+  initThrowawayRepository(clone);
+  mkdirSync(join(clone, "data"));
+  writeFileSync(join(clone, "data", "dataset.json"), JSON.stringify({ dataset_version: "2026.11.24" }));
+  runGit(clone, "add", "data");
+  commitInThrowaway(clone, "-m", "the data");
+}
+
+/** A good lock for `data:pin` to write over, which each malformed one below breaks by a named step. */
+const goodLock = goodLockText({ sha: "0123456789abcdef0123456789abcdef01234567", datasetVersion: "2000.01.01" });
+
+// A line pinning cannot find is a line it cannot write (Q326).
+describe("pinning by hand refuses a lock it cannot write in one line", () => {
+  it.each(["sha", "dataset_version"] as const)("npm run data:pin on a lock missing its %s= line, leaving the lock as it was", async (key) => {
+    await inThrowawayFolder((folder) => {
+      const clone = join(folder, "permit-rulebook-data");
+      cloneWithGoodVersion(clone);
+      const lock = join(folder, "data.lock");
+      const lockText = withLineDropped(goodLock, key);
+      writeFileSync(lock, lockText);
+      expectOneRefusalLine(scriptRun("data:pin", "--lock", lock, "--clone", clone), PIN_REFUSALS.lock);
+      expect(readFileSync(lock, "utf8"), "the given lock was written").toBe(lockText);
+    });
+  });
+
+  // A second line would keep its old value beside the written one (Q327).
+  it.each([
+    ["sha", "0123456789abcdef0123456789abcdef01234567"], ["dataset_version", "2000.01.01"],
+  ] as const)("npm run data:pin on a lock with a second %s= line, leaving the lock as it was", async (key, value) => {
+    await inThrowawayFolder((folder) => {
+      const clone = join(folder, "permit-rulebook-data");
+      cloneWithGoodVersion(clone);
+      const lock = join(folder, "data.lock");
+      const lockText = withSecondLine(goodLock, key, value);
+      writeFileSync(lock, lockText);
+      expectOneRefusalLine(scriptRun("data:pin", "--lock", lock, "--clone", clone), PIN_REFUSALS.lock);
+      expect(readFileSync(lock, "utf8"), "the given lock was written").toBe(lockText);
+    });
+  });
+});

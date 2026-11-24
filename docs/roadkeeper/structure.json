@@ -74,6 +74,54 @@
    ]
   },
   {
+   "path": "scripts/data-lock",
+   "entries": [
+    {
+     "file": "scripts/data-lock/data-lock.mjs",
+     "level": "infrastructure"
+    }
+   ],
+   "files": [
+    "scripts/data-lock/data-lock.mjs",
+    "scripts/data-lock/disk/clone-questions.mjs",
+    "scripts/data-lock/disk/data-clone.mjs",
+    "scripts/data-lock/disk/data-master.mjs",
+    "scripts/data-lock/disk/lock-file.mjs",
+    "scripts/data-lock/disk/site-root.mjs",
+    "scripts/data-lock/rules/data-commit.mjs",
+    "scripts/data-lock/rules/lock-refusal.mjs",
+    "scripts/data-lock/rules/lock-text.mjs",
+    "scripts/data-lock/rules/shortfall.mjs"
+   ]
+  },
+  {
+   "path": "scripts/data-lock-run",
+   "entries": [
+    {
+     "file": "scripts/data-lock-run/data-lock-run.mjs",
+     "level": "main"
+    }
+   ],
+   "files": [
+    "scripts/data-lock-run/check/cli-data-check.mjs",
+    "scripts/data-lock-run/check/run-check.mjs",
+    "scripts/data-lock-run/choose-commit/cli-choose-commit.mjs",
+    "scripts/data-lock-run/choose-commit/run-choose-commit.mjs",
+    "scripts/data-lock-run/data-lock-run.mjs",
+    "scripts/data-lock-run/pin-built/cli-pin-built.mjs",
+    "scripts/data-lock-run/pin-built/run-pin-built.mjs",
+    "scripts/data-lock-run/pin/cli-data-pin.mjs",
+    "scripts/data-lock-run/pin/run-pin.mjs",
+    "scripts/data-lock-run/read-built-commit/cli-read-built-commit.mjs",
+    "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
+    "scripts/data-lock-run/read-locked-commit/cli-read-locked-commit.mjs",
+    "scripts/data-lock-run/read-locked-commit/run-read-locked-commit.mjs",
+    "scripts/data-lock-run/refusal/cli-refusal.mjs",
+    "scripts/data-lock-run/refusal/run-refusals.mjs",
+    "scripts/data-lock-run/step-report/step-report.mjs"
+   ]
+  },
+  {
    "path": "src/lib/country-search",
    "entries": [
     {
@@ -298,16 +346,38 @@
   "scripts/check-base.mjs": "infrastructure",
   "scripts/child-env.mjs": "infrastructure",
   "scripts/cli-check-base.mjs": "presentation",
-  "scripts/cli-data-check.mjs": "presentation",
-  "scripts/cli-data-pin.mjs": "presentation",
   "scripts/cli-deploy-finding.mjs": "presentation",
   "scripts/cli-measure-taps.mjs": "presentation",
   "scripts/cli-refresh-traffic-counter-copy.mjs": "presentation",
   "scripts/cli-render-assets.mjs": "presentation",
   "scripts/cli-shot.mjs": "presentation",
   "scripts/cli-smoke.mjs": "presentation",
-  "scripts/clone-shortfall.mjs": "domain infrastructure",
-  "scripts/data-pin.mjs": "domain infrastructure",
+  "scripts/data-lock-run/check/cli-data-check.mjs": "presentation",
+  "scripts/data-lock-run/check/run-check.mjs": "main",
+  "scripts/data-lock-run/choose-commit/cli-choose-commit.mjs": "presentation",
+  "scripts/data-lock-run/choose-commit/run-choose-commit.mjs": "main",
+  "scripts/data-lock-run/data-lock-run.mjs": "main",
+  "scripts/data-lock-run/pin-built/cli-pin-built.mjs": "presentation",
+  "scripts/data-lock-run/pin-built/run-pin-built.mjs": "main",
+  "scripts/data-lock-run/pin/cli-data-pin.mjs": "presentation",
+  "scripts/data-lock-run/pin/run-pin.mjs": "main",
+  "scripts/data-lock-run/read-built-commit/cli-read-built-commit.mjs": "presentation",
+  "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs": "main",
+  "scripts/data-lock-run/read-locked-commit/cli-read-locked-commit.mjs": "presentation",
+  "scripts/data-lock-run/read-locked-commit/run-read-locked-commit.mjs": "main",
+  "scripts/data-lock-run/refusal/cli-refusal.mjs": "presentation",
+  "scripts/data-lock-run/refusal/run-refusals.mjs": "main",
+  "scripts/data-lock-run/step-report/step-report.mjs": "presentation",
+  "scripts/data-lock/data-lock.mjs": "infrastructure",
+  "scripts/data-lock/disk/clone-questions.mjs": "infrastructure",
+  "scripts/data-lock/disk/data-clone.mjs": "infrastructure",
+  "scripts/data-lock/disk/data-master.mjs": "infrastructure",
+  "scripts/data-lock/disk/lock-file.mjs": "infrastructure",
+  "scripts/data-lock/disk/site-root.mjs": "infrastructure",
+  "scripts/data-lock/rules/data-commit.mjs": "domain",
+  "scripts/data-lock/rules/lock-refusal.mjs": "domain",
+  "scripts/data-lock/rules/lock-text.mjs": "domain",
+  "scripts/data-lock/rules/shortfall.mjs": "domain",
   "scripts/decode-png-size.mjs": "domain",
   "scripts/deploy-finding.mjs": "domain presentation",
   "scripts/dev-server.mjs": "infrastructure",
@@ -316,8 +386,6 @@
   "scripts/live-site-over-http.mjs": "infrastructure",
   "scripts/log-wording.mjs": "domain",
   "scripts/main-check-base.mjs": "main",
-  "scripts/main-data-check.mjs": "main",
-  "scripts/main-data-pin.mjs": "main",
   "scripts/main-measure-taps.mjs": "main",
   "scripts/main-refresh-traffic-counter-copy.mjs": "main",
   "scripts/main-render-assets.mjs": "main",
@@ -741,16 +809,6 @@
    "kind": "dependency"
   },
   {
-   "from": "scripts/cli-data-check.mjs",
-   "to": "scripts/find-option-value.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/cli-data-pin.mjs",
-   "to": "scripts/find-option-value.mjs",
-   "kind": "dependency"
-  },
-  {
    "from": "scripts/cli-deploy-finding.mjs",
    "to": "scripts/deploy-finding.mjs",
    "kind": "dependency"
@@ -771,18 +829,258 @@
    "kind": "dependency"
   },
   {
-   "from": "scripts/clone-shortfall.mjs",
-   "to": "scripts/data-pin.mjs",
+   "from": "scripts/data-lock-run/check/cli-data-check.mjs",
+   "to": "scripts/find-option-value.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/clone-shortfall.mjs",
+   "from": "scripts/data-lock-run/check/run-check.mjs",
+   "to": "scripts/data-lock-run/check/cli-data-check.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/check/run-check.mjs",
+   "to": "scripts/data-lock-run/refusal/run-refusals.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/check/run-check.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/choose-commit/cli-choose-commit.mjs",
+   "to": "scripts/data-lock-run/step-report/step-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/choose-commit/run-choose-commit.mjs",
+   "to": "scripts/data-lock-run/choose-commit/cli-choose-commit.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/choose-commit/run-choose-commit.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/check/run-check.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/choose-commit/run-choose-commit.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/pin-built/run-pin-built.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/pin/run-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/read-locked-commit/run-read-locked-commit.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/refusal/cli-refusal.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/refusal/run-refusals.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/pin-built/cli-pin-built.mjs",
+   "to": "scripts/data-lock-run/step-report/step-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/pin-built/run-pin-built.mjs",
+   "to": "scripts/data-lock-run/pin-built/cli-pin-built.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/pin-built/run-pin-built.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/pin/cli-data-pin.mjs",
+   "to": "scripts/find-option-value.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/pin/run-pin.mjs",
+   "to": "scripts/data-lock-run/pin/cli-data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/pin/run-pin.mjs",
+   "to": "scripts/data-lock-run/refusal/run-refusals.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/pin/run-pin.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/read-built-commit/cli-read-built-commit.mjs",
+   "to": "scripts/data-lock-run/step-report/step-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
+   "to": "scripts/data-lock-run/read-built-commit/cli-read-built-commit.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
+   "to": "scripts/data-lock-run/refusal/run-refusals.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/read-locked-commit/cli-read-locked-commit.mjs",
+   "to": "scripts/data-lock-run/step-report/step-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/read-locked-commit/run-read-locked-commit.mjs",
+   "to": "scripts/data-lock-run/read-locked-commit/cli-read-locked-commit.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/read-locked-commit/run-read-locked-commit.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/refusal/run-refusals.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/refusal/run-refusals.mjs",
+   "to": "scripts/find-option-value.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/disk/clone-questions.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/disk/data-clone.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/disk/data-master.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/disk/lock-file.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/rules/data-commit.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/rules/lock-refusal.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/rules/lock-text.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/data-lock.mjs",
+   "to": "scripts/data-lock/rules/shortfall.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/disk/clone-questions.mjs",
    "to": "scripts/run-git.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/data-pin.mjs",
+   "from": "scripts/data-lock/disk/data-clone.mjs",
+   "to": "scripts/data-lock/disk/site-root.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/disk/data-clone.mjs",
    "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/disk/data-master.mjs",
+   "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/disk/lock-file.mjs",
+   "to": "scripts/data-lock/disk/site-root.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/rules/data-commit.mjs",
+   "to": "scripts/data-lock/rules/lock-refusal.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/rules/data-commit.mjs",
+   "to": "scripts/data-lock/rules/lock-text.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/rules/lock-text.mjs",
+   "to": "scripts/data-lock/rules/lock-refusal.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/rules/shortfall.mjs",
+   "to": "scripts/data-lock/rules/lock-refusal.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/rules/shortfall.mjs",
+   "to": "scripts/data-lock/rules/lock-text.mjs",
    "kind": "dependency"
   },
   {
@@ -812,36 +1110,6 @@
   },
   {
    "from": "scripts/main-check-base.mjs",
-   "to": "scripts/print-report.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/main-data-check.mjs",
-   "to": "scripts/cli-data-check.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/main-data-check.mjs",
-   "to": "scripts/clone-shortfall.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/main-data-check.mjs",
-   "to": "scripts/print-report.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/main-data-pin.mjs",
-   "to": "scripts/cli-data-pin.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/main-data-pin.mjs",
-   "to": "scripts/data-pin.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/main-data-pin.mjs",
    "to": "scripts/print-report.mjs",
    "kind": "dependency"
   },
@@ -3291,6 +3559,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/broken-lock.ts",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/broken-lock.ts",
+   "to": "tests/throwaway-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/broken-lock.ts",
+   "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/browser-walk.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -3483,6 +3766,21 @@
   {
    "from": "tests/carry-assets/carry-runs.ts",
    "to": "tests/carry-assets/live-site-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-step.test.ts",
+   "to": "scripts/carry-assets/carry.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-step.test.ts",
+   "to": "tests/throwaway-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-step.test.ts",
+   "to": "tests/workflow-text.ts",
    "kind": "dependency"
   },
   {
@@ -3722,7 +4020,7 @@
   },
   {
    "from": "tests/data-clone-path.test.ts",
-   "to": "scripts/data-pin.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
   {
@@ -3737,7 +4035,12 @@
   },
   {
    "from": "tests/data-commit.test.ts",
-   "to": "scripts/data-pin.mjs",
+   "to": "scripts/data-lock-run/data-lock-run.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/data-commit.test.ts",
+   "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
   {
@@ -3747,7 +4050,12 @@
   },
   {
    "from": "tests/data-commit.test.ts",
-   "to": "tests/posix-shell.ts",
+   "to": "tests/broken-lock.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/data-commit.test.ts",
+   "to": "tests/step-run.ts",
    "kind": "dependency"
   },
   {
@@ -3758,6 +4066,11 @@
   {
    "from": "tests/data-commit.test.ts",
    "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/data-lock.test.ts",
+   "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
   {
@@ -4117,7 +4430,12 @@
   },
   {
    "from": "tests/hand-run-commands.test.ts",
-   "to": "scripts/data-pin.mjs",
+   "to": "scripts/data-lock-run/data-lock-run.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/hand-run-commands.test.ts",
+   "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
   {
@@ -4258,6 +4576,31 @@
   {
    "from": "tests/listbox.test.ts",
    "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/lock-run-refusals.test.ts",
+   "to": "scripts/data-lock-run/data-lock-run.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/lock-run-refusals.test.ts",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/lock-run-refusals.test.ts",
+   "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/lock-run-refusals.test.ts",
+   "to": "tests/broken-lock.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/lock-run-refusals.test.ts",
+   "to": "tests/throwaway-folder.ts",
    "kind": "dependency"
   },
   {
@@ -4506,23 +4849,38 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/pipeline.test.ts",
-   "to": "scripts/carry-assets/carry.mjs",
+   "from": "tests/pin-and-report-steps.test.ts",
+   "to": "scripts/data-lock-run/data-lock-run.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pin-and-report-steps.test.ts",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pin-and-report-steps.test.ts",
+   "to": "tests/broken-lock.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pin-and-report-steps.test.ts",
+   "to": "tests/step-run.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pin-and-report-steps.test.ts",
+   "to": "tests/throwaway-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pin-and-report-steps.test.ts",
+   "to": "tests/workflow-text.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/pipeline.test.ts",
-   "to": "scripts/cli-data-check.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/pipeline.test.ts",
-   "to": "scripts/clone-shortfall.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/pipeline.test.ts",
-   "to": "scripts/data-pin.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
   {
@@ -6246,6 +6604,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/step-run.ts",
+   "to": "tests/throwaway-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/step-run.ts",
+   "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/territories.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -6735,6 +7103,90 @@
    },
    {
     "name": "pageUrlOf",
+    "kind": "fn",
+    "exported": false
+   }
+  ],
+  "scripts/data-lock/data-lock.mjs": [
+   {
+    "name": "chosenClonePathOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pinData",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "pinBuiltCommit",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "lockedCommitOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "cloneHeadAndVersionOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "lockAndCloneOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "chooseDataCommit",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "cloneShortfallOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/data-lock-run/data-lock-run.mjs": [
+   {
+    "name": "SUBCOMMANDS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "SUBCOMMAND_NAMES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "isProcessScript",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "writeStepOutputs",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "refusedRunReportOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "USAGE_REFUSAL",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "runSubcommandWritingOutputs",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "reportOfRun",
     "kind": "fn",
     "exported": false
    }
@@ -7554,55 +8006,6 @@
     "exported": true
    }
   ],
-  "scripts/cli-data-check.mjs": [
-   {
-    "name": "DATA_REPOSITORY_URL",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "dataCheckOptionsOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "LACK_WORDS",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "REMEDY_WORDS",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "remedyOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "shortfallSentenceOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "dataCheckReportOf",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/cli-data-pin.mjs": [
-   {
-    "name": "pinOptionsOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "pinReportOf",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
   "scripts/cli-deploy-finding.mjs": [],
   "scripts/cli-measure-taps.mjs": [
    {
@@ -7700,80 +8103,6 @@
    },
    {
     "name": "smokeReportOf",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/clone-shortfall.mjs": [
-   {
-    "name": "FULL_SHA",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "hasCommit",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "lockAndCloneOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "isAncestor",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "isAheadOfOriginMaster",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "headShortfallKindOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "hasDiverged",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "cloneShortfallOf",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/data-pin.mjs": [
-   {
-    "name": "root",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "siteLockPath",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "mainCheckoutOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "dataClonePath",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "readLock",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "pinData",
     "kind": "fn",
     "exported": true
    }
@@ -7913,6 +8242,11 @@
   ],
   "scripts/find-option-value.mjs": [
    {
+    "name": "OptionMissing",
+    "kind": "class",
+    "exported": true
+   },
+   {
     "name": "findOptionValue",
     "kind": "fn",
     "exported": true
@@ -7953,25 +8287,6 @@
    }
   ],
   "scripts/main-check-base.mjs": [
-   {
-    "name": "report",
-    "kind": "const",
-    "exported": false
-   }
-  ],
-  "scripts/main-data-check.mjs": [
-   {
-    "name": "lockAndClone",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "report",
-    "kind": "const",
-    "exported": false
-   }
-  ],
-  "scripts/main-data-pin.mjs": [
    {
     "name": "report",
     "kind": "const",
@@ -11496,16 +11811,12 @@
   "scripts/check-base.mjs",
   "scripts/child-env.mjs",
   "scripts/cli-check-base.mjs",
-  "scripts/cli-data-check.mjs",
-  "scripts/cli-data-pin.mjs",
   "scripts/cli-deploy-finding.mjs",
   "scripts/cli-measure-taps.mjs",
   "scripts/cli-refresh-traffic-counter-copy.mjs",
   "scripts/cli-render-assets.mjs",
   "scripts/cli-shot.mjs",
   "scripts/cli-smoke.mjs",
-  "scripts/clone-shortfall.mjs",
-  "scripts/data-pin.mjs",
   "scripts/decode-png-size.mjs",
   "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
@@ -11514,8 +11825,6 @@
   "scripts/live-site-over-http.mjs",
   "scripts/log-wording.mjs",
   "scripts/main-check-base.mjs",
-  "scripts/main-data-check.mjs",
-  "scripts/main-data-pin.mjs",
   "scripts/main-measure-taps.mjs",
   "scripts/main-refresh-traffic-counter-copy.mjs",
   "scripts/main-render-assets.mjs",
@@ -11580,5 +11889,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "d86ecacdaa3c1f02c8e2d23a5cd1abb9cbb1d9bc4e203167ca1fe02125b0d11f"
+ "digest": "bd93c522b638ee602e609f196f20434589d493a291db89c8bcc0853daaaa35dc"
 }

@@ -1,9 +1,9 @@
 // @level presentation
 /**
  * The data check's command line: the lock `--lock` names and the data clone
- * `--clone` names, as `lockAndCloneOf`'s options in `clone-shortfall.mjs`,
+ * `--clone` names, as `lockAndCloneOf`'s options in the `data-lock` module,
  * and the report of what `cloneShortfallOf` returned. It reads, runs and
- * prints nothing; `main-data-check.mjs` prints what it returns.
+ * prints nothing; `run-check.mjs` returns what it makes.
  *
  *   npm run data:check [-- --lock <path>] [-- --clone <path>]
  *
@@ -13,15 +13,15 @@
  * never `data:pin`: when the clone is behind, pinning it would move the site
  * back onto older data.
  */
-import { findOptionValue } from "./find-option-value.mjs";
+import { findOptionValue } from "../../find-option-value.mjs";
 
 /** Where the data repository is cloned from. */
 const DATA_REPOSITORY_URL = "https://github.com/OytunOnal/permit-rulebook-data.git";
 
 /** The check's options from the command's arguments: the lock after `--lock` and the clone after `--clone`, each left out when not given. */
 export function dataCheckOptionsOf(argv) {
-  const lockPath = findOptionValue(argv, "--lock", "--lock names no path: npm run data:check -- --lock <path>");
-  const clonePath = findOptionValue(argv, "--clone", "--clone names no path: npm run data:check -- --clone <path>");
+  const lockPath = findOptionValue(argv, "--lock");
+  const clonePath = findOptionValue(argv, "--clone");
   return {
     ...(lockPath === undefined ? {} : { lockPath }),
     ...(clonePath === undefined ? {} : { clonePath }),

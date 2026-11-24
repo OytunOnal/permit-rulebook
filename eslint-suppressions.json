@@ -449,11 +449,6 @@
       "count": 1
     }
   },
-  "tests/pipeline.test.ts": {
-    "max-lines-per-function": {
-      "count": 4
-    }
-  },
   "tests/rail.test.ts": {
     "max-lines-per-function": {
       "count": 2

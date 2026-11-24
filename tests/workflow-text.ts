@@ -90,6 +90,12 @@ export const stepScriptOf = (step: string): string => {
   return under.slice(0, end < 0 ? undefined : end).map((line) => line.slice(10)).join("\n").trimEnd();
 };
 
+/** A step's `run:` written on its own line, trimmed; "" when the step has none or runs a `|` block. */
+export const stepRunLineOf = (step: string): string => {
+  const command = /^ {8}run:(.*)$/m.exec(step)?.[1]?.trim() ?? "";
+  return /^[|>]/.test(command) ? "" : command;
+};
+
 /** A checkout step's `ref:` under its `with:`, trimmed; "" when it has none. */
 export const checkoutRefOf = (step: string): string => /^ {10}ref:\s*(.+)$/m.exec(step)?.[1]?.trim() ?? "";
 
