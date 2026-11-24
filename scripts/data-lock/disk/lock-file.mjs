@@ -1,17 +1,21 @@
 // @level infrastructure
 /**
- * The lock's file: the site's own `data.lock` by default, or the one a path
- * names (a relative path read from the working folder). It reads and writes
- * that one file's text, nothing else.
+ * The lock's file: the site's own `data.lock` by default, the one in the site
+ * a folder holds, or the one a path names (a relative path read from the
+ * working folder). It reads and writes that one file's text, nothing else,
+ * and is the one place the lock's file name is joined.
  */
 import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, resolve } from "node:path";
+import { siteRoot } from "./site-root.mjs";
 
-const root = dirname(fileURLToPath(new URL("../../../package.json", import.meta.url)));
+/** The lock of the site checked out at `siteDir`, relative to the working folder. */
+export function lockPathIn(siteDir) {
+  return join(resolve(siteDir), "data.lock");
+}
 
 /** The site's own lock. */
-export const siteLockPath = join(root, "data.lock");
+export const siteLockPath = lockPathIn(siteRoot);
 
 /** The text of the lock at `lockPath`. */
 export function readLockText(lockPath = siteLockPath) {

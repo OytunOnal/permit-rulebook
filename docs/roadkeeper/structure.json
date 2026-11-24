@@ -86,6 +86,7 @@
     "scripts/data-lock/disk/data-clone.mjs",
     "scripts/data-lock/disk/data-master.mjs",
     "scripts/data-lock/disk/lock-file.mjs",
+    "scripts/data-lock/disk/site-root.mjs",
     "scripts/data-lock/rules/data-commit.mjs",
     "scripts/data-lock/rules/lock-refusal.mjs",
     "scripts/data-lock/rules/lock-text.mjs",
@@ -115,7 +116,8 @@
     "scripts/data-lock-run/read-locked-commit/cli-read-locked-commit.mjs",
     "scripts/data-lock-run/read-locked-commit/run-read-locked-commit.mjs",
     "scripts/data-lock-run/refusal/cli-refusal.mjs",
-    "scripts/data-lock-run/refusal/run-refusals.mjs"
+    "scripts/data-lock-run/refusal/run-refusals.mjs",
+    "scripts/data-lock-run/step-report/step-report.mjs"
    ]
   },
   {
@@ -361,11 +363,13 @@
   "scripts/data-lock-run/read-locked-commit/run-read-locked-commit.mjs": "main",
   "scripts/data-lock-run/refusal/cli-refusal.mjs": "presentation",
   "scripts/data-lock-run/refusal/run-refusals.mjs": "main",
+  "scripts/data-lock-run/step-report/step-report.mjs": "presentation",
   "scripts/data-lock/data-lock.mjs": "infrastructure",
   "scripts/data-lock/disk/clone-questions.mjs": "infrastructure",
   "scripts/data-lock/disk/data-clone.mjs": "infrastructure",
   "scripts/data-lock/disk/data-master.mjs": "infrastructure",
   "scripts/data-lock/disk/lock-file.mjs": "infrastructure",
+  "scripts/data-lock/disk/site-root.mjs": "infrastructure",
   "scripts/data-lock/rules/data-commit.mjs": "domain",
   "scripts/data-lock/rules/lock-refusal.mjs": "domain",
   "scripts/data-lock/rules/lock-text.mjs": "domain",
@@ -821,6 +825,11 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/data-lock-run/choose-commit/cli-choose-commit.mjs",
+   "to": "scripts/data-lock-run/step-report/step-report.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/data-lock-run/choose-commit/run-choose-commit.mjs",
    "to": "scripts/data-lock-run/choose-commit/cli-choose-commit.mjs",
    "kind": "dependency"
@@ -881,6 +890,11 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/data-lock-run/pin-built/cli-pin-built.mjs",
+   "to": "scripts/data-lock-run/step-report/step-report.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/data-lock-run/pin-built/run-pin-built.mjs",
    "to": "scripts/data-lock-run/pin-built/cli-pin-built.mjs",
    "kind": "dependency"
@@ -911,13 +925,28 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/data-lock-run/read-built-commit/cli-read-built-commit.mjs",
+   "to": "scripts/data-lock-run/step-report/step-report.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
    "to": "scripts/data-lock-run/read-built-commit/cli-read-built-commit.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
+   "to": "scripts/data-lock-run/refusal/run-refusals.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
    "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/read-locked-commit/cli-read-locked-commit.mjs",
+   "to": "scripts/data-lock-run/step-report/step-report.mjs",
    "kind": "dependency"
   },
   {
@@ -987,12 +1016,22 @@
   },
   {
    "from": "scripts/data-lock/disk/data-clone.mjs",
+   "to": "scripts/data-lock/disk/site-root.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/disk/data-clone.mjs",
    "to": "scripts/run-git.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/data-lock/disk/data-master.mjs",
    "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/disk/lock-file.mjs",
+   "to": "scripts/data-lock/disk/site-root.mjs",
    "kind": "dependency"
   },
   {
@@ -7021,6 +7060,11 @@
     "exported": true
    },
    {
+    "name": "chosenClonePathOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "pinData",
     "kind": "fn",
     "exported": true
@@ -7083,7 +7127,7 @@
     "exported": false
    },
    {
-    "name": "runSubcommand",
+    "name": "runSubcommandWritingOutputs",
     "kind": "fn",
     "exported": false
    },
@@ -11728,5 +11772,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "8d593bcc8897b3a33d366293fd9b9bd050e6af3fdf373e8b7f83ad7738243d4f"
+ "digest": "6dd6ce42574847192d7f011c7f38e98865223fde4dbcacb1085f41ede0d568d1"
 }

@@ -12,7 +12,7 @@
  * (`clone-questions.mjs` answers them with local git), and refuses a lock
  * whose sha is not 40 hex characters before asking any.
  */
-import { LockRefusal } from "./lock-refusal.mjs";
+import { LockRefusal, REFUSAL_CONTEXTS } from "./lock-refusal.mjs";
 import { isFullSha, LOCKED_SHA_REFUSAL } from "./lock-text.mjs";
 
 /**
@@ -77,7 +77,7 @@ function hasDiverged(clone, { lockSha, head, kind }) {
  * @returns {CloneShortfall | null}
  */
 export function shortfallOf({ lockSha, clonePath }, clone) {
-  if (!isFullSha(lockSha)) throw new LockRefusal(LOCKED_SHA_REFUSAL, "a locked commit is refused");
+  if (!isFullSha(lockSha)) throw new LockRefusal(LOCKED_SHA_REFUSAL, REFUSAL_CONTEXTS.lockedCommit);
   if (!clone.isCloned()) return { kind: "no-clone", clonePath, lockSha };
   const branch = clone.branchOrNull();
   const head = clone.headOrNull();

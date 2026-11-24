@@ -13,10 +13,8 @@
  */
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { runGit } from "../../run-git.mjs";
-
-const root = dirname(fileURLToPath(new URL("../../../package.json", import.meta.url)));
+import { siteRoot } from "./site-root.mjs";
 
 /**
  * The site's main checkout: the parent of the git directory every copy of the
@@ -32,11 +30,14 @@ function mainCheckoutOf(siteDir) {
   }
 }
 
-/** What the manifest of the site at `siteDir` names for the data package: its `file:` path. A manifest naming none throws. */
-export function dataDependencyOf(siteDir) {
+/**
+ * The path the manifest of the site at `siteDir` names for the data package,
+ * its `file:` dependency without the `file:`. A manifest naming none throws.
+ */
+export function dataDependencyPathOf(siteDir) {
   const dependency = JSON.parse(readFileSync(join(siteDir, "package.json"), "utf8")).dependencies?.["permit-rulebook-data"];
   if (typeof dependency !== "string") throw new Error(`the manifest at ${siteDir} names no permit-rulebook-data dependency`);
-  return dependency;
+  return dependency.replace(/^file:/, "");
 }
 
 /**
@@ -45,9 +46,8 @@ export function dataDependencyOf(siteDir) {
  * site's main checkout, the same folder from every worktree of it — never
  * typed twice.
  */
-export function dataClonePath(siteDir = root) {
-  const mainCheckout = mainCheckoutOf(siteDir);
-  return resolve(mainCheckout, dataDependencyOf(siteDir).replace(/^file:/, ""));
+export function dataClonePath(siteDir = siteRoot) {
+  return resolve(mainCheckoutOf(siteDir), dataDependencyPathOf(siteDir));
 }
 
 /** The HEAD commit of the data clone at `clonePath`. */

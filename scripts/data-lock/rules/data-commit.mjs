@@ -18,7 +18,7 @@
  * `CHOOSE_COMMIT_REFUSALS`, never echoed.
  */
 import { posix } from "node:path";
-import { LockRefusal } from "./lock-refusal.mjs";
+import { LockRefusal, REFUSAL_CONTEXTS } from "./lock-refusal.mjs";
 import { isFullSha, LOCKED_SHA_REFUSAL, lockedShaOf } from "./lock-text.mjs";
 
 /** A data folder the build may check out into and work in: the shape the manifest's folder has always had. */
@@ -31,17 +31,17 @@ export const CHOOSE_COMMIT_REFUSALS = Object.freeze({
   chosenCommit: "the run chose no 40-hex data commit",
 });
 
-/** The folder the data is checked out into: the last part of the manifest's `file:` path for the data package, refused unless a plain name. */
-function dataFolderOf(dependency) {
-  const folder = posix.basename(dependency.replace(/^file:/, ""));
-  if (!PLAIN_FOLDER.test(folder)) throw new LockRefusal(CHOOSE_COMMIT_REFUSALS.dataFolder, "no data commit is chosen");
+/** The folder the data is checked out into: the last part of the manifest's path for the data package, refused unless a plain name. */
+function dataFolderOf(dependencyPath) {
+  const folder = posix.basename(dependencyPath);
+  if (!PLAIN_FOLDER.test(folder)) throw new LockRefusal(CHOOSE_COMMIT_REFUSALS.dataFolder, REFUSAL_CONTEXTS.chosenCommit);
   return folder;
 }
 
 /** The commit a run of `eventName`, attempt `runAttempt`, builds; the newest master is asked only when it is the one. */
-function chosenShaOf({ eventName, runAttempt, payloadSha }, lockedSha, newestMasterSha) {
+function chosenShaOf({ eventName, runAttempt, payloadSha }, lockedSha, askNewestMasterSha) {
   if (runAttempt !== "1") return lockedSha;
-  if (eventName === "schedule") return newestMasterSha();
+  if (eventName === "schedule") return askNewestMasterSha();
   if (eventName === "repository_dispatch") return payloadSha;
   return lockedSha;
 }
@@ -51,14 +51,14 @@ function chosenShaOf({ eventName, runAttempt, payloadSha }, lockedSha, newestMas
  * `locked`, the lock's commit; `sha`, the commit it builds. It refuses, before
  * returning any, a manifest folder that is not a plain name, a lock that does
  * not name one 40-hex sha, and a chosen commit that is not 40 hex.
- * @param {{ dependency: string, lockText: string, eventName: string, runAttempt: string, payloadSha: string }} run
- * @param {() => string} newestMasterSha the data master's newest commit, asked only on a schedule's first attempt
+ * @param {{ dependencyPath: string, lockText: string, eventName: string, runAttempt: string, payloadSha: string }} run
+ * @param {() => string} askNewestMasterSha asks the data master's newest commit; called only on a schedule's first attempt
  * @returns {{ dir: string, locked: string, sha: string }}
  */
-export function dataCommitOf(run, newestMasterSha) {
-  const dir = dataFolderOf(run.dependency);
+export function dataCommitOf(run, askNewestMasterSha) {
+  const dir = dataFolderOf(run.dependencyPath);
   const locked = lockedShaOf(run.lockText);
-  const sha = chosenShaOf(run, locked, newestMasterSha);
-  if (!isFullSha(sha)) throw new LockRefusal(CHOOSE_COMMIT_REFUSALS.chosenCommit, "no data commit is chosen");
+  const sha = chosenShaOf(run, locked, askNewestMasterSha);
+  if (!isFullSha(sha)) throw new LockRefusal(CHOOSE_COMMIT_REFUSALS.chosenCommit, REFUSAL_CONTEXTS.chosenCommit);
   return { dir, locked, sha };
 }

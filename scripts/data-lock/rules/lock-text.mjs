@@ -4,7 +4,16 @@
  * against, and its `dataset_version=` line, the version that commit carried.
  * It reads and writes text only; the lock's file is `lock-file.mjs`'s.
  */
-import { LockRefusal } from "./lock-refusal.mjs";
+import { LockRefusal, REFUSAL_CONTEXTS } from "./lock-refusal.mjs";
+
+/**
+ * The values of `lockText`'s lines that start with `key=`, in order, each the
+ * rest of its line: the one reader of a lock's `key=` line. `key` is one of
+ * the lock's own keys, never outside text.
+ */
+function keyLineValuesOf(lockText, key) {
+  return [...lockText.matchAll(new RegExp(`^${key}=(.*)$`, "gm"))].map((match) => match[1]);
+}
 
 /** A full commit sha, the only form a lock names. */
 const FULL_SHA = /^[0-9a-f]{40}$/;
@@ -19,7 +28,7 @@ export const CLONE_HEAD_REFUSAL = "the data clone's HEAD is not a commit of 40 l
 
 /** `head`, a data clone's HEAD, checked: it refuses any but a full commit sha, the only form a lock names (a sha256 repository's is 64). */
 export function checkedCloneHeadOf(head) {
-  if (!isFullSha(head)) throw new LockRefusal(CLONE_HEAD_REFUSAL, "a built commit is refused");
+  if (!isFullSha(head)) throw new LockRefusal(CLONE_HEAD_REFUSAL, REFUSAL_CONTEXTS.builtCommit);
   return head;
 }
 
@@ -31,9 +40,9 @@ export function isDatasetVersion(value) {
   return typeof value === "string" && DATASET_VERSION.test(value);
 }
 
-/** What the lock's text says: its sha and its dataset version, each "" when its line is missing. */
+/** What the lock's text says: its sha and its dataset version, each its first non-empty line's value, trimmed, or "" when it has none. */
 export function parseLock(text) {
-  const value = (key) => new RegExp(`^${key}=(.+)$`, "m").exec(text)?.[1]?.trim() ?? "";
+  const value = (key) => keyLineValuesOf(text, key).find((found) => found !== "")?.trim() ?? "";
   return { sha: value("sha"), datasetVersion: value("dataset_version") };
 }
 
@@ -46,8 +55,8 @@ export const LOCKED_SHA_REFUSAL = "the lock names no single 40-hex sha (run npm 
  * would hand on a second value.
  */
 export function lockedShaOf(text) {
-  const shas = [...text.matchAll(/^sha=(.*)$/gm)].map((match) => match[1]);
-  if (shas.length !== 1 || !isFullSha(shas[0])) throw new LockRefusal(LOCKED_SHA_REFUSAL, "a locked commit is refused");
+  const shas = keyLineValuesOf(text, "sha");
+  if (shas.length !== 1 || !isFullSha(shas[0])) throw new LockRefusal(LOCKED_SHA_REFUSAL, REFUSAL_CONTEXTS.lockedCommit);
   return shas[0];
 }
 
@@ -61,11 +70,9 @@ export const PIN_REFUSALS = Object.freeze({
   lock: "the lock has not exactly one sha= line and one dataset_version= line to write",
 });
 
-/** How many lines of `lockText` start with `key=`. */
-const keyLineCountOf = (lockText, key) => (lockText.match(new RegExp(`^${key}=`, "gm")) ?? []).length;
-
 /** Whether `lockText` holds exactly one of each line a pin writes over, a `sha=` line and a `dataset_version=` line. */
-const hasOneOfEachLockLine = (lockText) => keyLineCountOf(lockText, "sha") === 1 && keyLineCountOf(lockText, "dataset_version") === 1;
+const hasOneOfEachLockLine = (lockText) =>
+  keyLineValuesOf(lockText, "sha").length === 1 && keyLineValuesOf(lockText, "dataset_version").length === 1;
 
 /**
  * `lockText` with its `sha=` line naming `sha` and its `dataset_version=` line
@@ -76,9 +83,9 @@ const hasOneOfEachLockLine = (lockText) => keyLineCountOf(lockText, "sha") === 1
  * wrong shape is written.
  */
 export function pinnedLockTextOf(lockText, { sha, datasetVersion }) {
-  if (!isFullSha(sha)) throw new LockRefusal(PIN_REFUSALS.commit, "a pinned lock is refused");
-  if (!isDatasetVersion(datasetVersion)) throw new LockRefusal(PIN_REFUSALS.datasetVersion, "a pinned lock is refused");
-  if (!hasOneOfEachLockLine(lockText)) throw new LockRefusal(PIN_REFUSALS.lock, "a pinned lock is refused");
+  if (!isFullSha(sha)) throw new LockRefusal(PIN_REFUSALS.commit, REFUSAL_CONTEXTS.pinnedLock);
+  if (!isDatasetVersion(datasetVersion)) throw new LockRefusal(PIN_REFUSALS.datasetVersion, REFUSAL_CONTEXTS.pinnedLock);
+  if (!hasOneOfEachLockLine(lockText)) throw new LockRefusal(PIN_REFUSALS.lock, REFUSAL_CONTEXTS.pinnedLock);
   return lockText
     .replace(/^sha=.*$/m, `sha=${sha}`)
     .replace(/^dataset_version=.*$/m, `dataset_version=${datasetVersion}`);

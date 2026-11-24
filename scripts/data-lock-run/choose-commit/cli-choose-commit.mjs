@@ -7,6 +7,7 @@
  *
  *   EVENT_NAME, RUN_ATTEMPT, PAYLOAD_SHA, DATA_REPOSITORY_URL  the step's env
  */
+import { stepReportOf } from "../step-report/step-report.mjs";
 
 /** The run the step's environment `env` names, each value "" when the workflow passes none. */
 export function chooseCommitOptionsOf(env) {
@@ -18,11 +19,7 @@ export function chooseCommitOptionsOf(env) {
   };
 }
 
-/** The step's outputs, `dir`, `locked` and `sha` under the names the later jobs read, one JSON log line, and exit code 0. */
+/** The step's report: its outputs `dir`, `locked` and `sha` under the names the later jobs read, as `stepReportOf` shapes it. */
 export function chooseCommitReportOf({ dir, locked, sha }) {
-  return {
-    outputs: { dir, locked, sha },
-    out: [JSON.stringify({ level: "info", msg: "the data commit this run builds", dir, locked, sha })],
-    exitCode: 0,
-  };
+  return stepReportOf("the data commit this run builds", { dir, locked, sha });
 }

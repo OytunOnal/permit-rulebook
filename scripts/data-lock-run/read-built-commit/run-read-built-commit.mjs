@@ -8,6 +8,7 @@
  * module's check) and a dataset version of the wrong shape.
  */
 import { cloneHeadAndVersionOf, CLONE_HEAD_REFUSAL, isDatasetVersion, LockRefusal } from "../../data-lock/data-lock.mjs";
+import { RUN_REFUSAL_CONTEXTS } from "../refusal/run-refusals.mjs";
 import { readBuiltCommitOptionsOf, readBuiltCommitReportOf } from "./cli-read-built-commit.mjs";
 
 /** Why the build's read is refused; a reason names the rule, never a value, which is the data's or the step's text. */
@@ -21,8 +22,8 @@ export const READ_BUILT_COMMIT_REFUSALS = Object.freeze({
 export function runReadBuiltCommit() {
   const { dataDir } = readBuiltCommitOptionsOf(process.env);
   // Unset, the folder would resolve to the working folder, the site's own checkout.
-  if (dataDir === "") throw new LockRefusal(READ_BUILT_COMMIT_REFUSALS.dataDir, "the build's data commit is refused");
+  if (dataDir === "") throw new LockRefusal(READ_BUILT_COMMIT_REFUSALS.dataDir, RUN_REFUSAL_CONTEXTS.buildRead);
   const { sha, datasetVersion } = cloneHeadAndVersionOf(dataDir);
-  if (!isDatasetVersion(datasetVersion)) throw new LockRefusal(READ_BUILT_COMMIT_REFUSALS.datasetVersion, "the build's data commit is refused");
+  if (!isDatasetVersion(datasetVersion)) throw new LockRefusal(READ_BUILT_COMMIT_REFUSALS.datasetVersion, RUN_REFUSAL_CONTEXTS.buildRead);
   return readBuiltCommitReportOf({ sha, version: datasetVersion });
 }

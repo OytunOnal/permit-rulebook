@@ -20,11 +20,11 @@
  * returns what it found and prints nothing; the words are the run module's,
  * `scripts/data-lock-run`.
  */
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
 import { cloneQuestionsOf } from "./disk/clone-questions.mjs";
-import { cloneDatasetVersionOf, cloneHeadOf, dataClonePath, dataDependencyOf } from "./disk/data-clone.mjs";
+import { cloneDatasetVersionOf, cloneHeadOf, dataClonePath, dataDependencyPathOf } from "./disk/data-clone.mjs";
 import { newestDataMasterOf } from "./disk/data-master.mjs";
-import { readLockText, siteLockPath, writeLockText } from "./disk/lock-file.mjs";
+import { lockPathIn, readLockText, siteLockPath, writeLockText } from "./disk/lock-file.mjs";
 import { CHOOSE_COMMIT_REFUSALS, dataCommitOf } from "./rules/data-commit.mjs";
 import { LockRefusal } from "./rules/lock-refusal.mjs";
 import {
@@ -42,6 +42,11 @@ export function readLock(text = readLockText()) {
   return parseLock(text);
 }
 
+/** The data clone at `clonePath`, relative to the working folder, when given; else the site's own data clone. */
+function chosenClonePathOf(clonePath) {
+  return clonePath === undefined ? dataClonePath() : resolve(clonePath);
+}
+
 /**
  * Writes the HEAD and dataset version of the data clone at `clonePath` (the
  * site's own data clone by default) into the lock at `lockPath` (the site's
@@ -52,7 +57,7 @@ export function readLock(text = readLockText()) {
  */
 export function pinData({ lockPath = siteLockPath, clonePath } = {}) {
   const target = resolve(lockPath);
-  const dir = clonePath === undefined ? dataClonePath() : resolve(clonePath);
+  const dir = chosenClonePathOf(clonePath);
   const sha = cloneHeadOf(dir);
   const datasetVersion = cloneDatasetVersionOf(dir);
   const lockText = readLockText(target);
@@ -69,7 +74,7 @@ export function pinData({ lockPath = siteLockPath, clonePath } = {}) {
  * @param {{ sha: string, datasetVersion: string, siteDir?: string }} built
  */
 export function pinBuiltCommit({ sha, datasetVersion, siteDir = "." }) {
-  const lockPath = join(resolve(siteDir), "data.lock");
+  const lockPath = lockPathIn(siteDir);
   writeLockText(lockPath, pinnedLockTextOf(readLockText(lockPath), { sha, datasetVersion }));
   return { sha, datasetVersion };
 }
@@ -80,7 +85,7 @@ export function pinBuiltCommit({ sha, datasetVersion, siteDir = "." }) {
  * names no single 40-hex sha.
  */
 export function lockedCommitOf(siteDir = ".") {
-  return lockedShaOf(readLockText(join(resolve(siteDir), "data.lock")));
+  return lockedShaOf(readLockText(lockPathIn(siteDir)));
 }
 
 /**
@@ -104,7 +109,7 @@ export function cloneHeadAndVersionOf(clonePath) {
 export function lockAndCloneOf({ lockPath, clonePath } = {}) {
   return {
     lockSha: lockedShaOf(readLockText(lockPath)),
-    clonePath: clonePath === undefined ? dataClonePath() : resolve(clonePath),
+    clonePath: chosenClonePathOf(clonePath),
   };
 }
 
@@ -119,7 +124,7 @@ export function lockAndCloneOf({ lockPath, clonePath } = {}) {
 export function chooseDataCommit({ eventName, runAttempt, payloadSha, dataRepositoryUrl, siteDir = "." }) {
   const site = resolve(siteDir);
   return dataCommitOf(
-    { dependency: dataDependencyOf(site), lockText: readLockText(join(site, "data.lock")), eventName, runAttempt, payloadSha },
+    { dependencyPath: dataDependencyPathOf(site), lockText: readLockText(lockPathIn(site)), eventName, runAttempt, payloadSha },
     () => newestDataMasterOf(dataRepositoryUrl, site),
   );
 }

@@ -8,17 +8,14 @@
  *
  *   BUILT, VERSION  the step's env: the build job's `built` and `version` outputs
  */
+import { stepReportOf } from "../step-report/step-report.mjs";
 
 /** The built commit and dataset version the step's environment `env` names, each "" when the workflow passes none. */
 export function pinBuiltOptionsOf(env) {
   return { sha: env.BUILT ?? "", datasetVersion: env.VERSION ?? "" };
 }
 
-/** The step's outputs, the `sha` and `version` the lock now names, for the commit message after it; one JSON log line; exit code 0. */
+/** The step's report: its outputs, the `sha` and `version` the lock now names, for the commit message after it, as `stepReportOf` shapes it. */
 export function pinBuiltReportOf({ sha, datasetVersion }) {
-  return {
-    outputs: { sha, version: datasetVersion },
-    out: [JSON.stringify({ level: "info", msg: "data.lock now names the data commit this run built", sha, version: datasetVersion })],
-    exitCode: 0,
-  };
+  return stepReportOf("data.lock now names the data commit this run built", { sha, version: datasetVersion });
 }

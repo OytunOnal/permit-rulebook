@@ -7,17 +7,14 @@
  *
  *   DATA_DIR  the step's env: the data clone's folder, from the step's working folder
  */
+import { stepReportOf } from "../step-report/step-report.mjs";
 
 /** The data clone's folder the step's environment `env` names; "" when the workflow passes none. */
 export function readBuiltCommitOptionsOf(env) {
   return { dataDir: env.DATA_DIR ?? "" };
 }
 
-/** The step's outputs, `sha` and `version` under the names the later jobs read, one JSON log line, and exit code 0. */
+/** The step's report: its outputs `sha` and `version` under the names the later jobs read, as `stepReportOf` shapes it. */
 export function readBuiltCommitReportOf({ sha, version }) {
-  return {
-    outputs: { sha, version },
-    out: [JSON.stringify({ level: "info", msg: "the data commit this run built", sha, version })],
-    exitCode: 0,
-  };
+  return stepReportOf("the data commit this run built", { sha, version });
 }

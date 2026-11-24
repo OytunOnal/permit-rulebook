@@ -29,7 +29,7 @@ import { LockRefusal } from "../data-lock/data-lock.mjs";
 import { printReport } from "../print-report.mjs";
 import { runCheck } from "./check/run-check.mjs";
 import { refusalReportOf } from "./refusal/cli-refusal.mjs";
-import { RUN_REFUSALS } from "./refusal/run-refusals.mjs";
+import { RUN_REFUSAL_CONTEXTS, RUN_REFUSALS } from "./refusal/run-refusals.mjs";
 import { READ_BUILT_COMMIT_REFUSALS, runReadBuiltCommit } from "./read-built-commit/run-read-built-commit.mjs";
 import { READ_LOCKED_COMMIT_REFUSALS, runReadLockedCommit } from "./read-locked-commit/run-read-locked-commit.mjs";
 import { PIN_BUILT_REFUSALS, runPinBuilt } from "./pin-built/run-pin-built.mjs";
@@ -60,7 +60,7 @@ function isProcessScript() {
  */
 function writeStepOutputs(outputs) {
   const outputFile = process.env.GITHUB_OUTPUT;
-  if (!outputFile) throw new LockRefusal(RUN_REFUSALS.stepOutputs, "the step's outputs are refused");
+  if (!outputFile) throw new LockRefusal(RUN_REFUSALS.stepOutputs, RUN_REFUSAL_CONTEXTS.stepOutputs);
   appendFileSync(outputFile, Object.entries(outputs).map(([name, value]) => `${name}=${value}\n`).join(""), "utf8");
 }
 
@@ -68,7 +68,7 @@ function writeStepOutputs(outputs) {
 const refusedRunReportOf = (reason) => refusalReportOf(reason, { isUnderActions: process.env.GITHUB_ACTIONS === "true" });
 
 /** Runs the subcommand `argv` names on the arguments after it, writes its step outputs, and returns its report; an unnamed subcommand's report is the usage refusal. */
-function runSubcommand(argv) {
+function runSubcommandWritingOutputs(argv) {
   const [subcommand, ...args] = argv;
   const run = SUBCOMMANDS.get(subcommand);
   if (run === undefined)
@@ -81,7 +81,7 @@ function runSubcommand(argv) {
 /** The report of the run `argv` names, or of its `LockRefusal` as one error line; any other error is thrown on, its stack kept. */
 function reportOfRun(argv) {
   try {
-    return runSubcommand(argv);
+    return runSubcommandWritingOutputs(argv);
   } catch (error) {
     if (!(error instanceof LockRefusal)) throw error;
     return refusedRunReportOf(error.message);
