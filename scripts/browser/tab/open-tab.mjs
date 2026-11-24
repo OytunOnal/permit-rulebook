@@ -37,7 +37,7 @@ export async function openTab(connection, setup) {
   const sendToTab = (method, params) => connection.send(method, params, sessionId);
   const events = new TabEvents(sendToTab, { network: setup.network, walkLog: setup.walkLog });
   const waits = new TabWaits(sendToTab);
-  const watchForTabOpened = watchTabsOpenedBy(connection, targetId);
+  const watchForTabOpened = watchTabsOpenedBy(connection, { targetId, sessionId });
   // A gesture fronts its tab through the page's own `front()`, built below; it runs only on a gesture.
   const gestures = new TabGestures(sendToTab, { waits, front: () => page.front(), watchForTabOpened });
   const requestHandling = { sendToTab, answers: setup.answeredRequests, walkLog: setup.walkLog };
@@ -53,15 +53,19 @@ export async function openTab(connection, setup) {
   return page;
 }
 
+/** Whether a browser `message` says the walk's session `sessionId` was detached: its tab closed. */
+const isDetachedFrom = ({ method, params }, sessionId) => method === "Target.detachedFromTarget" && params.sessionId === sessionId;
+
 /**
- * Counts the tabs the tab of `targetId` opens from here on, from the browser's
- * own messages, and returns what starts a watch: called, it returns whether
- * the tab has opened one since.
+ * Counts the tabs the tab of `targetId`, attached at `sessionId`, opens from
+ * here on, from the browser's own messages, until it closes, and returns what
+ * starts a watch: called, it returns whether the tab has opened one since.
  */
-function watchTabsOpenedBy(connection, targetId) {
+function watchTabsOpenedBy(connection, { targetId, sessionId }) {
   let opened = 0;
-  connection.listenToBrowser((message) => {
+  const stopListening = connection.listenToBrowser((message) => {
     if (decodeAttachedTarget(message)?.openerId === targetId) opened++;
+    if (isDetachedFrom(message, sessionId)) stopListening();
   });
   return () => {
     const openedBefore = opened;

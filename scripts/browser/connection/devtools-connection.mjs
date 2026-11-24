@@ -47,9 +47,17 @@ export class DevToolsConnection {
     this.#tabs.set(sessionId, hear);
   }
 
-  /** Hands every message of the browser's own, one no tab's session carries, to `hear`, beside any listener already there. */
+  /**
+   * Hands every message of the browser's own, one no tab's session carries, to
+   * `hear`, beside any listener already there, and returns what stops it. The
+   * list is replaced, never changed in place, so a listener stopping while a
+   * message goes round leaves that message's round as it began.
+   */
   listenToBrowser(hear) {
-    this.#browserListeners.push(hear);
+    this.#browserListeners = [...this.#browserListeners, hear];
+    return () => {
+      this.#browserListeners = this.#browserListeners.filter((listener) => listener !== hear);
+    };
   }
 
   /** Closes the connection. */
