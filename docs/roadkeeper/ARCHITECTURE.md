@@ -275,6 +275,11 @@ click on the tracker link. Answers never leave the device.
   asks git through `run-git.mjs`, an argument list with no shell, and finds
   git, as `chromePath` finds Chrome, through `findOnPath()`: PATH's absolute
   folders only, never the folder a run stands in.
+  Every deploy step that reads or writes the lock runs one subcommand of
+  `scripts/data-lock-run` on node 22 (`choose-commit`, `read-built-commit`,
+  `pin-built`, `read-locked-commit`), which writes the step's outputs itself;
+  a refusal is one line naming its reason, never the value it refused, and
+  the pin job's git commit and push stay in the job's next step (#446).
   The carry (`scripts/carry-assets`)
   copies the live generation's assets into `dist/`, only from the site's own
   address and only bytes the previous build's digest list attests; it is a
