@@ -14,8 +14,22 @@ export function isFullSha(value) {
   return FULL_SHA.test(value);
 }
 
+/** Why a data clone's HEAD is refused; it names the rule, never the value. */
+export const CLONE_HEAD_REFUSAL = "the data clone's HEAD is not a commit of 40 lower-case hex characters";
+
+/** `head`, a data clone's HEAD, checked: it refuses any but a full commit sha, the only form a lock names (a sha256 repository's is 64). */
+export function checkedCloneHeadOf(head) {
+  if (!isFullSha(head)) throw new LockRefusal(CLONE_HEAD_REFUSAL, "a built commit is refused");
+  return head;
+}
+
 /** A dataset version, the only form a lock names: the data's dataset file stamps its day as YYYY.MM.DD. */
 const DATASET_VERSION = /^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$/;
+
+/** Whether `value` is a dataset version, a string of the form YYYY.MM.DD: the version-shape check every reader of a version asks. */
+export function isDatasetVersion(value) {
+  return typeof value === "string" && DATASET_VERSION.test(value);
+}
 
 /** What the lock's text says: its sha and its dataset version, each "" when its line is missing. */
 export function parseLock(text) {
@@ -54,7 +68,7 @@ export const PIN_REFUSALS = Object.freeze({
  */
 export function pinnedLockTextOf(lockText, { sha, datasetVersion }) {
   if (!isFullSha(sha)) throw new LockRefusal(PIN_REFUSALS.commit, "a pinned lock is refused");
-  if (!DATASET_VERSION.test(datasetVersion)) throw new LockRefusal(PIN_REFUSALS.datasetVersion, "a pinned lock is refused");
+  if (!isDatasetVersion(datasetVersion)) throw new LockRefusal(PIN_REFUSALS.datasetVersion, "a pinned lock is refused");
   return lockText
     .replace(/^sha=.*$/m, `sha=${sha}`)
     .replace(/^dataset_version=.*$/m, `dataset_version=${datasetVersion}`);

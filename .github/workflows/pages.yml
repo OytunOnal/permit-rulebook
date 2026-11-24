@@ -218,27 +218,21 @@ jobs:
           # No token on disk, as the site's checkout above.
           persist-credentials: false
 
-      # The dataset version is read from the data's own file, and the pin
-      # writes it into data.lock: it is checked for its shape before it
-      # becomes an output, as data-commit's values are.
-      - name: Which data commit this run is building
-        id: built
-        env:
-          DATA_DIR: ${{ needs.data-commit.outputs.dir }}
-          LOCKED: ${{ needs.data-commit.outputs.locked }}
-        run: |
-          sha=$(git -C "$DATA_DIR" rev-parse HEAD)
-          version=$(node -p "require('./$DATA_DIR/data/dataset.json').dataset_version")
-          case "$version" in
-            [0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]) ;;
-            *) echo "::error::the data names no YYYY.MM.DD dataset version."; exit 1 ;;
-          esac
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "Building against data $sha (lock says $LOCKED)"
-
+      # The run module runs on the node the suite runs on.
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
         with: { node-version: 22 }
+
+      # The commit checked out and the dataset version read from the data's
+      # own file, which the pin writes into data.lock: the version is checked
+      # for its shape before either becomes an output, as data-commit's values
+      # are (`tests/data-commit.test.ts` runs this line). The data sits beside
+      # the site, under the plain folder name data-commit checked.
+      - name: Which data commit this run is building
+        id: built
+        working-directory: site
+        env:
+          DATA_DIR: ../${{ needs.data-commit.outputs.dir }}
+        run: node scripts/data-lock-run/data-lock-run.mjs read-built-commit
 
       # Only what the site's `file:` dependency reads: the package built. Its
       # whole check is `data-check`'s, beside this job.

@@ -9,6 +9,7 @@
  *   node scripts/data-lock-run/data-lock-run.mjs pin [--lock <path>] [--clone <path>]   # npm run data:pin
  *   node scripts/data-lock-run/data-lock-run.mjs check [--lock <path>] [--clone <path>] # npm run data:check
  *   node scripts/data-lock-run/data-lock-run.mjs choose-commit                          # the deploy's data-commit step
+ *   node scripts/data-lock-run/data-lock-run.mjs read-built-commit                      # the deploy's build step, `built`
  *
  * It refuses a subcommand it does not name, before running anything; a
  * subcommand that refuses throws before its report exists, so no output is
@@ -27,13 +28,16 @@ import { printReport } from "../print-report.mjs";
 import { runCheck } from "./check/run-check.mjs";
 import { refusalReportOf } from "./refusal/cli-refusal.mjs";
 import { RUN_REFUSALS } from "./refusal/run-refusals.mjs";
+import { READ_BUILT_COMMIT_REFUSALS, runReadBuiltCommit } from "./read-built-commit/run-read-built-commit.mjs";
 
-export { RUN_REFUSALS };
+export { READ_BUILT_COMMIT_REFUSALS, RUN_REFUSALS };
 import { runChooseCommit } from "./choose-commit/run-choose-commit.mjs";
 import { runPin } from "./pin/run-pin.mjs";
 
 /** Each subcommand's run, by its name; a Map, since the name is the command line's text. */
-const SUBCOMMANDS = new Map([["pin", runPin], ["check", runCheck], ["choose-commit", runChooseCommit]]);
+const SUBCOMMANDS = new Map([
+  ["pin", runPin], ["check", runCheck], ["choose-commit", runChooseCommit], ["read-built-commit", runReadBuiltCommit],
+]);
 
 /** The subcommands the entry runs, by name, in the order its usage names them. */
 export const SUBCOMMAND_NAMES = [...SUBCOMMANDS.keys()];

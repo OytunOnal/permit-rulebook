@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHOOSE_COMMIT_REFUSALS, lockedShaOf, PIN_REFUSALS, pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
+import { CHOOSE_COMMIT_REFUSALS, isDatasetVersion, lockedShaOf, PIN_REFUSALS, pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
 
 /**
  * The lock's format, checked against lock texts written here by hand: the
@@ -41,6 +41,25 @@ describe("the lock's one sha is read, checked", () => {
     ["a short sha", `sha=${SHA.slice(1)}\ndataset_version=2026.11.17\n`],
   ])("refused from a lock with %s", (_what, text) => {
     expect(() => lockedShaOf(text)).toThrow(CHOOSE_COMMIT_REFUSALS.lock);
+  });
+});
+
+describe("a dataset version is checked for its shape", () => {
+  it("YYYY.MM.DD is one", () => {
+    expect(isDatasetVersion("2026.11.17")).toBe(true);
+  });
+
+  it.each<[string, unknown]>([
+    ["dashes for dots", "2026-11-17"],
+    ["a one-digit day", "2026.11.7"],
+    ["a two-digit year", "26.11.17"],
+    ["a line after it", "2026.11.17\nsha=" + SHA],
+    ["nothing", ""],
+    ["a number", 20261117],
+    ["a list holding one", ["2026.11.17"]],
+    ["no value", undefined],
+  ])("%s is not one", (_what, value) => {
+    expect(isDatasetVersion(value)).toBe(false);
   });
 });
 

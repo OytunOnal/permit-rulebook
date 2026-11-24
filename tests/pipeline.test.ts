@@ -111,13 +111,20 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
     expect(choosing[0]).toContain("PAYLOAD_SHA: ${{ github.event.client_payload.sha }}");
   });
 
+  // Its outputs and refusals are the run module's, run by `tests/data-commit.test.ts`.
+  it("build reads the commit and version it built with the run module's read-built-commit alone", () => {
+    const built = stepsOf(jobOf(pages, "build")).filter((step) => /^ {8}id: built$/m.test(step));
+    expect(built, "build has no step, or more than one, with id: built").toHaveLength(1);
+    expect(stepRunLineOf(built[0]!)).toBe("node scripts/data-lock-run/data-lock-run.mjs read-built-commit");
+  });
+
   // The run module runs on the node the suite runs on, set up by the one
   // pinned commit every job uses.
   it("every job that runs the run module sets up node 22 first, at the workflow's one pinned setup-node", () => {
     const setupNodes = new Set([...pages.matchAll(/uses: (actions\/setup-node@\S+)/g)].map((match) => match[1]));
     expect(setupNodes.size, "the workflow's jobs set up node from more than one pinned commit, or none").toBe(1);
     const runningJobs = jobNamesOf(pages).filter((name) => stepsOf(jobOf(pages, name)).some(runsRunModule));
-    expect(runningJobs, "no job runs the run module").toContain("data-commit");
+    expect(runningJobs, "a job that runs the run module is not found running it").toEqual(expect.arrayContaining(["data-commit", "build"]));
     for (const name of runningJobs) {
       const steps = stepsOf(jobOf(pages, name));
       const setup = steps.findIndex((step) => step.startsWith("uses: actions/setup-node@"));

@@ -108,6 +108,8 @@
     "scripts/data-lock-run/data-lock-run.mjs",
     "scripts/data-lock-run/pin/cli-data-pin.mjs",
     "scripts/data-lock-run/pin/run-pin.mjs",
+    "scripts/data-lock-run/read-built-commit/cli-read-built-commit.mjs",
+    "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
     "scripts/data-lock-run/refusal/cli-refusal.mjs",
     "scripts/data-lock-run/refusal/run-refusals.mjs"
    ]
@@ -347,6 +349,8 @@
   "scripts/data-lock-run/data-lock-run.mjs": "main",
   "scripts/data-lock-run/pin/cli-data-pin.mjs": "presentation",
   "scripts/data-lock-run/pin/run-pin.mjs": "main",
+  "scripts/data-lock-run/read-built-commit/cli-read-built-commit.mjs": "presentation",
+  "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs": "main",
   "scripts/data-lock-run/refusal/cli-refusal.mjs": "presentation",
   "scripts/data-lock-run/refusal/run-refusals.mjs": "main",
   "scripts/data-lock/data-lock.mjs": "infrastructure",
@@ -835,6 +839,11 @@
   },
   {
    "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
    "to": "scripts/data-lock-run/refusal/cli-refusal.mjs",
    "kind": "dependency"
   },
@@ -870,6 +879,16 @@
   },
   {
    "from": "scripts/data-lock-run/pin/run-pin.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
+   "to": "scripts/data-lock-run/read-built-commit/cli-read-built-commit.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
    "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
@@ -3900,11 +3919,6 @@
   },
   {
    "from": "tests/data-commit.test.ts",
-   "to": "tests/posix-shell.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/data-commit.test.ts",
    "to": "tests/throwaway-folder.ts",
    "kind": "dependency"
   },
@@ -6920,6 +6934,11 @@
    },
    {
     "name": "pinData",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "cloneHeadAndVersionOf",
     "kind": "fn",
     "exported": true
    },
@@ -11611,5 +11630,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "82fe757612a1821a4af5b01879f9d43bcd40cf9ebe161edab90005778152d6a6"
+ "digest": "2fd70a77b9fcb0aa8e0bfebb82b8413b9872a9ae7991b8d52510fbbaca62034a"
 }
