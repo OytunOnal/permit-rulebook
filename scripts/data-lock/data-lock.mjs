@@ -22,10 +22,10 @@ import { cloneDatasetVersionOf, cloneHeadOf, dataClonePath, dataDependencyOf } f
 import { newestDataMasterOf } from "./disk/data-master.mjs";
 import { readLockText, siteLockPath, writeLockText } from "./disk/lock-file.mjs";
 import { CHOOSE_COMMIT_REFUSALS, dataCommitOf } from "./rules/data-commit.mjs";
-import { parseLock, PIN_REFUSALS, pinnedLockTextOf } from "./rules/lock-text.mjs";
+import { lockedShaOf, parseLock, PIN_REFUSALS, pinnedLockTextOf } from "./rules/lock-text.mjs";
 import { shortfallOf } from "./rules/shortfall.mjs";
 
-export { CHOOSE_COMMIT_REFUSALS, dataClonePath, PIN_REFUSALS, pinnedLockTextOf };
+export { CHOOSE_COMMIT_REFUSALS, dataClonePath, lockedShaOf, PIN_REFUSALS, pinnedLockTextOf };
 
 /** What the lock's `text` says (the site's own lock by default): its sha and its dataset version. */
 export function readLock(text = readLockText()) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PIN_REFUSALS, pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
+import { CHOOSE_COMMIT_REFUSALS, lockedShaOf, PIN_REFUSALS, pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
 
 /**
  * The lock's format, checked against lock texts written here by hand: the
@@ -27,6 +27,20 @@ describe("the lock's text is read", () => {
   it("with a missing line read as empty", () => {
     expect(readLock("dataset_version=2026.11.17\n")).toEqual({ sha: "", datasetVersion: "2026.11.17" });
     expect(readLock(`sha=${SHA}\n`)).toEqual({ sha: SHA, datasetVersion: "" });
+  });
+});
+
+describe("the lock's one sha is read, checked", () => {
+  it("from a good lock, as it stands", () => {
+    expect(lockedShaOf(LOCK)).toBe(SHA);
+  });
+
+  it.each([
+    ["a second sha= line", `${LOCK}sha=${OTHER_SHA}\n`],
+    ["no sha= line", "dataset_version=2026.11.17\n"],
+    ["a short sha", `sha=${SHA.slice(1)}\ndataset_version=2026.11.17\n`],
+  ])("refused from a lock with %s", (_what, text) => {
+    expect(() => lockedShaOf(text)).toThrow(CHOOSE_COMMIT_REFUSALS.lock);
   });
 });
 
