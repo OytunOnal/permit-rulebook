@@ -4,9 +4,9 @@
  * under the point or holds the focus when one lands takes it, which a
  * script's `.click()` on a chosen element cannot show (#86).
  *
- * Each brings its tab to the front and returns once the page has reported it:
- * a case reads after a gesture what the page made of it, and Chrome reports a
- * document's first input only once its frame is presented (#269).
+ * Each returns once the page has reported it: a case reads after a gesture
+ * what the page made of it, and Chrome reports a document's first input only
+ * once its frame is presented (#269).
  */
 
 /** The expression that scrolls the element `selector` finds into view and gives its centre in the viewport as JSON, or "null" when none. */
@@ -21,23 +21,21 @@ const centreScrolledIntoView = (selector) => `JSON.stringify((() => {
 export class TabGestures {
   #sendToTab;
   #waits;
-  #front;
 
-  /** `waits` is the same tab's `TabWaits`; `front` makes the same tab the one the browser shows, and the walk's tab on screen. */
-  constructor(sendToTab, { waits, front }) {
+  /** `waits` is the same tab's `TabWaits`. */
+  constructor(sendToTab, waits) {
     this.#sendToTab = sendToTab;
     this.#waits = waits;
-    this.#front = front;
   }
 
   /** A mouse click at a point of the viewport. */
-  clickAt = (x, y) => this.#sendFrontAndWaitUntilReported(async () => {
+  clickAt = (x, y) => this.#sendAndWaitUntilReported(async () => {
     for (const type of ["mousePressed", "mouseReleased"])
       await this.#sendToTab("Input.dispatchMouseEvent", { type, x, y, button: "left", clickCount: 1 });
   });
 
   /** Enter pressed and released, as a keyboard does: on a focused button it is a click (#86). */
-  pressEnter = () => this.#sendFrontAndWaitUntilReported(async () => {
+  pressEnter = () => this.#sendAndWaitUntilReported(async () => {
     const enter = { key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 };
     await this.#sendToTab("Input.dispatchKeyEvent", { type: "keyDown", text: "\r", ...enter });
     await this.#sendToTab("Input.dispatchKeyEvent", { type: "keyUp", ...enter });
@@ -53,18 +51,13 @@ export class TabGestures {
   };
 
   /**
-   * Reads the document the gesture leaves, sends the gesture with `send`, brings
-   * this tab to the front as the walk's tab on screen, and waits until that
-   * document has reported its first input, or the tab stands on another: the
-   * gesture loaded one.
-   *
-   * A gesture that opens a new tab can hide this one, and a hidden page presents
-   * no frame, so it never reports the input (#453).
+   * Reads the document the gesture leaves, sends the gesture with `send`, and
+   * waits until that document has reported its first input, or the tab stands
+   * on another: the gesture loaded one.
    */
-  async #sendFrontAndWaitUntilReported(send) {
+  async #sendAndWaitUntilReported(send) {
     const left = await this.#waits.readDocumentShown();
     await send();
-    await this.#front();
     await this.#waits.waitUntilFirstInputReportedOrLeft(left);
   }
 }
