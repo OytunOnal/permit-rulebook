@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readLock } from "../scripts/data-lock/data-lock.mjs";
+import { parseLock } from "../scripts/data-lock/data-lock.mjs";
 import { LF } from "./throwaway-folder.js";
 import {
   checkoutRefOf, jobConditionOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepRunLineOf, stepScriptOf, stepsOf, workflowPaths,
@@ -175,7 +175,7 @@ function expectPinByPinBuiltThenCommitInShell(): void {
 }
 
 describe("the data commit is pinned, and the pin is a commit that exists", () => {
-  const lock = readLock();
+  const lock = parseLock(readFileSync(join(root, "data.lock"), "utf8"));
 
   it("data.lock names a 40-hex sha and the dataset version it carried", () => {
     expect(lock.sha, "data.lock has no sha").toMatch(/^[0-9a-f]{40}$/);

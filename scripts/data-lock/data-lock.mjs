@@ -4,7 +4,8 @@
  * site is built against, not whatever the data clone happens to be at (see
  * the file's own comment), and the dataset version that commit carried.
  *
- * It reads the lock's text and writes a pinned one (`rules/lock-text.mjs`),
+ * It reads the lock's text (`parseLock`, which `pinData` reads the sha it
+ * writes over with) and writes a pinned one (`rules/lock-text.mjs`),
  * pins the data clone's HEAD into a lock, pins a deploy's built commit into
  * the lock and reads the commit a lock names, reads the HEAD and dataset version
  * of the data clone a build checked out and says whether a version has the
@@ -33,14 +34,9 @@ import {
 import { shortfallOf } from "./rules/shortfall.mjs";
 
 export {
-  CHOOSE_COMMIT_REFUSALS, CLONE_HEAD_REFUSAL, dataClonePath, isDatasetVersion, LOCKED_SHA_REFUSAL, LockRefusal, lockedShaOf, PIN_REFUSALS,
-  pinnedLockTextOf,
+  CHOOSE_COMMIT_REFUSALS, CLONE_HEAD_REFUSAL, dataClonePath, isDatasetVersion, LOCKED_SHA_REFUSAL, LockRefusal, lockedShaOf, parseLock,
+  PIN_REFUSALS, pinnedLockTextOf,
 };
-
-/** What the lock's `text` says (the site's own lock by default): its sha and its dataset version. */
-export function readLock(text = readLockText()) {
-  return parseLock(text);
-}
 
 /** The data clone at `clonePath`, relative to the working folder, when given; else the site's own data clone. */
 function chosenClonePathOf(clonePath) {

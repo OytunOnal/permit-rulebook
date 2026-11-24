@@ -7055,11 +7055,6 @@
   ],
   "scripts/data-lock/data-lock.mjs": [
    {
-    "name": "readLock",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "chosenClonePathOf",
     "kind": "fn",
     "exported": false
@@ -11772,5 +11767,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "6dd6ce42574847192d7f011c7f38e98865223fde4dbcacb1085f41ede0d568d1"
+ "digest": "02056ad460f71b42a419abb9c746effab841cc66d5aa2f457b67b5d952f9518e"
 }

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { CHOOSE_COMMIT_REFUSALS, readLock } from "../scripts/data-lock/data-lock.mjs";
+import { CHOOSE_COMMIT_REFUSALS, lockedShaOf } from "../scripts/data-lock/data-lock.mjs";
 import { READ_BUILT_COMMIT_REFUSALS, RUN_REFUSALS } from "../scripts/data-lock-run/data-lock-run.mjs";
 import { runGit } from "../scripts/run-git.mjs";
 import { type StepRun, runStepCommand, stepKeyOf } from "./step-run.js";
@@ -27,7 +27,7 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const lockText = readText(join(root, "data.lock"));
 const manifestText = readText(join(root, "package.json"));
 /** The commit the site's own lock names: what every run but the newest-data ones hands on. */
-const LOCKED = readLock(lockText).sha;
+const LOCKED = lockedShaOf(lockText);
 
 /** A dispatch's payload: a commit other than the lock's. */
 const PAYLOAD = "0123456789abcdef0123456789abcdef01234567";

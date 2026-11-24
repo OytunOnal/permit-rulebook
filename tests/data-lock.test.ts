@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHOOSE_COMMIT_REFUSALS, isDatasetVersion, lockedShaOf, PIN_REFUSALS, pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
+import { CHOOSE_COMMIT_REFUSALS, isDatasetVersion, lockedShaOf, parseLock, PIN_REFUSALS, pinnedLockTextOf } from "../scripts/data-lock/data-lock.mjs";
 
 /**
  * The lock's format, checked against lock texts written here by hand: the
@@ -17,16 +17,16 @@ const LOCK = `# The data commit this site is built against.\n#\nsha=${SHA}\ndata
 
 describe("the lock's text is read", () => {
   it("into its sha and its dataset version", () => {
-    expect(readLock(LOCK)).toEqual({ sha: SHA, datasetVersion: "2026.11.17" });
+    expect(parseLock(LOCK)).toEqual({ sha: SHA, datasetVersion: "2026.11.17" });
   });
 
   it("with Windows line endings, each value without its carriage return", () => {
-    expect(readLock(LOCK.split("\n").join("\r\n"))).toEqual({ sha: SHA, datasetVersion: "2026.11.17" });
+    expect(parseLock(LOCK.split("\n").join("\r\n"))).toEqual({ sha: SHA, datasetVersion: "2026.11.17" });
   });
 
   it("with a missing line read as empty", () => {
-    expect(readLock("dataset_version=2026.11.17\n")).toEqual({ sha: "", datasetVersion: "2026.11.17" });
-    expect(readLock(`sha=${SHA}\n`)).toEqual({ sha: SHA, datasetVersion: "" });
+    expect(parseLock("dataset_version=2026.11.17\n")).toEqual({ sha: "", datasetVersion: "2026.11.17" });
+    expect(parseLock(`sha=${SHA}\n`)).toEqual({ sha: SHA, datasetVersion: "" });
   });
 });
 
@@ -70,7 +70,7 @@ describe("a pinned lock's text is written", () => {
   });
 
   it("read back as what it was written with", () => {
-    expect(readLock(pinnedLockTextOf(LOCK, { sha: OTHER_SHA, datasetVersion: "2026.11.18" })))
+    expect(parseLock(pinnedLockTextOf(LOCK, { sha: OTHER_SHA, datasetVersion: "2026.11.18" })))
       .toEqual({ sha: OTHER_SHA, datasetVersion: "2026.11.18" });
   });
 });

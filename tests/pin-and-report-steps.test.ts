@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
+import { lockedShaOf, parseLock, pinnedLockTextOf } from "../scripts/data-lock/data-lock.mjs";
 import { PIN_BUILT_REFUSALS, READ_LOCKED_COMMIT_REFUSALS } from "../scripts/data-lock-run/data-lock-run.mjs";
 import { type StepRun, runStepCommand, stepKeyOf } from "./step-run.js";
 import { LF, inThrowawayFolder } from "./throwaway-folder.js";
@@ -73,7 +73,7 @@ describe("pin writes the built commit and version into the lock, through the run
       const run = runPinBuilt(folder);
       expect(run.exitCode, run.printed).toBe(0);
       expect(run.lockAfter).toBe(pinnedLockTextOf(lockText, { sha: BUILT, datasetVersion: VERSION }));
-      expect(readLock(run.lockAfter)).toEqual({ sha: BUILT, datasetVersion: VERSION });
+      expect(parseLock(run.lockAfter)).toEqual({ sha: BUILT, datasetVersion: VERSION });
       expect(run.outputLines).toEqual([`sha=${BUILT}`, `version=${VERSION}`]);
       const logLines = jsonLinesOf(run.printed);
       expect(logLines).toHaveLength(1);
@@ -137,11 +137,11 @@ describe("report reads the lock's commit through the run module's read-locked-co
     await inThrowawayFolder((folder) => {
       const run = runReadLockedCommit(folder, lockText);
       expect(run.exitCode, run.printed).toBe(0);
-      expect(run.outputLines).toEqual([`sha=${readLock(lockText).sha}`]);
+      expect(run.outputLines).toEqual([`sha=${lockedShaOf(lockText)}`]);
       expect(run.lockAfter, "the lock was written").toBe(lockText);
       const logLines = jsonLinesOf(run.printed);
       expect(logLines).toHaveLength(1);
-      expect(logLines[0]).toMatchObject({ level: "info", sha: readLock(lockText).sha });
+      expect(logLines[0]).toMatchObject({ level: "info", sha: lockedShaOf(lockText) });
     });
   });
 

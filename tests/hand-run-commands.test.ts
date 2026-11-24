@@ -4,7 +4,7 @@ import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "n
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromePath } from "../scripts/browser/browser.mjs";
-import { dataClonePath, PIN_REFUSALS, pinnedLockTextOf, readLock } from "../scripts/data-lock/data-lock.mjs";
+import { dataClonePath, parseLock, PIN_REFUSALS, pinnedLockTextOf } from "../scripts/data-lock/data-lock.mjs";
 import { SUBCOMMAND_NAMES } from "../scripts/data-lock-run/data-lock-run.mjs";
 import { runGit } from "../scripts/run-git.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
@@ -107,7 +107,7 @@ describe("npm run data:pin", () => {
       writeFileSync(lock, pinnedLockTextOf(siteLockText, { sha: "0".repeat(40), datasetVersion: "2000.01.01" }));
       const run = await nodeRun([...scriptArgumentsOf("data:pin"), "--lock", lock]);
       expect(run.status, run.out).toBe(0);
-      expect(readLock(readFileSync(lock, "utf8"))).toEqual({ sha: head, datasetVersion: version });
+      expect(parseLock(readFileSync(lock, "utf8"))).toEqual({ sha: head, datasetVersion: version });
     }));
   }, 60000);
 
@@ -118,7 +118,7 @@ describe("npm run data:pin", () => {
       writeFileSync(lock, pinnedLockTextOf(siteLockText, { sha: "0".repeat(40), datasetVersion: "2000.01.01" }));
       const run = await nodeRun([...scriptArgumentsOf("data:pin"), "--lock", lock, "--clone", join(folder, "permit-rulebook-data")]);
       expect(run.status, run.out).toBe(0);
-      expect(readLock(readFileSync(lock, "utf8"))).toEqual({ sha: head, datasetVersion: "2001.02.03" });
+      expect(parseLock(readFileSync(lock, "utf8"))).toEqual({ sha: head, datasetVersion: "2001.02.03" });
     }));
   }, 60000);
 
@@ -195,7 +195,7 @@ function cloneWithCommits(clone: string, count: number): string[] {
 /** The site's lock copied into `folder`, naming `sha`; its path. */
 function lockNaming(folder: string, sha: string): string {
   const lock = join(folder, "data.lock");
-  writeFileSync(lock, pinnedLockTextOf(siteLockText, { sha, datasetVersion: readLock(siteLockText).datasetVersion }));
+  writeFileSync(lock, pinnedLockTextOf(siteLockText, { sha, datasetVersion: parseLock(siteLockText).datasetVersion }));
   return lock;
 }
 
