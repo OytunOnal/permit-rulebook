@@ -5,7 +5,9 @@
  * the file's own comment), and the dataset version that commit carried.
  *
  * It reads the lock's text and writes a pinned one (`rules/lock-text.mjs`),
- * pins the data clone's HEAD into a lock, chooses the data commit a deploy
+ * pins the data clone's HEAD into a lock, reads the HEAD and dataset version
+ * of the data clone a build checked out and says whether a version has the
+ * lock's shape (`isDatasetVersion`), chooses the data commit a deploy
  * run builds (`rules/data-commit.mjs`, the data master asked through
  * `disk/data-master.mjs`), finds the data clone (`disk/data-clone.mjs`) and
  * says how it falls short of the lock (`rules/shortfall.mjs`, asked through
@@ -23,10 +25,10 @@ import { newestDataMasterOf } from "./disk/data-master.mjs";
 import { readLockText, siteLockPath, writeLockText } from "./disk/lock-file.mjs";
 import { CHOOSE_COMMIT_REFUSALS, dataCommitOf } from "./rules/data-commit.mjs";
 import { LockRefusal } from "./rules/lock-refusal.mjs";
-import { lockedShaOf, parseLock, PIN_REFUSALS, pinnedLockTextOf } from "./rules/lock-text.mjs";
+import { isDatasetVersion, lockedShaOf, parseLock, PIN_REFUSALS, pinnedLockTextOf } from "./rules/lock-text.mjs";
 import { shortfallOf } from "./rules/shortfall.mjs";
 
-export { CHOOSE_COMMIT_REFUSALS, dataClonePath, LockRefusal, lockedShaOf, PIN_REFUSALS, pinnedLockTextOf };
+export { CHOOSE_COMMIT_REFUSALS, dataClonePath, isDatasetVersion, LockRefusal, lockedShaOf, PIN_REFUSALS, pinnedLockTextOf };
 
 /** What the lock's `text` says (the site's own lock by default): its sha and its dataset version. */
 export function readLock(text = readLockText()) {
@@ -49,6 +51,17 @@ export function pinData({ lockPath = siteLockPath, clonePath } = {}) {
   const lockText = readLockText(target);
   writeLockText(target, pinnedLockTextOf(lockText, { sha, datasetVersion }));
   return { previousSha: parseLock(lockText).sha, sha, datasetVersion };
+}
+
+/**
+ * The HEAD of the data clone at `clonePath` (relative to the working folder)
+ * and the dataset version its own file names, as found: the version is
+ * unchecked, any JSON value or none, for its reader to ask `isDatasetVersion`.
+ * @returns {{ sha: string, datasetVersion: unknown }}
+ */
+export function cloneHeadAndVersionOf(clonePath) {
+  const dir = resolve(clonePath);
+  return { sha: cloneHeadOf(dir), datasetVersion: cloneDatasetVersionOf(dir) };
 }
 
 /**

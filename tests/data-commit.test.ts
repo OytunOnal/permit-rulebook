@@ -4,9 +4,8 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CHOOSE_COMMIT_REFUSALS, readLock } from "../scripts/data-lock/data-lock.mjs";
-import { RUN_REFUSALS } from "../scripts/data-lock-run/data-lock-run.mjs";
+import { READ_BUILT_COMMIT_REFUSALS, RUN_REFUSALS } from "../scripts/data-lock-run/data-lock-run.mjs";
 import { runGit } from "../scripts/run-git.mjs";
-import { posixShellPath } from "./posix-shell.js";
 import { LF, commitInThrowaway, inThrowawayFolder, initThrowawayRepository } from "./throwaway-folder.js";
 import {
   checkoutRefOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepRunLineOf, stepScriptOf, stepsOf,
@@ -17,8 +16,8 @@ import {
  * on as one 40-hex sha: `data-check` runs the data package's whole check at
  * it, beside `build`, which builds the site against it (rulings 13 and 14 on
  * #343). The choice is the run module's `choose-commit`, run here as the
- * step's own line runs it, a process in a throwaway site folder; the build's
- * step is still its own shell, run as the runner would. Where each job reads
+ * step's own line runs it, a process in a throwaway site folder, and so is
+ * the build's `read-built-commit`. Where each job reads
  * the choice is read from the text, a workflow being a file no test can run.
  */
 
@@ -45,18 +44,6 @@ interface StepRun { exitCode: number | null; outputLines: string[]; printed: str
 
 /** The lines a step's run wrote to the outputs file at `outputFile`. */
 const outputLinesOf = (outputFile: string): string[] => readFileSync(outputFile, "utf8").split(LF).filter((line) => line !== "");
-
-/** A step's script run in `folder` as the runner runs it (`bash -e`), under `env`, its outputs file beside it. */
-function runStepScript(step: string, folder: string, env: Record<string, string>): StepRun {
-  const outputFile = `${folder}.github-output`;
-  writeFileSync(outputFile, "");
-  const run = spawnSync(posixShellPath!, ["-e", "-c", stepScriptOf(step)], {
-    cwd: folder,
-    env: { ...process.env, ...env, GITHUB_OUTPUT: outputFile.split("\\").join("/") },
-    encoding: "utf8",
-  });
-  return { exitCode: run.status, outputLines: outputLinesOf(outputFile), printed: `${run.stdout}${run.stderr}` };
-}
 
 /**
  * A step's one-line `run:` run as a process in `folder`, as the runner runs
@@ -227,36 +214,93 @@ describe("a run with nowhere to write its outputs", () => {
 /**
  * The build hands on the commit it checked out and the dataset version it
  * read from the data's own file; the pin writes both into data.lock. The
- * version is checked for its shape before it becomes an output.
+ * version is checked for its shape before it becomes an output. The step is
+ * the run module's `read-built-commit`, run here as the step's own line runs
+ * it: a process in the site's checkout, the data checked out beside it, under
+ * the step's own `working-directory:` and `DATA_DIR`.
  */
-describe.skipIf(!posixShellPath)("the build hands on the data's version only in its shape", () => {
-  /** The build's step that reads the commit and version, run in a workspace of `folder` whose data carries `version`. */
-  function runBuiltStep(folder: string, version: string): StepRun & { commit: string } {
-    const workspace = join(folder, "workspace");
-    const dataFolder = join(workspace, "permit-rulebook-data");
-    initThrowawayRepository(dataFolder);
-    mkdirSync(join(dataFolder, "data"));
-    writeFileSync(join(dataFolder, "data", "dataset.json"), JSON.stringify({ dataset_version: version }));
-    commitInThrowaway(dataFolder, "--allow-empty", "-m", "the data");
-    const step = stepsOf(jobOf(pages, "build")).find((candidate) => /^ {8}id: built$/m.test(candidate));
-    expect(step, "the build has no step with id: built").toBeDefined();
-    const run = runStepScript(step!, workspace, { DATA_DIR: "permit-rulebook-data", LOCKED });
-    return { ...run, commit: runGit(dataFolder, "rev-parse", "HEAD") };
-  }
+/** The build's one step that reads the commit and version it built. */
+function builtStep(): string {
+  const steps = stepsOf(jobOf(pages, "build")).filter((step) => /^ {8}id: built$/m.test(step));
+  expect(steps, "the build has no step, or more than one, with id: built").toHaveLength(1);
+  return steps[0]!;
+}
 
-  it("a YYYY.MM.DD version is handed on beside the commit", async () => {
+/** A key's value on its own line in a step's text, at `indent` spaces, trimmed; "" when it has none. */
+const stepKeyOf = (step: string, indent: number, key: string): string =>
+  new RegExp(`^ {${indent}}${key}:\\s*(.+)$`, "m").exec(step)?.[1]?.trim() ?? "";
+
+/**
+ * The built step run in a workspace of `folder` as the runner lays it out:
+ * the site in the step's `working-directory:`, the data beside it under the
+ * folder data-commit chose, its own file carrying `dataset`, and `DATA_DIR` as
+ * the step's env gives it; `env` is laid over that.
+ */
+function runBuiltStep(folder: string, dataset: unknown, env: Record<string, string> = {}): StepRun & { commit: string } {
+  const workspace = join(folder, "workspace");
+  const dataFolder = join(workspace, "permit-rulebook-data");
+  initThrowawayRepository(dataFolder);
+  mkdirSync(join(dataFolder, "data"));
+  writeFileSync(join(dataFolder, "data", "dataset.json"), JSON.stringify(dataset));
+  commitInThrowaway(dataFolder, "--allow-empty", "-m", "the data");
+  const step = builtStep();
+  const siteFolder = join(workspace, stepKeyOf(step, 8, "working-directory"));
+  mkdirSync(siteFolder, { recursive: true });
+  const dataDir = stepKeyOf(step, 10, "DATA_DIR").replace("${{ needs.data-commit.outputs.dir }}", "permit-rulebook-data");
+  const run = runStepCommand(step, siteFolder, { DATA_DIR: dataDir, ...env });
+  return { ...run, commit: runGit(dataFolder, "rev-parse", "HEAD") };
+}
+
+/** A built step's refusal asserted: exit 1, no output line, the reason `refusal` names said, and the refused value never printed. */
+function expectBuiltRefused({ exitCode, outputLines, printed }: StepRun, refusal: keyof typeof READ_BUILT_COMMIT_REFUSALS, refused?: string): void {
+  expect(exitCode, printed).toBe(1);
+  expect(outputLines).toEqual([]);
+  expect(printed, "the refusal does not say why").toContain(READ_BUILT_COMMIT_REFUSALS[refusal]);
+  if (refused !== undefined) expect(printed, "the refusal prints the value it refused").not.toContain(refused);
+}
+
+describe("the build hands on the commit and version it built, through the run module's read-built-commit", () => {
+  it("a YYYY.MM.DD version is handed on beside the commit, and the run's log names both", async () => {
     await inThrowawayFolder((folder) => {
-      const { exitCode, outputLines, commit } = runBuiltStep(folder, "2026.11.10");
-      expect(exitCode).toBe(0);
+      const { exitCode, outputLines, printed, commit } = runBuiltStep(folder, { dataset_version: "2026.11.10" });
+      expect(exitCode, printed).toBe(0);
       expect(outputLines).toEqual([`sha=${commit}`, "version=2026.11.10"]);
+      const logLines = printed.split(LF).filter((line) => line.startsWith("{")).map((line) => JSON.parse(line) as Record<string, string>);
+      expect(logLines).toHaveLength(1);
+      expect(logLines[0]).toMatchObject({ level: "info", sha: commit, version: "2026.11.10" });
+    });
+  });
+});
+
+describe("the build's read-built-commit writes nothing it has not checked", () => {
+  const secondLine = `built=${PAYLOAD}`;
+  it.each<[string, unknown, string | undefined]>([
+    ["a second line", { dataset_version: `2026.11.10${LF}${secondLine}` }, secondLine],
+    ["dashes for dots", { dataset_version: "2026-11-10" }, "2026-11-10"],
+    ["a number", { dataset_version: 20261110 }, "20261110"],
+    ["a list holding a good version", { dataset_version: ["2026.11.10"] }, undefined],
+    ["none at all", {}, undefined],
+  ])("a version with %s is refused, before any output, saying why without the value", async (_what, dataset, refused) => {
+    await inThrowawayFolder((folder) => {
+      expectBuiltRefused(runBuiltStep(folder, dataset), "datasetVersion", refused);
     });
   });
 
-  it("a version carrying a second line is refused, before any output", async () => {
+  // Unset, the data folder would read as the site's own checkout, whose HEAD
+  // is no data commit.
+  it("a step with no DATA_DIR is refused, before any output", async () => {
     await inThrowawayFolder((folder) => {
-      const { exitCode, outputLines } = runBuiltStep(folder, `2026.11.10${LF}built=${PAYLOAD}`);
-      expect(exitCode).not.toBe(0);
-      expect(outputLines).toEqual([]);
+      expectBuiltRefused(runBuiltStep(folder, { dataset_version: "2026.11.10" }, { DATA_DIR: "" }), "dataDir");
+    });
+  });
+
+  it("a refusal under Actions also prints its annotation", async () => {
+    await inThrowawayFolder((folder) => {
+      const run = runBuiltStep(folder, { dataset_version: "2026-11-10" }, { GITHUB_ACTIONS: "true" });
+      expectBuiltRefused(run, "datasetVersion");
+      const annotations = run.printed.split(LF).filter((line) => line.startsWith("::error::"));
+      expect(annotations).toHaveLength(1);
+      expect(annotations[0]).toContain(READ_BUILT_COMMIT_REFUSALS.datasetVersion);
     });
   });
 });
