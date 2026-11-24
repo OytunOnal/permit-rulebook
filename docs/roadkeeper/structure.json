@@ -29,6 +29,7 @@
    ],
    "files": [
     "scripts/browser/tab/answered-requests/answered-requests.mjs",
+    "scripts/browser/tab/attached-target/attached-target.mjs",
     "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs",
     "scripts/browser/tab/open-tab.mjs",
     "scripts/browser/tab/page/tab-events.mjs",
@@ -272,6 +273,7 @@
   "scripts/browser/static-server/html-in-pieces.mjs": "infrastructure",
   "scripts/browser/static-server/static-server.mjs": "infrastructure",
   "scripts/browser/tab/answered-requests/answered-requests.mjs": "infrastructure",
+  "scripts/browser/tab/attached-target/attached-target.mjs": "infrastructure",
   "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs": "infrastructure",
   "scripts/browser/tab/open-tab.mjs": "infrastructure",
   "scripts/browser/tab/page/tab-events.mjs": "infrastructure",
@@ -524,8 +526,18 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/browser/tab/answered-requests/answered-requests.mjs",
+   "to": "scripts/browser/tab/attached-target/attached-target.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/browser/tab/open-tab.mjs",
    "to": "scripts/browser/tab/answered-requests/answered-requests.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/tab/open-tab.mjs",
+   "to": "scripts/browser/tab/attached-target/attached-target.mjs",
    "kind": "dependency"
   },
   {
@@ -6603,6 +6615,11 @@
     "exported": true
    },
    {
+    "name": "watchTabsOpenedBy",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "setUpTab",
     "kind": "fn",
     "exported": false
@@ -11563,5 +11580,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "52c29b8bfa635a9375848d6a91bcef8207e41dbe1363e9a7c5cd240fc75b1a5f"
+ "digest": "d67a769849e669dbeed4801b4bc7e3141b53045d2cee796cc0af8a7fad9db6b5"
 }

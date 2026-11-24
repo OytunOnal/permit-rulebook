@@ -1,5 +1,6 @@
 // @level infrastructure
 import { answerPausedRequest, pauseEveryRequest } from "./answered-requests/answered-requests.mjs";
+import { decodeAttachedTarget } from "./attached-target/attached-target.mjs";
 import { TabEvents } from "./page/tab-events.mjs";
 import { TabGestures } from "./page/tab-gestures.mjs";
 import { TabPage } from "./page/tab-page.mjs";
@@ -36,7 +37,9 @@ export async function openTab(connection, setup) {
   const sendToTab = (method, params) => connection.send(method, params, sessionId);
   const events = new TabEvents(sendToTab, { network: setup.network, walkLog: setup.walkLog });
   const waits = new TabWaits(sendToTab);
-  const gestures = new TabGestures(sendToTab, waits);
+  const watchForTabOpened = watchTabsOpenedBy(connection, targetId);
+  // A gesture fronts its tab through the page's own `front()`, built below; it runs only on a gesture.
+  const gestures = new TabGestures(sendToTab, { waits, front: () => page.front(), watchForTabOpened });
   const requestHandling = { sendToTab, answers: setup.answeredRequests, walkLog: setup.walkLog };
   connection.listenToTab(sessionId, (message) => {
     waits.watch(message);
@@ -44,9 +47,26 @@ export async function openTab(connection, setup) {
     answerPausedRequest(requestHandling, message);
   });
   await setUpTab(sendToTab, setup);
-  return new TabPage(sendToTab, {
+  const page = new TabPage(sendToTab, {
     waits, gestures, events, openTab: () => openTab(connection, setup), shiftRegion: setup.shiftRegion, walkLog: setup.walkLog,
   });
+  return page;
+}
+
+/**
+ * Counts the tabs the tab of `targetId` opens from here on, from the browser's
+ * own messages, and returns what starts a watch: called, it returns whether
+ * the tab has opened one since.
+ */
+function watchTabsOpenedBy(connection, targetId) {
+  let opened = 0;
+  connection.listenToBrowser((message) => {
+    if (decodeAttachedTarget(message)?.openerId === targetId) opened++;
+  });
+  return () => {
+    const openedBefore = opened;
+    return () => opened > openedBefore;
+  };
 }
 
 /** Enables the events the tab is read by, pauses every request for it to answer, let go on or refuse, and sets its CPU and its screen. */

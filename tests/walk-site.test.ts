@@ -77,6 +77,10 @@ document.getElementById("open").addEventListener("click", () => {
   window.__opened = window.open(new URLSearchParams(location.search).get("open"));
 });
 </script></body></html>`,
+  // A tap on the frame lands in the frame's document, so the page around it never reports a first input.
+  "opens-from-a-frame.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><iframe id="frame" style="width:300px;height:200px;border:0" srcdoc="<button id=open style='position:fixed;inset:0;width:100%;height:100%'>open</button><script>
+document.getElementById('open').addEventListener('click', () => { top.__opened = open('/quiet.html'); });
+</script>"></iframe></body></html>`,
   "fetches-outside.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>fetches the address it is given</p><script>
 fetch(new URLSearchParams(location.search).get("fetch"), { mode: "no-cors" })
   .catch(() => {})
@@ -230,6 +234,21 @@ describe.skipIf(skipped !== null)("the browser walk's outside requests", () => {
         "the new tab never left its blank page");
     });
     expect(errorsByAddress(walked.errors).get(outside), JSON.stringify(walked.errors)).toBe(1);
+  });
+});
+
+describe.skipIf(skipped !== null)("the browser walk's gestures", () => {
+  it("a tap that opens a tab returns though the page never reports its first input", async () => {
+    const { returned } = await walkSite({ site: { folder }, screen: PHONE }, async ({ page, url }) => {
+      await page.goto(url("/opens-from-a-frame.html"));
+      await page.waitUntil('document.getElementById("frame").contentDocument?.getElementById("open") != null',
+        "the frame's button never drew");
+      // The page reports no first input and keeps its document, so only the tab the tap opens can end the tap's wait.
+      await page.tapOn("#frame");
+      await page.waitUntil('window.__opened?.location.pathname === "/quiet.html"', "the new tab never opened its page");
+      return page.evaluate('performance.getEntriesByType("first-input").length');
+    });
+    expect(returned, "the page reported a first input: the tap did not land in the frame").toBe(0);
   });
 });
 

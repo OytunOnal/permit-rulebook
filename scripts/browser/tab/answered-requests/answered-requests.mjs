@@ -1,4 +1,6 @@
 // @level infrastructure
+import { decodeAttachedTarget } from "../attached-target/attached-target.mjs";
+
 /**
  * The requests a tab answers itself, inside the browser, and the ones it
  * refuses: the browser pauses every request before it reaches the network.
@@ -88,10 +90,11 @@ function isOpenedByThePage({ type, openerId, url }) {
   return isASharedWorker && /^https?:/.test(url);
 }
 
-/** Handles the requests of the target just attached at `sessionId`, if the walked pages opened it, then lets it run. */
-async function setUpAttachedTarget(connection, { sessionId, targetInfo }, { answers, walkLog }) {
+/** Handles the requests of the target `attached`, if the walked pages opened it, then lets it run. */
+async function setUpAttachedTarget(connection, attached, { answers, walkLog }) {
+  const { sessionId } = attached;
   const sendToTarget = (method, params) => connection.send(method, params, sessionId);
-  if (isOpenedByThePage(targetInfo)) {
+  if (isOpenedByThePage(attached)) {
     const handling = { sendToTab: sendToTarget, answers, walkLog };
     connection.listenToTab(sessionId, (message) => answerPausedRequest(handling, message));
     await pauseEveryRequest(sendToTarget);
@@ -107,10 +110,11 @@ async function setUpAttachedTarget(connection, { sessionId, targetInfo }, { answ
  * that could not be set up goes to the walk log under its address.
  */
 export async function answerRequestsOfWhatThePageOpens(connection, { answers, walkLog }) {
-  connection.listenToBrowser(({ method, params }) => {
-    if (method !== "Target.attachedToTarget" || !params.waitingForDebugger) return;
-    setUpAttachedTarget(connection, params, { answers, walkLog }).catch((failure) => walkLog.recordError(
-      params.targetInfo.url, `the walk could not handle the requests of a ${params.targetInfo.type} the page opened: ${failure.message}`));
+  connection.listenToBrowser((message) => {
+    const attached = decodeAttachedTarget(message);
+    if (!attached?.waitingForDebugger) return;
+    setUpAttachedTarget(connection, attached, { answers, walkLog }).catch((failure) => walkLog.recordError(
+      attached.url, `the walk could not handle the requests of a ${attached.type} the page opened: ${failure.message}`));
   });
   await connection.send("Target.setAutoAttach", { autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
 }
