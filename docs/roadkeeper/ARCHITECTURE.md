@@ -246,10 +246,7 @@ click on the tracker link. Answers never leave the device.
   harness builds its waits or gestures itself (#353). The lint refuses a
   sleep in a test. A click or an Enter returns once the page has reported its first
   input, or another document stands: Chrome reports that input only once its
-  frame is presented, after the shifts the measure reads (#269). Each gesture
-  brings its tab to the front through the page's own `front()` before it
-  waits, since a tab the gesture opens can hide the page, and a hidden page
-  presents no frame; a wait that runs out on a hidden page says so (#453).
+  frame is presented, after the shifts the measure reads (#269).
   `BROWSER_CPU_SLOWDOWN` slows every tab, and what a walk opens is closed
   however the process leaves (`exit-register/`).
   Each command under `scripts/` is three files, one level each: the job
