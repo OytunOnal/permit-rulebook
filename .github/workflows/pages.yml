@@ -223,7 +223,7 @@ jobs:
         with: { node-version: 22 }
 
       # The commit checked out and the dataset version read from the data's
-      # own file, which the pin writes into data.lock: the version is checked
+      # own file, which the pin job writes into data.lock: the version is checked
       # for its shape before either becomes an output, as data-commit's values
       # are (`tests/data-commit.test.ts` runs this line). The data sits beside
       # the site, under the plain folder name data-commit checked.

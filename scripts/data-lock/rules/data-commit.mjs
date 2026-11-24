@@ -7,7 +7,7 @@
  * a green deploy rebuilds what deployed, and no data commit can break a
  * deploy that changed nothing on the site. The schedule and the data watch's
  * dispatch exist to build the newest data, so their first attempt builds the
- * data master's newest commit or the dispatch's payload, and the pin writes it
+ * data master's newest commit or the dispatch's payload, and the pin job writes it
  * back into the lock when the run goes green. A rerun keeps its event's name,
  * so only a first attempt may move off the lock.
  *

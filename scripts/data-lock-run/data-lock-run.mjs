@@ -10,7 +10,7 @@
  *   node scripts/data-lock-run/data-lock-run.mjs check [--lock <path>] [--clone <path>] # npm run data:check
  *   node scripts/data-lock-run/data-lock-run.mjs choose-commit                          # the deploy's data-commit step
  *   node scripts/data-lock-run/data-lock-run.mjs read-built-commit                      # the deploy's build step, `built`
- *   node scripts/data-lock-run/data-lock-run.mjs pin-built                              # the deploy's pin step, `pinned`
+ *   node scripts/data-lock-run/data-lock-run.mjs pin-built                              # the pin job's write step, `pinned`
  *   node scripts/data-lock-run/data-lock-run.mjs read-locked-commit                     # the deploy's report step, `lock`
  *
  * It refuses a subcommand it does not name, before running anything; a

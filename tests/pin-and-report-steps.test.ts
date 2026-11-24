@@ -27,7 +27,7 @@ const lockText = readText(join(root, "data.lock"));
 const BUILT = "0123456789abcdef0123456789abcdef01234567";
 /** The dataset version that commit carried. */
 const VERSION = "2026.11.24";
-/** The commit a good lock names before a pin, other than the built one. */
+/** The commit a good lock names before the pin job writes it, other than the built one. */
 const LOCKED = "fedcba9876543210fedcba9876543210fedcba98";
 /** A good lock, which each malformed one below breaks by a named step. */
 const goodLock = goodLockText({ sha: LOCKED, datasetVersion: "2026.11.17" });
@@ -72,7 +72,7 @@ function expectRefused(run: LockStepRun, { lock, reason, refused }: { lock: stri
   if (refused !== undefined) expect(run.printed, "the refusal prints the value it refused").not.toContain(refused);
 }
 
-describe("pin writes the built commit and version into the lock, through the run module's pin-built", () => {
+describe("the pin job writes the built commit and version into the lock, through the run module's pin-built", () => {
   it("the lock names the built commit and version, every other line kept, and the outputs and the log name both", async () => {
     await inThrowawayFolder((folder) => {
       const run = runPinBuilt(folder);
@@ -105,7 +105,7 @@ describe("pin-built writes nothing it has not checked", () => {
     });
   });
 
-  // A line the pin cannot find is a line it cannot write (Q326).
+  // A line pinning cannot find is a line it cannot write (Q326).
   it.each(["sha", "dataset_version"] as const)("a lock missing its %s= line is refused, the lock unwritten and no output", async (key) => {
     const lock = withLineDropped(goodLock, key);
     await inThrowawayFolder((folder) => {

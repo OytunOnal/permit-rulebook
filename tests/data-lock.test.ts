@@ -9,7 +9,7 @@ import { CHOOSE_COMMIT_REFUSALS, isDatasetVersion, lockedShaOf, parseLock, PIN_R
 
 /** The commit the hand-written lock names. */
 const SHA = "3012f727ec7b14ea98e07edb63c7e71132123953";
-/** A commit other than the lock's, for a pin to write over it. */
+/** A commit other than the lock's, for pinning to write over it. */
 const OTHER_SHA = "0123456789abcdef0123456789abcdef01234567";
 
 /** A lock as the site keeps it: a comment, then its two lines. */
@@ -96,7 +96,7 @@ describe("a pinned lock's text is refused, and none written", () => {
     expect(() => pinnedLockTextOf(LOCK, { sha, datasetVersion: "2026.11.18" })).toThrow(PIN_REFUSALS.commit);
   });
 
-  // A line the pin cannot find is a line it cannot write (Q326).
+  // A line pinning cannot find is a line it cannot write (Q326).
   it.each([
     ["no sha= line", "# The data commit this site is built against.\ndataset_version=2026.11.17\n"],
     ["no dataset_version= line", `# The data commit this site is built against.\nsha=${SHA}\n`],

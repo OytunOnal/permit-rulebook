@@ -70,7 +70,7 @@ export const PIN_REFUSALS = Object.freeze({
   lock: "the lock has not exactly one sha= line and one dataset_version= line to write",
 });
 
-/** Whether `lockText` holds exactly one of each line a pin writes over, a `sha=` line and a `dataset_version=` line. */
+/** Whether `lockText` holds exactly one of each line pinning writes over, a `sha=` line and a `dataset_version=` line. */
 const hasOneOfEachLockLine = (lockText) =>
   keyLineValuesOf(lockText, "sha").length === 1 && keyLineValuesOf(lockText, "dataset_version").length === 1;
 
@@ -78,7 +78,7 @@ const hasOneOfEachLockLine = (lockText) =>
  * `lockText` with its `sha=` line naming `sha` and its `dataset_version=` line
  * naming `datasetVersion`; every other line kept. It refuses a `sha` not 40
  * lower-case hex, a `datasetVersion` not YYYY.MM.DD, and a lock without
- * exactly one of each line: a missing line the pin could not write, a second
+ * exactly one of each line: a missing line could not be pinned, a second
  * one would keep its old value beside the written one. So no lock of the
  * wrong shape is written.
  */

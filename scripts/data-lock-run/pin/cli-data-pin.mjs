@@ -1,6 +1,6 @@
 // @level presentation
 /**
- * The data pin's command line: the lock `--lock` names and the data clone
+ * `npm run data:pin`'s command line: the lock `--lock` names and the data clone
  * `--clone` names, as `pinData`'s options in the `data-lock` module, and the
  * report line of what it returned. It reads, runs and prints nothing;
  * `run-pin.mjs` returns what it makes.
@@ -13,7 +13,7 @@
  */
 import { findOptionValue } from "../../find-option-value.mjs";
 
-/** The pin's options from the command's arguments: the lock after `--lock` and the clone after `--clone`, each left out when not given. */
+/** `data:pin`'s options from the command's arguments: the lock after `--lock` and the clone after `--clone`, each left out when not given. */
 export function pinOptionsOf(argv) {
   const lockPath = findOptionValue(argv, "--lock");
   const clonePath = findOptionValue(argv, "--clone");

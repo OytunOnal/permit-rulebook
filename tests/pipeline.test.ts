@@ -197,7 +197,7 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
 
   it("only a first attempt of the two newest-data triggers may advance the lock", expectOnlyFirstAttemptAdvancesLock);
 
-  it("pin writes the lock with the run module's pin-built alone, then commits and pushes it in shell", expectPinByPinBuiltThenCommitInShell);
+  it("the pin job writes the lock with the run module's pin-built alone, then commits and pushes it in shell", expectPinByPinBuiltThenCommitInShell);
 });
 
 /**

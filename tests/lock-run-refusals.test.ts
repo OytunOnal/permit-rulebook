@@ -98,7 +98,7 @@ describe("the hand runs refuse a malformed command line or lock in one line", ()
   });
 });
 
-/** A throwaway data clone at `clone` whose one commit carries a YYYY.MM.DD dataset version, so only the lock can refuse a pin from it. */
+/** A throwaway data clone at `clone` whose one commit carries a YYYY.MM.DD dataset version, so only the lock can refuse pinning from it. */
 function cloneWithGoodVersion(clone: string): void {
   initThrowawayRepository(clone);
   mkdirSync(join(clone, "data"));
@@ -107,11 +107,11 @@ function cloneWithGoodVersion(clone: string): void {
   commitInThrowaway(clone, "-m", "the data");
 }
 
-/** A good lock for the pin to write over, which each malformed one below breaks by a named step. */
+/** A good lock for `data:pin` to write over, which each malformed one below breaks by a named step. */
 const goodLock = goodLockText({ sha: "0123456789abcdef0123456789abcdef01234567", datasetVersion: "2000.01.01" });
 
-// A line the pin cannot find is a line it cannot write (Q326).
-describe("the hand pin refuses a lock it cannot write in one line", () => {
+// A line pinning cannot find is a line it cannot write (Q326).
+describe("pinning by hand refuses a lock it cannot write in one line", () => {
   it.each(["sha", "dataset_version"] as const)("npm run data:pin on a lock missing its %s= line, leaving the lock as it was", async (key) => {
     await inThrowawayFolder((folder) => {
       const clone = join(folder, "permit-rulebook-data");

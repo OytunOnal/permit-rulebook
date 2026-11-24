@@ -1,6 +1,6 @@
 // @level presentation
 /**
- * The deploy's `pin` step's words: the environment the workflow passes, as
+ * The pin job's write step's words, `pinned`: the environment the workflow passes, as
  * the data commit the build reported and the dataset version it carried, and
  * the report of what was written into the lock, its step outputs and one log
  * line. It reads, runs and prints nothing; `run-pin-built.mjs` returns what it
