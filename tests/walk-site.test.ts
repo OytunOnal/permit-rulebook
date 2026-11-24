@@ -40,7 +40,11 @@ const REPORT_ANSWERS = `JSON.stringify(performance.getEntriesByType("resource")
 
 /** How many requests a page aborts on each path to its own origin and the counter: the race between a page dropping a request and the walk answering it showed in 114 of 300. */
 const ABORTED = 300;
-/** How many it aborts to another origin: each refusal is an error, so few enough that every error is kept, under the walk's 100. */
+/**
+ * How many it aborts at once to another origin, after the ones it sends one at
+ * a time: each refusal is an error, so few enough that every error is kept,
+ * under the walk's 100.
+ */
 const ABORTED_OUTSIDE = 30;
 
 /** The fixture pages, by file name, and the icon Chrome asks every site for, so its absence is no error. */
@@ -62,15 +66,33 @@ const abortSoon = (address, init) => {
   sent.push(fetch(address, { ...init, signal: controller.signal }).catch(() => {}));
   setTimeout(() => controller.abort(), 0);
 };
-const outside = new URLSearchParams(location.search).get("outside");
-for (let i = 0; i < (outside ? ${ABORTED_OUTSIDE} : ${ABORTED}); i++) {
-  if (outside) abortSoon(outside + "?n=" + i, { mode: "no-cors" });
-  else {
-    abortSoon("/quiet.html?n=" + i, {});
-    abortSoon(${JSON.stringify(site.TRAFFIC_COUNTER_REPORTS)} + "?n=" + i, { method: "POST", body: "{}" });
-  }
+for (let i = 0; i < ${ABORTED}; i++) {
+  abortSoon("/quiet.html?n=" + i, {});
+  abortSoon(${JSON.stringify(site.TRAFFIC_COUNTER_REPORTS)} + "?n=" + i, { method: "POST", body: "{}" });
 }
 Promise.all(sent).then(() => { window.__aborted = true; });
+</script></body></html>`,
+  // An abort can come before its request leaves the page, so the walk never
+  // sees it: the requests sent one at a time, each aborted twice as late as the
+  // last, end on one the walk answered before its abort, so at least one
+  // reached the walk on every run (#455). The burst after them, aborted at
+  // once, lands most of its aborts while the walk holds the request paused,
+  // where a second refusal would come from.
+  "aborts-outside.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>aborts its requests to another origin</p><script>
+const outside = new URLSearchParams(location.search).get("outside");
+let sent = 0;
+/** Sends a request to the outside address, aborts it after ms milliseconds, and settles on "answered" when the walk answered it first, "dropped" when the abort came first. */
+const endOfARequestAbortedAfter = (ms) => {
+  const controller = new AbortController();
+  const settled = fetch(outside + "?n=" + sent++, { mode: "no-cors", signal: controller.signal });
+  setTimeout(() => controller.abort(), ms);
+  return settled.then(() => "answered", (e) => (e.name === "AbortError" ? "dropped" : "answered"));
+};
+(async () => {
+  for (let ms = 1; (await endOfARequestAbortedAfter(ms)) === "dropped"; ms *= 2);
+  await Promise.all(Array.from({ length: ${ABORTED_OUTSIDE} }, () => endOfARequestAbortedAfter(0)));
+  window.__aborted = true;
+})();
 </script></body></html>`,
   "opens-outside.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><button id="open">open</button><script>
 document.getElementById("open").addEventListener("click", () => {
@@ -264,7 +286,7 @@ describe.skipIf(skipped !== null)("the browser walk's requests a page drops", ()
   it("a page aborting its requests to another origin has each refused at most once, under its address", async () => {
     const walked = await walkSite({ site: { folder }, screen: PHONE, errorsExpected: true }, async ({ page, url }) => {
       const outside = moveToAnotherOrigin(url("/quiet.html"));
-      await page.goto(`${url("/aborts.html")}?outside=${encodeURIComponent(outside)}`);
+      await page.goto(`${url("/aborts-outside.html")}?outside=${encodeURIComponent(outside)}`);
       await page.waitUntil("window.__aborted === true", "the page's aborted requests never settled");
       return outside;
     });
