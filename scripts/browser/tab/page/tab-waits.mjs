@@ -133,6 +133,9 @@ const isNewDocumentDrawn = (left) => `${DOCUMENT_SHOWN} !== ${JSON.stringify(lef
 const isFirstInputReportedOrLeft = (left) => `${DOCUMENT_SHOWN} !== ${JSON.stringify(left)}
   || performance.getEntriesByType("first-input").length > 0`;
 
+/** Whether the page is hidden: a hidden page presents no frame, so it reports no first input (#453). */
+const IS_HIDDEN = `document.visibilityState === "hidden"`;
+
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
@@ -240,7 +243,14 @@ export class TabWaits {
    * still waits for a document other than `left`.
    */
   waitUntilFirstInputReportedOrLeft = async (left) => {
-    await pollUntil(() => this.#readOnce(isFirstInputReportedOrLeft(left)), "the page never reported its first input");
+    let lastReadHidden = false;
+    const read = async () => {
+      const seen = await this.#readOnce(isFirstInputReportedOrLeft(left));
+      if (!seen?.held) lastReadHidden = (await this.#readOnce(IS_HIDDEN))?.held === true;
+      return seen;
+    };
+    await pollUntil(read, () => `the page never reported its first input${lastReadHidden
+      ? ": it was hidden, so it presented no frame (#453)" : ""}`);
   };
 
   /** From the tab's first navigation on, every document it opens counts its smooth scrolls; asked once. */
