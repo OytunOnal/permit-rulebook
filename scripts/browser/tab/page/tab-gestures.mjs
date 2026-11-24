@@ -4,9 +4,11 @@
  * under the point or holds the focus when one lands takes it, which a
  * script's `.click()` on a chosen element cannot show (#86).
  *
- * Each brings its tab to the front and returns once the page has reported it:
- * a case reads after a gesture what the page made of it, and Chrome reports a
- * document's first input only once its frame is presented (#269).
+ * Each brings its tab to the front and returns once the page has reported it,
+ * the tab stands on another document, or the page has opened a tab: a case
+ * reads after a gesture what the page made of it, and Chrome reports a
+ * document's first input only once its frame is presented (#269), which a page
+ * that opens a tab may never do (#453).
  */
 
 /** The expression that scrolls the element `selector` finds into view and gives its centre in the viewport as JSON, or "null" when none. */
@@ -37,13 +39,13 @@ export class TabGestures {
   }
 
   /** A mouse click at a point of the viewport. */
-  clickAt = (x, y) => this.#sendFrontAndWaitUntilReported(async () => {
+  clickAt = (x, y) => this.#sendFrontAndWaitUntilReportedOrLeftOrTabOpened(async () => {
     for (const type of ["mousePressed", "mouseReleased"])
       await this.#sendToTab("Input.dispatchMouseEvent", { type, x, y, button: "left", clickCount: 1 });
   });
 
   /** Enter pressed and released, as a keyboard does: on a focused button it is a click (#86). */
-  pressEnter = () => this.#sendFrontAndWaitUntilReported(async () => {
+  pressEnter = () => this.#sendFrontAndWaitUntilReportedOrLeftOrTabOpened(async () => {
     const enter = { key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 };
     await this.#sendToTab("Input.dispatchKeyEvent", { type: "keyDown", text: "\r", ...enter });
     await this.#sendToTab("Input.dispatchKeyEvent", { type: "keyUp", ...enter });
@@ -68,7 +70,7 @@ export class TabGestures {
    * next frame, and Chrome then never records that first input, even once the
    * page is in front again (#453).
    */
-  async #sendFrontAndWaitUntilReported(send) {
+  async #sendFrontAndWaitUntilReportedOrLeftOrTabOpened(send) {
     const left = await this.#waits.readDocumentShown();
     const tabsOpenedBefore = this.#countTabsOpened();
     await send();

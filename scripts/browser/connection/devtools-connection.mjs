@@ -70,8 +70,8 @@ export class DevToolsConnection {
   /** The listeners that hear `message`: the browser's when no tab's session carries it, else its tab's, if ours. */
   #listenersOf(message) {
     if (message.sessionId === undefined) return this.#browserListeners;
-    const hearTab = this.#tabs.get(message.sessionId);
-    return hearTab ? [hearTab] : [];
+    const tabListener = this.#tabs.get(message.sessionId);
+    return tabListener ? [tabListener] : [];
   }
 
   /** Settles the command `reply` answers with its result, or its error. */
