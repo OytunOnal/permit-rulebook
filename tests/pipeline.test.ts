@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { basename, join, relative, sep } from "node:path";
+import { readFileSync } from "node:fs";
+import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readLock } from "../scripts/data-lock/data-lock.mjs";
-import { readAssetNames } from "../scripts/carry-assets/carry.mjs";
 import { LF } from "./throwaway-folder.js";
 import {
-  checkoutRefOf, jobConditionOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepRunLineOf, stepsOf, workflowPaths,
+  checkoutRefOf, jobConditionOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepRunLineOf, stepScriptOf, stepsOf, workflowPaths,
 } from "./workflow-text.js";
 
 /** Whether a step's one-line `run:` runs the lock's run module. */
@@ -24,6 +23,26 @@ const runsRunModule = (step: string): boolean => /\bscripts\/data-lock-run\/data
  */
 
 const root = fileURLToPath(new URL("..", import.meta.url));
+
+function expectNoSecretInPlainText(): void {
+  for (const file of workflowPaths) {
+    const yaml = readText(file);
+    // A secret reaches a workflow through `secrets.` and nowhere else.
+    for (const line of yaml.split("\n")) {
+      if (/^\s*#/.test(line)) continue;
+      // A permission scope is not a secret: `id-token: write` names a
+      // capability, not a value.
+      if (/^\s+(pages|id-token|contents|issues|actions|packages):\s/.test(line)) continue;
+      const assigned = /(?:TOKEN|SECRET|KEY|PASSWORD)\s*:\s*"?([^"\s]+)/i.exec(line);
+      if (!assigned) continue;
+      // A token reaches a workflow from the secret store or from the run's
+      // own automatic token, and from nowhere else — never as a literal.
+      expect(line, `${file}: ${line.trim()}`).toMatch(/\$\{\{\s*(secrets|github)\./);
+    }
+    // And no 40-hex string outside a `uses:` pin, no PAT prefixes.
+    expect(yaml, `${file}: a GitHub token prefix`).not.toMatch(/gh[pousr]_[A-Za-z0-9]{16,}/);
+  }
+}
 
 describe("every action is pinned to a commit, and every job asks for the least it needs", () => {
   it("no `uses:` names a tag or a branch — all of them name a 40-hex commit", () => {
@@ -54,28 +73,107 @@ describe("every action is pinned to a commit, and every job asks for the least i
     }
   });
 
-  it("no secret is written into a workflow in plain text", () => {
-    for (const file of workflowPaths) {
-      const yaml = readText(file);
-      // A secret reaches a workflow through `secrets.` and nowhere else.
-      for (const line of yaml.split("\n")) {
-        if (/^\s*#/.test(line)) continue;
-        // A permission scope is not a secret: `id-token: write` names a
-        // capability, not a value.
-        if (/^\s+(pages|id-token|contents|issues|actions|packages):\s/.test(line)) continue;
-        const assigned = /(?:TOKEN|SECRET|KEY|PASSWORD)\s*:\s*"?([^"\s]+)/i.exec(line);
-        if (!assigned) continue;
-        // A token reaches a workflow from the secret store or from the run's
-        // own automatic token, and from nowhere else — never as a literal.
-        expect(line, `${file}: ${line.trim()}`).toMatch(/\$\{\{\s*(secrets|github)\./);
-      }
-      // And no 40-hex string outside a `uses:` pin, no PAT prefixes.
-      expect(yaml, `${file}: a GitHub token prefix`).not.toMatch(/gh[pousr]_[A-Za-z0-9]{16,}/);
-    }
-  });
+  it("no secret is written into a workflow in plain text", expectNoSecretInPlainText);
 });
 
 /** Which data commit the site is built against, and whether it is real. */
+
+// The green's first step itself, `npm run data:check`, run as it runs, so
+// the step and the suite never disagree; a red shows what the step printed,
+// its sentence and its remedy.
+function expectDataCloneHoldsLockedCommit(): void {
+  const words = String(JSON.parse(readFileSync(join(root, "package.json"), "utf8")).scripts["data:check"] ?? "").split(" ").filter(Boolean);
+  expect(words[0], "package.json's data:check is not a node command").toBe("node");
+  const run = spawnSync(process.execPath, words.slice(1), { cwd: root, encoding: "utf8" });
+  expect(run.status, `${run.stdout}${run.stderr}`).toBe(0);
+}
+
+// Which commit each event and attempt builds, and every refusal, is the run
+// module's, run as a process by `tests/data-commit.test.ts`; here, that the
+// step runs exactly that and nothing beside it in shell.
+function expectChoiceByChooseCommitAlone(): void {
+  const choosing = stepsOf(jobOf(pages, "data-commit")).filter((step) => /^ {8}id: data$/m.test(step));
+  expect(choosing, "data-commit has no step, or more than one, with id: data").toHaveLength(1);
+  expect(stepRunLineOf(choosing[0]!)).toBe("node scripts/data-lock-run/data-lock-run.mjs choose-commit");
+  expect(pages).toContain("ref: ${{ needs.data-commit.outputs.sha }}");
+  // The payload is a stranger's string: it arrives through the environment,
+  // never interpolated into a step's body, and the run module checks it for
+  // 40 hex characters before anything is checked out (Security review,
+  // 2026-09-08).
+  expect(pages.match(/client_payload/g), "the payload is read anywhere but the step's environment")
+    .toEqual(["client_payload"]);
+  expect(choosing[0]).toContain("PAYLOAD_SHA: ${{ github.event.client_payload.sha }}");
+}
+
+// The run module runs on the node the suite runs on, set up by the one
+// pinned commit every job uses.
+function expectNode22BeforeRunModule(): void {
+  const setupNodes = new Set([...pages.matchAll(/uses: (actions\/setup-node@\S+)/g)].map((match) => match[1]));
+  expect(setupNodes.size, "the workflow's jobs set up node from more than one pinned commit, or none").toBe(1);
+  const runningJobs = jobNamesOf(pages).filter((name) => stepsOf(jobOf(pages, name)).some(runsRunModule));
+  expect(runningJobs, "a job that runs the run module is not found running it")
+    .toEqual(expect.arrayContaining(["data-commit", "build", "pin", "report"]));
+  for (const name of runningJobs) {
+    const steps = stepsOf(jobOf(pages, name));
+    const setup = steps.findIndex((step) => step.startsWith("uses: actions/setup-node@"));
+    expect(setup, `${name} sets up no node`).toBeGreaterThanOrEqual(0);
+    expect(steps[setup], `${name} sets up a node other than 22`).toMatch(/^ {8}with: \{ node-version: 22 \}$/m);
+    expect(setup, `${name} runs the run module before it sets up node`).toBeLessThan(steps.findIndex(runsRunModule));
+  }
+}
+
+/**
+ * A rerun keeps the event name of the run it repeats. A re-run schedule would
+ * therefore build against today's data and pin it — the float this lock
+ * exists to end, on the trigger that fires every day (Spec review,
+ * 2026-09-08).
+ */
+function expectOnlyFirstAttemptAdvancesLock(): void {
+  // data-commit's choice of the data commit reads the attempt; what it
+  // makes of it is the run module's, run by `tests/data-commit.test.ts`.
+  expect(pages).toContain("RUN_ATTEMPT: ${{ github.run_attempt }}");
+  // And so does the job that writes it back.
+  const job = (name: string) => pages.slice(pages.indexOf(`${LF}  ${name}:`));
+  const pin = job("pin").slice(0, job("pin").indexOf(`${LF}  deploy:`));
+  expect(pin, "no job writes the lock back").not.toBe("");
+  expect(pin).toContain("github.run_attempt == 1");
+  expect(pin).toContain("github.event_name == 'schedule' || github.event_name == 'repository_dispatch'");
+  expect(pin).toContain("needs.build.outputs.built != needs.data-commit.outputs.locked");
+  // It is the only job with a write token, and the build has none.
+  expect(pin).toContain("permissions:");
+  expect(pin).toContain("contents: write");
+  const build = job("build").slice(0, job("build").indexOf(`${LF}  pin:`));
+  expect(build, "the build job can write to the repository").not.toMatch(/contents: write/);
+}
+
+/**
+ * The deploy's write of the lock is the run module's `pin-built`, run as a
+ * process by `tests/pin-and-report-steps.test.ts`; here, that the step runs
+ * that alone, on the build's two outputs, and that the git commit and push
+ * after it touch the lock only to add it, with a message read from what the
+ * write handed on (Q283 on #359). Nothing runs after the push.
+ */
+function expectPinByPinBuiltThenCommitInShell(): void {
+  const steps = stepsOf(jobOf(pages, "pin"));
+  const writes = steps.filter((step) => /^ {8}id: pinned$/m.test(step));
+  expect(writes, "pin has no step, or more than one, with id: pinned").toHaveLength(1);
+  const at = steps.indexOf(writes[0]!);
+  expect(stepRunLineOf(steps[at]!)).toBe("node scripts/data-lock-run/data-lock-run.mjs pin-built");
+  expect(steps[at]).toContain("BUILT: ${{ needs.build.outputs.built }}");
+  expect(steps[at]).toContain("VERSION: ${{ needs.build.outputs.version }}");
+  expect(steps.length, "pin runs no step, or more than one, after its write").toBe(at + 2);
+  const commit = steps[at + 1]!;
+  expect(commit).toContain("PINNED_SHA: ${{ steps.pinned.outputs.sha }}");
+  expect(commit).toContain("PINNED_VERSION: ${{ steps.pinned.outputs.version }}");
+  expect(stepScriptOf(commit).split(LF).filter((line) => !line.startsWith("#"))).toEqual([
+    'git config user.name "github-actions[bot]"',
+    'git config user.email "41898282+github-actions[bot]@users.noreply.github.com"',
+    "git add data.lock",
+    'git commit -m "data.lock: built and deployed against $PINNED_SHA ($PINNED_VERSION)"',
+    "git push",
+  ]);
+}
+
 describe("the data commit is pinned, and the pin is a commit that exists", () => {
   const lock = readLock();
 
@@ -84,32 +182,9 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
     expect(lock.datasetVersion, "data.lock has no dataset version").toMatch(/^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$/);
   });
 
-  // The green's first step itself, `npm run data:check`, run as it runs, so
-  // the step and the suite never disagree; a red shows what the step printed,
-  // its sentence and its remedy.
-  it("the data clone holds the lock's commit", () => {
-    const words = String(JSON.parse(readFileSync(join(root, "package.json"), "utf8")).scripts["data:check"] ?? "").split(" ").filter(Boolean);
-    expect(words[0], "package.json's data:check is not a node command").toBe("node");
-    const run = spawnSync(process.execPath, words.slice(1), { cwd: root, encoding: "utf8" });
-    expect(run.status, `${run.stdout}${run.stderr}`).toBe(0);
-  }, 60000);
+  it("the data clone holds the lock's commit", expectDataCloneHoldsLockedCommit, 60000);
 
-  // Which commit each event and attempt builds, and every refusal, is the run
-  // module's, run as a process by `tests/data-commit.test.ts`; here, that the
-  // step runs exactly that and nothing beside it in shell.
-  it("data-commit chooses the data commit with the run module's choose-commit alone", () => {
-    const choosing = stepsOf(jobOf(pages, "data-commit")).filter((step) => /^ {8}id: data$/m.test(step));
-    expect(choosing, "data-commit has no step, or more than one, with id: data").toHaveLength(1);
-    expect(stepRunLineOf(choosing[0]!)).toBe("node scripts/data-lock-run/data-lock-run.mjs choose-commit");
-    expect(pages).toContain("ref: ${{ needs.data-commit.outputs.sha }}");
-    // The payload is a stranger's string: it arrives through the environment,
-    // never interpolated into a step's body, and the run module checks it for
-    // 40 hex characters before anything is checked out (Security review,
-    // 2026-09-08).
-    expect(pages.match(/client_payload/g), "the payload is read anywhere but the step's environment")
-      .toEqual(["client_payload"]);
-    expect(choosing[0]).toContain("PAYLOAD_SHA: ${{ github.event.client_payload.sha }}");
-  });
+  it("data-commit chooses the data commit with the run module's choose-commit alone", expectChoiceByChooseCommitAlone);
 
   // Its outputs and refusals are the run module's, run by `tests/data-commit.test.ts`.
   it("build reads the commit and version it built with the run module's read-built-commit alone", () => {
@@ -118,181 +193,11 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
     expect(stepRunLineOf(built[0]!)).toBe("node scripts/data-lock-run/data-lock-run.mjs read-built-commit");
   });
 
-  // The run module runs on the node the suite runs on, set up by the one
-  // pinned commit every job uses.
-  it("every job that runs the run module sets up node 22 first, at the workflow's one pinned setup-node", () => {
-    const setupNodes = new Set([...pages.matchAll(/uses: (actions\/setup-node@\S+)/g)].map((match) => match[1]));
-    expect(setupNodes.size, "the workflow's jobs set up node from more than one pinned commit, or none").toBe(1);
-    const runningJobs = jobNamesOf(pages).filter((name) => stepsOf(jobOf(pages, name)).some(runsRunModule));
-    expect(runningJobs, "a job that runs the run module is not found running it").toEqual(expect.arrayContaining(["data-commit", "build"]));
-    for (const name of runningJobs) {
-      const steps = stepsOf(jobOf(pages, name));
-      const setup = steps.findIndex((step) => step.startsWith("uses: actions/setup-node@"));
-      expect(setup, `${name} sets up no node`).toBeGreaterThanOrEqual(0);
-      expect(steps[setup], `${name} sets up a node other than 22`).toMatch(/^ {8}with: \{ node-version: 22 \}$/m);
-      expect(setup, `${name} runs the run module before it sets up node`).toBeLessThan(steps.findIndex(runsRunModule));
-    }
-  });
+  it("every job that runs the run module sets up node 22 first, at the workflow's one pinned setup-node", expectNode22BeforeRunModule);
 
-  /**
-   * A rerun keeps the event name of the run it repeats. A re-run schedule would
-   * therefore build against today's data and pin it — the float this lock
-   * exists to end, on the trigger that fires every day (Spec review,
-   * 2026-09-08).
-   */
-  it("only a first attempt of the two newest-data triggers may advance the lock", () => {
-    // data-commit's choice of the data commit reads the attempt; what it
-    // makes of it is the run module's, run by `tests/data-commit.test.ts`.
-    expect(pages).toContain("RUN_ATTEMPT: ${{ github.run_attempt }}");
-    // And so does the job that writes it back.
-    const job = (name: string) => pages.slice(pages.indexOf(`${LF}  ${name}:`));
-    const pin = job("pin").slice(0, job("pin").indexOf(`${LF}  deploy:`));
-    expect(pin, "no job writes the lock back").not.toBe("");
-    expect(pin).toContain("github.run_attempt == 1");
-    expect(pin).toContain("github.event_name == 'schedule' || github.event_name == 'repository_dispatch'");
-    expect(pin).toContain("needs.build.outputs.built != needs.data-commit.outputs.locked");
-    // It is the only job with a write token, and the build has none.
-    expect(pin).toContain("permissions:");
-    expect(pin).toContain("contents: write");
-    const build = job("build").slice(0, job("build").indexOf(`${LF}  pin:`));
-    expect(build, "the build job can write to the repository").not.toMatch(/contents: write/);
-  });
-});
+  it("only a first attempt of the two newest-data triggers may advance the lock", expectOnlyFirstAttemptAdvancesLock);
 
-/**
- * s33 — the step that carries the previous generation's assets forward. Why it
- * exists is written in `scripts/carry-assets/carry.mjs`'s own header; what is
- * pinned here is what the step has to cover and where it sits in the job.
- *
- * That it cannot fail the deploy is proved by running it, in
- * `tests/carry-assets/` — a workflow file cannot show that, and neither can
- * reading the script's source.
- */
-describe("a cached page still finds its assets", () => {
-  const dist = join(root, "dist");
-  const missing = existsSync(dist) ? null : "no dist/ — run npm run build first";
-
-  it("never lets a pipeline skip the built site", () => {
-    if (missing) expect(process.env.CI, `CI cannot skip: ${missing}`).toBeFalsy();
-    else expect(missing).toBeNull();
-  });
-
-  /**
-   * The carrier reads ONE live page, so the whole exposure has to be one page.
-   * The day a second page gains a bundle of its own this case goes red, and the
-   * step has to widen to read that page too — which is the point of pinning it
-   * rather than assuming it (s33, point 4).
-   */
-  it.skipIf(missing)("exactly one built page references /_astro/", () => {
-    const htmlPages: string[] = [];
-    (function walk(here: string): void {
-      for (const entry of readdirSync(here, { withFileTypes: true })) {
-        const full = join(here, entry.name);
-        if (entry.isDirectory()) walk(full);
-        else if (entry.name.endsWith(".html") && readText(full).includes("/_astro/"))
-          htmlPages.push(relative(dist, full).split(sep).join("/"));
-      }
-    })(dist);
-    expect(htmlPages.sort()).toEqual(["index.html"]);
-  });
-
-  /**
-   * The other half of the same assumption, and the one nothing was watching.
-   *
-   * The carrier reads references out of HTML with a pattern, not with a
-   * browser, and `scripts/carry-assets/generation/asset-names.mjs`'s "What shapes this
-   * reads" writes down why: honouring what a browser resolves means
-   * `<base href>`, character references, `srcset` and CSS `url()`, and half a
-   * browser reads strings no reader asks for while still missing the ones it
-   * cannot parse. So the pattern reads what Astro emits — measured, round 7,
-   * it is blind to `/_ASTRO/x.css`, `/_astro%2Fx.css`, a bare relative
-   * `_astro/x.css`, `/_astro\x.css` and a reference with a tab in it, and
-   * three of those five a browser resolves to one of this deploy's real
-   * assets.
-   *
-   * What that costs the day Astro emits one of them is the step reading fewer
-   * names than the page holds and saying NOTHING about it — no request, no
-   * problem line, no annotation, which is the silent window s33 exists to
-   * close. A comment cannot notice that; this can. Every file the build put in
-   * `_astro/` is a file the page references, so the reader finding all of them
-   * is the check, and it goes red on the shape as well as on the count.
-   */
-  it.skipIf(missing)("the carrier's reader finds every asset this build published", () => {
-    const { names, refused, unserved } = readAssetNames(
-      readText(join(dist, "index.html")),
-      "https://permitrulebook.com/",
-    );
-    expect(names.sort(), "a built asset the carrier's reader cannot see in the page that names it")
-      .toEqual(readdirSync(join(dist, "_astro")).sort());
-    // And our own page holds nothing this step would decline, in either sense.
-    expect(refused).toEqual([]);
-    expect(unserved).toEqual([]);
-  });
-
-  /**
-   * All three of point 4's clauses, as one verbatim block.
-   *
-   * This used to read the step through a hand-written YAML parser, which is a
-   * second thing to be wrong: it only ever saw keys at exactly eight spaces,
-   * so a nested `env:` under this step — `SITE_URL: https://evil.example/` —
-   * passed every assertion while the step fetched a foreign host, and its `|`
-   * branch was unreachable, so five of this job's fifteen steps parsed as
-   * `{"run":"|"}` (Standards and Security review, round 3). Pinning the block
-   * as text deletes the parser, its dead branch and its blind spot together.
-   *
-   * Over-pinning a deploy step is the trade this case wants. Every clause of
-   * point 4 falls out of the one string, including the two that a reading of
-   * the step's keys could not carry: that the step's exit code is the
-   * carrier's own — one command, no `&&`, no `||`, no second line, no
-   * `continue-on-error`, nothing appended (appending
-   * `&& test -f dist/_astro/index.css` took the deploy down while every other
-   * test stayed green — Spec review, 2026-09-23) — and that it is the last
-   * thing before the artifact is sealed, because the block ends where the
-   * upload begins. An edit to this step then goes through a deliberate edit
-   * here, which is the point of a step nobody may quietly change.
-   *
-   * The `run:` takes NO arguments, and that clause is load-bearing: the script
-   * reads any `--name value` as a flag, so a repository variable spliced into
-   * this command line is a way to turn the mechanism off while every deploy
-   * stays green. Why that is so is `scripts/carry-assets.mjs`'s header, "Where
-   * the address comes from"; what this case does about it is pin the empty
-   * command line and the environment value beside the rest of the block.
-   */
-  it("the build job runs it, verbatim, as the last step before the upload", () => {
-    // The build job's own text: the carrier has to be in THIS job, where
-    // `dist/` is on disk and the artifact is made. Both ends are asserted
-    // before the slice, because `slice(i, -1)` is a legal call that spans to
-    // the end of the file: renaming the `pin:` job used to make the end index
-    // `-1`, and this case went on passing while it no longer checked the one
-    // thing its name claims (Standards review, round 4 — the one mutation of
-    // thirteen that stayed green).
-    const from = pages.indexOf(`${LF}  build:${LF}`);
-    const to = pages.indexOf(`${LF}  pin:${LF}`);
-    expect(from, "the build job is not where it was").toBeGreaterThanOrEqual(0);
-    expect(to, "the pin job is not where it was, so this case can no longer tell which job the carrier is in")
-      .toBeGreaterThan(from);
-    const build = pages.slice(from, to);
-    // Why it sits here rather than anywhere else is the comment beside it in
-    // `pages.yml`, which owns that reason.
-    expect(
-      build,
-      "the carrier step in pages.yml is not the block this case pins. Every clause of point 4 is in that"
-      + " one string, so a diff of a 200-character literal is the wrong place to read this: compare the step"
-      + " in pages.yml with the literal below, line by line. Its name, its working directory, the origin"
-      + " arriving as an environment value rather than as argv, a `run:` of one command with nothing"
-      + " appended, and the upload immediately after it are each load-bearing — and each is a deliberate"
-      + " edit here when the step is meant to change.",
-    ).toContain(
-      `      - name: Carry the live site's assets forward, so a cached page still finds them${LF}`
-      + `        if: github.event_name != 'pull_request'${LF}`
-      + `        working-directory: site${LF}`
-      + `        env:${LF}`
-      + `          CARRY_ORIGIN: \${{ env.SITE_URL }}${LF}`
-      + `        run: node scripts/carry-assets.mjs${LF}`
-      + LF
-      + "      - uses: actions/upload-pages-artifact@",
-    );
-  });
+  it("pin writes the lock with the run module's pin-built alone, then commits and pushes it in shell", expectPinByPinBuiltThenCommitInShell);
 });
 
 /**
@@ -303,9 +208,61 @@ describe("a cached page still finds its assets", () => {
  * (`tests/deploy-finding.test.ts`); which runs keep the issue, and with what
  * token, lives only here in the YAML, so it is pinned here.
  */
-describe("a red deploy nobody watches keeps deploy run failed", () => {
-  const report = jobOf(pages, "report");
+const report = jobOf(pages, "report");
 
+function expectReportOnlyIssuesWriter(): void {
+  const writers = workflowPaths.flatMap((file) => {
+    const yaml = readText(file);
+    return jobNamesOf(yaml).filter((job) => /^\s+issues:\s*write\s*$/m.test(jobOf(yaml, job))).map((job) => `${basename(file)}: ${job}`);
+  });
+  expect(writers).toEqual(["pages.yml: report"]);
+  // And it writes nowhere else.
+  expect(report.match(/^\s+[a-z-]+:\s*write\s*$/gm)?.map((line) => line.trim())).toEqual(["issues: write"]);
+}
+
+/**
+ * The data commit `data.lock` names has built and deployed once, so a
+ * broken data master, or a dispatch naming no data commit at all, cannot
+ * silence the report (#117, decision 2).
+ */
+function expectReportBuildsFromLockedCommit(): void {
+  const steps = stepsOf(report);
+  const dataCheckout = steps.find((step) => /^\s{10}repository: OytunOnal\/permit-rulebook-data$/m.test(step)) ?? "";
+  expect(dataCheckout, "report checks out no data").toMatch(/^(?:name:.*\n\s{8})?uses: actions\/checkout@/);
+  expect(checkoutRefOf(dataCheckout)).toBe("${{ steps.lock.outputs.sha }}");
+  // The step that gives that sha reads it out of data.lock, through the run
+  // module alone; its outputs and refusals are run by
+  // `tests/pin-and-report-steps.test.ts`.
+  const lockSteps = steps.filter((step) => /^ {8}id: lock$/m.test(step));
+  expect(lockSteps, "report has no step, or more than one, with id: lock").toHaveLength(1);
+  expect(stepRunLineOf(lockSteps[0]!)).toBe("node scripts/data-lock-run/data-lock-run.mjs read-locked-commit");
+  // Never the run's own data checkout, never a dispatch's sha.
+  expect(report).not.toMatch(/client_payload|steps\.data\.outputs|needs\.build\.outputs/);
+  // Only the CLI is built, with no install script run beside the write token.
+  expect(report).toMatch(/^\s+run: npm ci --ignore-scripts$/m);
+  expect(report).toMatch(/^\s+run: npm run build:kept-issue$/m);
+  expect(report).not.toMatch(/npm run (build|check)$/m);
+}
+
+/**
+ * A red deploy reaches the repository's owner, named by the run and never
+ * typed here (ruling 3 on #283), through the step's `env:` like every other
+ * value, so no `run:` line writes an expression (ruling 11 on #341).
+ */
+function expectOwnerThroughEnvironment(): void {
+  const keptIssueSteps = workflowPaths.flatMap((file) =>
+    readText(file).split(/^(?= *- )/m).filter((step) => /^\s+-?\s*run: .*cli-kept-issue\.js /m.test(step)));
+  expect(keptIssueSteps, "the deploy keeps one issue, deploy run failed: none is a call this case no longer finds, two or more a call it does not know")
+    .toHaveLength(1);
+  for (const step of keptIssueSteps) {
+    expect(step).toMatch(/^\s+OWNER: \$\{\{ github\.repository_owner \}\}$/m);
+    const command = /^\s+-?\s*run: (.*)$/m.exec(step)![1]!;
+    expect(command).toContain('--owner "$OWNER"');
+    expect(command).not.toContain("${{");
+  }
+}
+
+describe("a red deploy nobody watches keeps deploy run failed", () => {
   it("report needs every job whose red counts, and hands each one's result to the finding", () => {
     expect(report, "pages.yml has no report job").not.toBe("");
     const needs = jobNeedsOf(report);
@@ -324,54 +281,11 @@ describe("a red deploy nobody watches keeps deploy run failed", () => {
     );
   });
 
-  it("report is the only job with issues: write", () => {
-    const writers = workflowPaths.flatMap((file) => {
-      const yaml = readText(file);
-      return jobNamesOf(yaml).filter((job) => /^\s+issues:\s*write\s*$/m.test(jobOf(yaml, job))).map((job) => `${basename(file)}: ${job}`);
-    });
-    expect(writers).toEqual(["pages.yml: report"]);
-    // And it writes nowhere else.
-    expect(report.match(/^\s+[a-z-]+:\s*write\s*$/gm)?.map((line) => line.trim())).toEqual(["issues: write"]);
-  });
+  it("report is the only job with issues: write", expectReportOnlyIssuesWriter);
 
-  /**
-   * The data commit `data.lock` names has built and deployed once, so a
-   * broken data master, or a dispatch naming no data commit at all, cannot
-   * silence the report (#117, decision 2).
-   */
-  it("report builds the kept-issue CLI from the data commit data.lock names", () => {
-    const steps = stepsOf(report);
-    const dataCheckout = steps.find((step) => /^\s{10}repository: OytunOnal\/permit-rulebook-data$/m.test(step)) ?? "";
-    expect(dataCheckout, "report checks out no data").toMatch(/^(?:name:.*\n\s{8})?uses: actions\/checkout@/);
-    expect(checkoutRefOf(dataCheckout)).toBe("${{ steps.lock.outputs.sha }}");
-    // The step that gives that sha reads it out of data.lock.
-    const lockStep = steps.find((step) => /^ {8}id: lock$/m.test(step)) ?? "";
-    expect(lockStep, "no step reads the sha out of data.lock").toMatch(/^ {10}.*\bdata\.lock\b/m);
-    // Never the run's own data checkout, never a dispatch's sha.
-    expect(report).not.toMatch(/client_payload|steps\.data\.outputs|needs\.build\.outputs/);
-    // Only the CLI is built, with no install script run beside the write token.
-    expect(report).toMatch(/^\s+run: npm ci --ignore-scripts$/m);
-    expect(report).toMatch(/^\s+run: npm run build:kept-issue$/m);
-    expect(report).not.toMatch(/npm run (build|check)$/m);
-  });
+  it("report builds the kept-issue CLI from the data commit data.lock names", expectReportBuildsFromLockedCommit);
 
-  /**
-   * A red deploy reaches the repository's owner, named by the run and never
-   * typed here (ruling 3 on #283), through the step's `env:` like every other
-   * value, so no `run:` line writes an expression (ruling 11 on #341).
-   */
-  it("hands every call that keeps an issue the run's owner through its step's environment", () => {
-    const keptIssueSteps = workflowPaths.flatMap((file) =>
-      readText(file).split(/^(?= *- )/m).filter((step) => /^\s+-?\s*run: .*cli-kept-issue\.js /m.test(step)));
-    expect(keptIssueSteps, "the deploy keeps one issue, deploy run failed: none is a call this case no longer finds, two or more a call it does not know")
-      .toHaveLength(1);
-    for (const step of keptIssueSteps) {
-      expect(step).toMatch(/^\s+OWNER: \$\{\{ github\.repository_owner \}\}$/m);
-      const command = /^\s+-?\s*run: (.*)$/m.exec(step)![1]!;
-      expect(command).toContain('--owner "$OWNER"');
-      expect(command).not.toContain("${{");
-    }
-  });
+  it("hands every call that keeps an issue the run's owner through its step's environment", expectOwnerThroughEnvironment);
 });
 
 /**

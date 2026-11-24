@@ -316,7 +316,8 @@ jobs:
       # What the step is: the last thing before the artifact is sealed, because
       # it adds files to `dist/` and a file carried after the upload is a file
       # nobody deploys — this is where that reason is kept, and the case in
-      # `tests/pipeline.test.ts` that pins this step's position points here.
+      # `tests/carry-assets/carry-step.test.ts` that pins this step's position
+      # points here.
       # Two kinds of file: the assets it carries forward, and `asset-digests.txt`,
       # the list of what THIS build made, which is the only thing the next
       # deploy will check a carried byte against. No new action and no new
@@ -331,8 +332,8 @@ jobs:
       # whole mechanism off with every deploy still green. The reading is in
       # `site/scripts/carry-assets.mjs`'s own header, under "Where the address
       # comes from". Nothing may be appended to the `run:` line either, for the
-      # reason `tests/pipeline.test.ts` keeps beside its verbatim pin of this
-      # block.
+      # reason `tests/carry-assets/carry-step.test.ts` keeps beside its verbatim
+      # pin of this block.
       - name: Carry the live site's assets forward, so a cached page still finds them
         if: github.event_name != 'pull_request'
         working-directory: site
@@ -387,23 +388,36 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
+
+      # The run module runs on the node the suite runs on.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
+        with: { node-version: 22 }
+
+      # The built commit and the dataset version it carried, written into
+      # data.lock by the run module, which refuses either of the wrong shape
+      # before the lock is written, and hands on the two it wrote
+      # (`tests/pin-and-report-steps.test.ts` runs this line). It never
+      # pushes: the commit and the push are the next step's.
       - name: Record the data commit that just proved itself
+        id: pinned
         env:
           BUILT: ${{ needs.build.outputs.built }}
           VERSION: ${{ needs.build.outputs.version }}
+        run: node scripts/data-lock-run/data-lock-run.mjs pin-built
+
+      # A step's outputs reach only the steps after it, so the commit message,
+      # read from what the write handed on, is a step of its own.
+      - name: Commit and push the lock
+        env:
+          PINNED_SHA: ${{ steps.pinned.outputs.sha }}
+          PINNED_VERSION: ${{ steps.pinned.outputs.version }}
         run: |
-          case "$BUILT" in
-            [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) ;;
-            *) echo "::error::the build reported no 40-hex data commit."; exit 1 ;;
-          esac
-          sed -i "s/^sha=.*/sha=$BUILT/" data.lock
-          sed -i "s/^dataset_version=.*/dataset_version=$VERSION/" data.lock
           # The canonical bot, so an automated commit is attributed to the
           # automation and not to whichever account owns a noreply login.
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data.lock
-          git commit -m "data.lock: built and deployed against $BUILT ($VERSION)"
+          git commit -m "data.lock: built and deployed against $PINNED_SHA ($PINNED_VERSION)"
           git push
 
   deploy:
@@ -511,16 +525,18 @@ jobs:
           path: site
           persist-credentials: false
 
+      # The run module runs on the node the suite runs on.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
+        with: { node-version: 22 }
+
+      # The commit data.lock names, read by the run module, which refuses a
+      # lock that names no single 40-hex commit before any output, so there is
+      # no kept-issue CLI to build from it (`tests/pin-and-report-steps.test.ts`
+      # runs this line).
       - name: The data commit data.lock names
         id: lock
         working-directory: site
-        run: |
-          sha=$(sed -n 's/^sha=//p' data.lock)
-          case "$sha" in
-            [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) ;;
-            *) echo "::error::data.lock names no 40-hex commit, so there is no kept-issue CLI to build."; exit 1 ;;
-          esac
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+        run: node scripts/data-lock-run/data-lock-run.mjs read-locked-commit
 
       - name: Check out the data at that commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
@@ -529,9 +545,6 @@ jobs:
           ref: ${{ steps.lock.outputs.sha }}
           path: data-at-lock
           persist-credentials: false
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
-        with: { node-version: 22 }
 
       # Only the compiler is needed, and this job holds a write token: no
       # dependency's install script runs here.

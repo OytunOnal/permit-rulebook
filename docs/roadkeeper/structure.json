@@ -106,10 +106,14 @@
     "scripts/data-lock-run/choose-commit/cli-choose-commit.mjs",
     "scripts/data-lock-run/choose-commit/run-choose-commit.mjs",
     "scripts/data-lock-run/data-lock-run.mjs",
+    "scripts/data-lock-run/pin-built/cli-pin-built.mjs",
+    "scripts/data-lock-run/pin-built/run-pin-built.mjs",
     "scripts/data-lock-run/pin/cli-data-pin.mjs",
     "scripts/data-lock-run/pin/run-pin.mjs",
     "scripts/data-lock-run/read-built-commit/cli-read-built-commit.mjs",
     "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
+    "scripts/data-lock-run/read-locked-commit/cli-read-locked-commit.mjs",
+    "scripts/data-lock-run/read-locked-commit/run-read-locked-commit.mjs",
     "scripts/data-lock-run/refusal/cli-refusal.mjs",
     "scripts/data-lock-run/refusal/run-refusals.mjs"
    ]
@@ -347,10 +351,14 @@
   "scripts/data-lock-run/choose-commit/cli-choose-commit.mjs": "presentation",
   "scripts/data-lock-run/choose-commit/run-choose-commit.mjs": "main",
   "scripts/data-lock-run/data-lock-run.mjs": "main",
+  "scripts/data-lock-run/pin-built/cli-pin-built.mjs": "presentation",
+  "scripts/data-lock-run/pin-built/run-pin-built.mjs": "main",
   "scripts/data-lock-run/pin/cli-data-pin.mjs": "presentation",
   "scripts/data-lock-run/pin/run-pin.mjs": "main",
   "scripts/data-lock-run/read-built-commit/cli-read-built-commit.mjs": "presentation",
   "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs": "main",
+  "scripts/data-lock-run/read-locked-commit/cli-read-locked-commit.mjs": "presentation",
+  "scripts/data-lock-run/read-locked-commit/run-read-locked-commit.mjs": "main",
   "scripts/data-lock-run/refusal/cli-refusal.mjs": "presentation",
   "scripts/data-lock-run/refusal/run-refusals.mjs": "main",
   "scripts/data-lock/data-lock.mjs": "infrastructure",
@@ -834,12 +842,22 @@
   },
   {
    "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/pin-built/run-pin-built.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
    "to": "scripts/data-lock-run/pin/run-pin.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/data-lock-run/data-lock-run.mjs",
    "to": "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/read-locked-commit/run-read-locked-commit.mjs",
    "kind": "dependency"
   },
   {
@@ -860,6 +878,16 @@
   {
    "from": "scripts/data-lock-run/data-lock-run.mjs",
    "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/pin-built/run-pin-built.mjs",
+   "to": "scripts/data-lock-run/pin-built/cli-pin-built.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/pin-built/run-pin-built.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
   {
@@ -889,6 +917,16 @@
   },
   {
    "from": "scripts/data-lock-run/read-built-commit/run-read-built-commit.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/read-locked-commit/run-read-locked-commit.mjs",
+   "to": "scripts/data-lock-run/read-locked-commit/cli-read-locked-commit.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/read-locked-commit/run-read-locked-commit.mjs",
    "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
@@ -3653,6 +3691,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/carry-assets/carry-step.test.ts",
+   "to": "scripts/carry-assets/carry.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-step.test.ts",
+   "to": "tests/throwaway-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-step.test.ts",
+   "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/carry-assets/carry-takes-the-live-generation-forward.test.ts",
    "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
@@ -3915,6 +3968,11 @@
   {
    "from": "tests/data-commit.test.ts",
    "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/data-commit.test.ts",
+   "to": "tests/step-run.ts",
    "kind": "dependency"
   },
   {
@@ -4703,8 +4761,28 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/pipeline.test.ts",
-   "to": "scripts/carry-assets/carry.mjs",
+   "from": "tests/pin-and-report-steps.test.ts",
+   "to": "scripts/data-lock-run/data-lock-run.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pin-and-report-steps.test.ts",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pin-and-report-steps.test.ts",
+   "to": "tests/step-run.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pin-and-report-steps.test.ts",
+   "to": "tests/throwaway-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pin-and-report-steps.test.ts",
+   "to": "tests/workflow-text.ts",
    "kind": "dependency"
   },
   {
@@ -6433,6 +6511,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/step-run.ts",
+   "to": "tests/throwaway-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/step-run.ts",
+   "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/territories.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -6934,6 +7022,16 @@
    },
    {
     "name": "pinData",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "pinBuiltCommit",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "lockedCommitOf",
     "kind": "fn",
     "exported": true
    },
@@ -11630,5 +11728,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "2fd70a77b9fcb0aa8e0bfebb82b8413b9872a9ae7991b8d52510fbbaca62034a"
+ "digest": "8d593bcc8897b3a33d366293fd9b9bd050e6af3fdf373e8b7f83ad7738243d4f"
 }

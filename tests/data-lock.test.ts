@@ -95,4 +95,16 @@ describe("a pinned lock's text is refused, and none written", () => {
   ])("for a commit not 40 lower-case hex: %s", (_what, sha) => {
     expect(() => pinnedLockTextOf(LOCK, { sha, datasetVersion: "2026.11.18" })).toThrow(PIN_REFUSALS.commit);
   });
+
+  // A line the pin cannot find is a line it cannot write (Q326).
+  it.each([
+    ["no sha= line", "# The data commit this site is built against.\ndataset_version=2026.11.17\n"],
+    ["no dataset_version= line", `# The data commit this site is built against.\nsha=${SHA}\n`],
+    ["neither line", "# The data commit this site is built against.\n"],
+    // A second line would keep its old value beside the written one (Q327).
+    ["a second sha= line", `${LOCK}sha=${SHA}\n`],
+    ["a second dataset_version= line", `${LOCK}dataset_version=2026.11.17\n`],
+  ])("for a lock with %s", (_what, lock) => {
+    expect(() => pinnedLockTextOf(lock, { sha: OTHER_SHA, datasetVersion: "2026.11.18" })).toThrow(PIN_REFUSALS.lock);
+  });
 });
