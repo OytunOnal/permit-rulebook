@@ -106,4 +106,18 @@ describe("the hand pin refuses a lock it cannot write in one line", () => {
       expect(readFileSync(lock, "utf8"), "the given lock was written").toBe(lockText);
     });
   });
+
+  // A second line would keep its old value beside the written one (Q327).
+  it.each(["sha=", "dataset_version="])("npm run data:pin on a lock with a second %s line, leaving the lock as it was", async (key) => {
+    await inThrowawayFolder((folder) => {
+      const clone = join(folder, "permit-rulebook-data");
+      cloneWithGoodVersion(clone);
+      const lock = join(folder, "data.lock");
+      const siteLockText = readFileSync(join(root, "data.lock"), "utf8");
+      const lockText = `${siteLockText}${siteLockText.split(LF).find((line) => line.startsWith(key))}${LF}`;
+      writeFileSync(lock, lockText);
+      expectOneRefusalLine(scriptRun("data:pin", "--lock", lock, "--clone", clone), PIN_REFUSALS.lock);
+      expect(readFileSync(lock, "utf8"), "the given lock was written").toBe(lockText);
+    });
+  });
 });

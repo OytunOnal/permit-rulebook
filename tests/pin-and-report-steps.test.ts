@@ -122,6 +122,16 @@ describe("pin-built writes nothing it has not checked", () => {
   });
 });
 
+// A second line would keep its old value beside the written one (Q327).
+describe("pin-built refuses a lock with a line twice", () => {
+  it.each(["sha=", "dataset_version="])("a lock with a second %s line is refused, the lock unwritten and no output", async (key) => {
+    const lock = `${lockText}${lockText.split(LF).find((line) => line.startsWith(key))}${LF}`;
+    await inThrowawayFolder((folder) => {
+      expectRefused(runPinBuilt(folder, {}, lock), { lock, reason: PIN_BUILT_REFUSALS.lock });
+    });
+  });
+});
+
 describe("report reads the lock's commit through the run module's read-locked-commit", () => {
   it("the lock's sha is handed on, and the log names it", async () => {
     await inThrowawayFolder((folder) => {
