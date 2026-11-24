@@ -54,11 +54,12 @@ export function pinData({ lockPath = siteLockPath, clonePath } = {}) {
 /**
  * The lock's sha and the data clone's path the check reads: the lock at
  * `lockPath` and the clone at `clonePath` when given (relative paths read from
- * the working folder), else the site's own lock and its data clone.
+ * the working folder), else the site's own lock and its data clone. A lock
+ * that names no single 40-hex sha is refused, as `lockedShaOf` refuses it.
  */
 export function lockAndCloneOf({ lockPath, clonePath } = {}) {
   return {
-    lockSha: parseLock(readLockText(lockPath)).sha,
+    lockSha: lockedShaOf(readLockText(lockPath)),
     clonePath: clonePath === undefined ? dataClonePath() : resolve(clonePath),
   };
 }

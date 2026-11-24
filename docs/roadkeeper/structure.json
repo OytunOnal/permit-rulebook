@@ -4435,6 +4435,11 @@
   },
   {
    "from": "tests/lock-run-refusals.test.ts",
+   "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/lock-run-refusals.test.ts",
    "to": "tests/throwaway-folder.ts",
    "kind": "dependency"
   },
@@ -11606,5 +11611,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "8d7fc38bdbcd28beebeb0abb63c8506d40fd764fae8d7d96159c85d16eac9fa4"
+ "digest": "ab58158112063032e67b4c5c4cad61b410dba68dac16a09904e733e9def97c83"
 }

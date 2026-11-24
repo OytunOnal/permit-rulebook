@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CHOOSE_COMMIT_REFUSALS } from "../scripts/data-lock/data-lock.mjs";
 import { RUN_REFUSALS } from "../scripts/data-lock-run/data-lock-run.mjs";
+import { runGit } from "../scripts/run-git.mjs";
 import { commitInThrowaway, initThrowawayRepository, inThrowawayFolder, LF } from "./throwaway-folder.js";
 
 /**
@@ -64,6 +65,21 @@ describe("the hand runs refuse a malformed command line or lock in one line", ()
       const run = scriptRun("data:check", "--lock", lock, "--clone", clone);
       expectOneRefusalLine(run, CHOOSE_COMMIT_REFUSALS.lock);
       expect(run.out, "the refusal prints the value it refused").not.toContain("not-a-commit");
+    });
+  });
+
+  // The clone holds the first sha's commit, so only the second line refuses it (Q319).
+  it("npm run data:check on a lock with a second sha= line, saying why without the value", async () => {
+    await inThrowawayFolder((folder) => {
+      const clone = join(folder, "permit-rulebook-data");
+      initThrowawayRepository(clone);
+      commitInThrowaway(clone, "--allow-empty", "-m", "the data");
+      const head = runGit(clone, "rev-parse", "HEAD");
+      const lock = join(folder, "data.lock");
+      writeFileSync(lock, `sha=${head}${LF}sha=second-line${LF}dataset_version=2026.11.17${LF}`);
+      const run = scriptRun("data:check", "--lock", lock, "--clone", clone);
+      expectOneRefusalLine(run, CHOOSE_COMMIT_REFUSALS.lock);
+      expect(run.out, "the refusal prints the value it refused").not.toContain("second-line");
     });
   });
 });
