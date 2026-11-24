@@ -108,7 +108,8 @@
     "scripts/data-lock-run/data-lock-run.mjs",
     "scripts/data-lock-run/pin/cli-data-pin.mjs",
     "scripts/data-lock-run/pin/run-pin.mjs",
-    "scripts/data-lock-run/refusal/cli-refusal.mjs"
+    "scripts/data-lock-run/refusal/cli-refusal.mjs",
+    "scripts/data-lock-run/refusal/run-refusals.mjs"
    ]
   },
   {
@@ -347,6 +348,7 @@
   "scripts/data-lock-run/pin/cli-data-pin.mjs": "presentation",
   "scripts/data-lock-run/pin/run-pin.mjs": "main",
   "scripts/data-lock-run/refusal/cli-refusal.mjs": "presentation",
+  "scripts/data-lock-run/refusal/run-refusals.mjs": "main",
   "scripts/data-lock/data-lock.mjs": "infrastructure",
   "scripts/data-lock/disk/clone-questions.mjs": "infrastructure",
   "scripts/data-lock/disk/data-clone.mjs": "infrastructure",
@@ -798,6 +800,11 @@
   },
   {
    "from": "scripts/data-lock-run/check/run-check.mjs",
+   "to": "scripts/data-lock-run/refusal/run-refusals.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/check/run-check.mjs",
    "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
@@ -833,6 +840,11 @@
   },
   {
    "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock-run/refusal/run-refusals.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
    "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
@@ -853,6 +865,16 @@
   },
   {
    "from": "scripts/data-lock-run/pin/run-pin.mjs",
+   "to": "scripts/data-lock-run/refusal/run-refusals.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/pin/run-pin.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/refusal/run-refusals.mjs",
    "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
@@ -923,6 +945,11 @@
   },
   {
    "from": "scripts/data-lock/rules/lock-text.mjs",
+   "to": "scripts/data-lock/rules/lock-refusal.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock/rules/shortfall.mjs",
    "to": "scripts/data-lock/rules/lock-refusal.mjs",
    "kind": "dependency"
   },
@@ -3853,6 +3880,11 @@
   },
   {
    "from": "tests/data-commit.test.ts",
+   "to": "scripts/data-lock-run/data-lock-run.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/data-commit.test.ts",
    "to": "scripts/data-lock/data-lock.mjs",
    "kind": "dependency"
   },
@@ -4384,6 +4416,21 @@
   {
    "from": "tests/listbox.test.ts",
    "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/lock-run-refusals.test.ts",
+   "to": "scripts/data-lock-run/data-lock-run.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/lock-run-refusals.test.ts",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/lock-run-refusals.test.ts",
+   "to": "tests/throwaway-folder.ts",
    "kind": "dependency"
   },
   {
@@ -11549,5 +11596,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a1efc4d50fd1d1aaa77295ae5b8fd00a471ed3e3e22a141c06338d926df265d7"
+ "digest": "8ffcd8e897cc5acef2541dc51e23ef181d774931401659a76d0156965b122ac5"
 }

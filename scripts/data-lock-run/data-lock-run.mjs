@@ -26,6 +26,9 @@ import { LockRefusal } from "../data-lock/data-lock.mjs";
 import { printReport } from "../print-report.mjs";
 import { runCheck } from "./check/run-check.mjs";
 import { refusalReportOf } from "./refusal/cli-refusal.mjs";
+import { RUN_REFUSALS } from "./refusal/run-refusals.mjs";
+
+export { RUN_REFUSALS };
 import { runChooseCommit } from "./choose-commit/run-choose-commit.mjs";
 import { runPin } from "./pin/run-pin.mjs";
 
@@ -48,7 +51,7 @@ function isProcessScript() {
  */
 function writeStepOutputs(outputs) {
   const outputFile = process.env.GITHUB_OUTPUT;
-  if (!outputFile) throw new Error("GITHUB_OUTPUT names no file, so the step's outputs have nowhere to go");
+  if (!outputFile) throw new LockRefusal(RUN_REFUSALS.stepOutputs, "the step's outputs are refused");
   appendFileSync(outputFile, Object.entries(outputs).map(([name, value]) => `${name}=${value}\n`).join(""), "utf8");
 }
 

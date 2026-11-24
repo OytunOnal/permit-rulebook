@@ -5,9 +5,11 @@
  * report `cli-data-pin.mjs` makes of it.
  */
 import { pinData } from "../../data-lock/data-lock.mjs";
+import { refuseBareLockOption } from "../refusal/run-refusals.mjs";
 import { pinOptionsOf, pinReportOf } from "./cli-data-pin.mjs";
 
-/** The pin run on the arguments after `pin`, as its report. */
+/** The pin run on the arguments after `pin`, as its report; a `--lock` with no path is refused first. */
 export function runPin(argv) {
+  refuseBareLockOption(argv);
   return pinReportOf(pinData(pinOptionsOf(argv)));
 }

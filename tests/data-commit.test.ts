@@ -4,6 +4,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CHOOSE_COMMIT_REFUSALS, readLock } from "../scripts/data-lock/data-lock.mjs";
+import { RUN_REFUSALS } from "../scripts/data-lock-run/data-lock-run.mjs";
 import { runGit } from "../scripts/run-git.mjs";
 import { posixShellPath } from "./posix-shell.js";
 import { LF, commitInThrowaway, inThrowawayFolder, initThrowawayRepository } from "./throwaway-folder.js";
@@ -69,7 +70,7 @@ function runStepCommand(step: string, folder: string, env: Record<string, string
   writeFileSync(outputFile, "");
   const run = spawnSync(process.execPath, [join(root, script!), ...args], {
     cwd: folder,
-    env: { ...process.env, ...env, GITHUB_OUTPUT: outputFile },
+    env: { ...process.env, GITHUB_OUTPUT: outputFile, ...env },
     encoding: "utf8",
   });
   return { exitCode: run.status, outputLines: outputLinesOf(outputFile), printed: `${run.stdout}${run.stderr}` };
@@ -205,6 +206,20 @@ describe("a refusal is one error line, with an annotation under Actions", () => 
       const lines = run.printed.split(LF).map((line) => line.trimEnd());
       expect(lines.filter((line) => /^\s+at /.test(line)), `no stack was printed: ${run.printed}`).not.toEqual([]);
       expect(lines.filter((line) => line.startsWith("{") || line.startsWith("::error::")), "the error was printed as a refusal").toEqual([]);
+    });
+  });
+});
+
+// A step whose outputs have nowhere to go is refused, not crashed (Q317 on #446).
+describe("a run with nowhere to write its outputs", () => {
+  it("is refused in one line", async () => {
+    await inThrowawayFolder((folder) => {
+      const run = runChoice(folder, { EVENT_NAME: "push", GITHUB_OUTPUT: "", GITHUB_ACTIONS: "" });
+      expect(run.exitCode, run.printed).toBe(1);
+      const lines = run.printed.split(LF).map((line) => line.trimEnd()).filter((line) => line !== "");
+      expect(lines, "the refusal printed more than its one line").toHaveLength(1);
+      expect(JSON.parse(lines[0]!)).toMatchObject({ level: "error" });
+      expect(JSON.parse(lines[0]!).msg).toContain(RUN_REFUSALS.stepOutputs);
     });
   });
 });
