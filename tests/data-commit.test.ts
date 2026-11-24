@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CHOOSE_COMMIT_REFUSALS, readLock } from "../scripts/data-lock/data-lock.mjs";
 import { READ_BUILT_COMMIT_REFUSALS, RUN_REFUSALS } from "../scripts/data-lock-run/data-lock-run.mjs";
 import { runGit } from "../scripts/run-git.mjs";
+import { type StepRun, runStepCommand, stepKeyOf } from "./step-run.js";
 import { LF, commitInThrowaway, inThrowawayFolder, initThrowawayRepository } from "./throwaway-folder.js";
 import {
-  checkoutRefOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepRunLineOf, stepScriptOf, stepsOf,
+  checkoutRefOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepScriptOf, stepsOf,
 } from "./workflow-text.js";
 
 /**
@@ -37,30 +37,6 @@ function choosingStep(): string {
   const steps = jobNamesOf(pages).flatMap((name) => stepsOf(jobOf(pages, name))).filter((step) => /^ {8}id: data$/m.test(step));
   expect(steps, "no step, or more than one, has id: data").toHaveLength(1);
   return steps[0]!;
-}
-
-/** What one run of a step wrote to the run's outputs, and how it ended. */
-interface StepRun { exitCode: number | null; outputLines: string[]; printed: string }
-
-/** The lines a step's run wrote to the outputs file at `outputFile`. */
-const outputLinesOf = (outputFile: string): string[] => readFileSync(outputFile, "utf8").split(LF).filter((line) => line !== "");
-
-/**
- * A step's one-line `run:` run as a process in `folder`, as the runner runs
- * it from the site's checkout: node on the site's own file the line names,
- * with the line's arguments, under `env`, its outputs file beside it.
- */
-function runStepCommand(step: string, folder: string, env: Record<string, string>): StepRun {
-  const [program, script, ...args] = stepRunLineOf(step).split(" ");
-  expect(program, `the step runs no node command: ${step}`).toBe("node");
-  const outputFile = `${folder}.github-output`;
-  writeFileSync(outputFile, "");
-  const run = spawnSync(process.execPath, [join(root, script!), ...args], {
-    cwd: folder,
-    env: { ...process.env, GITHUB_OUTPUT: outputFile, ...env },
-    encoding: "utf8",
-  });
-  return { exitCode: run.status, outputLines: outputLinesOf(outputFile), printed: `${run.stdout}${run.stderr}` };
 }
 
 /** The site's files the choice reads, each the repository's own unless a case hands its own. */
@@ -225,10 +201,6 @@ function builtStep(): string {
   expect(steps, "the build has no step, or more than one, with id: built").toHaveLength(1);
   return steps[0]!;
 }
-
-/** A key's value on its own line in a step's text, at `indent` spaces, trimmed; "" when it has none. */
-const stepKeyOf = (step: string, indent: number, key: string): string =>
-  new RegExp(`^ {${indent}}${key}:\\s*(.+)$`, "m").exec(step)?.[1]?.trim() ?? "";
 
 /**
  * The built step run in a workspace of `folder` as the runner lays it out:

@@ -3934,6 +3934,11 @@
   },
   {
    "from": "tests/data-commit.test.ts",
+   "to": "tests/step-run.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/data-commit.test.ts",
    "to": "tests/throwaway-folder.ts",
    "kind": "dependency"
   },
@@ -6440,6 +6445,16 @@
   {
    "from": "tests/static-server.test.ts",
    "to": "tests/served-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/step-run.ts",
+   "to": "tests/throwaway-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/step-run.ts",
+   "to": "tests/workflow-text.ts",
    "kind": "dependency"
   },
   {
@@ -11640,5 +11655,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "b217403f68b7836bec2a6fed2ef74d01fb5a1d06e1fbcb5ad0a54d2f90b2d3cc"
+ "digest": "8c505526bb7d525bf02e80e8276e260e4f838d1bf0200ee13960cd53d1489840"
 }
