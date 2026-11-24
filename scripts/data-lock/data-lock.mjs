@@ -25,10 +25,14 @@ import { newestDataMasterOf } from "./disk/data-master.mjs";
 import { readLockText, siteLockPath, writeLockText } from "./disk/lock-file.mjs";
 import { CHOOSE_COMMIT_REFUSALS, dataCommitOf } from "./rules/data-commit.mjs";
 import { LockRefusal } from "./rules/lock-refusal.mjs";
-import { isDatasetVersion, lockedShaOf, parseLock, PIN_REFUSALS, pinnedLockTextOf } from "./rules/lock-text.mjs";
+import {
+  checkedCloneHeadOf, CLONE_HEAD_REFUSAL, isDatasetVersion, lockedShaOf, parseLock, PIN_REFUSALS, pinnedLockTextOf,
+} from "./rules/lock-text.mjs";
 import { shortfallOf } from "./rules/shortfall.mjs";
 
-export { CHOOSE_COMMIT_REFUSALS, dataClonePath, isDatasetVersion, LockRefusal, lockedShaOf, PIN_REFUSALS, pinnedLockTextOf };
+export {
+  CHOOSE_COMMIT_REFUSALS, CLONE_HEAD_REFUSAL, dataClonePath, isDatasetVersion, LockRefusal, lockedShaOf, PIN_REFUSALS, pinnedLockTextOf,
+};
 
 /** What the lock's `text` says (the site's own lock by default): its sha and its dataset version. */
 export function readLock(text = readLockText()) {
@@ -54,14 +58,15 @@ export function pinData({ lockPath = siteLockPath, clonePath } = {}) {
 }
 
 /**
- * The HEAD of the data clone at `clonePath` (relative to the working folder)
+ * The HEAD of the data clone at `clonePath` (relative to the working folder),
+ * checked for 40 hex and refused with `CLONE_HEAD_REFUSAL` when it is not,
  * and the dataset version its own file names, as found: the version is
  * unchecked, any JSON value or none, for its reader to ask `isDatasetVersion`.
  * @returns {{ sha: string, datasetVersion: unknown }}
  */
 export function cloneHeadAndVersionOf(clonePath) {
   const dir = resolve(clonePath);
-  return { sha: cloneHeadOf(dir), datasetVersion: cloneDatasetVersionOf(dir) };
+  return { sha: checkedCloneHeadOf(cloneHeadOf(dir)), datasetVersion: cloneDatasetVersionOf(dir) };
 }
 
 /**

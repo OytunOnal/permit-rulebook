@@ -234,12 +234,16 @@ const stepKeyOf = (step: string, indent: number, key: string): string =>
  * The built step run in a workspace of `folder` as the runner lays it out:
  * the site in the step's `working-directory:`, the data beside it under the
  * folder data-commit chose, its own file carrying `dataset`, and `DATA_DIR` as
- * the step's env gives it; `env` is laid over that.
+ * the step's env gives it; `env` is laid over that, and `objectFormat` names
+ * the data repository's hash, git's sha1 when not given.
  */
-function runBuiltStep(folder: string, dataset: unknown, env: Record<string, string> = {}): StepRun & { commit: string } {
+function runBuiltStep(
+  folder: string, dataset: unknown, { env = {}, objectFormat = "sha1" }: { env?: Record<string, string>; objectFormat?: string } = {},
+): StepRun & { commit: string } {
   const workspace = join(folder, "workspace");
   const dataFolder = join(workspace, "permit-rulebook-data");
-  initThrowawayRepository(dataFolder);
+  mkdirSync(dataFolder, { recursive: true });
+  runGit(dataFolder, "init", "--quiet", "--initial-branch=master", `--object-format=${objectFormat}`);
   mkdirSync(join(dataFolder, "data"));
   writeFileSync(join(dataFolder, "data", "dataset.json"), JSON.stringify(dataset));
   commitInThrowaway(dataFolder, "--allow-empty", "-m", "the data");
@@ -290,13 +294,21 @@ describe("the build's read-built-commit writes nothing it has not checked", () =
   // is no data commit.
   it("a step with no DATA_DIR is refused, before any output", async () => {
     await inThrowawayFolder((folder) => {
-      expectBuiltRefused(runBuiltStep(folder, { dataset_version: "2026.11.10" }, { DATA_DIR: "" }), "dataDir");
+      expectBuiltRefused(runBuiltStep(folder, { dataset_version: "2026.11.10" }, { env: { DATA_DIR: "" } }), "dataDir");
+    });
+  });
+
+  // A sha256 repository's HEAD is 64 hex: no commit a lock can name.
+  it("a data clone whose HEAD is not 40 hex is refused, before any output, saying why without the value", async () => {
+    await inThrowawayFolder((folder) => {
+      const run = runBuiltStep(folder, { dataset_version: "2026.11.10" }, { objectFormat: "sha256" });
+      expectBuiltRefused(run, "head", run.commit);
     });
   });
 
   it("a refusal under Actions also prints its annotation", async () => {
     await inThrowawayFolder((folder) => {
-      const run = runBuiltStep(folder, { dataset_version: "2026-11-10" }, { GITHUB_ACTIONS: "true" });
+      const run = runBuiltStep(folder, { dataset_version: "2026-11-10" }, { env: { GITHUB_ACTIONS: "true" } });
       expectBuiltRefused(run, "datasetVersion");
       const annotations = run.printed.split(LF).filter((line) => line.startsWith("::error::"));
       expect(annotations).toHaveLength(1);

@@ -14,6 +14,15 @@ export function isFullSha(value) {
   return FULL_SHA.test(value);
 }
 
+/** Why a data clone's HEAD is refused; it names the rule, never the value. */
+export const CLONE_HEAD_REFUSAL = "the data clone's HEAD is not a commit of 40 lower-case hex characters";
+
+/** `head`, a data clone's HEAD, checked: it refuses any but a full commit sha, the only form a lock names (a sha256 repository's is 64). */
+export function checkedCloneHeadOf(head) {
+  if (!isFullSha(head)) throw new LockRefusal(CLONE_HEAD_REFUSAL, "a built commit is refused");
+  return head;
+}
+
 /** A dataset version, the only form a lock names: the data's dataset file stamps its day as YYYY.MM.DD. */
 const DATASET_VERSION = /^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$/;
 
