@@ -24,13 +24,14 @@ function scriptArgumentsOf(name: string): string[] {
   return words.slice(1);
 }
 
-/** `npm run <script>` with `args` after it, from the site's root and outside Actions: its exit code and everything it printed. */
-function scriptRun(script: string, ...args: string[]): { status: number | null; out: string } {
-  const run = spawnSync(process.execPath, [...scriptArgumentsOf(script), ...args], {
-    cwd: root, encoding: "utf8", env: { ...process.env, GITHUB_ACTIONS: "" },
-  });
+/** node run on `args` from the site's root and outside Actions: its exit code and everything it printed. */
+function nodeRun(args: string[]): { status: number | null; out: string } {
+  const run = spawnSync(process.execPath, args, { cwd: root, encoding: "utf8", env: { ...process.env, GITHUB_ACTIONS: "" } });
   return { status: run.status, out: `${run.stdout}${run.stderr}` };
 }
+
+/** `npm run <script>` with `args` after it, run as `nodeRun` runs it. */
+const scriptRun = (script: string, ...args: string[]): { status: number | null; out: string } => nodeRun([...scriptArgumentsOf(script), ...args]);
 
 /** A refusal asserted: exit 1, and all it printed one JSON error line saying `reason`. */
 function expectOneRefusalLine(run: { status: number | null; out: string }, reason: string): void {
@@ -44,6 +45,17 @@ function expectOneRefusalLine(run: { status: number | null; out: string }, reaso
 
 /** The site's own data.lock's last write, so a case can say it was not written. */
 const siteLockWritten = (): number => statSync(join(root, "data.lock")).mtimeMs;
+
+// The argument is a stranger's text: the refusal names the rule and the subcommands, never it (Q307).
+describe("the run entry refuses a subcommand it does not name in one line", () => {
+  it("an unknown subcommand, saying why without the argument", () => {
+    const refused = "no-such-subcommand";
+    // The entry data:pin runs, without its subcommand.
+    const run = nodeRun([scriptArgumentsOf("data:pin")[0]!, refused]);
+    expect(run.out, "the refusal prints the argument it refused").not.toContain(refused);
+    expectOneRefusalLine(run, RUN_REFUSALS.subcommand);
+  });
+});
 
 describe("the hand runs refuse a malformed command line or lock in one line", () => {
   it.each([

@@ -67,12 +67,14 @@ function writeStepOutputs(outputs) {
 /** The report of a run refused for `reason`, annotated under GitHub Actions. */
 const refusedRunReportOf = (reason) => refusalReportOf(reason, { isUnderActions: process.env.GITHUB_ACTIONS === "true" });
 
+/** The usage refusal's words: its reason and the subcommands, never the argument it refused, which is a stranger's text. */
+const USAGE_REFUSAL = `${RUN_REFUSALS.subcommand}: node scripts/data-lock-run/data-lock-run.mjs <${SUBCOMMAND_NAMES.join(" | ")}> ...`;
+
 /** Runs the subcommand `argv` names on the arguments after it, writes its step outputs, and returns its report; an unnamed subcommand's report is the usage refusal. */
 function runSubcommandWritingOutputs(argv) {
   const [subcommand, ...args] = argv;
   const run = SUBCOMMANDS.get(subcommand);
-  if (run === undefined)
-    return refusedRunReportOf(`${JSON.stringify(subcommand ?? "")} is not a subcommand: node scripts/data-lock-run/data-lock-run.mjs <${SUBCOMMAND_NAMES.join(" | ")}> ...`);
+  if (run === undefined) return refusedRunReportOf(USAGE_REFUSAL);
   const report = run(args);
   if (report.outputs !== undefined) writeStepOutputs(report.outputs);
   return report;

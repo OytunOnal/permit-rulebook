@@ -7122,6 +7122,11 @@
     "exported": false
    },
    {
+    "name": "USAGE_REFUSAL",
+    "kind": "const",
+    "exported": false
+   },
+   {
     "name": "runSubcommandWritingOutputs",
     "kind": "fn",
     "exported": false
@@ -11767,5 +11772,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "20e5a152e7246833283f9f85dad32b1a912907c68cc1e25fa5dadbc38571f415"
+ "digest": "dda788334e9bca00c2a9f85c963377f32272f407fa92a6e229e4270d2771c0dc"
 }
