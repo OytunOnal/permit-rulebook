@@ -6608,6 +6608,11 @@
     "exported": true
    },
    {
+    "name": "isDetachedFrom",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "watchTabsOpenedBy",
     "kind": "fn",
     "exported": false
@@ -11512,5 +11517,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "f1d307f2ddd663185216ed4cd80e5698c05143afe0e2b220a107e5ab02a1b734"
+ "digest": "25cce755b69dd82f68e2d1216a3908873b2819b408cdb31941b99d326b801835"
 }
