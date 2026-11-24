@@ -21,11 +21,11 @@ import { cloneQuestionsOf } from "./disk/clone-questions.mjs";
 import { cloneDatasetVersionOf, cloneHeadOf, dataClonePath, dataDependencyOf } from "./disk/data-clone.mjs";
 import { newestDataMasterOf } from "./disk/data-master.mjs";
 import { readLockText, siteLockPath, writeLockText } from "./disk/lock-file.mjs";
-import { dataCommitOf } from "./rules/data-commit.mjs";
+import { CHOOSE_COMMIT_REFUSALS, dataCommitOf } from "./rules/data-commit.mjs";
 import { parseLock, PIN_REFUSALS, pinnedLockTextOf } from "./rules/lock-text.mjs";
 import { shortfallOf } from "./rules/shortfall.mjs";
 
-export { dataClonePath, PIN_REFUSALS, pinnedLockTextOf };
+export { CHOOSE_COMMIT_REFUSALS, dataClonePath, PIN_REFUSALS, pinnedLockTextOf };
 
 /** What the lock's `text` says (the site's own lock by default): its sha and its dataset version. */
 export function readLock(text = readLockText()) {

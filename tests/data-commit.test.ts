@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readLock } from "../scripts/data-lock/data-lock.mjs";
+import { CHOOSE_COMMIT_REFUSALS, readLock } from "../scripts/data-lock/data-lock.mjs";
 import { runGit } from "../scripts/run-git.mjs";
 import { posixShellPath } from "./posix-shell.js";
 import { LF, commitInThrowaway, inThrowawayFolder, initThrowawayRepository } from "./throwaway-folder.js";
@@ -132,35 +132,42 @@ describe("the data commit is chosen once, by the run module's choose-commit", ()
  * event (review of #345, Security 1).
  */
 describe("the choice writes nothing it has not checked", () => {
-  const twoLineLock = `sha=${LOCKED}${LF}sha=dir=../elsewhere${LF}`;
-  it.each([
-    ...["push", "pull_request", "schedule", "repository_dispatch"].map((event) => [event, "not 40 hex", "sha=main\n"]),
-    ...["push", "pull_request", "schedule", "repository_dispatch"].map((event) => [event, "a second sha line", twoLineLock]),
-    ["push", "no sha", "dataset_version=2026.11.10\n"],
-  ])("a %s run refuses a lock with %s, before any output", async (event, _what, lock) => {
+  /** A refusal asserted: a non-zero exit, no output line, the reason `refusal` names said, and the refused value never printed. */
+  function expectRefused({ exitCode, outputLines, printed }: StepRun, refusal: keyof typeof CHOOSE_COMMIT_REFUSALS, refused?: string): void {
+    expect(exitCode, printed).not.toBe(0);
+    expect(outputLines).toEqual([]);
+    expect(printed, "the refusal does not say why").toContain(CHOOSE_COMMIT_REFUSALS[refusal]);
+    if (refused !== undefined) expect(printed, "the refusal prints the value it refused").not.toContain(refused);
+  }
+
+  const notACommit = "not-a-commit";
+  const secondLine = "dir=../elsewhere";
+  /** A malformed lock's text, and the value in it a refusal must not print, if any. */
+  type MalformedLock = { lock: string; refused?: string };
+  const events = ["push", "pull_request", "schedule", "repository_dispatch"];
+  it.each<[string, string, MalformedLock]>([
+    ...events.map((event): [string, string, MalformedLock] => [event, "not 40 hex", { lock: `sha=${notACommit}${LF}`, refused: notACommit }]),
+    ...events.map((event): [string, string, MalformedLock] =>
+      [event, "a second sha line", { lock: `sha=${LOCKED}${LF}sha=${secondLine}${LF}`, refused: secondLine }]),
+    ["push", "no sha", { lock: `dataset_version=2026.11.10${LF}` }],
+  ])("a %s run refuses a lock with %s, before any output, saying why without the value", async (event, _what, { lock, refused }) => {
     await inThrowawayFolder((folder) => {
-      const { exitCode, outputLines } = runChoice(folder, { EVENT_NAME: event, PAYLOAD_SHA: PAYLOAD }, { lock });
-      expect(exitCode).not.toBe(0);
-      expect(outputLines).toEqual([]);
+      expectRefused(runChoice(folder, { EVENT_NAME: event, PAYLOAD_SHA: PAYLOAD }, { lock }), "lock", refused);
     });
   });
 
-  it("a dispatch's first attempt refuses a payload that is not 40 hex, before any output", async () => {
+  it("a dispatch's first attempt refuses a payload that is not 40 hex, before any output, saying why without the value", async () => {
     await inThrowawayFolder((folder) => {
-      const { exitCode, outputLines } = runChoice(folder, { EVENT_NAME: "repository_dispatch", PAYLOAD_SHA: "main" });
-      expect(exitCode).not.toBe(0);
-      expect(outputLines).toEqual([]);
+      expectRefused(runChoice(folder, { EVENT_NAME: "repository_dispatch", PAYLOAD_SHA: notACommit }), "chosenCommit", notACommit);
     });
   });
 
   // The folder lands in the build's checkout path and working directory.
-  it("a manifest naming a data folder that is not a plain name is refused, before any output", async () => {
+  it("a manifest naming a data folder that is not a plain name is refused, before any output, saying why without the value", async () => {
     const manifest = JSON.parse(manifestText) as { dependencies: Record<string, string> };
     manifest.dependencies["permit-rulebook-data"] = "file:../Data Folder";
     await inThrowawayFolder((folder) => {
-      const { exitCode, outputLines } = runChoice(folder, { EVENT_NAME: "push" }, { manifest: JSON.stringify(manifest) });
-      expect(exitCode).not.toBe(0);
-      expect(outputLines).toEqual([]);
+      expectRefused(runChoice(folder, { EVENT_NAME: "push" }, { manifest: JSON.stringify(manifest) }), "dataFolder", "Data Folder");
     });
   });
 });

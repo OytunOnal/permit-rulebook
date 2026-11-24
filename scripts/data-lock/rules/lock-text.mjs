@@ -17,6 +17,9 @@ export function parseLock(text) {
   return { sha: value("sha"), datasetVersion: value("dataset_version") };
 }
 
+/** Why a lock's sha is refused; it names the rule, never the value, which is a stranger's text. */
+export const LOCKED_SHA_REFUSAL = "the lock names no single 40-hex sha (run npm run data:pin and commit it)";
+
 /**
  * The lock's one sha, checked: it refuses a lock whose `sha=` lines are not
  * exactly one, naming a full commit sha as it stands, since a second line
@@ -24,7 +27,7 @@ export function parseLock(text) {
  */
 export function lockedShaOf(text) {
   const shas = [...text.matchAll(/^sha=(.*)$/gm)].map((match) => match[1]);
-  if (shas.length !== 1 || !FULL_SHA.test(shas[0])) throw new Error("the lock names no single 40-hex sha: run npm run data:pin and commit it");
+  if (shas.length !== 1 || !FULL_SHA.test(shas[0])) throw new Error(`a locked commit is refused: ${LOCKED_SHA_REFUSAL}`);
   return shas[0];
 }
 
