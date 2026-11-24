@@ -831,6 +831,11 @@
   },
   {
    "from": "scripts/data-lock-run/data-lock-run.mjs",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-lock-run/data-lock-run.mjs",
    "to": "scripts/print-report.mjs",
    "kind": "dependency"
   },
@@ -6882,6 +6887,21 @@
     "exported": false
    },
    {
+    "name": "DECLARED_REFUSALS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "isDeclaredRefusal",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "refusedRunReportOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "runSubcommand",
     "kind": "fn",
     "exported": false
@@ -11522,5 +11542,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "9243cf213cdfec14ae011d97f0239cf2689ebdf57b7812edafa3c6dc84660b53"
+ "digest": "7c0abff2f65d17c0b285f3ac377d8b6cda803d5e43092d6b646aec01f4e2478f"
 }

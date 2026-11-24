@@ -194,6 +194,19 @@ describe("a refusal is one error line, with an annotation under Actions", () => 
       if (annotated) expect(annotations[0]).toContain(reason);
     });
   });
+
+  // Only a declared refusal is one line (Q314): a git crash, like a bug, is
+  // no refusal, and Node prints it with its stack.
+  it("an error that is no declared refusal keeps its stack, not the one-line form", async () => {
+    await inThrowawayFolder((folder) => {
+      const run = runChoice(folder, { EVENT_NAME: "schedule", DATA_REPOSITORY_URL: join(folder, "no-repository-here"), GITHUB_ACTIONS: "true" });
+      expect(run.exitCode, run.printed).not.toBe(0);
+      expect(run.outputLines).toEqual([]);
+      const lines = run.printed.split(LF).map((line) => line.trimEnd());
+      expect(lines.filter((line) => /^\s+at /.test(line)), `no stack was printed: ${run.printed}`).not.toEqual([]);
+      expect(lines.filter((line) => line.startsWith("{") || line.startsWith("::error::")), "the error was printed as a refusal").toEqual([]);
+    });
+  });
 });
 
 /**

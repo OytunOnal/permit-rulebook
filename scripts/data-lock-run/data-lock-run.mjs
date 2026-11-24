@@ -12,14 +12,17 @@
  *
  * It refuses a subcommand it does not name, before running anything; a
  * subcommand that refuses throws before its report exists, so no output is
- * written. Every refusal, the usage one included, is printed as one JSON
- * error line, with no stack, and an `::error::` line under GitHub Actions
- * (`refusal/cli-refusal.mjs`), and exits 1. Imported, it runs nothing: a subcommand
- * runs only when this file is the process's own script, and an importer
- * reads `SUBCOMMAND_NAMES` alone.
+ * written. A declared refusal (the usage one, or a reason of the `data-lock`
+ * module's `PIN_REFUSALS` or `CHOOSE_COMMIT_REFUSALS`) is printed as one
+ * JSON error line, with no stack, and an `::error::` line under GitHub
+ * Actions (`refusal/cli-refusal.mjs`), and exits 1; any other error, a bug
+ * or a git crash, is thrown on, so Node prints it with its stack. Imported,
+ * it runs nothing: a subcommand runs only when this file is the process's
+ * own script, and an importer reads `SUBCOMMAND_NAMES` alone.
  */
 import { appendFileSync, realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { CHOOSE_COMMIT_REFUSALS, PIN_REFUSALS } from "../data-lock/data-lock.mjs";
 import { printReport } from "../print-report.mjs";
 import { runCheck } from "./check/run-check.mjs";
 import { refusalReportOf } from "./refusal/cli-refusal.mjs";
@@ -49,23 +52,33 @@ function writeStepOutputs(outputs) {
   appendFileSync(outputFile, Object.entries(outputs).map(([name, value]) => `${name}=${value}\n`).join(""), "utf8");
 }
 
-/** Runs the subcommand `argv` names on the arguments after it, writes its step outputs, and returns its report. */
+/** Every reason a subcommand may refuse for: the `data-lock` module's declared sets, the lock's own among them. */
+const DECLARED_REFUSALS = [...Object.values(PIN_REFUSALS), ...Object.values(CHOOSE_COMMIT_REFUSALS)];
+
+/** Whether `error` is a declared refusal: its message ends with one of the declared reasons. */
+const isDeclaredRefusal = (error) => error instanceof Error && DECLARED_REFUSALS.some((reason) => error.message.endsWith(reason));
+
+/** The report of a run refused for `reason`, annotated under GitHub Actions. */
+const refusedRunReportOf = (reason) => refusalReportOf(reason, { isUnderActions: process.env.GITHUB_ACTIONS === "true" });
+
+/** Runs the subcommand `argv` names on the arguments after it, writes its step outputs, and returns its report; an unnamed subcommand's report is the usage refusal. */
 function runSubcommand(argv) {
   const [subcommand, ...args] = argv;
   const run = SUBCOMMANDS.get(subcommand);
   if (run === undefined)
-    throw new Error(`${JSON.stringify(subcommand ?? "")} is not a subcommand: node scripts/data-lock-run/data-lock-run.mjs <${SUBCOMMAND_NAMES.join(" | ")}> ...`);
+    return refusedRunReportOf(`${JSON.stringify(subcommand ?? "")} is not a subcommand: node scripts/data-lock-run/data-lock-run.mjs <${SUBCOMMAND_NAMES.join(" | ")}> ...`);
   const report = run(args);
   if (report.outputs !== undefined) writeStepOutputs(report.outputs);
   return report;
 }
 
-/** The report of the run `argv` names, or of its refusal: whatever it throws, its message as one error line, no stack. */
+/** The report of the run `argv` names, or of its declared refusal as one error line; any other error is thrown on, its stack kept. */
 function reportOfRun(argv) {
   try {
     return runSubcommand(argv);
   } catch (error) {
-    return refusalReportOf(error.message, { isUnderActions: process.env.GITHUB_ACTIONS === "true" });
+    if (!isDeclaredRefusal(error)) throw error;
+    return refusedRunReportOf(error.message);
   }
 }
 
