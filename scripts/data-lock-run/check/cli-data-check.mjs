@@ -20,8 +20,8 @@ const DATA_REPOSITORY_URL = "https://github.com/OytunOnal/permit-rulebook-data.g
 
 /** The check's options from the command's arguments: the lock after `--lock` and the clone after `--clone`, each left out when not given. */
 export function dataCheckOptionsOf(argv) {
-  const lockPath = findOptionValue(argv, "--lock", "--lock names no path: npm run data:check -- --lock <path>");
-  const clonePath = findOptionValue(argv, "--clone", "--clone names no path: npm run data:check -- --clone <path>");
+  const lockPath = findOptionValue(argv, "--lock");
+  const clonePath = findOptionValue(argv, "--clone");
   return {
     ...(lockPath === undefined ? {} : { lockPath }),
     ...(clonePath === undefined ? {} : { clonePath }),

@@ -6,10 +6,10 @@
  * caller can tell it from a bug by its type.
  */
 
-/** An option given with no value after it: `option` names it, the message is the caller's usage. */
+/** An option given with no value after it: `option` names it, the message is the caller's usage, or a plain one when the caller gives none. */
 export class OptionMissing extends Error {
   constructor(option, usage) {
-    super(usage);
+    super(usage ?? `${option} is given with no value after it`);
     this.name = "OptionMissing";
     this.option = option;
   }
@@ -17,8 +17,9 @@ export class OptionMissing extends Error {
 
 /**
  * The argument after `option` in `argv`, undefined when `option` is not
- * there; throws an `OptionMissing` carrying `usage` when `option` is the last
- * argument or is followed by an empty one.
+ * there; throws an `OptionMissing` carrying `usage`, when given, when `option`
+ * is the last argument or is followed by an empty one. A caller that turns the
+ * `OptionMissing` into words of its own gives no `usage`.
  */
 export function findOptionValue(argv, option, usage) {
   const at = argv.indexOf(option);

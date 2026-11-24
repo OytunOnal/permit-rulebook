@@ -15,8 +15,8 @@ import { findOptionValue } from "../../find-option-value.mjs";
 
 /** The pin's options from the command's arguments: the lock after `--lock` and the clone after `--clone`, each left out when not given. */
 export function pinOptionsOf(argv) {
-  const lockPath = findOptionValue(argv, "--lock", "--lock names no path: npm run data:pin -- --lock <path>");
-  const clonePath = findOptionValue(argv, "--clone", "--clone names no path: npm run data:pin -- --clone <path>");
+  const lockPath = findOptionValue(argv, "--lock");
+  const clonePath = findOptionValue(argv, "--clone");
   return {
     ...(lockPath === undefined ? {} : { lockPath }),
     ...(clonePath === undefined ? {} : { clonePath }),
