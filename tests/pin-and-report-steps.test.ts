@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { lockedShaOf, parseLock, pinnedLockTextOf } from "../scripts/data-lock/data-lock.mjs";
 import { PIN_BUILT_REFUSALS, READ_LOCKED_COMMIT_REFUSALS } from "../scripts/data-lock-run/data-lock-run.mjs";
+import { CUT_SHA_LENGTH, goodLockText, withLineDropped, withSecondLine, withShaCutShort } from "./broken-lock.js";
 import { type StepRun, runStepCommand, stepKeyOf } from "./step-run.js";
 import { LF, inThrowawayFolder } from "./throwaway-folder.js";
 import { jobOf, pagesYaml as pages, readText, stepsOf } from "./workflow-text.js";
@@ -26,6 +27,10 @@ const lockText = readText(join(root, "data.lock"));
 const BUILT = "0123456789abcdef0123456789abcdef01234567";
 /** The dataset version that commit carried. */
 const VERSION = "2026.11.24";
+/** The commit a good lock names before a pin, other than the built one. */
+const LOCKED = "fedcba9876543210fedcba9876543210fedcba98";
+/** A good lock, which each malformed one below breaks by a named step. */
+const goodLock = goodLockText({ sha: LOCKED, datasetVersion: "2026.11.17" });
 
 /** A job's one step with `id: <id>`; a failure when it has none, or more than one. */
 function stepWithId(job: string, id: string): string {
@@ -101,11 +106,8 @@ describe("pin-built writes nothing it has not checked", () => {
   });
 
   // A line the pin cannot find is a line it cannot write (Q326).
-  it.each([
-    ["sha=", (line: string) => !line.startsWith("sha=")],
-    ["dataset_version=", (line: string) => !line.startsWith("dataset_version=")],
-  ])("a lock missing its %s line is refused, the lock unwritten and no output", async (_line, isKept) => {
-    const lock = lockText.split(LF).filter(isKept).join(LF);
+  it.each(["sha", "dataset_version"] as const)("a lock missing its %s= line is refused, the lock unwritten and no output", async (key) => {
+    const lock = withLineDropped(goodLock, key);
     await inThrowawayFolder((folder) => {
       expectRefused(runPinBuilt(folder, {}, lock), { lock, reason: PIN_BUILT_REFUSALS.lock });
     });
@@ -124,8 +126,8 @@ describe("pin-built writes nothing it has not checked", () => {
 
 // A second line would keep its old value beside the written one (Q327).
 describe("pin-built refuses a lock with a line twice", () => {
-  it.each(["sha=", "dataset_version="])("a lock with a second %s line is refused, the lock unwritten and no output", async (key) => {
-    const lock = `${lockText}${lockText.split(LF).find((line) => line.startsWith(key))}${LF}`;
+  it.each([["sha", LOCKED], ["dataset_version", VERSION]] as const)("a lock with a second %s= line is refused, the lock unwritten and no output", async (key, value) => {
+    const lock = withSecondLine(goodLock, key, value);
     await inThrowawayFolder((folder) => {
       expectRefused(runPinBuilt(folder, {}, lock), { lock, reason: PIN_BUILT_REFUSALS.lock });
     });
@@ -145,12 +147,12 @@ describe("report reads the lock's commit through the run module's read-locked-co
     });
   });
 
-  const notACommit = "not-a-commit";
+  const cutSha = LOCKED.slice(0, CUT_SHA_LENGTH);
   const secondLine = "second-line";
   it.each<[string, string, string | undefined]>([
-    ["not 40 hex", `sha=${notACommit}${LF}dataset_version=${VERSION}${LF}`, notACommit],
-    ["a second sha line", `${lockText}sha=${secondLine}${LF}`, secondLine],
-    ["no sha", `dataset_version=${VERSION}${LF}`, undefined],
+    ["not 40 hex", withShaCutShort(goodLock), cutSha],
+    ["a second sha line", withSecondLine(goodLock, "sha", secondLine), secondLine],
+    ["no sha", withLineDropped(goodLock, "sha"), undefined],
   ])("a lock with %s is refused, before any output, saying why without the value", async (_what, lock, refused) => {
     await inThrowawayFolder((folder) => {
       expectRefused(runReadLockedCommit(folder, lock), { lock, reason: READ_LOCKED_COMMIT_REFUSALS.lock, refused });
@@ -159,9 +161,9 @@ describe("report reads the lock's commit through the run module's read-locked-co
 
   it("a refusal under Actions also prints its annotation", async () => {
     await inThrowawayFolder((folder) => {
-      const lock = `sha=${notACommit}${LF}`;
+      const lock = withShaCutShort(goodLock);
       const run = runReadLockedCommit(folder, lock, { GITHUB_ACTIONS: "true" });
-      expectRefused(run, { lock, reason: READ_LOCKED_COMMIT_REFUSALS.lock, refused: notACommit });
+      expectRefused(run, { lock, reason: READ_LOCKED_COMMIT_REFUSALS.lock, refused: cutSha });
       const annotations = run.printed.split(LF).filter((line) => line.startsWith("::error::"));
       expect(annotations).toHaveLength(1);
       expect(annotations[0]).toContain(READ_LOCKED_COMMIT_REFUSALS.lock);

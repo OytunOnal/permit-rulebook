@@ -3535,6 +3535,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/broken-lock.ts",
+   "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/broken-lock.ts",
+   "to": "tests/throwaway-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/broken-lock.ts",
+   "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/browser-walk.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -4007,6 +4022,11 @@
   {
    "from": "tests/data-commit.test.ts",
    "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/data-commit.test.ts",
+   "to": "tests/broken-lock.ts",
    "kind": "dependency"
   },
   {
@@ -4551,6 +4571,11 @@
   },
   {
    "from": "tests/lock-run-refusals.test.ts",
+   "to": "tests/broken-lock.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/lock-run-refusals.test.ts",
    "to": "tests/throwaway-folder.ts",
    "kind": "dependency"
   },
@@ -4807,6 +4832,11 @@
   {
    "from": "tests/pin-and-report-steps.test.ts",
    "to": "scripts/data-lock/data-lock.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pin-and-report-steps.test.ts",
+   "to": "tests/broken-lock.ts",
    "kind": "dependency"
   },
   {
@@ -11772,5 +11802,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "dda788334e9bca00c2a9f85c963377f32272f407fa92a6e229e4270d2771c0dc"
+ "digest": "a116e50ae88dbca203878aaef692bce6d00aa7bdc05d0d7a84f23d3cf287b3e3"
 }

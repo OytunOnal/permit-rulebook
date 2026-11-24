@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { CHOOSE_COMMIT_REFUSALS, lockedShaOf } from "../scripts/data-lock/data-lock.mjs";
 import { READ_BUILT_COMMIT_REFUSALS, RUN_REFUSALS } from "../scripts/data-lock-run/data-lock-run.mjs";
 import { runGit } from "../scripts/run-git.mjs";
+import { CUT_SHA_LENGTH, goodLockText, withLineDropped, withSecondLine, withShaCutShort } from "./broken-lock.js";
 import { type StepRun, runStepCommand, stepKeyOf } from "./step-run.js";
 import { LF, commitInThrowaway, inThrowawayFolder, initThrowawayRepository } from "./throwaway-folder.js";
 import {
@@ -95,6 +96,12 @@ describe("the data commit is chosen once, by the run module's choose-commit", ()
  * would be a second output. Each is checked for its shape first, on every
  * event (review of #345, Security 1).
  */
+
+/** A good lock, which each malformed one the choice refuses breaks by a named step. */
+const goodLock = goodLockText({ sha: LOCKED, datasetVersion: "2026.11.10" });
+/** A malformed lock's text, and the value in it a refusal must not print, if any. */
+type MalformedLock = { lock: string; refused?: string };
+
 describe("the choice writes nothing it has not checked", () => {
   /** A refusal asserted: a non-zero exit, no output line, the reason `refusal` names said, and the refused value never printed. */
   function expectRefused({ exitCode, outputLines, printed }: StepRun, refusal: keyof typeof CHOOSE_COMMIT_REFUSALS, refused?: string): void {
@@ -106,14 +113,13 @@ describe("the choice writes nothing it has not checked", () => {
 
   const notACommit = "not-a-commit";
   const secondLine = "dir=../elsewhere";
-  /** A malformed lock's text, and the value in it a refusal must not print, if any. */
-  type MalformedLock = { lock: string; refused?: string };
   const events = ["push", "pull_request", "schedule", "repository_dispatch"];
   it.each<[string, string, MalformedLock]>([
-    ...events.map((event): [string, string, MalformedLock] => [event, "not 40 hex", { lock: `sha=${notACommit}${LF}`, refused: notACommit }]),
     ...events.map((event): [string, string, MalformedLock] =>
-      [event, "a second sha line", { lock: `sha=${LOCKED}${LF}sha=${secondLine}${LF}`, refused: secondLine }]),
-    ["push", "no sha", { lock: `dataset_version=2026.11.10${LF}` }],
+      [event, "not 40 hex", { lock: withShaCutShort(goodLock), refused: LOCKED.slice(0, CUT_SHA_LENGTH) }]),
+    ...events.map((event): [string, string, MalformedLock] =>
+      [event, "a second sha line", { lock: withSecondLine(goodLock, "sha", secondLine), refused: secondLine }]),
+    ["push", "no sha", { lock: withLineDropped(goodLock, "sha") }],
   ])("a %s run refuses a lock with %s, before any output, saying why without the value", async (event, _what, { lock, refused }) => {
     await inThrowawayFolder((folder) => {
       expectRefused(runChoice(folder, { EVENT_NAME: event, PAYLOAD_SHA: PAYLOAD }, { lock }), "lock", refused);

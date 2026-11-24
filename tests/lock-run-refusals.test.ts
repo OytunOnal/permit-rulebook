@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { CHOOSE_COMMIT_REFUSALS, PIN_REFUSALS } from "../scripts/data-lock/data-lock.mjs";
 import { RUN_REFUSALS } from "../scripts/data-lock-run/data-lock-run.mjs";
 import { runGit } from "../scripts/run-git.mjs";
+import { CUT_SHA_LENGTH, goodLockText, withLineDropped, withSecondLine, withShaCutShort } from "./broken-lock.js";
 import { commitInThrowaway, initThrowawayRepository, inThrowawayFolder, LF } from "./throwaway-folder.js";
 
 /**
@@ -72,11 +73,12 @@ describe("the hand runs refuse a malformed command line or lock in one line", ()
       const clone = join(folder, "permit-rulebook-data");
       initThrowawayRepository(clone);
       commitInThrowaway(clone, "--allow-empty", "-m", "the data");
+      const head = runGit(clone, "rev-parse", "HEAD");
       const lock = join(folder, "data.lock");
-      writeFileSync(lock, `sha=not-a-commit${LF}dataset_version=2026.11.17${LF}`);
+      writeFileSync(lock, withShaCutShort(goodLockText({ sha: head, datasetVersion: "2026.11.17" })));
       const run = scriptRun("data:check", "--lock", lock, "--clone", clone);
       expectOneRefusalLine(run, CHOOSE_COMMIT_REFUSALS.lock);
-      expect(run.out, "the refusal prints the value it refused").not.toContain("not-a-commit");
+      expect(run.out, "the refusal prints the value it refused").not.toContain(head.slice(0, CUT_SHA_LENGTH));
     });
   });
 
@@ -88,7 +90,7 @@ describe("the hand runs refuse a malformed command line or lock in one line", ()
       commitInThrowaway(clone, "--allow-empty", "-m", "the data");
       const head = runGit(clone, "rev-parse", "HEAD");
       const lock = join(folder, "data.lock");
-      writeFileSync(lock, `sha=${head}${LF}sha=second-line${LF}dataset_version=2026.11.17${LF}`);
+      writeFileSync(lock, withSecondLine(goodLockText({ sha: head, datasetVersion: "2026.11.17" }), "sha", "second-line"));
       const run = scriptRun("data:check", "--lock", lock, "--clone", clone);
       expectOneRefusalLine(run, CHOOSE_COMMIT_REFUSALS.lock);
       expect(run.out, "the refusal prints the value it refused").not.toContain("second-line");
@@ -105,14 +107,17 @@ function cloneWithGoodVersion(clone: string): void {
   commitInThrowaway(clone, "-m", "the data");
 }
 
+/** A good lock for the pin to write over, which each malformed one below breaks by a named step. */
+const goodLock = goodLockText({ sha: "0123456789abcdef0123456789abcdef01234567", datasetVersion: "2000.01.01" });
+
 // A line the pin cannot find is a line it cannot write (Q326).
 describe("the hand pin refuses a lock it cannot write in one line", () => {
-  it.each(["sha=", "dataset_version="])("npm run data:pin on a lock missing its %s line, leaving the lock as it was", async (key) => {
+  it.each(["sha", "dataset_version"] as const)("npm run data:pin on a lock missing its %s= line, leaving the lock as it was", async (key) => {
     await inThrowawayFolder((folder) => {
       const clone = join(folder, "permit-rulebook-data");
       cloneWithGoodVersion(clone);
       const lock = join(folder, "data.lock");
-      const lockText = readFileSync(join(root, "data.lock"), "utf8").split(LF).filter((line) => !line.startsWith(key)).join(LF);
+      const lockText = withLineDropped(goodLock, key);
       writeFileSync(lock, lockText);
       expectOneRefusalLine(scriptRun("data:pin", "--lock", lock, "--clone", clone), PIN_REFUSALS.lock);
       expect(readFileSync(lock, "utf8"), "the given lock was written").toBe(lockText);
@@ -120,13 +125,14 @@ describe("the hand pin refuses a lock it cannot write in one line", () => {
   });
 
   // A second line would keep its old value beside the written one (Q327).
-  it.each(["sha=", "dataset_version="])("npm run data:pin on a lock with a second %s line, leaving the lock as it was", async (key) => {
+  it.each([
+    ["sha", "0123456789abcdef0123456789abcdef01234567"], ["dataset_version", "2000.01.01"],
+  ] as const)("npm run data:pin on a lock with a second %s= line, leaving the lock as it was", async (key, value) => {
     await inThrowawayFolder((folder) => {
       const clone = join(folder, "permit-rulebook-data");
       cloneWithGoodVersion(clone);
       const lock = join(folder, "data.lock");
-      const siteLockText = readFileSync(join(root, "data.lock"), "utf8");
-      const lockText = `${siteLockText}${siteLockText.split(LF).find((line) => line.startsWith(key))}${LF}`;
+      const lockText = withSecondLine(goodLock, key, value);
       writeFileSync(lock, lockText);
       expectOneRefusalLine(scriptRun("data:pin", "--lock", lock, "--clone", clone), PIN_REFUSALS.lock);
       expect(readFileSync(lock, "utf8"), "the given lock was written").toBe(lockText);
