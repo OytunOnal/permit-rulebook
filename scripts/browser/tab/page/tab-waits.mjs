@@ -125,13 +125,14 @@ const isNewDocumentDrawn = (left) => `${DOCUMENT_SHOWN} !== ${JSON.stringify(lef
   && document.readyState !== "loading" && !document.querySelector(".stand-in")`;
 
 /**
- * Whether the document `left` has reported its first input, or the tab stands
- * on another. Chrome hands a page its layout shifts as soon as a frame is laid
- * out, but its first input only once the frame is presented, so a read made
- * before then finds no input and counts a gesture's own shift (#269).
+ * "document left" when the tab stands on a document other than `left`, else
+ * "first input reported" once `left` has reported its first input, else false.
+ * Chrome hands a page its layout shifts as soon as a frame is laid out, but
+ * its first input only once the frame is presented, so a read made before then
+ * finds no input and counts a gesture's own shift (#269).
  */
-const isFirstInputReportedOrLeft = (left) => `${DOCUMENT_SHOWN} !== ${JSON.stringify(left)}
-  || performance.getEntriesByType("first-input").length > 0`;
+const readFirstInputReportedOrLeft = (left) => `(${DOCUMENT_SHOWN} !== ${JSON.stringify(left)} && "document left")
+  || (performance.getEntriesByType("first-input").length > 0 && "first input reported")`;
 
 /** Whether the page is hidden: a hidden page presents no frame, so it reports no first input (#453). */
 const IS_HIDDEN = `document.visibilityState === "hidden"`;
@@ -236,24 +237,26 @@ export class TabWaits {
   readDocumentShown = () => this.waitUntil(DOCUMENT_SHOWN, "the tab stood on no document");
 
   /**
-   * Waits until the document `left` has reported its first input, or the tab
+   * Waits until the document `left` has reported its first input, the tab
    * stands on another (a gesture on `left` loaded one), or `hasOpenedATab()`
-   * says the page opened a tab since the gesture. Once a document has
-   * reported its first input, the wait reads once. It keeps the document the
-   * tab was last seen on as it was, so `waitUntilNewDocumentDrawn` after it
-   * still waits for a document other than `left`.
+   * says the page opened a tab since the gesture, and returns which:
+   * "first input reported", "document left" or "tab opened". Once a document
+   * has reported its first input, the wait reads once. It keeps the document
+   * the tab was last seen on as it was, so `waitUntilNewDocumentDrawn` after
+   * it still waits for a document other than `left`.
    */
-  waitUntilFirstInputReportedOrLeft = async (left, hasOpenedATab) => {
+  waitUntilFirstInputReportedOrLeftOrTabOpened = async (left, hasOpenedATab) => {
     let lastReadHidden = false;
     const read = async () => {
       // A gesture that opened a tab took effect; the page may never record its first input (#453).
-      if (hasOpenedATab()) return { held: true };
-      const seen = await this.#readOnce(isFirstInputReportedOrLeft(left));
+      if (hasOpenedATab()) return { held: "tab opened" };
+      const seen = await this.#readOnce(readFirstInputReportedOrLeft(left));
       if (!seen?.held) lastReadHidden = (await this.#readOnce(IS_HIDDEN))?.held === true;
       return seen;
     };
-    await pollUntil(read, () => `the page never reported its first input${lastReadHidden
+    const ended = await pollUntil(read, () => `the page never reported its first input${lastReadHidden
       ? ": it was hidden, so it presented no frame (#453)" : ""}`);
+    return ended.held;
   };
 
   /** From the tab's first navigation on, every document it opens counts its smooth scrolls; asked once. */

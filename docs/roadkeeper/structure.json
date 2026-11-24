@@ -6596,6 +6596,11 @@
     "exported": true
    },
    {
+    "name": "countTabsOpenedBy",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "setUpTab",
     "kind": "fn",
     "exported": false
@@ -11493,5 +11498,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "805514753d83b42b8db81ea1061a69d077bc485d4cca58caa242e5a2693d7a47"
+ "digest": "62082c0b6edea10b06c0c3bae32aebfc87afff04d42184a1b4e77e5c5ee87d21"
 }

@@ -36,12 +36,9 @@ export async function openTab(connection, setup) {
   const sendToTab = (method, params) => connection.send(method, params, sessionId);
   const events = new TabEvents(sendToTab, { network: setup.network, walkLog: setup.walkLog });
   const waits = new TabWaits(sendToTab);
-  let tabsOpened = 0;
-  connection.listenToBrowser(({ method, params }) => {
-    if (method === "Target.attachedToTarget" && params.targetInfo.openerId === targetId) tabsOpened++;
-  });
+  const countTabsOpened = countTabsOpenedBy(connection, targetId);
   // A gesture fronts its tab through the page's own `front()`, built below; it runs only on a gesture.
-  const gestures = new TabGestures(sendToTab, { waits, front: () => page.front(), countTabsOpened: () => tabsOpened });
+  const gestures = new TabGestures(sendToTab, { waits, front: () => page.front(), countTabsOpened });
   const requestHandling = { sendToTab, answers: setup.answeredRequests, walkLog: setup.walkLog };
   connection.listenToTab(sessionId, (message) => {
     waits.watch(message);
@@ -53,6 +50,18 @@ export async function openTab(connection, setup) {
     waits, gestures, events, openTab: () => openTab(connection, setup), shiftRegion: setup.shiftRegion, walkLog: setup.walkLog,
   });
   return page;
+}
+
+/**
+ * Counts the tabs the tab of `targetId` opens from here on, from the browser's
+ * own messages, and returns what reads the count so far.
+ */
+function countTabsOpenedBy(connection, targetId) {
+  let opened = 0;
+  connection.listenToBrowser(({ method, params }) => {
+    if (method === "Target.attachedToTarget" && params.targetInfo.openerId === targetId) opened++;
+  });
+  return () => opened;
 }
 
 /** Enables the events the tab is read by, pauses every request for it to answer, let go on or refuse, and sets its CPU and its screen. */

@@ -73,6 +73,6 @@ export class TabGestures {
     const tabsOpenedBefore = this.#countTabsOpened();
     await send();
     await this.#front();
-    await this.#waits.waitUntilFirstInputReportedOrLeft(left, () => this.#countTabsOpened() > tabsOpenedBefore);
+    await this.#waits.waitUntilFirstInputReportedOrLeftOrTabOpened(left, () =>this.#countTabsOpened() > tabsOpenedBefore);
   }
 }

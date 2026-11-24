@@ -17,7 +17,7 @@ export class DevToolsConnection {
    */
   #tabs = new Map();
   /** What hears the browser's own messages, the ones no tab's session carries: each listener, in the order it came. */
-  #hearBrowser = [];
+  #browserListeners = [];
 
   constructor(socket) {
     this.#socket = socket;
@@ -49,7 +49,7 @@ export class DevToolsConnection {
 
   /** Hands every message of the browser's own, one no tab's session carries, to `hear`, beside any listener already there. */
   listenToBrowser(hear) {
-    this.#hearBrowser.push(hear);
+    this.#browserListeners.push(hear);
   }
 
   /** Closes the connection. */
@@ -59,17 +59,17 @@ export class DevToolsConnection {
 
   #receive = (event) => {
     const message = JSON.parse(event.data);
-    const hearers = this.#hearersOf(message);
+    const listeners = this.#listenersOf(message);
     // An event no listener of ours hears has no list to go on.
-    if (message.method && hearers.length === 0) return;
-    for (const hear of hearers) hear(message);
+    if (message.method && listeners.length === 0) return;
+    for (const hear of listeners) hear(message);
     // An event answers no command.
     if (!message.method) this.#settleReply(message);
   };
 
   /** The listeners that hear `message`: the browser's when no tab's session carries it, else its tab's, if ours. */
-  #hearersOf(message) {
-    if (message.sessionId === undefined) return this.#hearBrowser;
+  #listenersOf(message) {
+    if (message.sessionId === undefined) return this.#browserListeners;
     const hearTab = this.#tabs.get(message.sessionId);
     return hearTab ? [hearTab] : [];
   }
