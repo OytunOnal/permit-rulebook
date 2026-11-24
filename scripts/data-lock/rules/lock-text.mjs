@@ -7,7 +7,12 @@
 import { LockRefusal } from "./lock-refusal.mjs";
 
 /** A full commit sha, the only form a lock names. */
-export const FULL_SHA = /^[0-9a-f]{40}$/;
+const FULL_SHA = /^[0-9a-f]{40}$/;
+
+/** Whether `value` is a full commit sha, 40 lower-case hex characters: the sha-shape check every rule of the module asks. */
+export function isFullSha(value) {
+  return FULL_SHA.test(value);
+}
 
 /** A dataset version, the only form a lock names: the data's dataset file stamps its day as YYYY.MM.DD. */
 const DATASET_VERSION = /^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$/;
@@ -28,7 +33,7 @@ export const LOCKED_SHA_REFUSAL = "the lock names no single 40-hex sha (run npm 
  */
 export function lockedShaOf(text) {
   const shas = [...text.matchAll(/^sha=(.*)$/gm)].map((match) => match[1]);
-  if (shas.length !== 1 || !FULL_SHA.test(shas[0])) throw new LockRefusal(LOCKED_SHA_REFUSAL, "a locked commit is refused");
+  if (shas.length !== 1 || !isFullSha(shas[0])) throw new LockRefusal(LOCKED_SHA_REFUSAL, "a locked commit is refused");
   return shas[0];
 }
 
@@ -48,7 +53,7 @@ export const PIN_REFUSALS = Object.freeze({
  * wrong shape is written.
  */
 export function pinnedLockTextOf(lockText, { sha, datasetVersion }) {
-  if (!FULL_SHA.test(sha)) throw new LockRefusal(PIN_REFUSALS.commit, "a pinned lock is refused");
+  if (!isFullSha(sha)) throw new LockRefusal(PIN_REFUSALS.commit, "a pinned lock is refused");
   if (!DATASET_VERSION.test(datasetVersion)) throw new LockRefusal(PIN_REFUSALS.datasetVersion, "a pinned lock is refused");
   return lockText
     .replace(/^sha=.*$/m, `sha=${sha}`)

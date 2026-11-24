@@ -19,7 +19,7 @@
  */
 import { posix } from "node:path";
 import { LockRefusal } from "./lock-refusal.mjs";
-import { FULL_SHA, LOCKED_SHA_REFUSAL, lockedShaOf } from "./lock-text.mjs";
+import { isFullSha, LOCKED_SHA_REFUSAL, lockedShaOf } from "./lock-text.mjs";
 
 /** A data folder the build may check out into and work in: the shape the manifest's folder has always had. */
 const PLAIN_FOLDER = /^[a-z0-9-]+$/;
@@ -59,6 +59,6 @@ export function dataCommitOf(run, newestMasterSha) {
   const dir = dataFolderOf(run.dependency);
   const locked = lockedShaOf(run.lockText);
   const sha = chosenShaOf(run, locked, newestMasterSha);
-  if (!FULL_SHA.test(sha)) throw new LockRefusal(CHOOSE_COMMIT_REFUSALS.chosenCommit, "no data commit is chosen");
+  if (!isFullSha(sha)) throw new LockRefusal(CHOOSE_COMMIT_REFUSALS.chosenCommit, "no data commit is chosen");
   return { dir, locked, sha };
 }

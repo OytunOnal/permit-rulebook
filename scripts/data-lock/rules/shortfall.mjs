@@ -13,7 +13,7 @@
  * whose sha is not 40 hex characters before asking any.
  */
 import { LockRefusal } from "./lock-refusal.mjs";
-import { FULL_SHA, LOCKED_SHA_REFUSAL } from "./lock-text.mjs";
+import { isFullSha, LOCKED_SHA_REFUSAL } from "./lock-text.mjs";
 
 /**
  * The questions the rule asks the data clone.
@@ -77,7 +77,7 @@ function hasDiverged(clone, { lockSha, head, kind }) {
  * @returns {CloneShortfall | null}
  */
 export function shortfallOf({ lockSha, clonePath }, clone) {
-  if (!FULL_SHA.test(lockSha)) throw new LockRefusal(LOCKED_SHA_REFUSAL, "a locked commit is refused");
+  if (!isFullSha(lockSha)) throw new LockRefusal(LOCKED_SHA_REFUSAL, "a locked commit is refused");
   if (!clone.isCloned()) return { kind: "no-clone", clonePath, lockSha };
   const branch = clone.branchOrNull();
   const head = clone.headOrNull();
