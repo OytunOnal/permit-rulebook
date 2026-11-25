@@ -51,16 +51,16 @@ export const CHECKS = [
       })(),
     })`,
     expect(v) {
-      const problems = [];
-      if (!v.question) problems.push({ reason: SMOKE_REASONS.noQuestion });
-      if (v.options < 1) problems.push({ reason: SMOKE_REASONS.noAnswers });
-      if (!v.ledger) problems.push({ reason: SMOKE_REASONS.noDeclarationPanel });
+      const failures = [];
+      if (!v.question) failures.push({ reason: SMOKE_REASONS.noQuestion });
+      if (v.options < 1) failures.push({ reason: SMOKE_REASONS.noAnswers });
+      if (!v.ledger) failures.push({ reason: SMOKE_REASONS.noDeclarationPanel });
       // The pair is on the first screen too, and on the questions it states the
       // date the rules were last read (human, 2026-09-08). It was hidden until a
       // record existed, which left this masthead lopsided.
       if (!/^Rules read [0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(v.stamp))
-        problems.push({ reason: SMOKE_REASONS.stampNotRulesReadDate, stamp: v.stamp });
-      return problems;
+        failures.push({ reason: SMOKE_REASONS.stampNotRulesReadDate, stamp: v.stamp });
+      return failures;
     },
   },
   {
@@ -71,15 +71,15 @@ export const CHECKS = [
       cta: document.querySelector(".cta a.btn")?.getAttribute("href") ?? "",
     })`,
     expect(v) {
-      const problems = [];
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(v.stamp)) problems.push({ reason: SMOKE_REASONS.stampNotADate, stamp: v.stamp });
-      if (v.rules < 3) problems.push({ reason: SMOKE_REASONS.tooFewRuleCards, rules: v.rules });
+      const failures = [];
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(v.stamp)) failures.push({ reason: SMOKE_REASONS.stampNotADate, stamp: v.stamp });
+      if (v.rules < 3) failures.push({ reason: SMOKE_REASONS.tooFewRuleCards, rules: v.rules });
       // Under a base the interview is at `${base}/`, not `/` — the link is
       // right and an assertion written at the root is what is wrong.
       const interview = `${siteBase()}/?route=`;
       if (!v.cta.startsWith(interview))
-        problems.push({ reason: SMOKE_REASONS.callToActionOutsideInterview, cta: v.cta, interview });
-      return problems;
+        failures.push({ reason: SMOKE_REASONS.callToActionOutsideInterview, cta: v.cta, interview });
+      return failures;
     },
   },
   {
@@ -92,16 +92,16 @@ export const CHECKS = [
       stamp: document.querySelector(".stamp time")?.getAttribute("datetime") ?? "",
     })`,
     expect(v) {
-      const problems = [];
+      const failures = [];
       // The header is the site's own orientation: four countries, the checker
       // and the data page, on every page (site map, 2026-09-08).
       for (const label of ["Germany", "France", "Spain", "Netherlands", "Check yours", "The data"])
-        if (!v.nav.includes(label)) problems.push({ reason: SMOKE_REASONS.headerLacks, label });
-      if (v.here !== "Germany") problems.push({ reason: SMOKE_REASONS.headerMarksAnotherCountry, here: v.here });
-      if (v.cards < 8) problems.push({ reason: SMOKE_REASONS.tooFewRouteCards, cards: v.cards });
-      if (!v.first) problems.push({ reason: SMOKE_REASONS.firstRouteUnnamed });
-      if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(v.stamp)) problems.push({ reason: SMOKE_REASONS.stampNotADate, stamp: v.stamp });
-      return problems;
+        if (!v.nav.includes(label)) failures.push({ reason: SMOKE_REASONS.headerLacks, label });
+      if (v.here !== "Germany") failures.push({ reason: SMOKE_REASONS.headerMarksAnotherCountry, here: v.here });
+      if (v.cards < 8) failures.push({ reason: SMOKE_REASONS.tooFewRouteCards, cards: v.cards });
+      if (!v.first) failures.push({ reason: SMOKE_REASONS.firstRouteUnnamed });
+      if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(v.stamp)) failures.push({ reason: SMOKE_REASONS.stampNotADate, stamp: v.stamp });
+      return failures;
     },
   },
   {
@@ -113,14 +113,14 @@ export const CHECKS = [
       marked: [...document.querySelectorAll('.site-head .nav a[aria-current]')].map((a) => a.textContent.trim()),
     })`,
     expect(v) {
-      const problems = [];
-      if (!v.heading.startsWith("The data")) problems.push({ reason: SMOKE_REASONS.headingNotTheData, heading: v.heading });
-      if (v.facts < 5) problems.push({ reason: SMOKE_REASONS.tooFewFacts, facts: v.facts });
+      const failures = [];
+      if (!v.heading.startsWith("The data")) failures.push({ reason: SMOKE_REASONS.headingNotTheData, heading: v.heading });
+      if (v.facts < 5) failures.push({ reason: SMOKE_REASONS.tooFewFacts, facts: v.facts });
       if (!v.downloads.some((h) => h.endsWith("/dataset.json")))
-        problems.push({ reason: SMOKE_REASONS.datasetNotOffered });
+        failures.push({ reason: SMOKE_REASONS.datasetNotOffered });
       // The header marks this page's own word, and nothing else (#303).
-      if (v.marked.join() !== "The data") problems.push({ reason: SMOKE_REASONS.headerMarksAnotherPage, marked: v.marked });
-      return problems;
+      if (v.marked.join() !== "The data") failures.push({ reason: SMOKE_REASONS.headerMarksAnotherPage, marked: v.marked });
+      return failures;
     },
   },
 ];

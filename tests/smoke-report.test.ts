@@ -12,7 +12,7 @@ import { PAGE_LOAD_KINDS, SMOKE_REASONS, SmokeRefusal } from "../scripts/smoke-r
  */
 
 /** Each declared reason, the values a failure of it carries, and the sentence the report prints for it. */
-const SENTENCE_OF_EACH_REASON: Record<string, [Record<string, unknown>, string]> = {
+const EXPECTED_SENTENCES: Record<string, [Record<string, unknown>, string]> = {
   "no-question": [{}, "no question is on the screen"],
   "no-answers": [{}, "the question has no answers to pick from"],
   "no-declaration-panel": [{}, "the declaration panel is missing"],
@@ -37,7 +37,7 @@ const SENTENCE_OF_EACH_REASON: Record<string, [Record<string, unknown>, string]>
 };
 
 /** What the report calls each check's page, by the check's path. */
-const NAME_OF_EACH_CHECK_PAGE: Record<string, string> = {
+const EXPECTED_CHECK_PAGE_NAMES: Record<string, string> = {
   "/": "the interview",
   "/germany/eu-blue-card-general/": "a route page",
   "/germany/": "a country page",
@@ -58,12 +58,12 @@ const FAIL_LINE_OF_EACH_KIND: Record<string, [{ kind: string; path: string }, st
 const summaryLineOf = (loads: number, broken: number) => `\n${loads} page loads in a real browser — ${broken} broken`;
 
 /** A page load on `dist` that read nothing and threw nothing, of `kind` at `path`, failing with `failures`. */
-const pageLoadOf = (kind: string, path: string, failures: object[]) =>
+const handMadePageLoadOf = (kind: string, path: string, failures: object[]) =>
   ({ surface: "dist", path, kind, value: {}, thrown: [], failures });
 
 describe("smoke's report", () => {
   it("has words for every declared reason, and for no reason the list does not declare", () => {
-    expect([...Object.keys(SENTENCE_OF_EACH_REASON), "no-build"].sort()).toEqual(Object.values(SMOKE_REASONS).sort());
+    expect([...Object.keys(EXPECTED_SENTENCES), "no-build"].sort()).toEqual(Object.values(SMOKE_REASONS).sort());
   });
 
   it("words a missing build's refusal with the step that fixes it first, on stderr, and exits 1", () => {
@@ -71,18 +71,18 @@ describe("smoke's report", () => {
     expect(report).toEqual({ err: ["run npm run build first: no /site/dist to walk"], exitCode: 1 });
   });
 
-  it.each(Object.entries(SENTENCE_OF_EACH_REASON))("words the reason %s as today", (reason, [values, sentence]) => {
-    const report = smokeReportOf([pageLoadOf(PAGE_LOAD_KINDS.check, "/", [{ reason, ...values }])]);
+  it.each(Object.entries(EXPECTED_SENTENCES))("words the reason %s", (reason, [values, sentence]) => {
+    const report = smokeReportOf([handMadePageLoadOf(PAGE_LOAD_KINDS.check, "/", [{ reason, ...values }])]);
     expect(report.out).toEqual(["FAIL [dist] / (the interview)", `     ${sentence}`, summaryLineOf(1, 1)]);
     expect(report.exitCode).toBe(1);
   });
 
   it("names every check's page, each passing load on one ok line, and exits 0 when none broke", () => {
-    expect(Object.keys(NAME_OF_EACH_CHECK_PAGE).sort()).toEqual(CHECKS.map((check) => check.path).sort());
-    const loads = Object.keys(NAME_OF_EACH_CHECK_PAGE).map((path) => ({ ...pageLoadOf(PAGE_LOAD_KINDS.check, path, []), value: { facts: 6 } }));
+    expect(Object.keys(EXPECTED_CHECK_PAGE_NAMES).sort()).toEqual(CHECKS.map((check) => check.path).sort());
+    const loads = Object.keys(EXPECTED_CHECK_PAGE_NAMES).map((path) => ({ ...handMadePageLoadOf(PAGE_LOAD_KINDS.check, path, []), value: { facts: 6 } }));
     const report = smokeReportOf(loads);
     expect(report.out).toEqual([
-      ...Object.entries(NAME_OF_EACH_CHECK_PAGE).map(([path, name]) => `ok   [dist] ${path} (${name}) — {"facts":6}, 0 console errors`),
+      ...Object.entries(EXPECTED_CHECK_PAGE_NAMES).map(([path, name]) => `ok   [dist] ${path} (${name}) — {"facts":6}, 0 console errors`),
       summaryLineOf(4, 0),
     ]);
     expect(report.exitCode).toBe(0);
@@ -91,7 +91,7 @@ describe("smoke's report", () => {
   it("names every kind of page load", () => {
     expect(Object.keys(FAIL_LINE_OF_EACH_KIND).sort()).toEqual(Object.values(PAGE_LOAD_KINDS).sort());
     const threw = { reason: SMOKE_REASONS.pageThrew, message: "boom" };
-    const report = smokeReportOf(Object.values(FAIL_LINE_OF_EACH_KIND).map(([{ kind, path }]) => pageLoadOf(kind, path, [threw])));
+    const report = smokeReportOf(Object.values(FAIL_LINE_OF_EACH_KIND).map(([{ kind, path }]) => handMadePageLoadOf(kind, path, [threw])));
     expect(report.out).toEqual([
       ...Object.values(FAIL_LINE_OF_EACH_KIND).flatMap(([, failLine]) => [failLine, "     the page threw — boom"]),
       summaryLineOf(3, 3),
