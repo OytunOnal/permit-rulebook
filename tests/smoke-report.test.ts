@@ -33,7 +33,7 @@ const SENTENCE_OF_EACH_REASON: Record<string, [Record<string, unknown>, string]>
   "header-marks-another-page": [{ marked: ["Germany", "The data"] }, 'the header marks "Germany, The data", not The data'],
   "page-unreadable": [{ message: "Execution context was destroyed" }, "the page could not even be read — Execution context was destroyed"],
   "page-threw": [{ message: "exception: Error: boom" }, "the page threw — exception: Error: boom"],
-  "errors-past-cap": [{ count: 7 }, "and 7 more errors past the walk's cap, not placed on any page"],
+  "errors-past-the-cap": [{ count: 7 }, "and 7 more errors past the walk's cap, not placed on any page"],
 };
 
 /** What the report calls each check's page, by the check's path. */

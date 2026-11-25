@@ -197,7 +197,7 @@ function unplacedLoadOf(address, surface, thrown) {
 function pastTheCapLoadOf(leftOut, surface) {
   return {
     surface, path: "*", kind: PAGE_LOAD_KINDS.pastTheCap, value: {}, thrown: [],
-    failures: [{ reason: SMOKE_REASONS.errorsPastCap, count: leftOut }],
+    failures: [{ reason: SMOKE_REASONS.errorsPastTheCap, count: leftOut }],
   };
 }
 

@@ -176,16 +176,16 @@ describe.skipIf(noChrome !== null)("smoke's results over fixture pages", () => {
     expect(JSON.stringify(results.filter((r) => r.kind !== "unplaced").flatMap((r) => r.failures))).not.toContain(thrown);
   }, 60000);
 
-  it("errors past the walk's cap fail smoke in a page load of their own, with the errors-past-cap reason carrying how many came", async () => {
+  it("errors past the walk's cap fail smoke in a page load of their own, with the errors-past-the-cap reason carrying how many came", async () => {
     expect(ERRORS_KEPT, "the harness's entry gives no cap").toBeGreaterThan(0);
     const pastTheCap = 7;
     const logsPastTheCap = `<!doctype html><html><head>${VIEWPORT_META}</head><body><script>
 for (let i = 0; i < ${ERRORS_KEPT + pastTheCap}; i++) console.error("logged error " + i);
 </script></body></html>`;
     const results = await smokeOver({ ...QUIET_SITE, "index.html": logsPastTheCap });
-    const pastTheCapLoads = results.filter((r) => r.failures.some((f) => f.reason === "errors-past-cap"));
+    const pastTheCapLoads = results.filter((r) => r.failures.some((f) => f.reason === "errors-past-the-cap"));
     expect(pastTheCapLoads.map((r) => [r.kind, r.path, r.failures])).toEqual(
-      [["past-the-cap", "*", [{ reason: "errors-past-cap", count: pastTheCap }]]]);
+      [["past-the-cap", "*", [{ reason: "errors-past-the-cap", count: pastTheCap }]]]);
   }, 60000);
 });
 

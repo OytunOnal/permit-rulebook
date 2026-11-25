@@ -39,7 +39,7 @@ const SENTENCES = new Map([
   [SMOKE_REASONS.headerMarksAnotherPage, ({ marked }) => `the header marks "${marked.join(", ")}", not The data`],
   [SMOKE_REASONS.pageUnreadable, ({ message }) => `the page could not even be read — ${message}`],
   [SMOKE_REASONS.pageThrew, ({ message }) => `the page threw — ${message}`],
-  [SMOKE_REASONS.errorsPastCap, ({ count }) => `and ${count} more errors past the walk's cap, not placed on any page`],
+  [SMOKE_REASONS.errorsPastTheCap, ({ count }) => `and ${count} more errors past the walk's cap, not placed on any page`],
   [SMOKE_REASONS.noBuild, ({ buildDirectory }) => `run npm run build first: no ${buildDirectory} to walk`],
 ]);
 
