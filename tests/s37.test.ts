@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
 import { PHONE, chromePath, type BrowserPage, type PageOnSite, type Screen } from "../scripts/browser/browser.mjs";
-import { answerOnce, withSite } from "./browser-walk.js";
+import { answerOnce, withSite, whyNoBuild } from "./browser-walk.js";
 
 /**
  * s37 — Back on a restored record, and the Back gesture, in a real browser:
@@ -19,13 +17,11 @@ import { answerOnce, withSite } from "./browser-walk.js";
  */
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 /** Why the walk cannot run here: no Chrome, or no build. Null when it can. */
 function walkSkipReason(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 
 /** The question each field asks, in the dataset's own words. */

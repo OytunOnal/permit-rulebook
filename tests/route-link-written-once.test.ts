@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
-import { warnNotWalked } from "./browser-walk.js";
-import { builtPages, builtSheetsOf, root } from "./built-sheets.js";
+import { warnNotWalked, whyNoBuild } from "./browser-walk.js";
+import { builtPages, builtSheetsOf } from "./built-sheets.js";
 import { PRIYA_EXPLORING_ALL } from "./personas.js";
 import { blocksIn, everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
 
@@ -53,7 +52,7 @@ function everyBuiltPage(): string[] {
   return pages;
 }
 
-const noBuild = existsSync(root("dist")) ? null : "no dist/ — run npm run build first";
+const noBuild = whyNoBuild("dist/");
 if (noBuild) warnNotWalked("the built sheets of the route link's look", noBuild);
 
 // The title these cases sit under; every block below repeats it, so each case keeps its id.

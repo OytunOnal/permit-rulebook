@@ -1,14 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset, Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, everyDrawnRouteIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import { withSite } from "./browser-walk.js";
+import { withSite, whyNoBuild } from "./browser-walk.js";
 
 /**
  * Two things the interview did not do, walked in a browser.
@@ -23,7 +21,6 @@ import { withSite } from "./browser-walk.js";
  */
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 /** The critique's own hostile walk: no qualification, and a degree from a
  * designated institution. */
@@ -57,8 +54,7 @@ const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

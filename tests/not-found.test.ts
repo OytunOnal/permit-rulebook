@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PRODUCT_NAME } from "../src/lib/copy/frame.js";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
@@ -8,6 +8,7 @@ import { notFoundPage } from "../src/lib/not-found.js";
 import { countryLinks } from "../src/lib/slug.js";
 import { url } from "../src/lib/site.js";
 import { frameAlone, styleIn } from "./frame-alone.js";
+import { whyNoBuild } from "./browser-walk.js";
 
 /**
  * B4 — a wrong URL landed the visitor on GitHub's own error page.
@@ -30,7 +31,7 @@ const page = notFoundPage(ds);
 /** The frame's own stylesheet, the one every page built as a string opens with. */
 const frameSheet = styleIn(frameAlone(ds));
 const built = fileURLToPath(new URL("../dist/404.html", import.meta.url));
-const missing = existsSync(built) ? null : "no dist/404.html — run npm run build first";
+const missing = whyNoBuild("dist/404.html");
 
 if (missing)
   process.stderr.write([

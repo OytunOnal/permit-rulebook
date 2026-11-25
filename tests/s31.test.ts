@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { holdLineHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { answerWith, openAtRest, withSite } from "./browser-walk.js";
+import { answerWith, openAtRest, withSite, whyNoBuild } from "./browser-walk.js";
 
 /**
  * s31 — the hold state says where it is, and two small things.
@@ -36,8 +36,7 @@ const { chromePath, PHONE, walkSite } = await import("../scripts/browser/browser
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

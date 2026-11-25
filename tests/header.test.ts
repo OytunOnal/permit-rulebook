@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { withSite } from "./browser-walk.js";
+import { withSite, whyNoBuild } from "./browser-walk.js";
 import { FALLBACK_STACK } from "./fallback-stack.js";
 import type { Screen } from "../scripts/browser/browser.mjs";
 
@@ -22,8 +21,7 @@ const { chromePath: chromeAt, DESK, PHONE, walkSite } = await import("../scripts
 
 function whyNotMeasured(): string | null {
   try { chromeAt(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const notMeasured = whyNotMeasured();
 

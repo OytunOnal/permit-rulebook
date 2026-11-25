@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
@@ -22,7 +22,7 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
 } from "./verdict-cards.js";
-import { answerWith, openAtRest, withSite } from "./browser-walk.js";
+import { answerWith, openAtRest, withSite, whyNoBuild } from "./browser-walk.js";
 import { marksOn, situationScreen, unscoredOf } from "./situation-marks.js";
 import { watchStateAt } from "./watch-state-at.js";
 
@@ -289,8 +289,7 @@ const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

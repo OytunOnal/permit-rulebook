@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, evaluate, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
@@ -11,7 +9,7 @@ import { routePages } from "../src/lib/route-page/route-page.js";
 import { learnLinkTextOf } from "../src/lib/quote.js";
 import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
-import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
+import { PICK_TURKEY, answerWith, withSite, whyNoBuild } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, standingOn, verdictFor,
   verdictOn,
@@ -19,7 +17,6 @@ import {
 import { watchStateAt } from "./watch-state-at.js";
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 /**
  * s28 — a learn link says what the reader does there (v1.2 fix from the
@@ -259,8 +256,7 @@ const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

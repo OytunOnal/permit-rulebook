@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset, Profile } from "permit-rulebook-data";
 import { type Glossary, glossSection, glossed } from "../src/lib/gloss.js";
@@ -10,7 +8,7 @@ import { replayRecord } from "../src/lib/scope.js";
 import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import { withSite } from "./browser-walk.js";
+import { withSite, whyNoBuild } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -33,8 +31,6 @@ const ds = dataset as unknown as Dataset;
 
 /** The words that are gone (amendment 6) — pinned absent, never present. */
 const RETIRED_EXPLAINER = "§ = section";
-
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 describe("the section sign carries no explainer; the act it names is said once per page", () => {
   it("a citation naming no act is left exactly as written, first use or not", () => {
@@ -117,8 +113,7 @@ const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

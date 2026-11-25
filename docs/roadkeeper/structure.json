@@ -3791,6 +3791,11 @@
   },
   {
    "from": "tests/carry-assets/carry-step.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-step.test.ts",
    "to": "tests/throwaway-folder.ts",
    "kind": "dependency"
   },
@@ -4756,6 +4761,11 @@
   },
   {
    "from": "tests/not-found.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/not-found.test.ts",
    "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
@@ -5077,6 +5087,11 @@
   {
    "from": "tests/reader-pages.ts",
    "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -11968,5 +11983,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "ff5a792b6eb72c7fc13e558c41d4624fe90762cfdf9946e7f56b522540c21762"
+ "digest": "eca2dc838c0cc9d7e8dc8f6c81a567cf57ebe4e7ab08f6be63fee9cbd8c3a5bb"
 }

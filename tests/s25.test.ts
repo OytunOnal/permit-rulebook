@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
@@ -15,14 +15,13 @@ import { declarationHtml, questionCardHtml } from "../src/lib/question.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
 import { chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { answerWith, openAtRest, withSite } from "./browser-walk.js";
+import { answerWith, openAtRest, withSite, whyNoBuild } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, paintedAsComposedScript, placed, stepsIn, verdictFor, verdictOn,
 } from "./verdict-cards.js";
 import { routeOf } from "./route-of.js";
 
 const ds = rawDataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const src = fileURLToPath(new URL("../src", import.meta.url));
 const textOf = (html: string): string =>
   html.replace(/<[^>]*>/g, " ").split(/\s+/).join(" ").split(String.fromCharCode(160)).join(" ").trim();
@@ -341,8 +340,7 @@ describe("s25 — the walked results, from the verdict", () => {
  */
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

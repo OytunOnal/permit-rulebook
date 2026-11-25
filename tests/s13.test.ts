@@ -22,7 +22,7 @@ import { replayRecord } from "../src/lib/scope.js";
 import { esc, escAttr } from "../src/lib/reason.js";
 import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import { answerWith, openAtRest, withSite } from "./browser-walk.js";
+import { answerWith, openAtRest, withSite, whyNoBuild } from "./browser-walk.js";
 import { footerIn, frameAlone, headerIn, interviewFrameAlone } from "./frame-alone.js";
 import { FALLBACK_STACK } from "./fallback-stack.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
@@ -457,8 +457,7 @@ const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

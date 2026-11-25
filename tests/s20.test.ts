@@ -8,7 +8,7 @@ import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { PHONE, chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { answerWith, evaluateAtRest, openAtRest, withSite } from "./browser-walk.js";
+import { answerWith, evaluateAtRest, openAtRest, withSite, whyNoBuild } from "./browser-walk.js";
 
 /**
  * s20 — the correction lands on the question and returns to the verdict.
@@ -85,8 +85,7 @@ describe("the two records the walks seed", () => {
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

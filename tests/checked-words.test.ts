@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import {
   DESTINATION_FIELD, phraseAtStartOf, evaluate, isClosed, isScored, scopeLine, scopeWords,
@@ -15,7 +13,7 @@ import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-fact
 import { watchState } from "../src/lib/site.js";
 import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
 import { DESK } from "../scripts/browser/browser.mjs";
-import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { skipReason, warnNotWalked, whyNoBuild, withSite } from "./browser-walk.js";
 import {
   builtPages, drawnScreens, failuresOf, headingsOf, plainTextOf, questionCards, resultsWhere, walks, type ReaderPage,
 } from "./reader-pages.js";
@@ -30,7 +28,6 @@ import {
 const SCOPE_STATEMENT_AVOID_LIST = ["scored", "this interview", "rule set"] as const;
 
 const ds = rawDataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const routes = ds.countries.flatMap((c) => c.routes);
 const DATA_PAGE = "/data/index.html";
 
@@ -112,7 +109,7 @@ describe("every question card the interview draws", () => {
   });
 });
 
-const noBuild = existsSync(dist) ? null : "no dist/ — run npm run build first";
+const noBuild = whyNoBuild("dist/");
 if (noBuild) warnNotWalked("the built pages", noBuild);
 
 describe.skipIf(noBuild !== null)("every page the build draws", () => {

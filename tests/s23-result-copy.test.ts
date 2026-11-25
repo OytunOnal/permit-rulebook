@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   SITUATION_FIELD, deriveBands, evaluate, fieldOptions, unlockTitleOf, unlocks,
@@ -11,11 +9,10 @@ import { SEEK_HINT, WOULD_BE_MET, nearestLine, orAbove, pointsOfNeeded } from ".
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, hintsIn, paintedAsComposedScript, placed, standingOn, stepsIn, verdictFor,
 } from "./verdict-cards.js";
-import { withSite } from "./browser-walk.js";
+import { withSite, whyNoBuild } from "./browser-walk.js";
 import { DENIZ, PRIYA_EXPLORING_ALL } from "./personas.js";
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const textOf = (html: string): string =>
   html.replace(/<[^>]*>/g, " ").split(/\s+/).join(" ").split(String.fromCharCode(160)).join(" ").trim();
 
@@ -272,8 +269,7 @@ const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

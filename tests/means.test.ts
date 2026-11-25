@@ -1,12 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { optionMeans, type Dataset, type Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, stepsIn, verdictFor } from "./verdict-cards.js";
-import { withSite } from "./browser-walk.js";
+import { withSite, whyNoBuild } from "./browser-walk.js";
 
 /**
  * The human's walk, 2026-09-08.
@@ -23,7 +21,6 @@ import { withSite } from "./browser-walk.js";
  */
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const optionOf = (field: string, value: string) =>
   ds.fields.find((f) => f.id === field)!.options!.find((o) => o.value === value)!;
 
@@ -114,8 +111,7 @@ const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
@@ -16,7 +16,7 @@ import { verdictHtml, type Tally } from "../src/lib/verdict/verdict.js";
 import {
   PAINTED_AS_COMPOSED, answerWordsOf, countryNamed, paintedAsComposedScript, saidLineOf, verdictOn, type SaidLine,
 } from "./verdict-cards.js";
-import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
+import { PICK_TURKEY, answerWith, withSite, whyNoBuild } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -265,8 +265,7 @@ const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import type { Profile } from "permit-rulebook-data";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { withSite } from "./browser-walk.js";
-
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
+import { withSite, whyNoBuild } from "./browser-walk.js";
 
 /**
  * What looks like a control on the results, and where the status badge
@@ -24,8 +20,7 @@ const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

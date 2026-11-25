@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   phraseAtStartOf, phraseOf, deriveBands, evaluate, fillRouteSlots, remainingQuestions, shortLabelOf, subjectOf,
@@ -16,10 +14,9 @@ import { CAME_FROM_LINE } from "../src/lib/copy/verdict.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { everyDrawnRouteIn, verdictOn } from "./verdict-cards.js";
-import { withSite } from "./browser-walk.js";
+import { withSite, whyNoBuild } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 /**
  * A reader who has answered before, arriving from a country or a route page.
@@ -103,8 +100,7 @@ const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 

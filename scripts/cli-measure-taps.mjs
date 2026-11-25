@@ -58,7 +58,7 @@ export function screenLinesOf(screen) {
  * clean, 1 when one is not, 2 when there was no `dist/` to measure.
  */
 export function tapReportOf(measured) {
-  if (!measured.isBuilt) return { out: [], err: ["no dist/ — run npm run build first"], exitCode: 2 };
+  if (!measured.isBuilt) return { out: [], err: ["run npm run build first: no dist/ to measure"], exitCode: 2 };
   const { screens, viewportWidth } = measured;
   const failures = screens.filter(hasProblem).length;
   const overflows = screens.filter((screen) => screen.isOverflowing).length;

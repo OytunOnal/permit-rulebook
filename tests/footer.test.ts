@@ -17,7 +17,7 @@ import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-fact
 import { WIDE_FROM_PX } from "../src/lib/first-paint.js";
 import type { Dataset } from "permit-rulebook-data";
 import { PHONE, chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { withSite } from "./browser-walk.js";
+import { withSite, whyNoBuild } from "./browser-walk.js";
 import { footerIn, frameAlone } from "./frame-alone.js";
 import { FALLBACK_STACK } from "./fallback-stack.js";
 
@@ -198,8 +198,7 @@ describe("one footer, every page", () => {
 /** And how it lays out, measured at the widths the critique named. */
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 

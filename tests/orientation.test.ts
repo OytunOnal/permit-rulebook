@@ -14,7 +14,7 @@ import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { DATA_PATH, FEEDBACK_PATH, absolute, url } from "../src/lib/site.js";
 import { frameAlone, headerIn } from "./frame-alone.js";
 import type { Dataset } from "permit-rulebook-data";
-import { withSite } from "./browser-walk.js";
+import { withSite, whyNoBuild } from "./browser-walk.js";
 
 /**
  * The Orientation lens (RUBRIC 1.3), which the site map's own birth demanded.
@@ -176,8 +176,7 @@ const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

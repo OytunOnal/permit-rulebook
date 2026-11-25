@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   answerLabel, evaluate, forEachCriterion, provenancedValuesOf, routeStatements,
@@ -12,11 +10,10 @@ import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import {
   PAINTED_AS_COMPOSED, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, placed, verdictOn, withoutGlosses,
 } from "./verdict-cards.js";
-import { withSite } from "./browser-walk.js";
+import { withSite, whyNoBuild } from "./browser-walk.js";
 import { routeOf } from "./route-of.js";
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const clone = (): Dataset => JSON.parse(JSON.stringify(dataset)) as Dataset;
 const statementOf = (d: Dataset, route: string, id: string): RouteStatement =>
   routeStatements(routeOf(d, route)).find((s) => s.id === id)!;
@@ -178,8 +175,7 @@ const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

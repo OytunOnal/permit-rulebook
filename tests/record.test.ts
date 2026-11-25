@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, type Dataset } from "permit-rulebook-data";
@@ -7,7 +6,7 @@ import { RECORD_MAX_LENGTH, RECORD_VERSION,
   clearRecord, loadRecord, restore, saveRecord, serialize, LEGACY_STORAGE_KEY, STORAGE_KEY,
   type RecordStore,
 } from "../src/lib/record.js";
-import { answerWith } from "./browser-walk.js";
+import { answerWith, whyNoBuild } from "./browser-walk.js";
 import { expectNothingLeft } from "./wire.js";
 import {
   PHONE, TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT, chromePath, walkSite, type SentRequest,
@@ -203,8 +202,7 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
  */
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)

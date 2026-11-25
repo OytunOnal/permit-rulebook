@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readdirSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readAssetNames } from "../../scripts/carry-assets/carry.mjs";
+import { whyNoBuild } from "../browser-walk.js";
 import { LF } from "../throwaway-folder.js";
 import { pagesYaml as pages, readText } from "../workflow-text.js";
 
@@ -18,7 +19,7 @@ const root = fileURLToPath(new URL("../..", import.meta.url));
  * reading the script's source.
  */
 const dist = join(root, "dist");
-const missing = existsSync(dist) ? null : "no dist/ — run npm run build first";
+const missing = whyNoBuild("dist/");
 
 /**
  * The carrier reads ONE live page, so the whole exposure has to be one page.

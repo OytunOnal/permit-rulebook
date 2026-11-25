@@ -22,12 +22,16 @@ export function whyNoChrome(): string | null {
   return null;
 }
 
+/** Why a suite cannot test the build here: `path` (from the project's root,
+ * as `dist/` or `dist/404.html`) was never built. Null when it was. */
+export function whyNoBuild(path: string): string | null {
+  if (existsSync(fileURLToPath(new URL(`../${path}`, import.meta.url)))) return null;
+  return `run npm run build first: no ${path} to test`;
+}
+
 /** Why the browser cannot walk here: no Chrome, or no build. Null when it can. */
 export function skipReason(): string | null {
-  const noChrome = whyNoChrome();
-  if (noChrome !== null) return noChrome;
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoChrome() ?? whyNoBuild("dist/");
 }
 
 /** Says, loudly, that a suite's walk did not run, so a skipped suite is not

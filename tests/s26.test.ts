@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
@@ -18,7 +17,7 @@ import {
 } from "./verdict-cards.js";
 import { expectNothingLeft } from "./wire.js";
 import { chromePath, walkSite, type BrowserPage, type SentRequest } from "../scripts/browser/browser.mjs";
-import { PICK_TURKEY, answerWith } from "./browser-walk.js";
+import { PICK_TURKEY, answerWith, whyNoBuild } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -350,8 +349,7 @@ describe("s26 — the results the walks end on, from the verdict", () => {
  */
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoBuild("dist/");
 }
 const skipped = why();
 if (skipped)
