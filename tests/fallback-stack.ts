@@ -1,3 +1,11 @@
+/** In the page: the generic families forced on the page's font tokens, which says "forced". */
+function forceFallbackStack(): string {
+  const style = document.createElement("style");
+  style.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}";
+  document.head.appendChild(style);
+  return "forced";
+}
+
 /**
  * The fonts the runner has and this machine does not, forced on the page it
  * is evaluated in.
@@ -7,6 +15,4 @@
  * falls back to, because the pair and the header have now been broken twice
  * by a width this machine could not see (CI, 2026-09-08).
  */
-export const FALLBACK_STACK = '(() => { const s = document.createElement("style");'
-  + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}";'
-  + ' document.head.appendChild(s); return "forced"; })()';
+export const FALLBACK_STACK = `(${forceFallbackStack})()`;
