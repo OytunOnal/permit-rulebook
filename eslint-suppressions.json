@@ -495,11 +495,6 @@
       "count": 3
     }
   },
-  "tests/s13.test.ts": {
-    "max-lines-per-function": {
-      "count": 8
-    }
-  },
   "tests/s16.test.ts": {
     "max-lines-per-function": {
       "count": 1
