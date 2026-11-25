@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
-import { warnNotWalked, whyNoBuild } from "./browser-walk.js";
+import { warnNotWalked } from "./browser-walk.js";
+import { whyNoBuild } from "./why-no-build.js";
 import { builtPages, builtSheetsOf } from "./built-sheets.js";
 import { PRIYA_EXPLORING_ALL } from "./personas.js";
 import { blocksIn, everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";

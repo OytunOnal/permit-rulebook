@@ -8,7 +8,7 @@ import { notFoundPage } from "../src/lib/not-found.js";
 import { countryLinks } from "../src/lib/slug.js";
 import { url } from "../src/lib/site.js";
 import { frameAlone, styleIn } from "./frame-alone.js";
-import { whyNoBuild } from "./browser-walk.js";
+import { whyNoBuild } from "./why-no-build.js";
 
 /**
  * B4 — a wrong URL landed the visitor on GitHub's own error page.

@@ -3595,6 +3595,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/browser-walk.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/browser.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -3781,12 +3786,12 @@
   },
   {
    "from": "tests/carry-assets/carry-step.test.ts",
-   "to": "tests/browser-walk.ts",
+   "to": "tests/throwaway-folder.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/carry-assets/carry-step.test.ts",
-   "to": "tests/throwaway-folder.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -3952,6 +3957,11 @@
   {
    "from": "tests/checked-words.test.ts",
    "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/checked-words.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -4736,12 +4746,12 @@
   },
   {
    "from": "tests/not-found.test.ts",
-   "to": "tests/browser-walk.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/not-found.test.ts",
-   "to": "tests/frame-alone.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -5041,6 +5051,11 @@
   },
   {
    "from": "tests/reader-pages.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.test.ts",
    "to": "tests/widened-screen.ts",
    "kind": "dependency"
   },
@@ -5066,11 +5081,6 @@
   },
   {
    "from": "tests/reader-pages.ts",
-   "to": "tests/browser-walk.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/reader-pages.ts",
    "to": "tests/card-link.ts",
    "kind": "dependency"
   },
@@ -5078,6 +5088,11 @@
    "from": "tests/reader-pages.ts",
    "to": "tests/card-link.ts",
    "kind": "inheritance"
+  },
+  {
+   "from": "tests/reader-pages.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
   },
   {
    "from": "tests/reason.test.ts",
@@ -5127,6 +5142,11 @@
   {
    "from": "tests/route-link-written-once.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-link-written-once.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -11938,5 +11958,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "f1626e15fcbc115a762404eed24ae0c9609d747be71fcc4a6d22601ce718e117"
+ "digest": "359393a7a750214e1560bbd5fabccac667e40e7b5c455b372fd495f14276885b"
 }

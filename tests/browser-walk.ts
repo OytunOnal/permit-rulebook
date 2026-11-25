@@ -1,10 +1,10 @@
-import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, fieldOptions, fillRouteSlots, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { chromePath, walkSite, type BrowserPage, type PageOnSite, type Screen } from "../scripts/browser/browser.mjs";
+import { whyNoBuild } from "./why-no-build.js";
 
 /**
  * The interview walked in headless Chrome over the built page: what the
@@ -20,13 +20,6 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
 export function whyNoChrome(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
   return null;
-}
-
-/** Why a suite cannot test the build here: `path` (from the project's root,
- * as `dist/` or `dist/404.html`) was never built. Null when it was. */
-export function whyNoBuild(path: string): string | null {
-  if (existsSync(fileURLToPath(new URL(`../${path}`, import.meta.url)))) return null;
-  return `run npm run build first: no ${path} to test`;
 }
 
 /** Why the browser cannot walk here: no Chrome, or no build. Null when it can. */

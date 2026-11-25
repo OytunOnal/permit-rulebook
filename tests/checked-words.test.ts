@@ -13,7 +13,8 @@ import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-fact
 import { watchState } from "../src/lib/site.js";
 import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
 import { DESK } from "../scripts/browser/browser.mjs";
-import { skipReason, warnNotWalked, whyNoBuild, withSite } from "./browser-walk.js";
+import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { whyNoBuild } from "./why-no-build.js";
 import {
   builtPages, drawnScreens, failuresOf, headingsOf, plainTextOf, questionCards, resultsWhere, walks, type ReaderPage,
 } from "./reader-pages.js";

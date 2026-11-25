@@ -11,7 +11,7 @@ import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { WidthFailure, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { CARD_LINK, type CardLink } from "./card-link.js";
-import { whyNoBuild } from "./browser-walk.js";
+import { whyNoBuild } from "./why-no-build.js";
 
 /**
  * Every page the build draws from the shipped dataset, as a reader meets it:

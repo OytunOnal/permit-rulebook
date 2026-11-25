@@ -3,7 +3,7 @@ import { readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readAssetNames } from "../../scripts/carry-assets/carry.mjs";
-import { whyNoBuild } from "../browser-walk.js";
+import { whyNoBuild } from "../why-no-build.js";
 import { LF } from "../throwaway-folder.js";
 import { pagesYaml as pages, readText } from "../workflow-text.js";
 
