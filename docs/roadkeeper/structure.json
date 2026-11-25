@@ -383,6 +383,7 @@
   "scripts/dev-server.mjs": "infrastructure",
   "scripts/find-on-path.mjs": "infrastructure",
   "scripts/find-option-value.mjs": "presentation",
+  "scripts/interview-page.mjs": "infrastructure",
   "scripts/live-site-over-http.mjs": "infrastructure",
   "scripts/log-wording.mjs": "domain",
   "scripts/main-check-base.mjs": "main",
@@ -1097,6 +1098,11 @@
   {
    "from": "scripts/dev-server.mjs",
    "to": "scripts/site-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/interview-page.mjs",
+   "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
@@ -4617,6 +4623,21 @@
   {
    "from": "tests/identity-written-once.test.ts",
    "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page.test.ts",
+   "to": "scripts/interview-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page.test.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -8628,6 +8649,38 @@
     "exported": true
    }
   ],
+  "scripts/interview-page.mjs": [
+   {
+    "name": "OUTSIDE_THE_INTERVIEW",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "readScreenInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pickInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "nameOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "refusalOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "InterviewPage",
+    "kind": "class",
+    "exported": true
+   }
+  ],
   "scripts/live-site-over-http.mjs": [
    {
     "name": "fetchLiveAnswerOverHttp",
@@ -12215,6 +12268,7 @@
   "scripts/dev-server.mjs",
   "scripts/find-on-path.mjs",
   "scripts/find-option-value.mjs",
+  "scripts/interview-page.mjs",
   "scripts/live-site-over-http.mjs",
   "scripts/log-wording.mjs",
   "scripts/main-check-base.mjs",
@@ -12283,5 +12337,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "3337064e3eb413d9fb30159012e6063cba7b31a3b6ff8b80df761220d46e15f0"
+ "digest": "b9a9f200209f6a3598aeacd97ab2c2e8ac671d0f83167f0948afc9129b15a1d8"
 }
