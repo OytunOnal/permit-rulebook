@@ -2,12 +2,6 @@
   "tests/first-paint.test.ts": {
     "lines": 732
   },
-  "tests/s25.test.ts": {
-    "lines": 430
-  },
-  "tests/s26.test.ts": {
-    "lines": 451
-  },
   "tests/s27.test.ts": {
     "lines": 526
   },

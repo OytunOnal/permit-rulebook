@@ -539,36 +539,12 @@
       "count": 1
     }
   },
-  "tests/s25.test.ts": {
-    "max-lines-per-function": {
-      "count": 3
-    },
-    "roadkeeper/constant-reason": {
-      "count": 5
-    }
-  },
-  "tests/s26.test.ts": {
-    "max-lines-per-function": {
-      "count": 4
-    },
-    "roadkeeper/named-condition": {
-      "count": 1
-    }
-  },
   "tests/s27.test.ts": {
     "max-lines-per-function": {
       "count": 1
     },
     "roadkeeper/constant-reason": {
       "count": 4
-    }
-  },
-  "tests/s28.test.ts": {
-    "max-lines-per-function": {
-      "count": 2
-    },
-    "roadkeeper/constant-reason": {
-      "count": 2
     }
   },
   "tests/s30.test.ts": {

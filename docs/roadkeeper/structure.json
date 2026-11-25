@@ -5985,103 +5985,163 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
-  },
-  {
-   "from": "tests/s25.test.ts",
+   "from": "tests/s25-dataset.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
+   "from": "tests/s25-dataset.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
-   "to": "src/lib/gloss.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s25.test.ts",
+   "from": "tests/s25-dataset.test.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
+   "from": "tests/s25-dataset.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
+   "from": "tests/s25-dataset.test.ts",
    "to": "src/lib/scope.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
-   "to": "tests/browser-walk.ts",
+   "from": "tests/s25-dataset.test.ts",
+   "to": "tests/s25-experience.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
-   "to": "tests/reader-pages.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s25.test.ts",
-   "to": "tests/route-of.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s25.test.ts",
+   "from": "tests/s25-dataset.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s26.test.ts",
+   "from": "tests/s25-walk.test.ts",
    "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/s25-walk.test.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s26.test.ts",
+   "from": "tests/s25-walk.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s26.test.ts",
+   "from": "tests/s25-walk.test.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25-walk.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s26.test.ts",
-   "to": "src/lib/site.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s26.test.ts",
-   "to": "src/lib/situations.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s26.test.ts",
-   "to": "src/lib/verdict/verdict.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "tests/s26.test.ts",
+   "from": "tests/s25-walk.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s26.test.ts",
+   "from": "tests/s25-walk.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25-walk.test.ts",
+   "to": "tests/route-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25-walk.test.ts",
+   "to": "tests/s25-experience.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25-walk.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s26.test.ts",
+   "from": "tests/s26-headline.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-headline.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-headline.test.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-headline.test.ts",
+   "to": "tests/s26-walks.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-headline.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "src/lib/verdict/verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "tests/s26-walks.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
    "to": "tests/wire.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walks.ts",
+   "to": "src/lib/situations.ts",
    "kind": "dependency"
   },
   {
@@ -12063,5 +12123,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "9e9c791e8286e775893a0b674cb84929ca874437070b5c433b2f406925b1c453"
+ "digest": "ce88f7d299381eff48b9e43923caefe8ed776f9619e9a60cad3c15c166d5508a"
 }
