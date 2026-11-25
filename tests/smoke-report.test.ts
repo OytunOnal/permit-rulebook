@@ -67,7 +67,7 @@ describe("smoke's report", () => {
   });
 
   it("words a missing build's refusal with the step that fixes it first, on stderr, and exits 1", () => {
-    const report = smokeRefusalReportOf(new SmokeRefusal("no-build", { folder: "/site/dist" }));
+    const report = smokeRefusalReportOf(new SmokeRefusal("no-build", { buildDirectory: "/site/dist" }));
     expect(report).toEqual({ err: ["run npm run build first: no /site/dist to walk"], exitCode: 1 });
   });
 

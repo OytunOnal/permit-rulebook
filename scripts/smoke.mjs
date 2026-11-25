@@ -232,15 +232,15 @@ async function walk(site, surface) {
  * surface is a local developer check (human ruling, 2026-09-08). */
 export const DEFAULT_SURFACES = process.env.CI ? ["dist"] : ["dev", "dist"];
 
-export async function smoke({ dir = dist, surfaces = DEFAULT_SURFACES } = {}) {
+export async function smoke({ buildDirectory = dist, surfaces = DEFAULT_SURFACES } = {}) {
   const results = [];
   if (surfaces.includes("dev")) {
     const dev = await startDev();
     try { results.push(...await walk({ address: dev.url("/") }, "dev")); } finally { dev.close(); }
   }
   if (surfaces.includes("dist")) {
-    if (!existsSync(dir)) throw new SmokeRefusal(SMOKE_REASONS.noBuild, { folder: dir });
-    results.push(...await walk({ folder: dir }, "dist"));
+    if (!existsSync(buildDirectory)) throw new SmokeRefusal(SMOKE_REASONS.noBuild, { buildDirectory });
+    results.push(...await walk({ folder: buildDirectory }, "dist"));
   }
   return results;
 }

@@ -41,7 +41,7 @@ export const SMOKE_REASONS = Object.freeze({
   pageThrew: "page-threw",
   /** `{ count }`, how many errors came after the walk had kept its cap. */
   errorsPastCap: "errors-past-cap",
-  /** `{ folder }`, the build folder that is not there to walk: a `SmokeRefusal`'s reason, not a page load's. */
+  /** `{ buildDirectory }`, the build directory that is not there to walk: a `SmokeRefusal`'s reason, not a page load's. */
   noBuild: "no-build",
 });
 

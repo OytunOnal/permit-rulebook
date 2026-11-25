@@ -40,7 +40,7 @@ const SENTENCES = new Map([
   [SMOKE_REASONS.pageUnreadable, ({ message }) => `the page could not even be read — ${message}`],
   [SMOKE_REASONS.pageThrew, ({ message }) => `the page threw — ${message}`],
   [SMOKE_REASONS.errorsPastCap, ({ count }) => `and ${count} more errors past the walk's cap, not placed on any page`],
-  [SMOKE_REASONS.noBuild, ({ folder }) => `run npm run build first: no ${folder} to walk`],
+  [SMOKE_REASONS.noBuild, ({ buildDirectory }) => `run npm run build first: no ${buildDirectory} to walk`],
 ]);
 
 /** What the report calls each check's page, by the check's path. */

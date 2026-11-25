@@ -144,7 +144,7 @@ async function smokeOver(pages: Record<string, string>): Promise<PageLoad[]> {
       mkdirSync(dirname(join(folder, name)), { recursive: true });
       writeFileSync(join(folder, name), html);
     }
-    return await smoke({ dir: folder, surfaces: ["dist"] });
+    return await smoke({ buildDirectory: folder, surfaces: ["dist"] });
   } finally {
     rmSync(folder, { recursive: true, force: true });
   }
@@ -190,13 +190,13 @@ for (let i = 0; i < ${ERRORS_KEPT + pastTheCap}; i++) console.error("logged erro
 });
 
 describe("smoke over a build that is not there", () => {
-  it("refuses to walk with the no-build reason, carrying the folder and no sentence", async () => {
-    const folder = join(mkdtempSync(join(tmpdir(), "permit-rulebook-smoke-")), "dist");
+  it("refuses to walk with the no-build reason, carrying the build directory and no sentence", async () => {
+    const buildDirectory = join(mkdtempSync(join(tmpdir(), "permit-rulebook-smoke-")), "dist");
     try {
-      await expect(smoke({ dir: folder, surfaces: ["dist"] })).rejects.toMatchObject(
-        { name: "SmokeRefusal", reason: "no-build", folder, message: "no-build" });
+      await expect(smoke({ buildDirectory, surfaces: ["dist"] })).rejects.toMatchObject(
+        { name: "SmokeRefusal", reason: "no-build", buildDirectory, message: "no-build" });
     } finally {
-      rmSync(dirname(folder), { recursive: true, force: true });
+      rmSync(dirname(buildDirectory), { recursive: true, force: true });
     }
   });
 });
