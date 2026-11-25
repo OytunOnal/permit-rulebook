@@ -96,36 +96,94 @@ const shared = (footer: string): string =>
     .replace(/\s+/g, " ")
     .trim();
 
+/** Checks every built page carries the site footer, the same block as the frame's own. */
+function expectOneFooterOnEveryPage(pages: { path: string; html: string }[]) {
+  expect(pages.length, "nothing is built — run npm run build").toBeGreaterThan(25);
+  const reference = shared(footerIn(frameAlone(ds)));
+  for (const page of pages) {
+    const footer = footerOf(page.html);
+    expect(footer, `${page.path} has no site footer`).not.toBe("");
+    expect(shared(footer), `${page.path}'s footer differs from every other page's`).toBe(reference);
+  }
+}
+
+/** Checks the footer differs only by the marked country or route and the route's own JSON. */
+function expectOnlyTheTwoDifferences(pages: { path: string; html: string }[]) {
+  // The current country is marked as the header marks it.
+  for (const page of pages.filter((p) => /^\/[a-z-]+\/index\.html$/.test(p.path))) {
+    const footer = footerOf(page.html);
+    if (!countryLinks(ds).some((l) => page.path === `${l.path}/index.html`)) continue;
+    expect(footer, page.path).toContain('aria-current="page"');
+  }
+  for (const route of routePages(ds)) {
+    const footer = footerOf(route.html);
+    expect(footer, route.path).toContain('aria-current="true"');
+    // And the route's own JSON, which no other page may claim.
+    expect(footer, route.path).toContain(ROUTE_AS_JSON);
+    expect(footer, route.path).toContain(`href="${url(`${route.path}.json`)}"`);
+  }
+  for (const page of pages.filter((p) => !/^\/[a-z-]+\/[a-z0-9-]+\/index\.html$/.test(p.path)))
+    expect(footerOf(page.html), `${page.path} offers a route's JSON`).not.toContain(ROUTE_AS_JSON);
+}
+
+/** Checks every footer link on every built page stays inside the site or goes to an allowed host, and none mails. */
+function expectEveryFooterLinkResolves() {
+  const inside = new Set([
+    ...countryLinks(ds).map((l) => url(l.path)),
+    url("/"), url(DATA_PATH), url(FEEDBACK_PATH), ...routePages(ds).map((r) => url(`${r.path}.json`)),
+  ]);
+  // The tracker's two links left the footer for /feedback/ in s13, where they
+  // are named as the option for a reader with an account; the footer's own
+  // outbound links are the repository, the licence and the sponsorship.
+  const ALLOWED = [REPO_DATA, SPONSOR_URL,
+    "https://github.com/OytunOnal/permit-rulebook-data/blob/master/data/LICENSE"];
+  for (const page of builtPages()) {
+    const footer = footerOf(page.html);
+    // Nor is the address written out: not one "@" in the footer's text.
+    expect(readerSees(footer).includes("@"), `${page.path}: the footer prints a mail address`).toBe(false);
+    for (const href of [...footer.matchAll(/href="([^"]*)"/g)].map((m) => m[1]!)) {
+      if (href.startsWith("http")) {
+        expect(ALLOWED.some((a) => href.startsWith(a)), `${page.path}: ${href}`).toBe(true);
+        expect(href.startsWith(TRACKER_URL) || href.startsWith(NEW_NEED_URL),
+          `${page.path}: the tracker is back in the footer`).toBe(false);
+        continue;
+      }
+      // No mail address in the footer, linked or written: it carried the
+      // bare mailto: for a day and the human took it out on the s13 walk.
+      // The address lives on /feedback/ only.
+      expect(href.startsWith("mailto:"), `${page.path}: the footer links a mail address`).toBe(false);
+      // Internal: either a page we build, or the pre-scoped checker.
+      const bare = href.split("?")[0]!;
+      expect(inside.has(href) || inside.has(bare), `${page.path}: ${href} goes nowhere`).toBe(true);
+    }
+  }
+}
+
+/** Checks the data line states the read range, the last run and the dataset day, from the dataset and the watch. */
+function expectDataLineStatesTheReadSpan() {
+  const read = reckonDatasetFacts(ds, watchState).readRange;
+  const footer = footerIn(frameAlone(ds));
+  expect(footer).toContain(`${READ_RANGE_OPENING}<b><time datetime="${read.oldest}">`);
+  // "Re-read daily" is a claim, so the day it last happened is printed with
+  // it, from the watch's own state (devils-advocate, 2026-09-08) — and, on
+  // a day that run left a source unread, how many (s11).
+  const state = today();
+  expect(readerSees(footer), state.day).toContain(`${READ_DAILY} ${state.parenthesis}`);
+  expect(state.run, "the watch has never recorded a run").toMatch(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+  expect(footer).toContain(`dataset ${datasetDay(ds.dataset_version)}`);
+  // The oldest is really the oldest, and the two ends are different days.
+  expect(read.oldest < read.newest, `${read.oldest}..${read.newest}`).toBe(true);
+  // The schema version belongs to the data page now, not to every page.
+  expect(footer).not.toContain(ds.schema_version);
+  expect(footer).toContain(copyrightNotice(read.newest.slice(0, 4), OWNER));
+}
+
 describe("one footer, every page", () => {
   const pages = builtPages();
 
-  it("every built page carries it, and it is the same block on all of them", () => {
-    expect(pages.length, "nothing is built — run npm run build").toBeGreaterThan(25);
-    const reference = shared(footerIn(frameAlone(ds)));
-    for (const page of pages) {
-      const footer = footerOf(page.html);
-      expect(footer, `${page.path} has no site footer`).not.toBe("");
-      expect(shared(footer), `${page.path}'s footer differs from every other page's`).toBe(reference);
-    }
-  });
+  it("every built page carries it, and it is the same block on all of them", () => expectOneFooterOnEveryPage(pages));
 
-  it("the two things that may differ, and nothing else", () => {
-    // The current country is marked as the header marks it.
-    for (const page of pages.filter((p) => /^\/[a-z-]+\/index\.html$/.test(p.path))) {
-      const footer = footerOf(page.html);
-      if (!countryLinks(ds).some((l) => page.path === `${l.path}/index.html`)) continue;
-      expect(footer, page.path).toContain('aria-current="page"');
-    }
-    for (const route of routePages(ds)) {
-      const footer = footerOf(route.html);
-      expect(footer, route.path).toContain('aria-current="true"');
-      // And the route's own JSON, which no other page may claim.
-      expect(footer, route.path).toContain(ROUTE_AS_JSON);
-      expect(footer, route.path).toContain(`href="${url(`${route.path}.json`)}"`);
-    }
-    for (const page of pages.filter((p) => !/^\/[a-z-]+\/[a-z0-9-]+\/index\.html$/.test(p.path)))
-      expect(footerOf(page.html), `${page.path} offers a route's JSON`).not.toContain(ROUTE_AS_JSON);
-  });
+  it("the two things that may differ, and nothing else", () => expectOnlyTheTwoDifferences(pages));
 
   it("the disclaimer is said once per page, in the words the copy module holds", () => {
     for (const page of pages) {
@@ -135,37 +193,7 @@ describe("one footer, every page", () => {
     }
   });
 
-  it("every link resolves inside the site or names an allowed host — and none is a mail address", () => {
-    const inside = new Set([
-      ...countryLinks(ds).map((l) => url(l.path)),
-      url("/"), url(DATA_PATH), url(FEEDBACK_PATH), ...routePages(ds).map((r) => url(`${r.path}.json`)),
-    ]);
-    // The tracker's two links left the footer for /feedback/ in s13, where they
-    // are named as the option for a reader with an account; the footer's own
-    // outbound links are the repository, the licence and the sponsorship.
-    const ALLOWED = [REPO_DATA, SPONSOR_URL,
-      "https://github.com/OytunOnal/permit-rulebook-data/blob/master/data/LICENSE"];
-    for (const page of builtPages()) {
-      const footer = footerOf(page.html);
-      // Nor is the address written out: not one "@" in the footer's text.
-      expect(readerSees(footer).includes("@"), `${page.path}: the footer prints a mail address`).toBe(false);
-      for (const href of [...footer.matchAll(/href="([^"]*)"/g)].map((m) => m[1]!)) {
-        if (href.startsWith("http")) {
-          expect(ALLOWED.some((a) => href.startsWith(a)), `${page.path}: ${href}`).toBe(true);
-          expect(href.startsWith(TRACKER_URL) || href.startsWith(NEW_NEED_URL),
-            `${page.path}: the tracker is back in the footer`).toBe(false);
-          continue;
-        }
-        // No mail address in the footer, linked or written: it carried the
-        // bare mailto: for a day and the human took it out on the s13 walk.
-        // The address lives on /feedback/ only.
-        expect(href.startsWith("mailto:"), `${page.path}: the footer links a mail address`).toBe(false);
-        // Internal: either a page we build, or the pre-scoped checker.
-        const bare = href.split("?")[0]!;
-        expect(inside.has(href) || inside.has(bare), `${page.path}: ${href} goes nowhere`).toBe(true);
-      }
-    }
-  });
+  it("every link resolves inside the site or names an allowed host — and none is a mail address", expectEveryFooterLinkResolves);
 
   it("every outbound link says it leaves, and cannot reach back", () => {
     const footer = footerIn(frameAlone(ds));
@@ -176,28 +204,13 @@ describe("one footer, every page", () => {
     }
   });
 
-  it("the data line states the span the values were read over, from the dataset", () => {
-    const read = reckonDatasetFacts(ds, watchState).readRange;
-    const footer = footerIn(frameAlone(ds));
-    expect(footer).toContain(`${READ_RANGE_OPENING}<b><time datetime="${read.oldest}">`);
-    // "Re-read daily" is a claim, so the day it last happened is printed with
-    // it, from the watch's own state (devils-advocate, 2026-09-08) — and, on
-    // a day that run left a source unread, how many (s11).
-    const state = today();
-    expect(readerSees(footer), state.day).toContain(`${READ_DAILY} ${state.parenthesis}`);
-    expect(state.run, "the watch has never recorded a run").toMatch(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
-    expect(footer).toContain(`dataset ${datasetDay(ds.dataset_version)}`);
-    // The oldest is really the oldest, and the two ends are different days.
-    expect(read.oldest < read.newest, `${read.oldest}..${read.newest}`).toBe(true);
-    // The schema version belongs to the data page now, not to every page.
-    expect(footer).not.toContain(ds.schema_version);
-    expect(footer).toContain(copyrightNotice(read.newest.slice(0, 4), OWNER));
-  });
+  it("the data line states the span the values were read over, from the dataset", expectDataLineStatesTheReadSpan);
 });
 
 /** And how it lays out, measured at the widths the critique named. */
 const skipped = skipReason();
 
+// Columns, tap heights and underlines exist only once the page is laid out, so the browser measures them.
 const LAYOUT = 'JSON.stringify((() => {'
   + ' const foot = document.querySelector(".site-foot");'
   + ' const cols = [...foot.querySelectorAll(".col")].map((c) => Math.round(c.getBoundingClientRect().left));'
@@ -226,107 +239,126 @@ async function settledLayoutAt(page: BrowserPage, url: string, path: string): Pr
   return JSON.parse(await page.evaluate(LAYOUT));
 }
 
+/** Checks the footer has `columns` columns at `width` on every kind of page, its links tap targets that look like links. */
+async function expectFooterColumnsAt(width: number, columns: number) {
+  const seen = await withSite(async ({ page, url: addressOf }) => {
+    const at: Record<string, unknown> = {};
+    // The same block on every page, so the count is measured on each.
+    for (const [name, path] of [
+      ["route", "/germany/eu-blue-card-general/"], ["interview", "/"],
+      ["country", "/germany/"], ["data", "/data/"],
+    ] as const) {
+      at[name] = await settledLayoutAt(page, addressOf(path), path);
+    }
+    return at;
+  }, { viewport: { width, height: 900 }, mobile: width < 500 }) as Record<string, {
+    rows: number; cols: number[];
+    links: { text: string; height: number; underline: string }[];
+    lines: number[];
+  }>;
+
+  for (const [name, page] of Object.entries(seen))
+    expect(page.rows, `${name} at ${width}: columns at ${page.cols.join(", ")}`).toBe(columns);
+  // Every link is a tap target, and looks like a link before it is touched.
+  for (const link of seen.route!.links) {
+    expect(link.height, `"${link.text}" is ${link.height} px at ${width}`).toBeGreaterThanOrEqual(44);
+    // Every column link looks like a link at rest. The one exception is
+    // the action, which is a bordered button and says so that way. (The
+    // address was a second exception for a day; it left the footer on
+    // the s13 walk, and no link here may be one.)
+    expect(link.text.includes("@"), `"${link.text}" is a mail address in the footer`).toBe(false);
+    if (link.text === CHECK_YOURS || link.text.endsWith(PRODUCT_NAME)) continue;
+    expect(link.underline, `"${link.text}" has no resting underline`).toContain("underline");
+  }
+}
+
+/** The data line at phone width under wider fonts: its column's width, its two lines and every token held whole. */
+async function heldTokensAtPhoneWidth() {
+  return JSON.parse(await withSite(async ({ page, url: addressOf }) => {
+    await page.goto(addressOf("/germany/eu-blue-card-general/"));
+    // The runner's fonts are wider than this machine's, and a family wider
+    // still is only a matter of time: measure the widened case.
+    await page.evaluate(FALLBACK_STACK);
+    await page.evaluate(WIDER_TRACKING);
+    await page.waitUntilAtRest();
+    return page.evaluate(
+      // An inline element that wraps sits on more than one line: its
+      // fragments start at more than one top edge. (A count of fragments
+      // would not do, since a token holding a `time` child has one per
+      // child on a single line.)
+      'JSON.stringify({ column: Math.round(document.querySelector(".site-foot .line")'
+      + '.getBoundingClientRect().width),'
+      + ' lines: [...document.querySelectorAll(".site-foot .line > span")]'
+      + '  .map((el) => ({ text: el.textContent.trim().slice(0, 30),'
+      + '    width: Math.round(el.getBoundingClientRect().width) })),'
+      + ' held: [...document.querySelectorAll(".site-foot .line *")]'
+      + '  .filter((el) => getComputedStyle(el).whiteSpace === "nowrap")'
+      + '  .map((el) => ({ text: el.textContent.trim(),'
+      + '    width: Math.round(el.getBoundingClientRect().width),'
+      + '    lines: new Set([...el.getClientRects()]'
+      + '      .map((r) => Math.round(r.top))).size })) })',
+    );
+  }, PHONE) as string) as {
+    column: number; lines: { text: string; width: number }[];
+    held: { text: string; width: number; lines: number }[];
+  };
+}
+
+/**
+ * Checks the last-run parenthesis is held as the day's state allows: whole on
+ * a clean day, in two held halves on an unread one.
+ */
+function expectLastRunParenthesisHeld(texts: string[]) {
+  // The last-run parenthesis is among them on a clean day. With a count in
+  // it, it is not: it grew to 350 px in this 348 px column on the first
+  // unread day (s15, 2026-09-16, run 35098352421), so it may break at its
+  // separator — after the dot, as the line's other breaks fall — and each
+  // half is held whole and measured above.
+  const state = today();
+  if (state.unread) {
+    expect(texts.some((t) => new RegExp(`^\\(${LAST_RUN} [0-9]{4}-[0-9]{2}-[0-9]{2} \u00b7$`).test(t)), `${state.day}: ${texts.join(" | ")}`)
+      .toBe(true);
+    expect(texts, `${state.day}: ${texts.join(" | ")}`).toContain(`${unreadLabel(state.unread)})`);
+  } else {
+    expect(texts.some((t) => new RegExp(`^\\(${LAST_RUN} [0-9]{4}-[0-9]{2}-[0-9]{2}\\)$`).test(t)), `${state.day}: ${texts.join(" | ")}`)
+      .toBe(true);
+  }
+}
+
+/** Checks nothing held whole on the data line is wider than its column at phone width. */
+async function expectNothingHeldWiderThanItsColumn() {
+  const seen = await heldTokensAtPhoneWidth();
+
+  // Each of the two lines fits its column: a line that cannot break inside
+  // itself is exactly how the page came to scroll sideways in CI.
+  expect(seen.lines.length, "the data line is missing").toBe(2);
+  for (const line of seen.lines)
+    expect(line.width, `"${line.text}..." is ${line.width} px in a ${seen.column} px column`)
+      .toBeLessThanOrEqual(seen.column);
+  expect(seen.held.length, "the lines hold no token whole").toBeGreaterThan(5);
+  for (const token of seen.held) {
+    // The design rule: nothing may be nowrap wider than the column it sits
+    // in, or the column cannot hold it and the page scrolls sideways.
+    expect(token.width, `"${token.text}" is ${token.width} px in a ${seen.column} px column`)
+      .toBeLessThanOrEqual(seen.column);
+    expect(token.lines, `"${token.text}" wrapped inside itself`).toBeLessThanOrEqual(1);
+  }
+  // The tokens a reader must never see split.
+  const texts = seen.held.map((t) => t.text.split(String.fromCharCode(160)).join(" "));
+  expect(texts.some((t) => t.includes(OWNER)), texts.join(" | ")).toBe(true);
+  expectLastRunParenthesisHeld(texts);
+  expect(texts.filter((t) => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(t)).length,
+    `read dates held whole: ${texts.join(" | ")}`).toBeGreaterThanOrEqual(2);
+}
+
 describe.skipIf(skipped !== null)("the footer lays out where it says it does", () => {
   // The mock's own steps: three columns, two on the narrow side, one below 480. Measured
   // per page, because a count that depends on how wide the page happens to be
   // is not a design (Spec review, 2026-09-08).
   for (const [width, columns] of [[1100, 3], [WIDE_FROM_PX, 3], [WIDE_FROM_PX - 1, 2], [600, 2], [481, 2], [390, 1]] as const)
-    it(`${columns} column${columns === 1 ? "" : "s"} at ${width} px`, async () => {
-      const seen = await withSite(async ({ page, url: addressOf }) => {
-        const at: Record<string, unknown> = {};
-        // The same block on every page, so the count is measured on each.
-        for (const [name, path] of [
-          ["route", "/germany/eu-blue-card-general/"], ["interview", "/"],
-          ["country", "/germany/"], ["data", "/data/"],
-        ] as const) {
-          at[name] = await settledLayoutAt(page, addressOf(path), path);
-        }
-        return at;
-      }, { viewport: { width, height: 900 }, mobile: width < 500 }) as Record<string, {
-        rows: number; cols: number[];
-        links: { text: string; height: number; underline: string }[];
-        lines: number[];
-      }>;
+    it(`${columns} column${columns === 1 ? "" : "s"} at ${width} px`, () => expectFooterColumnsAt(width, columns), 180000);
 
-      for (const [name, page] of Object.entries(seen))
-        expect(page.rows, `${name} at ${width}: columns at ${page.cols.join(", ")}`).toBe(columns);
-      // Every link is a tap target, and looks like a link before it is touched.
-      for (const link of seen.route!.links) {
-        expect(link.height, `"${link.text}" is ${link.height} px at ${width}`).toBeGreaterThanOrEqual(44);
-        // Every column link looks like a link at rest. The one exception is
-        // the action, which is a bordered button and says so that way. (The
-        // address was a second exception for a day; it left the footer on
-        // the s13 walk, and no link here may be one.)
-        expect(link.text.includes("@"), `"${link.text}" is a mail address in the footer`).toBe(false);
-        if (link.text === CHECK_YOURS || link.text.endsWith(PRODUCT_NAME)) continue;
-        expect(link.underline, `"${link.text}" has no resting underline`).toContain("underline");
-      }
-    }, 180000);
-
-  it("at 390 nothing that cannot break is wider than its column", async () => {
-    const seen = JSON.parse(await withSite(async ({ page, url: addressOf }) => {
-      await page.goto(addressOf("/germany/eu-blue-card-general/"));
-      // The runner's fonts are wider than this machine's, and a family wider
-      // still is only a matter of time: measure the widened case.
-      await page.evaluate(FALLBACK_STACK);
-      await page.evaluate(WIDER_TRACKING);
-      await page.waitUntilAtRest();
-      return page.evaluate(
-        // An inline element that wraps sits on more than one line: its
-        // fragments start at more than one top edge. (A count of fragments
-        // would not do, since a token holding a `time` child has one per
-        // child on a single line.)
-        'JSON.stringify({ column: Math.round(document.querySelector(".site-foot .line")'
-        + '.getBoundingClientRect().width),'
-        + ' lines: [...document.querySelectorAll(".site-foot .line > span")]'
-        + '  .map((el) => ({ text: el.textContent.trim().slice(0, 30),'
-        + '    width: Math.round(el.getBoundingClientRect().width) })),'
-        + ' held: [...document.querySelectorAll(".site-foot .line *")]'
-        + '  .filter((el) => getComputedStyle(el).whiteSpace === "nowrap")'
-        + '  .map((el) => ({ text: el.textContent.trim(),'
-        + '    width: Math.round(el.getBoundingClientRect().width),'
-        + '    lines: new Set([...el.getClientRects()]'
-        + '      .map((r) => Math.round(r.top))).size })) })',
-      );
-    }, PHONE) as string) as {
-      column: number; lines: { text: string; width: number }[];
-      held: { text: string; width: number; lines: number }[];
-    };
-
-    // Each of the two lines fits its column: a line that cannot break inside
-    // itself is exactly how the page came to scroll sideways in CI.
-    expect(seen.lines.length, "the data line is missing").toBe(2);
-    for (const line of seen.lines)
-      expect(line.width, `"${line.text}..." is ${line.width} px in a ${seen.column} px column`)
-        .toBeLessThanOrEqual(seen.column);
-    expect(seen.held.length, "the lines hold no token whole").toBeGreaterThan(5);
-    for (const token of seen.held) {
-      // The design rule: nothing may be nowrap wider than the column it sits
-      // in, or the column cannot hold it and the page scrolls sideways.
-      expect(token.width, `"${token.text}" is ${token.width} px in a ${seen.column} px column`)
-        .toBeLessThanOrEqual(seen.column);
-      expect(token.lines, `"${token.text}" wrapped inside itself`).toBeLessThanOrEqual(1);
-    }
-    // The tokens a reader must never see split.
-    const texts = seen.held.map((t) => t.text.split(String.fromCharCode(160)).join(" "));
-    expect(texts.some((t) => t.includes(OWNER)), texts.join(" | ")).toBe(true);
-    // The last-run parenthesis is among them on a clean day. With a count in
-    // it, it is not: it grew to 350 px in this 348 px column on the first
-    // unread day (s15, 2026-09-16, run 35098352421), so it may break at its
-    // separator — after the dot, as the line's other breaks fall — and each
-    // half is held whole and measured above.
-    const state = today();
-    if (state.unread) {
-      expect(texts.some((t) => new RegExp(`^\\(${LAST_RUN} [0-9]{4}-[0-9]{2}-[0-9]{2} \u00b7$`).test(t)), `${state.day}: ${texts.join(" | ")}`)
-        .toBe(true);
-      expect(texts, `${state.day}: ${texts.join(" | ")}`).toContain(`${unreadLabel(state.unread)})`);
-    } else {
-      expect(texts.some((t) => new RegExp(`^\\(${LAST_RUN} [0-9]{4}-[0-9]{2}-[0-9]{2}\\)$`).test(t)), `${state.day}: ${texts.join(" | ")}`)
-        .toBe(true);
-    }
-    expect(texts.filter((t) => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(t)).length,
-      `read dates held whole: ${texts.join(" | ")}`).toBeGreaterThanOrEqual(2);
-  }, 180000);
+  it("at 390 nothing that cannot break is wider than its column", expectNothingHeldWiderThanItsColumn, 180000);
 });
 
 /**

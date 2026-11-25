@@ -4800,8 +4800,13 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/orientation.test.ts",
+   "from": "tests/orientation-browser-walks.test.ts",
    "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation-browser-walks.test.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -4842,11 +4847,6 @@
   {
    "from": "tests/orientation.test.ts",
    "to": "src/lib/slug.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/orientation.test.ts",
-   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -5150,23 +5150,23 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/record.test.ts",
+   "from": "tests/record-never-sent.test.ts",
    "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/record-never-sent.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/record-never-sent.test.ts",
+   "to": "tests/wire.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/record.test.ts",
    "to": "src/lib/record.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/record.test.ts",
-   "to": "tests/browser-walk.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/record.test.ts",
-   "to": "tests/wire.ts",
    "kind": "dependency"
   },
   {
@@ -12198,5 +12198,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "932958bfe7b9a9bb266c0eef67e6a5c9271ff98b7f5a14f14f4ccc89ca68e4a1"
+ "digest": "9bbece8580a1c0b927577914fd81823cb0570b7001c876a55ec0c7de085cda9a"
 }

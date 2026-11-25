@@ -213,19 +213,6 @@
       "count": 1
     }
   },
-  "tests/answers.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
-  "tests/arrival.test.ts": {
-    "max-lines-per-function": {
-      "count": 3
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
   "tests/asked-for.test.ts": {
     "max-lines-per-function": {
       "count": 1
@@ -341,14 +328,6 @@
       "count": 1
     }
   },
-  "tests/footer.test.ts": {
-    "max-lines-per-function": {
-      "count": 3
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
   "tests/gloss.test.ts": {
     "max-lines-per-function": {
       "count": 1
@@ -417,14 +396,6 @@
       "count": 1
     }
   },
-  "tests/orientation.test.ts": {
-    "max-lines-per-function": {
-      "count": 4
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
   "tests/paths-named.test.ts": {
     "max-lines-per-function": {
       "count": 1
@@ -454,11 +425,6 @@
   "tests/rebuild-trigger.test.ts": {
     "roadkeeper/constant-reason": {
       "count": 1
-    }
-  },
-  "tests/record.test.ts": {
-    "max-lines-per-function": {
-      "count": 4
     }
   },
   "tests/route-slot.test.ts": {
