@@ -56,7 +56,7 @@ const headerOf = (html: string): string => {
  * The same header with the two things that legitimately differ taken off, so
  * pages compare: the current-page marks, and — since s13 put the four countries
  * under one word — the disclosure's word itself, which is the country's own
- * name on a page that belongs to one (`tests/s13.test.ts`). Everything else in the
+ * name on a page that belongs to one (`tests/s13-frame.test.ts`). Everything else in the
  * header must be the same bytes on every page.
  */
 const unmarked = (header: string): string =>

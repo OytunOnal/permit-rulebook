@@ -9,7 +9,7 @@ Only the tests read it. A browser walk that checks what the counter sends is
 served this copy inside the browser (the walk's `trafficCounter` option,
 explained on `Walk` in `scripts/browser/walk/walk-site.mjs`), so the checks run
 on Cloudflare's own code while no test loads the counter from the network.
-Its users today: `tests/record.test.ts`, `tests/s26.test.ts` and
+Its users today: `tests/record-never-sent.test.ts`, `tests/s26-walk.test.ts` and
 `tests/walk-site.test.ts`. The copy can drift from the live script; only the
 live site shows that.
 

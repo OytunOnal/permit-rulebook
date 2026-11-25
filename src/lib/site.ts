@@ -93,7 +93,7 @@ export const TRACKER_URL = `${REPO_DATA}/issues/new/choose`;
  * name is the proposed one until they say it works**: the gate before the
  * merge is a mail sent to the alias from another address arriving in their
  * inbox, and only then does this constant become the live name
- * (`tests/s13.test.ts`; the decision of 2026-09-16). Until then the branch builds with the
+ * (`tests/s13-feedback-page.test.ts`; the decision of 2026-09-16). Until then the branch builds with the
  * name below and does not merge — merge is the deploy, and the deploy names
  * the address.
  *

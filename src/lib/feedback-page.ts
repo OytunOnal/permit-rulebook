@@ -44,7 +44,7 @@ export interface FeedbackPage {
  *
  * It takes the door and nothing else. There is no record to read here, no
  * query string and no screen: the mail carries nothing the reader declared,
- * held by construction rather than by care (`tests/s13.test.ts`), and it is
+ * held by construction rather than by care (`tests/s13-feedback-page.test.ts`), and it is
  * the bound that replaced "the GitHub account
  * requirement is said before the click" when the door stopped being GitHub.
  */

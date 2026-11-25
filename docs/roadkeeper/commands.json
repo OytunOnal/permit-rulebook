@@ -18,7 +18,7 @@
     "tests/asked-for.test.ts",
     "tests/beat.test.ts",
     "tests/name-sweep.test.ts",
-    "tests/s13.test.ts",
+    "tests/s13-frame.test.ts",
     "tests/s24.test.ts"
   ]
 }

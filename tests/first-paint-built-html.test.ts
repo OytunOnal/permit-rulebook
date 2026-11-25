@@ -87,7 +87,7 @@ describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)",
   it("offers no feedback line: the cold / is a question, and the line is the verdict's (s13)", () => {
     // The line under the verdict — "Something to say about this result?" —
     // appears on a results screen only, never on a question, never before an
-    // answer (`tests/s13.test.ts`). The built first paint is question one
+    // answer (`tests/s13-frame.test.ts`). The built first paint is question one
     // with nothing on the record, so the box the build paints must not link
     // the page the line leads to.
     expect(inMain, "the cold first paint links /feedback/").not.toContain(url(FEEDBACK_PATH));
