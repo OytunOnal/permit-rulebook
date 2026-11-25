@@ -7,8 +7,8 @@ import { START_OVER, resumedLine } from "../src/lib/copy/interview.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
-import { PHONE, chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { answerWith, evaluateAtRest, openAtRest, withSite, whyNoBuild } from "./browser-walk.js";
+import { PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { answerWith, evaluateAtRest, openAtRest, withSite, skipReason } from "./browser-walk.js";
 
 /**
  * s20 — the correction lands on the question and returns to the verdict.
@@ -83,11 +83,7 @@ describe("the two records the walks seed", () => {
   });
 });
 
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write([
     "",

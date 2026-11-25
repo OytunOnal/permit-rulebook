@@ -9,7 +9,7 @@ import { routePages } from "../src/lib/route-page/route-page.js";
 import { learnLinkTextOf } from "../src/lib/quote.js";
 import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
-import { PICK_TURKEY, answerWith, withSite, whyNoBuild } from "./browser-walk.js";
+import { PICK_TURKEY, answerWith, withSite, skipReason } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, standingOn, verdictFor,
   verdictOn,
@@ -252,13 +252,9 @@ describe("a route standing carries its live unknowns and whether its row opens (
  * rest — a result where the shortage Blue Card is on hold with the door open
  * in its box; and the route page carries the same sentence.
  */
-const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
+const { PHONE } = await import("../scripts/browser/browser.mjs");
 
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S28 LINK WAS NOT READ IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 

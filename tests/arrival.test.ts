@@ -14,7 +14,7 @@ import { CAME_FROM_LINE } from "../src/lib/copy/verdict.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { everyDrawnRouteIn, verdictOn } from "./verdict-cards.js";
-import { withSite, whyNoBuild } from "./browser-walk.js";
+import { withSite, skipReason } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -96,13 +96,7 @@ describe("a route arrival, from the verdict", () => {
   });
 });
 
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 
 const SEED = `localStorage.setItem("permit-rulebook.record.v1", ${
   JSON.stringify(serialize(germanRecord, Object.keys(germanRecord)))})`;

@@ -16,8 +16,8 @@ import {
 import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { WIDE_FROM_PX } from "../src/lib/first-paint.js";
 import type { Dataset } from "permit-rulebook-data";
-import { PHONE, chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { withSite, whyNoBuild } from "./browser-walk.js";
+import { PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { withSite, skipReason } from "./browser-walk.js";
 import { footerIn, frameAlone } from "./frame-alone.js";
 import { FALLBACK_STACK } from "./fallback-stack.js";
 
@@ -196,11 +196,7 @@ describe("one footer, every page", () => {
 });
 
 /** And how it lays out, measured at the widths the critique named. */
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 
 const LAYOUT = 'JSON.stringify((() => {'
   + ' const foot = document.querySelector(".site-foot");'

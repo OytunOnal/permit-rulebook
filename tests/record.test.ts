@@ -6,10 +6,10 @@ import { RECORD_MAX_LENGTH, RECORD_VERSION,
   clearRecord, loadRecord, restore, saveRecord, serialize, LEGACY_STORAGE_KEY, STORAGE_KEY,
   type RecordStore,
 } from "../src/lib/record.js";
-import { answerWith, whyNoBuild } from "./browser-walk.js";
+import { answerWith, skipReason } from "./browser-walk.js";
 import { expectNothingLeft } from "./wire.js";
 import {
-  PHONE, TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT, chromePath, walkSite, type SentRequest,
+  PHONE, TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT, walkSite, type SentRequest,
 } from "../scripts/browser/browser.mjs";
 
 const dataset = rawDataset as unknown as Dataset;
@@ -200,11 +200,7 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
  * the committed copy of Cloudflare's script, its reports answered inside the
  * browser, so the check runs on Cloudflare's code with no network.
  */
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write([
     "",

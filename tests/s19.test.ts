@@ -22,7 +22,7 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
 } from "./verdict-cards.js";
-import { answerWith, openAtRest, withSite, whyNoBuild } from "./browser-walk.js";
+import { answerWith, openAtRest, withSite, skipReason } from "./browser-walk.js";
 import { marksOn, situationScreen, unscoredOf } from "./situation-marks.js";
 import { watchStateAt } from "./watch-state-at.js";
 
@@ -285,13 +285,7 @@ describe("s19 — the quoted route, the counts and the data page follow", () => 
  * The browser: the mark where the reader is standing, the written state where
  * the walk ended, and the Spanish researcher still met.
  */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S19 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 

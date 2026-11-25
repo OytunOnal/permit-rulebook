@@ -9,7 +9,7 @@ import { SEEK_HINT, WOULD_BE_MET, nearestLine, orAbove, pointsOfNeeded } from ".
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, hintsIn, paintedAsComposedScript, placed, standingOn, stepsIn, verdictFor,
 } from "./verdict-cards.js";
-import { withSite, whyNoBuild } from "./browser-walk.js";
+import { withSite, skipReason } from "./browser-walk.js";
 import { DENIZ, PRIYA_EXPLORING_ALL } from "./personas.js";
 
 const ds = dataset as unknown as Dataset;
@@ -265,13 +265,7 @@ describe("the result screen, decided by the verdict", () => {
 });
 
 /** And the screen itself: Priya's result, as the browser paints it. */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! s23's screen was not walked: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 

@@ -3336,11 +3336,6 @@
   },
   {
    "from": "tests/answers.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/answers.test.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
@@ -3367,11 +3362,6 @@
   {
    "from": "tests/answers.test.ts",
    "to": "tests/verdict-cards.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/arrival.test.ts",
-   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -4251,11 +4241,6 @@
   },
   {
    "from": "tests/fold.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/fold.test.ts",
    "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
@@ -4397,11 +4382,6 @@
   {
    "from": "tests/framed-page.test.ts",
    "to": "tests/frame-alone.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/gloss.test.ts",
-   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -4622,11 +4602,6 @@
   {
    "from": "tests/lock-run-refusals.test.ts",
    "to": "tests/throwaway-folder.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/means.test.ts",
-   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -5606,11 +5581,6 @@
   },
   {
    "from": "tests/s19.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s19.test.ts",
    "to": "src/lib/copy/country-page.ts",
    "kind": "dependency"
   },
@@ -5722,11 +5692,6 @@
   {
    "from": "tests/s20.test.ts",
    "to": "tests/browser-walk.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s21.test.ts",
-   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -5851,11 +5816,6 @@
   },
   {
    "from": "tests/s23-result-copy.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s23-result-copy.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
@@ -5902,7 +5862,7 @@
   {
    "from": "tests/s25.test.ts",
    "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "tests/s25.test.ts",
@@ -6787,11 +6747,6 @@
   {
    "from": "tests/verdict-layout.test.ts",
    "to": "tests/verdict-cards.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/verdict-look.test.ts",
-   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -11983,5 +11938,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "eca2dc838c0cc9d7e8dc8f6c81a567cf57ebe4e7ab08f6be63fee9cbd8c3a5bb"
+ "digest": "f1626e15fcbc115a762404eed24ae0c9609d747be71fcc4a6d22601ce718e117"
 }

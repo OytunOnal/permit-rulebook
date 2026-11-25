@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Profile } from "permit-rulebook-data";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { withSite, whyNoBuild } from "./browser-walk.js";
+import { withSite, skipReason } from "./browser-walk.js";
 
 /**
  * What looks like a control on the results, and where the status badge
@@ -16,13 +16,7 @@ import { withSite, whyNoBuild } from "./browser-walk.js";
  * every title length: beside the country's name where the card carries it,
  * alone on that line where it does not.
  */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE VERDICT'S LOOK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 

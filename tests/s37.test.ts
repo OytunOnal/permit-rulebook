@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
-import { PHONE, chromePath, type BrowserPage, type PageOnSite, type Screen } from "../scripts/browser/browser.mjs";
-import { answerOnce, withSite, whyNoBuild } from "./browser-walk.js";
+import { PHONE, type BrowserPage, type PageOnSite, type Screen } from "../scripts/browser/browser.mjs";
+import { answerOnce, withSite, skipReason } from "./browser-walk.js";
 
 /**
  * s37 — Back on a restored record, and the Back gesture, in a real browser:
@@ -17,12 +17,6 @@ import { answerOnce, withSite, whyNoBuild } from "./browser-walk.js";
  */
 
 const ds = dataset as unknown as Dataset;
-
-/** Why the walk cannot run here: no Chrome, or no build. Null when it can. */
-function walkSkipReason(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
 
 /** The question each field asks, in the dataset's own words. */
 const asks = (field: string) => ds.fields.find((f) => f.id === field)!.label;
@@ -122,7 +116,7 @@ function walkInBrowser<T>(size: Screen, walk: (w: Walker, site: PageOnSite) => P
   return withSite((site: PageOnSite) => walk(walker(site.page, site.url), site), size);
 }
 
-const skipped = walkSkipReason();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write([
     "",

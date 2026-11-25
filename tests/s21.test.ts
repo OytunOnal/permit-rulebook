@@ -16,7 +16,7 @@ import { verdictHtml, type Tally } from "../src/lib/verdict/verdict.js";
 import {
   PAINTED_AS_COMPOSED, answerWordsOf, countryNamed, paintedAsComposedScript, saidLineOf, verdictOn, type SaidLine,
 } from "./verdict-cards.js";
-import { PICK_TURKEY, answerWith, withSite, whyNoBuild } from "./browser-walk.js";
+import { PICK_TURKEY, answerWith, withSite, skipReason } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -261,13 +261,7 @@ describe("s21 — the walk's result, from the verdict", () => {
  * The browser: the walk the critique took, with the mark where it was missing
  * and the sentence where "5 not yet" was.
  */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S21 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 

@@ -10,7 +10,7 @@ import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import {
   PAINTED_AS_COMPOSED, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, placed, verdictOn, withoutGlosses,
 } from "./verdict-cards.js";
-import { withSite, whyNoBuild } from "./browser-walk.js";
+import { withSite, skipReason } from "./browser-walk.js";
 import { routeOf } from "./route-of.js";
 
 const ds = dataset as unknown as Dataset;
@@ -171,13 +171,9 @@ describe("s32 — the transferee's ICT card, from the verdict", () => {
  * tenure under "not checked here", and nothing on the card called answered —
  * the card the case above reads, as the phone paints it.
  */
-const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
+const { PHONE } = await import("../scripts/browser/browser.mjs");
 
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S32 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
-import { withSite, whyNoBuild } from "./browser-walk.js";
+import { withSite, skipReason } from "./browser-walk.js";
 import { FALLBACK_STACK } from "./fallback-stack.js";
 import type { Screen } from "../scripts/browser/browser.mjs";
 
@@ -17,13 +17,9 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
  * header was a different object on the two halves of the product (Standards
  * review, 2026-09-08). identity.css owns it; this measures that it does.
  */
-const { chromePath: chromeAt, DESK, PHONE, walkSite } = await import("../scripts/browser/browser.mjs");
+const { DESK, PHONE, walkSite } = await import("../scripts/browser/browser.mjs");
 
-function whyNotMeasured(): string | null {
-  try { chromeAt(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const notMeasured = whyNotMeasured();
+const notMeasured = skipReason();
 
 const HEADER_BOX = 'JSON.stringify((() => {'
   + ' const head = document.querySelector(".site-head");'

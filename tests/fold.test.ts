@@ -3,7 +3,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { isScored, type Dataset } from "permit-rulebook-data";
-import { withSite, whyNoBuild } from "./browser-walk.js";
+import { withSite, skipReason } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -62,13 +62,7 @@ describe("the answer is above the fold", () => {
 });
 
 /** And measured where a reader stands: the first screen, at both widths. */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write([
     "",

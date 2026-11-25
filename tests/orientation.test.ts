@@ -14,7 +14,7 @@ import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { DATA_PATH, FEEDBACK_PATH, absolute, url } from "../src/lib/site.js";
 import { frameAlone, headerIn } from "./frame-alone.js";
 import type { Dataset } from "permit-rulebook-data";
-import { withSite, whyNoBuild } from "./browser-walk.js";
+import { withSite, skipReason } from "./browser-walk.js";
 
 /**
  * The Orientation lens (RUBRIC 1.3), which the site map's own birth demanded.
@@ -172,13 +172,9 @@ describe("everything is reachable, and not only from a footer", () => {
 });
 
 /** And the folded state, measured rather than read off a media query. */
-const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
+const { PHONE } = await import("../scripts/browser/browser.mjs");
 
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write([
     "",

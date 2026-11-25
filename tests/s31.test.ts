@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { holdLineHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { answerWith, openAtRest, withSite, whyNoBuild } from "./browser-walk.js";
+import { answerWith, openAtRest, withSite, skipReason } from "./browser-walk.js";
 
 /**
  * s31 — the hold state says where it is, and two small things.
@@ -32,13 +32,9 @@ import { answerWith, openAtRest, withSite, whyNoBuild } from "./browser-walk.js"
  */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-const { chromePath, PHONE, walkSite } = await import("../scripts/browser/browser.mjs");
+const { PHONE, walkSite } = await import("../scripts/browser/browser.mjs");
 
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write([
     "",

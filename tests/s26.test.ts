@@ -16,8 +16,8 @@ import {
   PAINTED_AS_COMPOSED, countryNamed, paintedAsComposedScript, routeIdsIn, saidLineOf, verdictFor,
 } from "./verdict-cards.js";
 import { expectNothingLeft } from "./wire.js";
-import { chromePath, walkSite, type BrowserPage, type SentRequest } from "../scripts/browser/browser.mjs";
-import { PICK_TURKEY, answerWith, whyNoBuild } from "./browser-walk.js";
+import { walkSite, type BrowserPage, type SentRequest } from "../scripts/browser/browser.mjs";
+import { PICK_TURKEY, answerWith, skipReason } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -347,11 +347,7 @@ describe("s26 — the results the walks end on, from the verdict", () => {
  * everywhere and never reaches question 3, so this is the one walk through it
  * that reads what the page sent (Security review of s26).
  */
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S26 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 

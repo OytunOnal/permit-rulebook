@@ -8,7 +8,7 @@ import { replayRecord } from "../src/lib/scope.js";
 import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import { withSite, whyNoBuild } from "./browser-walk.js";
+import { withSite, skipReason } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -109,13 +109,7 @@ describe("the results card carries the sign without an explainer, from the verdi
 });
 
 /** And the results card carries the sign bare, in the route names that cite it, as painted. */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  return whyNoBuild("dist/");
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write([
     "",
