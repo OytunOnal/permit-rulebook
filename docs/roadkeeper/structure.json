@@ -830,6 +830,11 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/cli-smoke.mjs",
+   "to": "scripts/smoke-reasons.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/data-lock-run/check/cli-data-check.mjs",
    "to": "scripts/find-option-value.mjs",
    "kind": "dependency"
@@ -1272,6 +1277,11 @@
   {
    "from": "scripts/smoke.mjs",
    "to": "scripts/site-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/smoke.mjs",
+   "to": "scripts/smoke-reasons.mjs",
    "kind": "dependency"
   },
   {
@@ -6550,6 +6560,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/smoke-report.test.ts",
+   "to": "scripts/cli-smoke.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/smoke-report.test.ts",
+   "to": "scripts/smoke-reasons.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/smoke-report.test.ts",
+   "to": "scripts/smoke.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/smoke.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -8098,6 +8123,31 @@
     "exported": true
    },
    {
+    "name": "SENTENCES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "CHECK_PAGE_NAMES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "KIND_NAMES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "sentenceOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pageNameOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "reportLinesOf",
     "kind": "fn",
     "exported": false
@@ -8686,12 +8736,7 @@
     "exported": true
    },
    {
-    "name": "UNPLACED",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "threwLineOf",
+    "name": "threwFailureOf",
     "kind": "fn",
     "exported": false
    },
@@ -11903,5 +11948,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "17ff003485213f92d3c3b7fafc21d568e6d88c602c6f088b58ee9f28e5e7c335"
+ "digest": "e906776e8d332318c1b53e2019bdc59463b0506c4ef86f167ef85b5b8bd1a42d"
 }

@@ -82,34 +82,40 @@ describe("the site, in a real browser", () => {
         .toEqual(new Set(DEFAULT_SURFACES));
       expect(DEFAULT_SURFACES).toContain("dist");
 
-      const broken = results.filter((r: { failures: string[] }) => r.failures.length);
-      expect(broken.map((r: { surface: string; path: string; failures: string[] }) =>
-        `[${r.surface}] ${r.path}: ${r.failures.join("; ")}`)).toEqual([]);
+      const broken = results.filter((r) => r.failures.length);
+      expect(broken.map((r) => `[${r.surface}] ${r.path}: ${JSON.stringify(r.failures)}`)).toEqual([]);
 
       // Said positively too, so a check that stopped checking cannot pass quietly.
       for (const r of results) {
         expect(r.thrown, `[${r.surface}] ${r.path} threw`).toEqual([]);
-        // Said positively per page, so a check that stopped checking cannot
-        // pass quietly. Four surfaces now: the interview, a route page, a
-        // country page and the data page (site map, 2026-09-08).
-        if (r.path === "/") {
-          expect(r.value.question.length, `[${r.surface}] no question`).toBeGreaterThan(0);
-          expect(r.value.options, `[${r.surface}] no answers`).toBeGreaterThan(0);
-        } else if (r.path === "/data/") {
-          expect(r.value.heading, `[${r.surface}] no heading`).toContain("The data");
-          expect(r.value.facts, `[${r.surface}] no facts about the dataset`).toBeGreaterThan(4);
-        } else if (r.path === "/germany/") {
-          expect(r.value.cards, `[${r.surface}] no route cards`).toBeGreaterThan(7);
-          expect(r.value.here, `[${r.surface}] the header marks nothing`).toBe("Germany");
-        } else {
-          expect(r.value.rules, `[${r.surface}] no rule cards`).toBeGreaterThan(2);
-          expect(r.value.stamp, `[${r.surface}] no stamp`).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-        }
+        expectWhatAReaderComesFor(r);
       }
     },
     180000,
   );
 });
+
+/**
+ * Asserts that `r`'s page showed what a reader comes for, said positively per
+ * page, so a check that stopped checking cannot pass quietly. Four surfaces:
+ * the interview, a route page, a country page and the data page (site map,
+ * 2026-09-08).
+ */
+function expectWhatAReaderComesFor(r: PageLoad): void {
+  if (r.path === "/") {
+    expect(r.value.question.length, `[${r.surface}] no question`).toBeGreaterThan(0);
+    expect(r.value.options, `[${r.surface}] no answers`).toBeGreaterThan(0);
+  } else if (r.path === "/data/") {
+    expect(r.value.heading, `[${r.surface}] no heading`).toContain("The data");
+    expect(r.value.facts, `[${r.surface}] no facts about the dataset`).toBeGreaterThan(4);
+  } else if (r.path === "/germany/") {
+    expect(r.value.cards, `[${r.surface}] no route cards`).toBeGreaterThan(7);
+    expect(r.value.here, `[${r.surface}] the header marks nothing`).toBe("Germany");
+  } else {
+    expect(r.value.rules, `[${r.surface}] no rule cards`).toBeGreaterThan(2);
+    expect(r.value.stamp, `[${r.surface}] no stamp`).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  }
+}
 
 /** A phone's viewport, as every fixture page declares it, so the walk's width check holds. */
 const VIEWPORT_META = '<meta name="viewport" content="width=device-width, initial-scale=1">';
@@ -147,35 +153,39 @@ async function smokeOver(pages: Record<string, string>): Promise<PageLoad[]> {
 const noChrome = whyNoChrome();
 
 describe.skipIf(noChrome !== null)("smoke's results over fixture pages", () => {
-  it("a page that throws shows its error in that page's line", async () => {
+  it("a page that throws fails that page's check with the page-threw reason, carrying its error", async () => {
     const thrown = "the interview broke";
     const results = await smokeOver({ ...QUIET_SITE, "index.html": throwing(thrown) });
     const interview = results.find((r) => r.path === "/");
-    expect(interview?.failures.join("\n")).toContain(`the page threw — exception: Error: ${thrown}`);
+    expect(interview?.kind).toBe("check");
+    expect(interview?.failures).toContainEqual(
+      { reason: "page-threw", message: expect.stringContaining(`exception: Error: ${thrown}`) });
     expect(results.filter((r) => r.path !== "/").flatMap((r) => r.thrown)).toEqual([]);
   }, 60000);
 
-  it("a page that throws after sending the reader to an address no check opens fails smoke in a line of its own, naming that address and the error", async () => {
+  it("a page that throws after sending the reader to an address no check opens fails smoke in an unplaced page load of its own, at that address, with the page-threw reason", async () => {
     const thrown = "the page the reader was sent to broke";
     // The interview's stand-in line keeps the first page from counting as
     // drawn, so the walk waits on the page it sends the reader to.
     const sendsTheReaderOn = `<!doctype html><html><head>${VIEWPORT_META}<script>location.replace("moved/");</script></head><body><p class="stand-in">…</p></body></html>`;
     const results = await smokeOver({ ...QUIET_SITE, "index.html": sendsTheReaderOn, "moved/index.html": throwing(thrown) });
-    const unplaced = results.filter((r) => r.path.endsWith("/moved/"));
-    expect(unplaced.map((r) => r.failures.length)).toEqual([1]);
-    expect(unplaced[0]?.failures[0]).toContain(`the page threw — exception: Error: ${thrown}`);
-    expect(results.filter((r) => !r.path.endsWith("/moved/")).flatMap((r) => r.failures).join("\n")).not.toContain(thrown);
+    const unplaced = results.filter((r) => r.kind === "unplaced");
+    expect(unplaced.map((r) => r.path.endsWith("/moved/"))).toEqual([true]);
+    expect(unplaced[0]?.failures).toEqual(
+      [{ reason: "page-threw", message: expect.stringContaining(`exception: Error: ${thrown}`) }]);
+    expect(JSON.stringify(results.filter((r) => r.kind !== "unplaced").flatMap((r) => r.failures))).not.toContain(thrown);
   }, 60000);
 
-  it("errors past the walk's cap fail smoke in a line of their own, saying how many came, placed on no page", async () => {
+  it("errors past the walk's cap fail smoke in a page load of their own, with the errors-past-cap reason carrying how many came", async () => {
     expect(ERRORS_KEPT, "the harness's entry gives no cap").toBeGreaterThan(0);
     const pastTheCap = 7;
     const logsPastTheCap = `<!doctype html><html><head>${VIEWPORT_META}</head><body><script>
 for (let i = 0; i < ${ERRORS_KEPT + pastTheCap}; i++) console.error("logged error " + i);
 </script></body></html>`;
     const results = await smokeOver({ ...QUIET_SITE, "index.html": logsPastTheCap });
-    const capLines = results.flatMap((r) => r.failures).filter((f) => f.includes("past the walk's cap"));
-    expect(capLines).toEqual([`and ${pastTheCap} more errors past the walk's cap, not placed on any page`]);
+    const pastTheCapLoads = results.filter((r) => r.failures.some((f) => f.reason === "errors-past-cap"));
+    expect(pastTheCapLoads.map((r) => [r.kind, r.path, r.failures])).toEqual(
+      [["past-the-cap", "*", [{ reason: "errors-past-cap", count: pastTheCap }]]]);
   }, 60000);
 });
 

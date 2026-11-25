@@ -20,8 +20,9 @@
  *   npm run build && npm run smoke
  *
  * `smoke` walks the surfaces it is given and returns what each page load
- * showed, and prints nothing: the report's lines and exit code are
- * `cli-smoke.mjs`'s, and `main-smoke.mjs` runs the two.
+ * showed, its failures as reasons `smoke-reasons.mjs` declares, and prints
+ * nothing: the report's words, lines and exit code are `cli-smoke.mjs`'s,
+ * and `main-smoke.mjs` runs the two.
  */
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -29,6 +30,7 @@ import { fileURLToPath } from "node:url";
 import { PHONE, walkSite } from "./browser/browser.mjs";
 import { startDev } from "./dev-server.mjs";
 import { siteBase } from "./site-base.mjs";
+import { PAGE_LOAD_KINDS, SMOKE_REASONS } from "./smoke-reasons.mjs";
 
 const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 
@@ -36,7 +38,6 @@ const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 export const CHECKS = [
   {
     path: "/",
-    what: "the interview",
     probe: `JSON.stringify({
       question: document.querySelector(".qlabel")?.textContent?.trim() ?? "",
       options: document.querySelectorAll(".qcard .opt, .qcard .copt, .qcard #cfilter").length,
@@ -50,20 +51,19 @@ export const CHECKS = [
     })`,
     expect(v) {
       const problems = [];
-      if (!v.question) problems.push("no question is on the screen");
-      if (v.options < 1) problems.push("the question has no answers to pick from");
-      if (!v.ledger) problems.push("the declaration panel is missing");
+      if (!v.question) problems.push({ reason: SMOKE_REASONS.noQuestion });
+      if (v.options < 1) problems.push({ reason: SMOKE_REASONS.noAnswers });
+      if (!v.ledger) problems.push({ reason: SMOKE_REASONS.noDeclarationPanel });
       // The pair is on the first screen too, and on the questions it states the
       // date the rules were last read (human, 2026-09-08). It was hidden until a
       // record existed, which left this masthead lopsided.
       if (!/^Rules read [0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(v.stamp))
-        problems.push(`the stamp reads "${v.stamp}", not the rules-read date`);
+        problems.push({ reason: SMOKE_REASONS.stampNotRulesReadDate, stamp: v.stamp });
       return problems;
     },
   },
   {
     path: "/germany/eu-blue-card-general/",
-    what: "a route page",
     probe: `JSON.stringify({
       stamp: document.querySelector(".stamp time")?.getAttribute("datetime") ?? "",
       rules: document.querySelectorAll("article.rule").length,
@@ -71,19 +71,18 @@ export const CHECKS = [
     })`,
     expect(v) {
       const problems = [];
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(v.stamp)) problems.push(`the rules-read stamp is "${v.stamp}"`);
-      if (v.rules < 3) problems.push(`only ${v.rules} rule cards rendered`);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(v.stamp)) problems.push({ reason: SMOKE_REASONS.stampNotADate, stamp: v.stamp });
+      if (v.rules < 3) problems.push({ reason: SMOKE_REASONS.tooFewRuleCards, rules: v.rules });
       // Under a base the interview is at `${base}/`, not `/` — the link is
       // right and an assertion written at the root is what is wrong.
       const interview = `${siteBase()}/?route=`;
       if (!v.cta.startsWith(interview))
-        problems.push(`the call to action is "${v.cta}", not a link into the interview at ${interview}`);
+        problems.push({ reason: SMOKE_REASONS.callToActionOutsideInterview, cta: v.cta, interview });
       return problems;
     },
   },
   {
     path: "/germany/",
-    what: "a country page",
     probe: `JSON.stringify({
       nav: [...document.querySelectorAll(".site-head .nav a")].map((a) => a.textContent.trim()),
       here: document.querySelector('.site-head .nav a[aria-current="page"]')?.textContent?.trim() ?? "",
@@ -96,17 +95,16 @@ export const CHECKS = [
       // The header is the site's own orientation: four countries, the checker
       // and the data page, on every page (site map, 2026-09-08).
       for (const label of ["Germany", "France", "Spain", "Netherlands", "Check yours", "The data"])
-        if (!v.nav.includes(label)) problems.push(`the header does not offer ${label}`);
-      if (v.here !== "Germany") problems.push(`the header marks "${v.here}", not the country you are on`);
-      if (v.cards < 8) problems.push(`only ${v.cards} route cards rendered`);
-      if (!v.first) problems.push("the first route has no name");
-      if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(v.stamp)) problems.push(`the rules-read stamp is "${v.stamp}"`);
+        if (!v.nav.includes(label)) problems.push({ reason: SMOKE_REASONS.headerLacks, label });
+      if (v.here !== "Germany") problems.push({ reason: SMOKE_REASONS.headerMarksAnotherCountry, here: v.here });
+      if (v.cards < 8) problems.push({ reason: SMOKE_REASONS.tooFewRouteCards, cards: v.cards });
+      if (!v.first) problems.push({ reason: SMOKE_REASONS.firstRouteUnnamed });
+      if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(v.stamp)) problems.push({ reason: SMOKE_REASONS.stampNotADate, stamp: v.stamp });
       return problems;
     },
   },
   {
     path: "/data/",
-    what: "the data page",
     probe: `JSON.stringify({
       heading: document.querySelector("h1")?.textContent?.trim() ?? "",
       facts: document.querySelectorAll(".facts div").length,
@@ -115,41 +113,45 @@ export const CHECKS = [
     })`,
     expect(v) {
       const problems = [];
-      if (!v.heading.startsWith("The data")) problems.push(`the heading is "${v.heading}"`);
-      if (v.facts < 5) problems.push(`only ${v.facts} facts about the dataset`);
+      if (!v.heading.startsWith("The data")) problems.push({ reason: SMOKE_REASONS.headingNotTheData, heading: v.heading });
+      if (v.facts < 5) problems.push({ reason: SMOKE_REASONS.tooFewFacts, facts: v.facts });
       if (!v.downloads.some((h) => h.endsWith("/dataset.json")))
-        problems.push("the whole dataset is not offered");
+        problems.push({ reason: SMOKE_REASONS.datasetNotOffered });
       // The header marks this page's own word, and nothing else (#303).
-      if (v.marked.join() !== "The data") problems.push(`the header marks "${v.marked.join(", ")}", not The data`);
+      if (v.marked.join() !== "The data") problems.push({ reason: SMOKE_REASONS.headerMarksAnotherPage, marked: v.marked });
       return problems;
     },
   },
 ];
 
 /**
- * What one check showed on one page load.
+ * One way a page load failed: a reason `SMOKE_REASONS` declares, with the
+ * values its words need beside it.
+ *
+ * @typedef {{ reason: string } & Record<string, any>} Failure
+ */
+
+/**
+ * What one page load showed.
  *
  * @typedef {object} PageLoad
  * @property {string} surface "dev" or "dist".
  * @property {string} path The check's path; for errors at an address no check opened, that address; for errors past the walk's cap, which keep no address, `*`.
- * @property {string} what What the page is, in words.
+ * @property {string} kind What the page load is, one of `PAGE_LOAD_KINDS`.
  * @property {Record<string, any>} value What the check's probe read; its fields are the probe's own, so they differ per check.
  * @property {string[]} thrown What the page threw or logged: the walk's errors at its address.
- * @property {string[]} failures Every reason the check failed; none when it passed.
+ * @property {Failure[]} failures Every reason the page load failed; none when it passed.
  */
 
-/** What a page load is, in words, when its errors came at an address none of the checks opened. */
-const UNPLACED = "an address none of smoke's checks opens";
-
-/** The failure line for `message`, an error the page threw or logged. */
-const threwLineOf = (message) => `the page threw — ${message}`;
+/** The failure of `message`, an error the page threw or logged. */
+const threwFailureOf = (message) => ({ reason: SMOKE_REASONS.pageThrew, message });
 
 /** What `check`'s probe read on the page `page` shows, or why the page could not be read. */
 async function probeRead(page, check) {
   try {
     return { value: JSON.parse(await page.evaluate(check.probe)), unreadable: [] };
   } catch (e) {
-    return { value: {}, unreadable: [`the page could not even be read — ${e.message}`] };
+    return { value: {}, unreadable: [{ reason: SMOKE_REASONS.pageUnreadable, message: e.message }] };
   }
 }
 
@@ -175,14 +177,14 @@ function messagesByAddress(errors) {
 /** The page load of a check on `surface`, judged on what its probe read and on `thrown`, its page's errors. */
 function pageLoadOf({ check, value, unreadable }, surface, thrown) {
   return {
-    surface, path: check.path, what: check.what, value, thrown,
-    failures: [...unreadable, ...(unreadable.length ? [] : check.expect(value)), ...thrown.map(threwLineOf)],
+    surface, path: check.path, kind: PAGE_LOAD_KINDS.check, value, thrown,
+    failures: [...unreadable, ...(unreadable.length ? [] : check.expect(value)), ...thrown.map(threwFailureOf)],
   };
 }
 
 /** A page load of its own for `thrown`, the errors at `address`, which none of the checks opened. */
 function unplacedLoadOf(address, surface, thrown) {
-  return { surface, path: address, what: UNPLACED, value: {}, thrown, failures: thrown.map(threwLineOf) };
+  return { surface, path: address, kind: PAGE_LOAD_KINDS.unplaced, value: {}, thrown, failures: thrown.map(threwFailureOf) };
 }
 
 /**
@@ -193,8 +195,8 @@ function unplacedLoadOf(address, surface, thrown) {
  */
 function pastTheCapLoadOf(leftOut, surface) {
   return {
-    surface, path: "*", what: "errors past the walk's cap", value: {}, thrown: [],
-    failures: [`and ${leftOut} more errors past the walk's cap, not placed on any page`],
+    surface, path: "*", kind: PAGE_LOAD_KINDS.pastTheCap, value: {}, thrown: [],
+    failures: [{ reason: SMOKE_REASONS.errorsPastCap, count: leftOut }],
   };
 }
 

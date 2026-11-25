@@ -665,11 +665,6 @@
       "count": 1
     }
   },
-  "tests/smoke.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
   "tests/start-over.test.ts": {
     "roadkeeper/constant-reason": {
       "count": 1
