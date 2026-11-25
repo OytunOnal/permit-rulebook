@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
@@ -22,9 +22,13 @@ import { routeAddresses } from "../src/lib/slug.js";
 import { blocksIn, drawnRouteOn, verdictFor } from "./verdict-cards.js";
 import { PRIYA_EXPLORING_ALL } from "./personas.js";
 import { routeOf } from "./route-of.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
+/** Why the built pages cannot be read here, or null when they can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the citations on the built pages", noBuild);
 const textOf = (html: string): string =>
   html.replace(/<[^>]*>/g, " ").split(/\s+/).join(" ").split(String.fromCharCode(160)).join(" ").trim();
 
@@ -141,7 +145,7 @@ describe("a citation never restates its number, and the sign carries no explaine
     expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG");
   });
 
-  it("no built page carries the number twice, and none carries the sign's explainer", () => {
+  it.skipIf(noBuild !== null)("no built page carries the number twice, and none carries the sign's explainer", () => {
     const pages = builtPages();
     expect(pages.length).toBeGreaterThan(30);
     for (const { path, text } of pages) {
@@ -195,7 +199,7 @@ describe("the question counter", () => {
 
 /** Every built page's text, for the sweeps above. */
 function builtPages(): { path: string; text: string }[] {
-  if (!existsSync(dist)) return [];
+  if (noBuild !== null) return [];
   const out: { path: string; text: string }[] = [];
   const walk = (dir: string, at: string) => {
     for (const name of readdirSync(dir)) {

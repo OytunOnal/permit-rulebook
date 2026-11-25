@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { PageLoad } from "../scripts/smoke.mjs";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
  * Does the site actually run in a browser?
@@ -32,6 +33,9 @@ const { notOurDevServer } = await import("../scripts/dev-server.mjs");
 const { skipReason, whyNoChrome } = await import("./browser-walk.js");
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
+/** Why the built site cannot be served here, or null when it can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the harness's refusal of the built site served statically", noBuild);
 
 const skipped = skipReason();
 
@@ -252,8 +256,7 @@ describe("the harness refuses to walk a process it did not start", () => {
     expect(reason).toContain("serves nothing of this project");
   }, 30000);
 
-  it("rejects the built site served statically — real pages, but not a dev server", async () => {
-    if (!existsSync(dist)) return;
+  it.skipIf(noBuild !== null)("rejects the built site served statically — real pages, but not a dev server", async () => {
     const server = await serve(dist);
     try {
       // The first half of the check passes here: it is our product, with its

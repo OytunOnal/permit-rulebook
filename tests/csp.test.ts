@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { interviewFrameAlone } from "./frame-alone.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
 import { COPY_SCRIPT } from "../src/lib/clipboard.js";
 import { TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT } from "../src/lib/site.js";
@@ -29,6 +30,8 @@ const sha256 = (source: string): string =>
   `'sha256-${createHash("sha256").update(source, "utf8").digest("base64")}'`;
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
+/** Why the built pages cannot be read here, or null when they can. */
+const noBuild = whyNoBuild("dist/");
 const read = (path: string): string => readFileSync(path, "utf8").split("\r\n").join("\n");
 
 /** A built page: its path under the site root and its HTML. */
@@ -43,7 +46,7 @@ function builtPages(): BuiltPage[] {
       else if (name.endsWith(".html")) out.push({ path: at.slice(dist.length).split("\\").join("/"), html: read(at) });
     }
   };
-  if (existsSync(dist)) walk(dist);
+  if (noBuild === null) walk(dist);
   return out;
 }
 
@@ -159,7 +162,9 @@ function expectEveryOffSiteScriptIsTheCounter(pages: BuiltPage[]): void {
         expect(src, `${page.path}: ${src}`).toBe(TRAFFIC_COUNTER_SCRIPT);
 }
 
-describe("every page states what may run on it", () => {
+if (noBuild) warnBuildNotTested("the built pages' content policy", noBuild);
+
+describe.skipIf(noBuild !== null)("every page states what may run on it", () => {
   const pages = builtPages();
 
   it("carries the policy, and the same one everywhere", () => {

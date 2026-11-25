@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   deriveQuestions, fillRouteSlots, hostKindOf, type Dataset, type Profile,
@@ -11,9 +9,12 @@ import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { builtPages, headingsOf, questionCards } from "./reader-pages.js";
 import { blocksIn, drawnRouteOn, verdictOn } from "./verdict-cards.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
+/** Why the built pages cannot be read here, or null when they can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the route slots on the built pages", noBuild);
 
 /**
  * #159 — a question names a route through its slot, which says what the route is.
@@ -64,7 +65,7 @@ describe("no reader sees a route slot", () => {
     for (const card of cards) expect(card.html, card.where).not.toContain(SLOT_OPENING);
   });
 
-  it.skipIf(!existsSync(dist))("on any page the build draws", () => {
+  it.skipIf(noBuild !== null)("on any page the build draws", () => {
     for (const page of builtPages()) expect(page.html, page.where).not.toContain(SLOT_OPENING);
   });
 });

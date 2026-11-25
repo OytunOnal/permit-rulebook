@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   CONSOLIDATED_TEXT_HOSTS, deriveQuestions, isScored, routeStatements, scopeLine,
@@ -13,11 +11,11 @@ import { routeAddresses, type RouteAddress } from "../src/lib/slug.js";
 import type { PageOnSite } from "../scripts/browser/browser.mjs";
 import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { builtPages } from "./reader-pages.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 import { routeOf } from "./route-of.js";
 import { blocksIn, drawnRouteOn, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 /**
  * #158 — a link to a consolidated text says so.
@@ -61,7 +59,10 @@ function checkedConsolidatedLinkCount(links: Link[]): number {
 const skipped = skipReason();
 if (skipped) warnNotWalked("#158's pages", skipped);
 
-describe.skipIf(!existsSync(dist))("every page the build draws", () => {
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("#158's built pages", noBuild);
+
+describe.skipIf(noBuild !== null)("every page the build draws", () => {
   it("every link to a consolidated text carries that label, and none the authority's", () => {
     const pages = builtPages();
     expect(pages.length, "no built page").toBeGreaterThan(0);

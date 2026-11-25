@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { holdLineHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { answerWith, openAtRest, withSite, skipReason } from "./browser-walk.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
  * s31 — the hold state says where it is, and two small things.
@@ -31,6 +32,9 @@ import { answerWith, openAtRest, withSite, skipReason } from "./browser-walk.js"
  * scrollbars drawn where the gutter is.
  */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
+/** Why the built page cannot be read here, or null when it can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the hold line in the built masthead", noBuild);
 
 const { PHONE, walkSite } = await import("../scripts/browser/browser.mjs");
 
@@ -127,8 +131,9 @@ interface Hold {
  * The line is in the built page, between the eyebrow and the headline —
  * read off the HTML, so emptying it or moving it turns this red.
  */
-describe.skipIf(!existsSync(dist))("the hold line ships in the masthead (s31)", () => {
-  const built = readFileSync(join(dist, "index.html"), "utf8");
+describe.skipIf(noBuild !== null)("the hold line ships in the masthead (s31)", () => {
+  // The suite is collected even when it skips, so the page is read only where it was built.
+  const built = noBuild === null ? readFileSync(join(dist, "index.html"), "utf8") : "";
   const masthead = /<header class="masthead-with-stamps">([\s\S]*?)<\/header>/.exec(built)?.[1] ?? "";
 
   it("is a sentence, the record line's own, under the eyebrow and above the headline", () => {

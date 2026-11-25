@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { remainingQuestions, type Dataset, type Profile } from "permit-rulebook-data";
@@ -9,6 +9,7 @@ import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, evaluateAtRest, openAtRest, withSite, skipReason } from "./browser-walk.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
  * s20 — the correction lands on the question and returns to the verdict.
@@ -27,6 +28,9 @@ import { answerWith, evaluateAtRest, openAtRest, withSite, skipReason } from "./
  */
 const ds = rawDataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
+/** Why the built page cannot be read here, or null when it can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the resumed line in the built cold /", noBuild);
 
 /** The critique's persona, answered to the end: an offer in Germany, a
  * Turkish passport, a salary in the band just under the Blue Card line. */
@@ -68,7 +72,7 @@ describe("the resumed line, as copy and as markup", () => {
     expect(resumed.indexOf('class="resumed"')).toBeGreaterThan(resumed.indexOf('class="qcard"'));
   });
 
-  it.skipIf(!existsSync(dist))("is not in the cold / HTML: nothing is known before paint", () => {
+  it.skipIf(noBuild !== null)("is not in the cold / HTML: nothing is known before paint", () => {
     const built = readFileSync(`${dist}/index.html`, "utf8");
     expect(built).not.toContain("Continuing where you left off");
     expect(built).not.toContain('class="resumed"');

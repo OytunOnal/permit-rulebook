@@ -4015,6 +4015,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/consolidated-text.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/countries.test.ts",
    "to": "src/lib/countries.ts",
    "kind": "dependency"
@@ -4037,6 +4042,11 @@
   {
    "from": "tests/csp.test.ts",
    "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/csp.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -4255,6 +4265,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/first-paint-built-html.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/first-paint-head-script.test.ts",
    "to": "src/lib/first-paint.ts",
    "kind": "dependency"
@@ -4362,6 +4377,11 @@
   {
    "from": "tests/footer.test.ts",
    "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -4852,6 +4872,11 @@
   {
    "from": "tests/orientation.test.ts",
    "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -5430,6 +5455,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/route-slot.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s11.test.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
@@ -5750,6 +5780,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s17.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s19.test.ts",
    "to": "src/lib/copy/country-page.ts",
    "kind": "dependency"
@@ -5862,6 +5897,11 @@
   {
    "from": "tests/s20.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s20.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -6015,6 +6055,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s23-page-copy.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s23-result-copy.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
@@ -6052,6 +6097,11 @@
   {
    "from": "tests/s24.test.ts",
    "to": "tests/posix-shell.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s24.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -6402,6 +6452,11 @@
   {
    "from": "tests/s31.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s31.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -6786,7 +6841,17 @@
   },
   {
    "from": "tests/site-index.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
    "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -6842,6 +6907,11 @@
   {
    "from": "tests/smoke.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/smoke.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -12198,5 +12268,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "d3ce2e77e058feedc5ac7d365fc9831c184e1a38ac0026a464daeef4f10d9ac5"
+ "digest": "26ff7450142aa308465d7bb0bc06ae597f836cddaf2ba9e2fa53ee3c033211e1"
 }

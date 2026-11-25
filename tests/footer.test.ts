@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
@@ -19,6 +19,7 @@ import type { Dataset } from "permit-rulebook-data";
 import { PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { withSite, skipReason } from "./browser-walk.js";
 import { footerIn, frameAlone } from "./frame-alone.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 import { FALLBACK_STACK } from "./fallback-stack.js";
 
 /**
@@ -34,6 +35,9 @@ import { FALLBACK_STACK } from "./fallback-stack.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
+/** Why the built pages cannot be read here, or null when they can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the footer on the built pages", noBuild);
 const read = (path: string): string => readFileSync(path, "utf8").split("\r\n").join("\n");
 
 function builtPages(): { path: string; html: string }[] {
@@ -45,7 +49,7 @@ function builtPages(): { path: string; html: string }[] {
       else if (name.endsWith(".html")) out.push({ path: at.slice(dist.length).split("\\").join("/"), html: read(at) });
     }
   };
-  if (existsSync(dist)) walk(dist);
+  if (noBuild === null) walk(dist);
   return out;
 }
 
@@ -181,11 +185,11 @@ function expectDataLineStatesTheReadSpan() {
 describe("one footer, every page", () => {
   const pages = builtPages();
 
-  it("every built page carries it, and it is the same block on all of them", () => expectOneFooterOnEveryPage(pages));
+  it.skipIf(noBuild !== null)("every built page carries it, and it is the same block on all of them", () => expectOneFooterOnEveryPage(pages));
 
-  it("the two things that may differ, and nothing else", () => expectOnlyTheTwoDifferences(pages));
+  it.skipIf(noBuild !== null)("the two things that may differ, and nothing else", () => expectOnlyTheTwoDifferences(pages));
 
-  it("the disclaimer is said once per page, in the words the copy module holds", () => {
+  it.skipIf(noBuild !== null)("the disclaimer is said once per page, in the words the copy module holds", () => {
     for (const page of pages) {
       const text = page.html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
       const said = text.split(DISCLAIMER).length - 1;
@@ -193,7 +197,7 @@ describe("one footer, every page", () => {
     }
   });
 
-  it("every link resolves inside the site or names an allowed host — and none is a mail address", expectEveryFooterLinkResolves);
+  it.skipIf(noBuild !== null)("every link resolves inside the site or names an allowed host — and none is a mail address", expectEveryFooterLinkResolves);
 
   it("every outbound link says it leaves, and cannot reach back", () => {
     const footer = footerIn(frameAlone(ds));
@@ -380,7 +384,7 @@ describe("what the site says about the daily check is what the watch recorded", 
     expect(html).toContain("change when a person changes them");
   });
 
-  it("the same day, in the footer, on every page", () => {
+  it.skipIf(noBuild !== null)("the same day, in the footer, on every page", () => {
     const state = today();
     for (const page of builtPages())
       expect(readerSees(footerOf(page.html)), `${page.path} on ${state.day}`)

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DISCLAIMER } from "../src/lib/copy/frame.js";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
@@ -10,6 +10,8 @@ import { builtPaths, indexedPaths, robotsTxt, sitemapXml } from "../src/lib/site
 import { DATA_PATH, FEEDBACK_PATH, SITE_URL, absolute, url } from "../src/lib/site.js";
 import { countryAddresses, countryLinks, countryPath } from "../src/lib/slug.js";
 import { frameAlone, styleIn } from "./frame-alone.js";
+import { skipReason } from "./browser-walk.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
  * B2 — every route page was orphaned; the site could not be indexed or browsed.
@@ -35,6 +37,9 @@ const ds = dataset as unknown as Dataset;
 const routes = routePages(ds);
 const countries = countryPages(ds);
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
+/** Why the built home page cannot be read here, or null when it can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the built home page's footer", noBuild);
 
 /** Every href a page ships, in the order it ships them. */
 const hrefsOf = (html: string): string[] =>
@@ -163,9 +168,7 @@ function expectHomeFooterRendersTheCountryLinks(): void {
   // Read off what ships, not off how it is written: a page that listed the
   // four links by hand would pass a source grep and fail a reader the day a
   // fifth country lands (Standards review, 2026-09-08).
-  const index = `${dist}/index.html`;
-  if (!existsSync(index)) return;
-  const built = readFileSync(index, "utf8");
+  const built = readFileSync(`${dist}/index.html`, "utf8");
   const footer = built.slice(built.lastIndexOf("<footer"), built.lastIndexOf("</footer>"));
   expect(footer.length, "no footer in the built home page").toBeGreaterThan(0);
   for (const link of countryLinks(ds))
@@ -291,7 +294,7 @@ describe("the site can be crawled and browsed", () => {
     expectEveryRoutePageWithinTwoClicks();
   });
 
-  it("the home page's footer is where the first click lives, and it renders the same four links", () => {
+  it.skipIf(noBuild !== null)("the home page's footer is where the first click lives, and it renders the same four links", () => {
     expectHomeFooterRendersTheCountryLinks();
   });
 
@@ -339,12 +342,14 @@ describe("a country page prints the section sign bare", () => {
  * pointed at a redirect, and a link preview at a different address from the
  * sitemap (devils-advocate, 2026-09-08). One address per page now.
  */
-const { chromePath, serve } = await import("../scripts/browser/browser.mjs");
+const { serve } = await import("../scripts/browser/browser.mjs");
+
+/** Why the built site cannot be served and fetched here: no Chrome, or no build. Null when it can. */
+const notServed = skipReason();
+if (notServed) warnBuildNotTested("the addresses the built site serves", notServed);
 
 describe("every address the site publishes is the address it serves", () => {
-  it("every sitemap URL answers 200 with no redirect, and matches the page's own canonical", async () => {
-    if (!existsSync(dist)) return;
-    try { chromePath(); } catch { return; }
+  it.skipIf(notServed !== null)("every sitemap URL answers 200 with no redirect, and matches the page's own canonical", async () => {
     const server = await serve(dist);
     try {
       const locs = [...sitemapXml(ds).matchAll(/<loc>([^<]*)<[/]loc>/g)].map((m) => m[1]!);

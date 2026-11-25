@@ -13,6 +13,7 @@ import { routePages } from "../src/lib/route-page/route-page.js";
 import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { DATA_PATH, FEEDBACK_PATH, absolute, url } from "../src/lib/site.js";
 import { frameAlone, headerIn } from "./frame-alone.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 import type { Dataset } from "permit-rulebook-data";
 
 /**
@@ -28,6 +29,9 @@ import type { Dataset } from "permit-rulebook-data";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
+/** Why the built pages cannot be read here, or null when they can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the header on the built pages", noBuild);
 const read = (path: string): string => readFileSync(path, "utf8").split("\r\n").join("\n");
 
 /** Every page the build emits, as a name and its HTML. */
@@ -40,7 +44,7 @@ function builtPages(): { path: string; html: string }[] {
       else if (name.endsWith(".html")) out.push({ path: at.slice(dist.length).split("\\").join("/"), html: read(at) });
     }
   };
-  if (existsSync(dist)) walk(dist);
+  if (noBuild === null) walk(dist);
   return out;
 }
 
@@ -67,7 +71,7 @@ const unmarked = (header: string): string =>
 describe("one header, every page", () => {
   const pages = builtPages();
 
-  it("every built page carries the header, and it is the same markup on all of them", () => {
+  it.skipIf(noBuild !== null)("every built page carries the header, and it is the same markup on all of them", () => {
     expect(pages.length, "nothing is built — run npm run build").toBeGreaterThan(25);
     const reference = unmarked(headerIn(frameAlone(ds)));
     for (const page of pages) {
@@ -90,7 +94,7 @@ describe("one header, every page", () => {
         .toEqual([`${url("/")} page`]);
   });
 
-  it("from every page, the other three countries, the checker and the data page are one link away", () => {
+  it.skipIf(noBuild !== null)("from every page, the other three countries, the checker and the data page are one link away", () => {
     const wanted = [...countryLinks(ds).map((l) => url(l.path)), url("/"), url(DATA_PATH)];
     for (const page of pages) {
       const hrefs = new Set([...page.html.matchAll(/href="([^"]*)"/g)].map((m) => m[1]!));
@@ -144,7 +148,7 @@ function expectEveryRouteTwoClicksFromInterview(pages: { path: string; html: str
 describe("everything is reachable, and not only from a footer", () => {
   const pages = builtPages();
 
-  it("every route page is two clicks from the interview", () => expectEveryRouteTwoClicksFromInterview(pages));
+  it.skipIf(noBuild !== null)("every route page is two clicks from the interview", () => expectEveryRouteTwoClicksFromInterview(pages));
 
   it("no page is reachable only from a footer", () => {
     // Every country page, the data page and the feedback page are in the

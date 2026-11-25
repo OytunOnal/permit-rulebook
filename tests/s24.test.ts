@@ -10,6 +10,7 @@ import { sitemapEntries, sitemapXml } from "../src/lib/sitemap.js";
 import { absolute } from "../src/lib/site.js";
 import { jobOf, pagesYaml as pages, readText } from "./workflow-text.js";
 import { posixShellPath } from "./posix-shell.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
  * s24 — the deploy tells Bing what changed (IndexNow).
@@ -27,6 +28,9 @@ import { posixShellPath } from "./posix-shell.js";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const publicDir = join(root, "public");
 const dist = join(root, "dist");
+/** Why the built site cannot be read here, or null when it can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the key file in the built site", noBuild);
 const ds = dataset as unknown as Dataset;
 
 /** The key file's name IS the key: 32 lowercase hex characters, `.txt`. */
@@ -48,7 +52,7 @@ describe("a key file at the root (point 1)", () => {
     expect(content.trim()).toBe(key);
   });
 
-  it.skipIf(!existsSync(dist))("and the build serves it verbatim at the root", () => {
+  it.skipIf(noBuild !== null)("and the build serves it verbatim at the root", () => {
     const [file] = keyFiles;
     expect(existsSync(join(dist, file!)), `dist/${file} — public/ is not being copied`).toBe(true);
     expect(readFileSync(join(dist, file!), "utf8")).toBe(readFileSync(join(publicDir, file!), "utf8"));

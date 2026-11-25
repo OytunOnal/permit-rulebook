@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
@@ -7,6 +7,7 @@ import { remainingQuestions, type Dataset } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { questionCardHtml, renderStandInsOverQuestionOne } from "../src/lib/question.js";
 import { FEEDBACK_PATH, url } from "../src/lib/site.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
  * The first paint: the page shipped `<main id="main"></main>` empty and a
@@ -14,6 +15,9 @@ import { FEEDBACK_PATH, url } from "../src/lib/site.js";
  * moved down to make room. Now the screen is in the HTML the build writes (s10).
  */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
+/** Why the built page cannot be read here, or null when it can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the first question in the built HTML", noBuild);
 // The dataset the renderer draws question one from, read as the build reads it.
 const DATASET = rawDataset as unknown as Dataset;
 
@@ -71,9 +75,10 @@ function expectAStandInSentencePerReader(inMain: string): void {
  * the screen is there before any script is, and it is the renderer's own
  * output — not a second copy of the markup kept in step by hand.
  */
-describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)", () => {
+describe.skipIf(noBuild !== null)("the first question ships in the HTML (s10)", () => {
   const dataset = DATASET;
-  const built = readFileSync(join(dist, "index.html"), "utf8");
+  // The suite is collected even when it skips, so the page is read only where it was built.
+  const built = noBuild === null ? readFileSync(join(dist, "index.html"), "utf8") : "";
   const inMain = /<main id="main">([\s\S]*?)<\/main>/.exec(built)?.[1] ?? "";
 
   it("is the very markup the renderer draws, drawn by the renderer", () => {
