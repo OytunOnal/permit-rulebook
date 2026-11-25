@@ -224,7 +224,7 @@ click on the tracker link. Answers never leave the device.
   any page's error, on every page and tab it opened, so a test writes no
   error check of its own. Only the walk's own error cases and smoke expect
   errors: the lint refuses `errorsExpected` in any other test, and smoke
-  words each page's errors from the walk's one list, failing on an error it
+  places each page's errors from the walk's one list, failing on an error it
   cannot place or one past the 100. No walk loads the traffic counter from
   Cloudflare: every tab answers the counter's script and reports inside the
   browser, with an empty script by default, or, for the walks that check
@@ -260,7 +260,14 @@ click on the tracker link. Answers never leave the device.
   CLI (`cli-smoke.mjs`, `presentation`) reads the arguments and words the
   result, and its entry (`main-smoke.mjs`, `main`) wires the two and is what
   `package.json` runs. The dev server knows the server it started is this
-  project's by `/countries.json`, and reaches no screen word (#247).
+  project's by `/countries.json`, and reaches no screen word (#247). Smoke's
+  checks return what failed as declared reasons with their values, and its
+  CLI holds every word of the report; the reasons, the page-load kinds and
+  the `no-build` refusal are named once in `smoke-reasons.mjs` (`domain`),
+  which the job, the CLI and the entry share, since the job and the CLI may
+  not import each other (#468). A message about a missing build opens with
+  the command that builds it, and every test that skips on one takes its
+  reason from `tests/why-no-build.ts` and says it on stderr (#472).
   The data clone is found in one place, `dataClonePath()` in the
   `scripts/data-lock` module, which holds the lock's rules:
   beside the site's main checkout, which git names from any worktree, so a
