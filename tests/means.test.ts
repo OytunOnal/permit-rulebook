@@ -1,12 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { optionMeans, type Dataset, type Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, stepsIn, verdictFor } from "./verdict-cards.js";
-import { withSite } from "./browser-walk.js";
+import { withSite, skipReason } from "./browser-walk.js";
 
 /**
  * The human's walk, 2026-09-08.
@@ -23,10 +21,10 @@ import { withSite } from "./browser-walk.js";
  */
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const optionOf = (field: string, value: string) =>
   ds.fields.find((f) => f.id === field)!.options!.find((o) => o.value === value)!;
 
+// The human's walk above, answer for answer, so every case reads the profile the reader was standing on.
 const WALK = {
   destination: "nl", citizenship: "TR", situation: "ict", salary_eur_month: "band_6",
   nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
@@ -110,14 +108,7 @@ describe("the step says what it means, from the verdict", () => {
 });
 
 /** And the page actually shows both, where the reader was standing. */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write([
     "",
@@ -132,31 +123,36 @@ const seed = (answers: Record<string, string>) =>
     version: RECORD_VERSION, answers, history: Object.keys(answers),
   }))})`;
 
+/** The situation question and its answers' sentences, and the walk's results as painted, read in the browser. */
+async function whatThePageShowsWhereTheReaderStood() {
+  return await withSite(async ({ page, url }) => {
+    // 1. The situation question, with the destination already declared.
+    await page.goto(url("/"));
+    await page.evaluate(seed({ destination: "nl" }));
+    await page.goto(url("/"));
+    const question = await page.evaluate('document.querySelector(".qlabel").textContent.trim()');
+    const options = JSON.parse(await page.evaluate(
+      'JSON.stringify([...document.querySelectorAll(".qcard .opt")].map((b) => ({'
+      + ' label: b.querySelector(".opt-label").textContent.trim(),'
+      + ' means: b.querySelector(".opt-means") ? b.querySelector(".opt-means").textContent.trim() : null })))',
+    ));
+
+    // 2. The results the walk reached: the verdict whose step the case
+    // above reads, as painted.
+    await page.evaluate(seed(WALK));
+    await page.goto(url("/"));
+    const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALK))));
+    return { question, options, painted };
+  }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as {
+    question: string;
+    options: { label: string; means: string | null }[];
+    painted: typeof PAINTED_AS_COMPOSED;
+  };
+}
+
 describe.skipIf(skipped !== null)("the page shows it where the reader was standing", () => {
   it("under the answer in the interview, and beside the step in the results", async () => {
-    const seen = await withSite(async ({ page, url }) => {
-      // 1. The situation question, with the destination already declared.
-      await page.goto(url("/"));
-      await page.evaluate(seed({ destination: "nl" }));
-      await page.goto(url("/"));
-      const question = await page.evaluate('document.querySelector(".qlabel").textContent.trim()');
-      const options = JSON.parse(await page.evaluate(
-        'JSON.stringify([...document.querySelectorAll(".qcard .opt")].map((b) => ({'
-        + ' label: b.querySelector(".opt-label").textContent.trim(),'
-        + ' means: b.querySelector(".opt-means") ? b.querySelector(".opt-means").textContent.trim() : null })))',
-      ));
-
-      // 2. The results the walk reached: the verdict whose step the case
-      // above reads, as painted.
-      await page.evaluate(seed(WALK));
-      await page.goto(url("/"));
-      const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALK))));
-      return { question, options, painted };
-    }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as {
-      question: string;
-      options: { label: string; means: string | null }[];
-      painted: typeof PAINTED_AS_COMPOSED;
-    };
+    const seen = await whatThePageShowsWhereTheReaderStood();
 
     expect(seen.question).toBe("Which best describes your situation?");
     const jobOfferAnswer = seen.options.find((o) => o.label.includes("job offer"))!;

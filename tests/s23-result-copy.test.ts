@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   SITUATION_FIELD, deriveBands, evaluate, fieldOptions, unlockTitleOf, unlocks,
@@ -11,11 +9,10 @@ import { SEEK_HINT, WOULD_BE_MET, nearestLine, orAbove, pointsOfNeeded } from ".
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, hintsIn, paintedAsComposedScript, placed, standingOn, stepsIn, verdictFor,
 } from "./verdict-cards.js";
-import { withSite } from "./browser-walk.js";
+import { withSite, skipReason } from "./browser-walk.js";
 import { DENIZ, PRIYA_EXPLORING_ALL } from "./personas.js";
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const textOf = (html: string): string =>
   html.replace(/<[^>]*>/g, " ").split(/\s+/).join(" ").split(String.fromCharCode(160)).join(" ").trim();
 
@@ -99,19 +96,7 @@ describe("the job-search sentence reaches only a reader without an offer", () =>
 
 describe("the unlock steps are ordered by what the reader can do", () => {
   it("a change of situation the reader can make comes after the steps within their own situation", () => {
-    // Deniz as a transferee: a job offer is a path step he can take, and it
-    // ranks after the improvable ones (recognition, language) — the key is
-    // the field's own kind. An arranged answer is no step at all (#175).
-    const transferee: Profile = { ...DENIZ, situation: "ict" };
-    const steps = stepsOffered(transferee);
-    expect(steps.length).toBeGreaterThan(2);
-    const kinds = steps.map((s) => fieldKind(s.field));
-    const firstPath = kinds.indexOf("path");
-    expect(firstPath).toBeGreaterThan(0);
-    expect(kinds.slice(firstPath).every((k) => k === "path")).toBe(true);
-    expect(kinds.slice(0, firstPath).every((k) => k === "improvable")).toBe(true);
-    // An offer-holder has no path step left to take.
-    expect(stepsOffered(DENIZ).map((s) => fieldKind(s.field))).not.toContain("path");
+    expectPathStepsAfterImprovableOnes();
   });
 
   it("Nearest names the first step the reader can take — never a situation they did not declare", () => {
@@ -139,44 +124,106 @@ describe("the unlock steps are ordered by what the reader can do", () => {
   });
 
   it("a reader whom only arranged answers would open more for is offered no step", () => {
-    // Deniz with everything else answered his way: a transfer and a hosting
-    // agreement are all that would open more, and neither is his to take
-    // (#175): they are said apart, never as steps.
-    const settled: Profile = {
-      ...DENIZ, recognition_de: "recognized", experience_5y: "2plus", experience_7y: "5plus", german: "b2plus",
-      salary_eur_year: deriveBands(ds, "salary_eur_year").at(-1)!.id,
-    };
-    const raw = unlocks(ds, settled);
-    expect(raw.length).toBeGreaterThan(0);
-    expect(raw.every((u) => u.field === SITUATION_FIELD && u.option.is_arranged)).toBe(true);
-    expect(stepsOffered(settled)).toEqual([]);
-    // A verdict with no step to take names none: France, no offer and no qualification.
-    const stuck: Profile = { destination: "fr", citizenship: "TR", situation: "none", qualification: "none" };
-    expect(unlocks(ds, stuck)).toEqual([]);
-    expect(stepsIn(verdictFor(stuck))).toEqual([]);
-    expect(nearestNamed(stuck)).toBeUndefined();
+    expectNoStepWhereOnlyArrangedAnswersOpenMore();
   });
 });
 
-describe("the not-yet Opportunity Card prints its tally, and the CEFR rungs are one step", () => {
-  /** The points tally on the Opportunity Card the verdict for these answers draws. */
-  const tallyFor = (answers: Profile): string =>
-    blocksIn(drawnRouteOn(verdictFor(answers), "de-chancenkarte"), "ptsline met", "ptsline short");
+/** Checks Deniz as a transferee is offered his path step after every improvable one, and as an offer-holder none. */
+function expectPathStepsAfterImprovableOnes(): void {
+  // Deniz as a transferee: a job offer is a path step he can take, and it
+  // ranks after the improvable ones (recognition, language) — the key is
+  // the field's own kind. An arranged answer is no step at all (#175).
+  const transferee: Profile = { ...DENIZ, situation: "ict" };
+  const steps = stepsOffered(transferee);
+  expect(steps.length).toBeGreaterThan(2);
+  const kinds = steps.map((s) => fieldKind(s.field));
+  const firstPath = kinds.indexOf("path");
+  expect(firstPath).toBeGreaterThan(0);
+  expect(kinds.slice(firstPath).every((k) => k === "path")).toBe(true);
+  expect(kinds.slice(0, firstPath).every((k) => k === "improvable")).toBe(true);
+  // An offer-holder has no path step left to take.
+  expect(stepsOffered(DENIZ).map((s) => fieldKind(s.field))).not.toContain("path");
+}
 
+/** Checks a reader whom only arranged answers would open more for, or nothing would, is offered no step. */
+function expectNoStepWhereOnlyArrangedAnswersOpenMore(): void {
+  // Deniz with everything else answered his way: a transfer and a hosting
+  // agreement are all that would open more, and neither is his to take
+  // (#175): they are said apart, never as steps.
+  const settled: Profile = {
+    ...DENIZ, recognition_de: "recognized", experience_5y: "2plus", experience_7y: "5plus", german: "b2plus",
+    salary_eur_year: deriveBands(ds, "salary_eur_year").at(-1)!.id,
+  };
+  const raw = unlocks(ds, settled);
+  expect(raw.length).toBeGreaterThan(0);
+  expect(raw.every((u) => u.field === SITUATION_FIELD && u.option.is_arranged)).toBe(true);
+  expect(stepsOffered(settled)).toEqual([]);
+  // A verdict with no step to take names none: France, no offer and no qualification.
+  const stuck: Profile = { destination: "fr", citizenship: "TR", situation: "none", qualification: "none" };
+  expect(unlocks(ds, stuck)).toEqual([]);
+  expect(stepsIn(verdictFor(stuck))).toEqual([]);
+  expect(nearestNamed(stuck)).toBeUndefined();
+}
+
+/** The points tally on the Opportunity Card the verdict for these answers draws. */
+const tallyFor = (answers: Profile): string =>
+  blocksIn(drawnRouteOn(verdictFor(answers), "de-chancenkarte"), "ptsline met", "ptsline short");
+
+/** Checks the not-yet Opportunity Card carries the open card's tally line, from the same scorer, in its own colour. */
+function expectNotYetCardCarriesTheTally(): void {
+  expect(evaluate(ds, PRIYA_EXPLORING_ALL).find((r) => r.route.id === "de-chancenkarte")!.status).toBe("hold");
+  expect(textOf(tallyFor(PRIYA_EXPLORING_ALL))).toContain(pointsOfNeeded(5, 6));
+  // A count, not a verdict: the not-yet tally never wears the met colour.
+  expect(tallyFor(PRIYA_EXPLORING_ALL)).toContain('class="ptsline short"');
+  // Open through the points path: a partial recognition scores, where a
+  // full one takes the direct path and counts nothing.
+  const partial: Profile = { ...PRIYA_EXPLORING_ALL, recognition_de: "partial", occupation_shortage: "yes" };
+  const card = evaluate(ds, partial).find((r) => r.route.id === "de-chancenkarte")!;
+  expect(card.status).toBe("met");
+  expect(textOf(tallyFor(partial)).startsWith(`${pointsOfNeeded(card.points!.scored, 6)} · `)).toBe(true);
+  expect(tallyFor(partial)).toContain('class="ptsline met"');
+  // A route that scores no points has no line.
+  expect(blocksIn(drawnRouteOn(verdictFor(DENIZ), "de-experienced-worker"), "ptsline met", "ptsline short")).toBe("");
+}
+
+/** Checks Priya's German rungs A2, B1 and B2 fold into one "German at A2 … or above" step, and nothing else folds. */
+function expectGermanRungsFoldIntoOneStep(): void {
+  const raw = unlocks(ds, PRIYA_EXPLORING_ALL);
+  const rungs = raw.filter((u) => u.field === "german");
+  expect(rungs.map((u) => u.option.value)).toEqual(["a2", "b1", "b2plus"]);
+  const steps = stepsOffered(PRIYA_EXPLORING_ALL);
+  const german = steps.filter((s) => s.field === "german");
+  expect(german).toHaveLength(1);
+  expect(german[0]!.title).toBe(orAbove(unlockTitleOf(ds, rungs[0]!, PRIYA_EXPLORING_ALL)));
+  expect(german[0]!.title).toMatch(/^German at A2 .*or above$/);
+  // The rungs above it are folded into it: no step of their own.
+  for (const u of rungs.slice(1)) expect(steps.map((s) => s.title)).not.toContain(unlockTitleOf(ds, u, PRIYA_EXPLORING_ALL));
+  // The two recognition answers are two steps still: not a ladder.
+  expect(steps.filter((s) => s.field === "recognition_de")).toHaveLength(2);
+  for (const s of steps) if (s.field !== "german") expect(s.title).not.toContain("or above");
+}
+
+/** Checks Spain's two experience rungs, each opening something of its own, stay two steps, wider first. */
+function expectRungThatOpensMoreKeepsItsStep(): void {
+  // Spain, no qualification: three years in seven opens the highly-qualified
+  // permit, five opens the Blue Card as well — two steps, neither titled
+  // "or above".
+  const spain: Profile = {
+    destination: "es", situation: "offer", situation_country: "es", citizenship: "TR", qualification: "none",
+    experience_5y: "lt2", experience_7y: "lt3", salary_eur_year: "band_7", salary_eur_month: "band_7",
+    age_band: "a30to35", occupation_it: "no",
+  };
+  const rungs = unlocks(ds, spain).filter((u) => u.field === "experience_7y");
+  expect(rungs.map((u) => u.option.value)).toEqual(["3to5", "5plus"]);
+  const steps = stepsOffered(spain).filter((s) => s.field === "experience_7y");
+  // Two steps — the wider one first, by the rank every step is ordered on.
+  expect(steps.map((s) => s.title)).toEqual([...rungs].reverse().map((u) => unlockTitleOf(ds, u, spain)));
+  for (const s of steps) expect(s.title).not.toContain("or above");
+}
+
+describe("the not-yet Opportunity Card prints its tally, and the CEFR rungs are one step", () => {
   it("the not-yet card carries the same tally line the open card does, from the same scorer", () => {
-    expect(evaluate(ds, PRIYA_EXPLORING_ALL).find((r) => r.route.id === "de-chancenkarte")!.status).toBe("hold");
-    expect(textOf(tallyFor(PRIYA_EXPLORING_ALL))).toContain(pointsOfNeeded(5, 6));
-    // A count, not a verdict: the not-yet tally never wears the met colour.
-    expect(tallyFor(PRIYA_EXPLORING_ALL)).toContain('class="ptsline short"');
-    // Open through the points path: a partial recognition scores, where a
-    // full one takes the direct path and counts nothing.
-    const partial: Profile = { ...PRIYA_EXPLORING_ALL, recognition_de: "partial", occupation_shortage: "yes" };
-    const card = evaluate(ds, partial).find((r) => r.route.id === "de-chancenkarte")!;
-    expect(card.status).toBe("met");
-    expect(textOf(tallyFor(partial)).startsWith(`${pointsOfNeeded(card.points!.scored, 6)} · `)).toBe(true);
-    expect(tallyFor(partial)).toContain('class="ptsline met"');
-    // A route that scores no points has no line.
-    expect(blocksIn(drawnRouteOn(verdictFor(DENIZ), "de-experienced-worker"), "ptsline met", "ptsline short")).toBe("");
+    expectNotYetCardCarriesTheTally();
   });
 
   it("a ladder is an enum every rule reads as 'this rung or above'", () => {
@@ -197,36 +244,11 @@ describe("the not-yet Opportunity Card prints its tally, and the CEFR rungs are 
   });
 
   it("the unlock list collapses A2 / B1 / B2 into 'German at A2 … or above'", () => {
-    const raw = unlocks(ds, PRIYA_EXPLORING_ALL);
-    const rungs = raw.filter((u) => u.field === "german");
-    expect(rungs.map((u) => u.option.value)).toEqual(["a2", "b1", "b2plus"]);
-    const steps = stepsOffered(PRIYA_EXPLORING_ALL);
-    const german = steps.filter((s) => s.field === "german");
-    expect(german).toHaveLength(1);
-    expect(german[0]!.title).toBe(orAbove(unlockTitleOf(ds, rungs[0]!, PRIYA_EXPLORING_ALL)));
-    expect(german[0]!.title).toMatch(/^German at A2 .*or above$/);
-    // The rungs above it are folded into it: no step of their own.
-    for (const u of rungs.slice(1)) expect(steps.map((s) => s.title)).not.toContain(unlockTitleOf(ds, u, PRIYA_EXPLORING_ALL));
-    // The two recognition answers are two steps still: not a ladder.
-    expect(steps.filter((s) => s.field === "recognition_de")).toHaveLength(2);
-    for (const s of steps) if (s.field !== "german") expect(s.title).not.toContain("or above");
+    expectGermanRungsFoldIntoOneStep();
   });
 
   it("a rung that opens something the lower rung does not keeps its own step", () => {
-    // Spain, no qualification: three years in seven opens the highly-qualified
-    // permit, five opens the Blue Card as well — two steps, neither titled
-    // "or above".
-    const spain: Profile = {
-      destination: "es", situation: "offer", situation_country: "es", citizenship: "TR", qualification: "none",
-      experience_5y: "lt2", experience_7y: "lt3", salary_eur_year: "band_7", salary_eur_month: "band_7",
-      age_band: "a30to35", occupation_it: "no",
-    };
-    const rungs = unlocks(ds, spain).filter((u) => u.field === "experience_7y");
-    expect(rungs.map((u) => u.option.value)).toEqual(["3to5", "5plus"]);
-    const steps = stepsOffered(spain).filter((s) => s.field === "experience_7y");
-    // Two steps — the wider one first, by the rank every step is ordered on.
-    expect(steps.map((s) => s.title)).toEqual([...rungs].reverse().map((u) => unlockTitleOf(ds, u, spain)));
-    for (const s of steps) expect(s.title).not.toContain("or above");
+    expectRungThatOpensMoreKeepsItsStep();
   });
 });
 
@@ -268,14 +290,7 @@ describe("the result screen, decided by the verdict", () => {
 });
 
 /** And the screen itself: Priya's result, as the browser paints it. */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! s23's screen was not walked: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 

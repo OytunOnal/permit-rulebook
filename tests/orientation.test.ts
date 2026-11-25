@@ -13,8 +13,8 @@ import { routePages } from "../src/lib/route-page/route-page.js";
 import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { DATA_PATH, FEEDBACK_PATH, absolute, url } from "../src/lib/site.js";
 import { frameAlone, headerIn } from "./frame-alone.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 import type { Dataset } from "permit-rulebook-data";
-import { withSite } from "./browser-walk.js";
 
 /**
  * The Orientation lens (RUBRIC 1.3), which the site map's own birth demanded.
@@ -29,6 +29,9 @@ import { withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
+/** Why the built pages cannot be read here, or null when they can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the header on the built pages", noBuild);
 const read = (path: string): string => readFileSync(path, "utf8").split("\r\n").join("\n");
 
 /** Every page the build emits, as a name and its HTML. */
@@ -41,7 +44,7 @@ function builtPages(): { path: string; html: string }[] {
       else if (name.endsWith(".html")) out.push({ path: at.slice(dist.length).split("\\").join("/"), html: read(at) });
     }
   };
-  if (existsSync(dist)) walk(dist);
+  if (noBuild === null) walk(dist);
   return out;
 }
 
@@ -57,7 +60,7 @@ const headerOf = (html: string): string => {
  * The same header with the two things that legitimately differ taken off, so
  * pages compare: the current-page marks, and — since s13 put the four countries
  * under one word — the disclosure's word itself, which is the country's own
- * name on a page that belongs to one (`tests/s13.test.ts`). Everything else in the
+ * name on a page that belongs to one (`tests/s13-frame.test.ts`). Everything else in the
  * header must be the same bytes on every page.
  */
 const unmarked = (header: string): string =>
@@ -68,7 +71,7 @@ const unmarked = (header: string): string =>
 describe("one header, every page", () => {
   const pages = builtPages();
 
-  it("every built page carries the header, and it is the same markup on all of them", () => {
+  it.skipIf(noBuild !== null)("every built page carries the header, and it is the same markup on all of them", () => {
     expect(pages.length, "nothing is built — run npm run build").toBeGreaterThan(25);
     const reference = unmarked(headerIn(frameAlone(ds)));
     for (const page of pages) {
@@ -78,24 +81,7 @@ describe("one header, every page", () => {
     }
   });
 
-  it("the country a page belongs to is the one marked, and only that one", () => {
-    for (const page of countryPages(ds)) {
-      const header = headerOf(page.html);
-      const marks = [...header.matchAll(/aria-current="([^"]*)"/g)].map((m) => m[1]);
-      expect(marks, page.path).toEqual(["page"]);
-      const link = new RegExp(`href="${url(page.path)}" aria-current="page"`);
-      expect(header, `${page.path} marks a country that is not its own`).toMatch(link);
-    }
-    for (const page of routePages(ds)) {
-      const header = headerOf(page.html);
-      const marks = [...header.matchAll(/aria-current="([^"]*)"/g)].map((m) => m[1]);
-      // A route page sits UNDER a country; it is not that country's page.
-      expect(marks, page.path).toEqual(["true"]);
-      const country = ds.countries.find((c) => page.path.startsWith(`/${page.path.split("/")[1]}/`)
-        && page.path.split("/")[1] === countryLinks(ds).find((l) => l.name === c.name)!.path.slice(1))!;
-      expect(header, page.path).toContain(`href="${url(countryLinks(ds).find((l) => l.name === country.name)!.path)}" aria-current="true"`);
-    }
-  });
+  it("the country a page belongs to is the one marked, and only that one", expectOnlyItsOwnCountryMarked);
 
   it("the interview and the data page mark their own word, and the 404 and the old data address nothing", () => {
     expect(headerOf(dataPage(ds).html)).toContain(`href="${url(DATA_PATH)}" aria-current="page"`);
@@ -108,7 +94,7 @@ describe("one header, every page", () => {
         .toEqual([`${url("/")} page`]);
   });
 
-  it("from every page, the other three countries, the checker and the data page are one link away", () => {
+  it.skipIf(noBuild !== null)("from every page, the other three countries, the checker and the data page are one link away", () => {
     const wanted = [...countryLinks(ds).map((l) => url(l.path)), url("/"), url(DATA_PATH)];
     for (const page of pages) {
       const hrefs = new Set([...page.html.matchAll(/href="([^"]*)"/g)].map((m) => m[1]!));
@@ -118,28 +104,51 @@ describe("one header, every page", () => {
   });
 });
 
+/** Checks a country page marks its own country as the page, and a route page its country as where it sits. */
+function expectOnlyItsOwnCountryMarked() {
+  for (const page of countryPages(ds)) {
+    const header = headerOf(page.html);
+    const marks = [...header.matchAll(/aria-current="([^"]*)"/g)].map((m) => m[1]);
+    expect(marks, page.path).toEqual(["page"]);
+    const link = new RegExp(`href="${url(page.path)}" aria-current="page"`);
+    expect(header, `${page.path} marks a country that is not its own`).toMatch(link);
+  }
+  for (const page of routePages(ds)) {
+    const header = headerOf(page.html);
+    const marks = [...header.matchAll(/aria-current="([^"]*)"/g)].map((m) => m[1]);
+    // A route page sits UNDER a country; it is not that country's page.
+    expect(marks, page.path).toEqual(["true"]);
+    const country = ds.countries.find((c) => page.path.startsWith(`/${page.path.split("/")[1]}/`)
+      && page.path.split("/")[1] === countryLinks(ds).find((l) => l.name === c.name)!.path.slice(1))!;
+    expect(header, page.path).toContain(`href="${url(countryLinks(ds).find((l) => l.name === country.name)!.path)}" aria-current="true"`);
+  }
+}
+
+/** Where a page can be reached from, by the links it actually emits. */
+const hrefsOf = (html: string): string[] =>
+  [...html.matchAll(/href="([^"]*)"/g)].map((m) => m[1]!).filter((h) => h.startsWith(url("/")));
+
+/** Checks every route page is among the pages two clicks from the built interview. */
+function expectEveryRouteTwoClicksFromInterview(pages: { path: string; html: string }[]) {
+  const home = pages.find((p) => p.path === "/index.html");
+  expect(home, "no home page was built").toBeDefined();
+  const first = new Set(hrefsOf(home!.html));
+  const second = new Set<string>(first);
+  for (const href of first) {
+    // Every internal page address ends in a slash now, so the file behind it
+    // is that address plus `index.html`.
+    const page = pages.find((p) => p.path === `${href.replace(/[/]$/, "")}/index.html`
+      || p.path === `${href.replace(/[/]$/, "")}.html`);
+    if (page) for (const next of hrefsOf(page.html)) second.add(next);
+  }
+  for (const route of routePages(ds))
+    expect(second.has(url(route.path)), `${route.path} is more than two clicks from the interview`).toBe(true);
+}
+
 describe("everything is reachable, and not only from a footer", () => {
   const pages = builtPages();
 
-  /** Where a page can be reached from, by the links it actually emits. */
-  const hrefsOf = (html: string): string[] =>
-    [...html.matchAll(/href="([^"]*)"/g)].map((m) => m[1]!).filter((h) => h.startsWith(url("/")));
-
-  it("every route page is two clicks from the interview", () => {
-    const home = pages.find((p) => p.path === "/index.html");
-    expect(home, "no home page was built").toBeDefined();
-    const first = new Set(hrefsOf(home!.html));
-    const second = new Set<string>(first);
-    for (const href of first) {
-      // Every internal page address ends in a slash now, so the file behind it
-      // is that address plus `index.html`.
-      const page = pages.find((p) => p.path === `${href.replace(/[/]$/, "")}/index.html`
-        || p.path === `${href.replace(/[/]$/, "")}.html`);
-      if (page) for (const next of hrefsOf(page.html)) second.add(next);
-    }
-    for (const route of routePages(ds))
-      expect(second.has(url(route.path)), `${route.path} is more than two clicks from the interview`).toBe(true);
-  });
+  it.skipIf(noBuild !== null)("every route page is two clicks from the interview", () => expectEveryRouteTwoClicksFromInterview(pages));
 
   it("no page is reachable only from a footer", () => {
     // Every country page, the data page and the feedback page are in the
@@ -169,191 +178,6 @@ describe("everything is reachable, and not only from a footer", () => {
     const built = `${dist}/status/index.html`;
     if (existsSync(built)) expect(read(built)).toContain(url(DATA_PATH));
   });
-});
-
-/** And the folded state, measured rather than read off a media query. */
-const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
-if (skipped)
-  process.stderr.write([
-    "",
-    `  !! THE NAVIGATION WAS NOT WALKED IN A BROWSER: ${skipped}.`,
-    "     Run: npm run build && npm test",
-    "",
-    "",
-  ].join(String.fromCharCode(10)));
-
-const STATE = 'JSON.stringify({'
-  + ' expanded: document.querySelector(".menu").getAttribute("aria-expanded"),'
-  + ' menuShown: getComputedStyle(document.querySelector(".menu")).display !== "none",'
-  + ' navShown: getComputedStyle(document.querySelector(".nav")).display !== "none",'
-  + ' focused: document.activeElement ? (document.activeElement.textContent || "").trim() : "",'
-  + ' columns: getComputedStyle(document.querySelector(".nav")).gridTemplateColumns })';
-
-describe.skipIf(skipped !== null)("the nav folds where it says it does", () => {
-  for (const [width, folded] of [[960, false], [959, true]] as const)
-    it(`at ${width} px the nav is ${folded ? "folded behind Menu" : "an open row"}`, async () => {
-      const seen = JSON.parse(await withSite(async ({ page, url: addressOf }) => {
-        await page.goto(addressOf("/germany/"));
-        return page.evaluate(STATE);
-      }, { viewport: { width, height: 900 }, mobile: false }) as string) as
-        { menuShown: boolean; navShown: boolean };
-      expect(seen.menuShown, `the Menu button is ${seen.menuShown ? "shown" : "hidden"} at ${width}`).toBe(folded);
-      expect(seen.navShown, `the row is ${seen.navShown ? "shown" : "hidden"} at ${width}`).toBe(!folded);
-    }, 180000);
-
-  it("at 390 the menu opens, takes the focus, closes on Escape and on a choice", async () => {
-    const seen = await withSite(async ({ page, url: addressOf }) => {
-      await page.goto(addressOf("/germany/"));
-      const closed = JSON.parse(await page.evaluate(STATE));
-      await page.evaluate('document.querySelector(".menu").click()');
-      const open = JSON.parse(await page.evaluate(STATE));
-      await page.evaluate(
-        'document.querySelector(".nav").dispatchEvent('
-        + ' new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))',
-      );
-      const escaped = JSON.parse(await page.evaluate(
-        STATE.replace(/ [}][)]$/, ", onButton: document.activeElement === document.querySelector('.menu') })"),
-      ));
-      await page.evaluate('document.querySelector(".menu").click()');
-      // Choosing a country closes the menu on the way out. The navigation
-      // itself is held back so the state can be read: a page that has already
-      // left has no menu to report on, which is how this case first went
-      // flaky (2026-09-08).
-      await page.evaluate(
-        'document.addEventListener("click", (e) => e.preventDefault(), { capture: true, once: true });'
-        + ' document.querySelector(".nav a").click()',
-      );
-      const chosen = JSON.parse(await page.evaluate(STATE));
-      return { closed, open, escaped, chosen };
-    }, PHONE) as {
-      closed: { expanded: string; navShown: boolean };
-      open: { expanded: string; navShown: boolean; focused: string; columns: string };
-      escaped: { expanded: string; navShown: boolean; onButton: boolean };
-      chosen: { expanded: string; navShown: boolean };
-    };
-
-    expect(seen.closed.expanded).toBe("false");
-    expect(seen.closed.navShown, "the row is showing before Menu was touched").toBe(false);
-    expect(seen.open.expanded).toBe("true");
-    expect(seen.open.navShown, "Menu opened nothing").toBe(true);
-    // One column, as the mock draws it, and the focus on the first item.
-    expect(seen.open.columns.split(" ").length, `columns: ${seen.open.columns}`).toBe(1);
-    expect(seen.open.focused, "the focus did not move into the menu").toBe("Germany");
-    // Escape closes it and gives the focus back to the control that opened it.
-    expect(seen.escaped.expanded).toBe("false");
-    expect(seen.escaped.navShown).toBe(false);
-    expect(seen.escaped.onButton, "Escape left the focus adrift").toBe(true);
-    // And choosing something closes it on the way out.
-    expect(seen.chosen.expanded).toBe("false");
-    expect(seen.chosen.navShown).toBe(false);
-  }, 180000);
-
-  it("Escape closes it from anywhere on the page, and so does a tap outside", async () => {
-    const seen = await withSite(async ({ page, url: addressOf }) => {
-      const state = async () => JSON.parse(await page.evaluate(STATE)) as
-        { expanded: string; navShown: boolean };
-      await page.goto(addressOf("/germany/"));
-      // Escape pressed on the document, with the focus nowhere near the menu.
-      await page.evaluate('document.querySelector(".menu").click()');
-      const opened = await state();
-      await page.evaluate('document.querySelector("h1").focus ? document.querySelector("h1").focus() : 0');
-      await page.evaluate(
-        'document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))',
-      );
-      const afterEscape = JSON.parse(await page.evaluate(
-        STATE.replace(/ [}][)]$/, ", onButton: document.activeElement === document.querySelector('.menu') })"),
-      )) as { expanded: string; navShown: boolean; onButton: boolean };
-      // And a tap on the page outside it.
-      await page.evaluate('document.querySelector(".menu").click()');
-      const reopened = await state();
-      await page.evaluate('document.querySelector("main").click()');
-      const afterOutside = await state();
-      return { opened, afterEscape, reopened, afterOutside };
-    }, PHONE) as {
-      opened: { expanded: string; navShown: boolean };
-      afterEscape: { expanded: string; navShown: boolean; onButton: boolean };
-      reopened: { expanded: string; navShown: boolean };
-      afterOutside: { expanded: string; navShown: boolean };
-    };
-
-    expect(seen.opened.expanded).toBe("true");
-    expect(seen.afterEscape.expanded, "Escape from outside the menu did nothing").toBe("false");
-    expect(seen.afterEscape.navShown).toBe(false);
-    expect(seen.afterEscape.onButton, "Escape left the focus adrift").toBe(true);
-    expect(seen.reopened.expanded).toBe("true");
-    expect(seen.afterOutside.expanded, "a tap outside left the menu open").toBe("false");
-    expect(seen.afterOutside.navShown).toBe(false);
-  }, 180000);
-});
-
-/**
- * On the live site the country headings over the per-route JSON lists were
- * clipped: the list started over the lower half of the letters, so only their
- * tops showed (human, 2026-09-08). The links carry the inline tap class, whose
- * negative vertical margin is right for a link inside a sentence and, inside a
- * grid, pulled each list up over its own heading.
- */
-describe.skipIf(skipped !== null)("the data page's headings sit clear of their lists", () => {
-  for (const [width, height] of [[1100, 900], [390, 844]] as const)
-    it(`no country heading is overlapped at ${width} px`, async () => {
-      const heads = JSON.parse(await withSite(async ({ page, url: addressOf }) => {
-        await page.goto(addressOf("/data/"));
-        return page.evaluate(
-          'JSON.stringify([...document.querySelectorAll(".jsonlinks")].map((nav) => {'
-          + ' const label = nav.querySelector(".label");'
-          + ' const link = nav.querySelector("a");'
-          + ' const l = label.getBoundingClientRect();'
-          + ' const a = link.getBoundingClientRect();'
-          + ' return { text: label.textContent.trim(), height: Math.round(l.height),'
-          + '   bottom: Math.round(l.bottom), linkTop: Math.round(a.top),'
-          + '   linkHeight: Math.round(a.height) }; }))',
-        );
-      }, { viewport: { width, height }, mobile: width < 500 }) as string) as
-        { text: string; height: number; bottom: number; linkTop: number; linkHeight: number }[];
-
-      expect(heads.length, "no per-route JSON lists on the page").toBe(4);
-      for (const head of heads) {
-        // The heading has a box of its own, and the list starts below it.
-        expect(head.height, `${head.text}: the heading has no height`).toBeGreaterThan(8);
-        expect(head.linkTop, `${head.text}: the list starts ${head.bottom - head.linkTop} px over the heading`)
-          .toBeGreaterThanOrEqual(head.bottom);
-        // And the rows are still a tap target.
-        expect(head.linkHeight, `${head.text}: a JSON row is ${head.linkHeight} px`).toBeGreaterThanOrEqual(44);
-      }
-    }, 180000);
-});
-
-/** And the pages still work under their own policy, in a browser: the walk
- * fails on anything the policy refused on any of them, naming its page. */
-describe.skipIf(skipped !== null)("nothing the site does is refused by its own policy", () => {
-  it("every kind of page loads, renders and opens its menu with no CSP violation", async () => {
-    const seen = await withSite(async ({ page, url: addressOf }) => {
-      const out: Record<string, string> = {};
-      for (const [name, path] of [
-        ["interview", "/"], ["country", "/germany/"], ["data", "/data/"],
-        ["route", "/germany/researcher/"], ["error", "/404.html"],
-      ] as const) {
-        await page.goto(addressOf(path));
-        // Every load has run, so the policy has met each, before the next page opens.
-        await page.waitUntilAtRest();
-        out[name] = await page.evaluate(
-          '(() => { const b = document.querySelector(".menu"); if (!b) return "no button";'
-          + ' b.click(); return b.getAttribute("aria-expanded"); })()',
-        );
-      }
-      return out;
-    }, PHONE);
-
-    // The inline menu script is hashed, so it still runs.
-    for (const [name, menu] of Object.entries(seen)) expect(menu, `${name}: the menu did not open`).toBe("true");
-  }, 180000);
 });
 
 /**

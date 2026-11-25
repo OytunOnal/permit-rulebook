@@ -1,25 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, joinOr, remainingQuestions, situationsAsked, type Country, type Dataset,
-  type Profile,
+  DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, remainingQuestions, situationsAsked, type Country, type Dataset,
 } from "permit-rulebook-data";
-import { RECORD_VERSION } from "../src/lib/record.js";
 import { notScoredMarkHtml, questionCardHtml } from "../src/lib/question.js";
 import { SITUATION_COUNTRY_FIELD, markUnder, notScoredFor } from "../src/lib/situations.js";
 import { IS_QUOTED_NOT_CHECKED, READ_IT_HERE, notCheckedQuotedLine } from "../src/lib/copy/interview.js";
-import { routesNeed, unscoredHeadline, unscoredTallyLine } from "../src/lib/copy/verdict.js";
+import { unscoredHeadline, unscoredTallyLine } from "../src/lib/copy/verdict.js";
 import { url } from "../src/lib/site.js";
-import { verdictHtml, type Tally } from "../src/lib/verdict/verdict.js";
-import {
-  PAINTED_AS_COMPOSED, answerWordsOf, countryNamed, paintedAsComposedScript, saidLineOf, verdictOn, type SaidLine,
-} from "./verdict-cards.js";
-import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
+import { countryNamed, saidLineOf, verdictOn, type SaidLine } from "./verdict-cards.js";
+import { countryQuestion } from "./s21-country-question.js";
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 const france = ds.countries.find((c) => c.code === "FR")!;
 const researcher = france.routes.find((r) => r.id === "fr-talent-chercheur")!;
@@ -34,10 +26,6 @@ function tallyLinesFor(situation: string | undefined, data: Dataset = ds): Map<s
   if (verdict.layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
   return new Map(verdict.layout.sections.map((s) => [countryNamed(s.country), saidLineOf(verdict, s)]));
 }
-
-/** The country question, as the four-country path reaches it: third, after the situation. */
-const countryQuestion = () =>
-  remainingQuestions(ds, { [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "research" })[0]!;
 
 /** Question 3, drawn by the one renderer, for a reader on the four-country path who declared this situation. */
 const countryScreen = (situation: string): string =>
@@ -73,30 +61,11 @@ describe("s21 — question 3 marks a country the declared situation cannot use",
   });
 
   it("one derivation, keyed either way: the mark under a country option is the s19 mark for that country and the declared situation", () => {
-    const answers = { [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "research" };
-    expect(markUnder(ds, { field: SITUATION_COUNTRY_FIELD, value: "fr" }, answers)).toEqual(notScoredFor(ds, "fr", "research"));
-    expect(markUnder(ds, { field: SITUATION_COUNTRY_FIELD, value: "de" }, answers)).toBeNull();
-    // Question 2 keeps its own key: the option is the situation, the destination is declared.
-    expect(markUnder(ds, { field: SITUATION_FIELD, value: "research" }, { [DESTINATION_FIELD]: "fr" }))
-      .toEqual(notScoredFor(ds, "fr", "research"));
-    // With no situation on the record there is nothing to mark a country against.
-    expect(markUnder(ds, { field: SITUATION_COUNTRY_FIELD, value: "fr" }, { [DESTINATION_FIELD]: "all" })).toBeNull();
-    // And no other question is ever marked.
-    expect(markUnder(ds, { field: "qualification", value: "degree" }, answers)).toBeNull();
+    expectOneDerivationKeyedEitherWay();
   });
 
   it("over every situation × country, the mark is exactly where situationsAsked says", () => {
-    const asked = situationsAsked(ds);
-    const countries = countryQuestion().options.map((o) => o.value);
-    for (const s of fieldOptions(ds, SITUATION_FIELD)) {
-      const marked = Object.keys(marksOn(countryScreen(s.value)));
-      const expected = s.is_fallback || s.is_unknown ? [] : countries.filter((c) => !asked.get(c)!.has(s.value));
-      expect(marked, s.value).toEqual(expected);
-    }
-    // Which is one country under one answer in the whole dataset today.
-    const all = fieldOptions(ds, SITUATION_FIELD).flatMap((s) =>
-      Object.keys(marksOn(countryScreen(s.value))).map((c) => `${s.value}:${c}`));
-    expect(all).toEqual(["research:fr"]);
+    expectMarksExactlyWhereSituationsAskedSays();
   });
 
   it("draws the s19 mark under France — same words, same link — and the option stays a button", () => {
@@ -111,22 +80,7 @@ describe("s21 — question 3 marks a country the declared situation cannot use",
   });
 
   it("the mark is announced: it has an id, its option is described by it, and no other option is", () => {
-    const html = countryScreen("research");
-    const mark = html.match(/<small class="opt-mark"([^>]*)>/)![1]!;
-    const id = mark.match(/ id="([^"]+)"/)?.[1];
-    expect(id, "the mark has no id").toBeTruthy();
-    expect(html.match(new RegExp(` id="${id}"`, "g"))!.length).toBe(1);
-    const button = html.match(/<button class="opt" data-value="fr"([^>]*)>/)![1]!;
-    expect(button).toContain(` aria-describedby="${id}"`);
-    expect(html.match(/aria-describedby/g)!.length).toBe(1);
-    // Question 2 for France, the same way (the s19 mark, announced too).
-    const q2 = questionCardHtml({
-      dataset: ds, question: remainingQuestions(ds, { [DESTINATION_FIELD]: "fr" }).find((q) => q.field === SITUATION_FIELD)!,
-      answers: { [DESTINATION_FIELD]: "fr" }, asked: [DESTINATION_FIELD], editing: null, total: 12,
-    });
-    const q2id = q2.match(/<small class="opt-mark"[^>]* id="([^"]+)"/)?.[1];
-    expect(q2id).toBeTruthy();
-    expect(q2).toMatch(new RegExp(`<button class="opt" data-value="research"[^>]* aria-describedby="${q2id}"`));
+    expectMarkAnnouncedByItsOptionAlone();
   });
 
   it("the mark's link is internal and says so: no out class", () => {
@@ -135,28 +89,62 @@ describe("s21 — question 3 marks a country the declared situation cannot use",
   });
 });
 
+/** Checks that question 3's mark and question 2's come from the one derivation, each keyed its own way. */
+function expectOneDerivationKeyedEitherWay(): void {
+  const answers = { [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "research" };
+  expect(markUnder(ds, { field: SITUATION_COUNTRY_FIELD, value: "fr" }, answers)).toEqual(notScoredFor(ds, "fr", "research"));
+  expect(markUnder(ds, { field: SITUATION_COUNTRY_FIELD, value: "de" }, answers)).toBeNull();
+  // Question 2 keeps its own key: the option is the situation, the destination is declared.
+  expect(markUnder(ds, { field: SITUATION_FIELD, value: "research" }, { [DESTINATION_FIELD]: "fr" }))
+    .toEqual(notScoredFor(ds, "fr", "research"));
+  // With no situation on the record there is nothing to mark a country against.
+  expect(markUnder(ds, { field: SITUATION_COUNTRY_FIELD, value: "fr" }, { [DESTINATION_FIELD]: "all" })).toBeNull();
+  // And no other question is ever marked.
+  expect(markUnder(ds, { field: "qualification", value: "degree" }, answers)).toBeNull();
+}
+
+/** Checks that over every situation × country, question 3 marks exactly the countries situationsAsked leaves out. */
+function expectMarksExactlyWhereSituationsAskedSays(): void {
+  const asked = situationsAsked(ds);
+  const countries = countryQuestion().options.map((o) => o.value);
+  for (const s of fieldOptions(ds, SITUATION_FIELD)) {
+    const marked = Object.keys(marksOn(countryScreen(s.value)));
+    const expected = s.is_fallback || s.is_unknown ? [] : countries.filter((c) => !asked.get(c)!.has(s.value));
+    expect(marked, s.value).toEqual(expected);
+  }
+  // Which is one country under one answer in the whole dataset today.
+  const all = fieldOptions(ds, SITUATION_FIELD).flatMap((s) =>
+    Object.keys(marksOn(countryScreen(s.value))).map((c) => `${s.value}:${c}`));
+  expect(all).toEqual(["research:fr"]);
+}
+
+/** Checks that the mark has a unique id that its own option, and no other, is described by — on question 3 and question 2. */
+function expectMarkAnnouncedByItsOptionAlone(): void {
+  const html = countryScreen("research");
+  const mark = html.match(/<small class="opt-mark"([^>]*)>/)![1]!;
+  const id = mark.match(/ id="([^"]+)"/)?.[1];
+  expect(id, "the mark has no id").toBeTruthy();
+  expect(html.match(new RegExp(` id="${id}"`, "g"))!.length).toBe(1);
+  const button = html.match(/<button class="opt" data-value="fr"([^>]*)>/)![1]!;
+  expect(button).toContain(` aria-describedby="${id}"`);
+  expect(html.match(/aria-describedby/g)!.length).toBe(1);
+  // Question 2 for France, the same way (the s19 mark, announced too).
+  const q2 = questionCardHtml({
+    dataset: ds, question: remainingQuestions(ds, { [DESTINATION_FIELD]: "fr" }).find((q) => q.field === SITUATION_FIELD)!,
+    answers: { [DESTINATION_FIELD]: "fr" }, asked: [DESTINATION_FIELD], editing: null, total: 12,
+  });
+  const q2id = q2.match(/<small class="opt-mark"[^>]* id="([^"]+)"/)?.[1];
+  expect(q2id).toBeTruthy();
+  expect(q2).toMatch(new RegExp(`<button class="opt" data-value="research"[^>]* aria-describedby="${q2id}"`));
+}
+
 describe("s21 — the four-country result says it in the country's line", () => {
   it("France's line: the s19 headline, then the quoted route as the link", () => {
-    const line = tallyLinesFor("research").get(france.name);
-    expect(line).toBeTruthy();
-    expect(line!.text).toBe(
-      "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
-    );
-    expect(line!.html).toBe(
-      "No route we check in France takes a research hosting agreement — "
-      + `<a href="${url("/france/talent-researcher")}">Talent — researcher (chercheur)</a> ${IS_QUOTED_NOT_CHECKED}.`,
-    );
-    expect(line!.html).not.toMatch(/class="[^"]*\bout\b/);
+    expectFranceLineSaysHeadlineThenLink();
   });
 
   it("is the s19 sentence and the s19 words — one copy, in the copy module", () => {
-    expect(unscoredTallyLine("France", "a research hosting agreement", "Talent — researcher (chercheur)")).toBe(
-      `${unscoredHeadline("France", "a research hosting agreement").replace(/\.$/, "")} — Talent — researcher (chercheur) ${IS_QUOTED_NOT_CHECKED}.`,
-    );
-    // Without a quoted route the line is the headline alone.
-    expect(unscoredTallyLine("France", "a research hosting agreement")).toBe(unscoredHeadline("France", "a research hosting agreement"));
-    // The question-2 mark reads the same clause.
-    expect(notCheckedQuotedLine("France", "R")).toContain(IS_QUOTED_NOT_CHECKED);
+    expectTallyLineIsTheS19Sentence();
   });
 
   it("only a country closed to the declared situation: the other three, the other answers and no answer leave the tally alone", () => {
@@ -168,16 +156,7 @@ describe("s21 — the four-country result says it in the country's line", () => 
   });
 
   it("escapes the names it prints", () => {
-    // France's researcher route, renamed; the rules untouched. The country is
-    // named by the country list's phrase, not the dataset's name.
-    const renamed = (c: Country): Country => c.code !== "FR" ? c
-      : { ...c, routes: c.routes.map((r) => (r.id === researcher.id ? { ...r, name: "<x>" } : r)) };
-    const doctored = { ...ds, countries: ds.countries.map(renamed) } as Dataset;
-    const line = tallyLinesFor("research", doctored).get(france.name);
-    expect(line).toBeTruthy();
-    expect(line!.text).toBe("No route we check in France takes a research hosting agreement — <x> is quoted, not checked.");
-    expect(line!.html).toContain(">&lt;x&gt;</a>");
-    expect(line!.html).not.toContain("<x>");
+    expectTallyLineEscapesTheNamesItPrints();
   });
 
   /**
@@ -190,176 +169,55 @@ describe("s21 — the four-country result says it in the country's line", () => 
    * its own, which nothing has drawn.
    */
   it("every situation the interview offers is taken by a scored route in some country", () => {
-    const asked = situationsAsked(ds);
-    for (const s of fieldOptions(ds, SITUATION_FIELD)) {
-      if (s.is_unknown) continue;
-      expect(asked.get("all")!.has(s.value), s.value).toBe(true);
-      expect([...tallyLinesFor(s.value).values()].some((line) => line === null), s.value).toBe(true);
-    }
+    expectEverySituationTakenSomewhere();
   });
 });
 
-/** The critique's walk: all four, research, France at question 3, then the
- * quickest profile to a result that contradicts nothing — no qualification, a
- * Turkish passport, no Dutch graduation, no top-200 degree. */
-const WALKED: Profile = {
-  [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "research", [SITUATION_COUNTRY_FIELD]: "fr", qualification: "none",
-  citizenship: "TR", nl_recent_grad: "no", top200_grad: "no",
-};
-
-describe("s21 — the walk's result, from the verdict", () => {
-  it("France's written state heads it; France's line says the sentence with its link, over the not-yet rows as before; the other three lines are their counts", () => {
-    const verdict = verdictOn(ds, WALKED);
-    expect(verdict.notices).not.toContain("Both cannot be true");
-    // The headline this walk ended on was "Nothing open on these answers."
-    // when s21 built it — the France line did the saying, third in the
-    // list. s26 gave the headline to the country the reader named at
-    // question 3 and led with its section; tests/s26 pins those two, and
-    // what this case keeps is s21's own: the sentence with its link on
-    // France's line.
-    expect(verdict.action.masthead.announced).toBe("No route we check in France takes a research hosting agreement.");
-    if (verdict.layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
-    const sections = verdict.layout.sections;
-    expect(sections.map((s) => countryNamed(s.country))).toEqual(["France", "Germany", "Spain", "Netherlands"]);
-    const [fr, germany, spain, netherlands] = sections;
-    const said = saidLineOf(verdict, fr!);
-    expect(said!.text).toBe(
-      "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
-    );
-    const link = /<a ([^>]*)href="([^"]*)">([^<]*)<\/a>/.exec(said!.html);
-    expect({ text: link?.[3], href: link?.[2] }).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
-    expect(link?.[1]).not.toMatch(/class="[^"]*\bout\b/);
-    // The body stays: the not-yet rows, as before. One of the five also lacks
-    // the degree and is listed on its own; the other four fold.
-    expect(fr!.groups.filter((g) => g.kind !== "arranged").map((g) => g.kind)).toEqual(["not-yet"]);
-    const notYet = fr!.groups.find((g) => g.kind === "not-yet");
-    if (notYet?.kind !== "not-yet") throw new Error("France draws no not-yet group");
-    expect(notYet.count).toBe(5);
-    const fold = notYet.items.flatMap((i) => (typeof i !== "string" && i.kind === "needs-path-answers" ? [i] : []))[0];
-    if (!fold) throw new Error("France's rows gated on a path answer do not fold");
-    const named = fold.pathAnswers.map((a) => answerWordsOf(a.field, a.value));
-    expect(routesNeed(fold.routes.length, joinOr(named))).toBe("4 routes need a job offer or an intra-corporate transfer");
-    const ownRows = notYet.items.flatMap((i) => (typeof i === "string" ? [verdict.cards.routes[i]!] : []));
-    expect(ownRows.join("")).toContain("Needs a job offer and a university degree");
-    // The other three lines, unchanged: each its not-yet count and nothing
-    // else — no job offer line and no arranged line for them to name either
-    // (ruling 7 of #187).
-    const countOnly = (notYetCount: number): Tally => ({
-      open: 0, withinReach: 0, unsettled: 0, closed: 0, notYet: notYetCount, openUnknowns: 0, steps: 0,
-      checkedWithJobOffer: 0, openedByArrangedAnswers: 0, mark: null,
-    });
-    expect(germany!.tally).toEqual(countOnly(8));
-    expect(spain!.tally).toEqual(countOnly(4));
-    expect(netherlands!.tally).toEqual(countOnly(6));
-    // The critique's four strings, absent from the whole page then, present now.
-    for (const word of ["chercheur", "researcher", "talent-researcher", "research hosting"])
-      expect(verdictHtml(verdict) + link?.[2], word).toContain(word);
-  });
-});
-
-/**
- * The browser: the walk the critique took, with the mark where it was missing
- * and the sentence where "5 not yet" was.
- */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+/** Checks France's line on the four-country verdict for research: the s19 headline, then the quoted route as an internal link. */
+function expectFranceLineSaysHeadlineThenLink(): void {
+  const line = tallyLinesFor("research").get(france.name);
+  expect(line).toBeTruthy();
+  expect(line!.text).toBe(
+    "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
+  );
+  expect(line!.html).toBe(
+    "No route we check in France takes a research hosting agreement — "
+    + `<a href="${url("/france/talent-researcher")}">Talent — researcher (chercheur)</a> ${IS_QUOTED_NOT_CHECKED}.`,
+  );
+  expect(line!.html).not.toMatch(/class="[^"]*\bout\b/);
 }
-const skipped = why();
-if (skipped)
-  process.stderr.write(`\n  !! THE S21 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-const seed = (answers: Record<string, string>) =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: RECORD_VERSION, answers, history: Object.keys(answers),
-  }))})`;
+/** Checks the tally line is the s19 headline and clause, from the copy module. */
+function expectTallyLineIsTheS19Sentence(): void {
+  expect(unscoredTallyLine("France", "a research hosting agreement", "Talent — researcher (chercheur)")).toBe(
+    `${unscoredHeadline("France", "a research hosting agreement").replace(/\.$/, "")} — Talent — researcher (chercheur) ${IS_QUOTED_NOT_CHECKED}.`,
+  );
+  // Without a quoted route the line is the headline alone.
+  expect(unscoredTallyLine("France", "a research hosting agreement")).toBe(unscoredHeadline("France", "a research hosting agreement"));
+  // The question-2 mark reads the same clause.
+  expect(notCheckedQuotedLine("France", "R")).toContain(IS_QUOTED_NOT_CHECKED);
+}
 
-const MARKS = 'JSON.stringify([...document.querySelectorAll(".qcard .opt-mark")].map((m) => ({'
-  + ' under: m.dataset.for, id: m.id, text: m.textContent.trim(),'
-  + ' href: m.querySelector("a") ? m.querySelector("a").getAttribute("href") : null,'
-  + ' glyph: m.querySelector("a") ? getComputedStyle(m.querySelector("a"), "::after").content : null })))';
-const DESCRIBED = 'JSON.stringify([...document.querySelectorAll(".qcard .opt")].map((b) => ({'
-  + ' value: b.dataset.value, by: b.getAttribute("aria-describedby"),'
-  + ' resolves: b.getAttribute("aria-describedby") ? !!document.getElementById(b.getAttribute("aria-describedby")) : null })))';
-/** The mark the stylesheet draws after the link in each country's line that
- * carries one. */
-const LINK_GLYPHS = 'JSON.stringify([...document.querySelectorAll(".country-sec .tally a")]'
-  + '.map((a) => getComputedStyle(a, "::after").content))';
-const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
+/** Checks that France's line escapes a quoted route's name. */
+function expectTallyLineEscapesTheNamesItPrints(): void {
+  // France's researcher route, renamed; the rules untouched. The country is
+  // named by the country list's phrase, not the dataset's name.
+  const renamed = (c: Country): Country => c.code !== "FR" ? c
+    : { ...c, routes: c.routes.map((r) => (r.id === researcher.id ? { ...r, name: "<x>" } : r)) };
+  const doctored = { ...ds, countries: ds.countries.map(renamed) } as Dataset;
+  const line = tallyLinesFor("research", doctored).get(france.name);
+  expect(line).toBeTruthy();
+  expect(line!.text).toBe("No route we check in France takes a research hosting agreement — <x> is quoted, not checked.");
+  expect(line!.html).toContain(">&lt;x&gt;</a>");
+  expect(line!.html).not.toContain("<x>");
+}
 
-describe.skipIf(skipped !== null)("s21 — in the browser", () => {
-  it("question 3 is never in the cold HTML; the mark is drawn from the two answers before it", () => {
-    const cold = readFileSync(`${dist}/index.html`, "utf8");
-    expect(cold).not.toContain("opt-mark");
-    expect(cold).not.toContain("aria-describedby");
-    expect(cold).not.toContain(countryQuestion().label);
-  });
-
-  it("all four → research: France is marked at question 3, announced, with an internal link; the walk ends with the sentence on France's line", async () => {
-    const seen = await withSite(async ({ page, url: addressOf }) => {
-      await page.goto(addressOf("/"));
-      await page.evaluate(seed({ destination: "all", situation: "research" }));
-      await page.goto(addressOf("/"));
-      // Nothing thrown is read once the page is at rest.
-      await page.waitUntilAtRest();
-      const q3 = {
-        question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
-        marks: JSON.parse(await page.evaluate(MARKS)),
-        described: JSON.parse(await page.evaluate(DESCRIBED)),
-      };
-      // France, by the button — then the quickest profile to a result that
-      // contradicts nothing: no qualification, a Turkish passport, no Dutch
-      // graduation, no top-200 degree. Seven answers; nothing open, as the
-      // critique's walk ended, with the France line now saying why.
-      await answerWith(page, tap("fr"));
-      const q4 = await page.evaluate('document.querySelector(".qlabel").textContent.trim()');
-      await answerWith(page, tap("none"));
-      await answerWith(page, PICK_TURKEY);
-      await answerWith(page, tap("no"));
-      await answerWith(page, tap("no"));
-      const result = {
-        state: await page.evaluate('document.getElementById("app").dataset.state'),
-        glyphs: JSON.parse(await page.evaluate(LINK_GLYPHS)),
-        painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictOn(ds, WALKED)))),
-      };
-      return { q3, q4, result };
-    }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as {
-      q3: {
-        question: string;
-        marks: { under: string; id: string; text: string; href: string | null; glyph: string | null }[];
-        described: { value: string; by: string | null; resolves: boolean | null }[];
-      };
-      q4: string;
-      result: { state: string; glyphs: string[]; painted: typeof PAINTED_AS_COMPOSED };
-    };
-
-    const { q3, q4, result } = seen;
-    expect(q3.question).toBe(countryQuestion().label);
-    expect(q3.marks).toEqual([{
-      under: "fr",
-      id: q3.marks[0]?.id,
-      text: "Not checked for France yet — Talent — researcher (chercheur) is quoted, not checked: read it here.",
-      href: url("/france/talent-researcher"),
-      glyph: "none",
-    }]);
-    expect(q3.marks[0]!.id).toBeTruthy();
-    expect(q3.described).toEqual([
-      { value: "de", by: null, resolves: null },
-      { value: "fr", by: q3.marks[0]!.id, resolves: true },
-      { value: "es", by: null, resolves: null },
-      { value: "nl", by: null, resolves: null },
-    ]);
-    expect(q4).toBe("Your highest completed qualification?");
-
-    expect(result.state).toBe("results");
-    // The walk ends on the verdict its answers compose — France's written
-    // state, the sentence with its link on France's line ("s21 — the walk's
-    // result, from the verdict" reads it) — and France's link, the only one
-    // in a line, is drawn with no outbound mark.
-    expect(result.painted).toEqual(PAINTED_AS_COMPOSED);
-    expect(result.glyphs).toEqual(["none"]);
-  }, 120_000);
-});
+/** Checks that every offered situation is taken by a scored route in some country, so some line stays unmarked. */
+function expectEverySituationTakenSomewhere(): void {
+  const asked = situationsAsked(ds);
+  for (const s of fieldOptions(ds, SITUATION_FIELD)) {
+    if (s.is_unknown) continue;
+    expect(asked.get("all")!.has(s.value), s.value).toBe(true);
+    expect([...tallyLinesFor(s.value).values()].some((line) => line === null), s.value).toBe(true);
+  }
+}

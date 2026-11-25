@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { phraseOf, phraseAtStartOf, countryVocabulary, type Dataset, type Notice } from "permit-rulebook-data";
 import { countryAddresses, routeAddresses } from "../src/lib/slug.js";
 import { DESK, PHONE, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { whyNoBuild } from "./why-no-build.js";
 import { isArrowOnLastWordLine, isAsWideAsTextAndArrow, type CardLink } from "./card-link.js";
 import {
   CARD_AUTHORITY_LINK, CARD_DOOR, DEFAULT_PASSPORT, EVERY_DESTINATION, authorityLinksOf, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf,
@@ -26,9 +25,9 @@ import { widenedFailuresOf, widenedScreens } from "./widened-screen.js";
  */
 
 const ds = rawDataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-const LOWER_OPENINGS = countryVocabulary.countries
+// The phrases no heading or sentence may open with: the in-sentence form of each name that changes at a sentence's start.
+const LOWER_OPENINGS =countryVocabulary.countries
   .filter((c) => phraseOf(c.code) !== phraseAtStartOf(c.code))
   .map((c) => phraseOf(c.code));
 
@@ -85,7 +84,7 @@ describe("the walk's own precondition", () => {
   });
 });
 
-const noBuild = existsSync(dist) ? null : "no dist/ — run npm run build first";
+const noBuild = whyNoBuild("dist/");
 if (noBuild) warnNotWalked("the built pages", noBuild);
 
 describe.skipIf(noBuild !== null)("every page the build draws", () => {

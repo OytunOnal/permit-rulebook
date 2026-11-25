@@ -10,6 +10,7 @@ import { sitemapEntries, sitemapXml } from "../src/lib/sitemap.js";
 import { absolute } from "../src/lib/site.js";
 import { jobOf, pagesYaml as pages, readText } from "./workflow-text.js";
 import { posixShellPath } from "./posix-shell.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
  * s24 — the deploy tells Bing what changed (IndexNow).
@@ -27,6 +28,9 @@ import { posixShellPath } from "./posix-shell.js";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const publicDir = join(root, "public");
 const dist = join(root, "dist");
+/** Why the built site cannot be read here, or null when it can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the key file in the built site", noBuild);
 const ds = dataset as unknown as Dataset;
 
 /** The key file's name IS the key: 32 lowercase hex characters, `.txt`. */
@@ -48,7 +52,7 @@ describe("a key file at the root (point 1)", () => {
     expect(content.trim()).toBe(key);
   });
 
-  it.skipIf(!existsSync(dist))("and the build serves it verbatim at the root", () => {
+  it.skipIf(noBuild !== null)("and the build serves it verbatim at the root", () => {
     const [file] = keyFiles;
     expect(existsSync(join(dist, file!)), `dist/${file} — public/ is not being copied`).toBe(true);
     expect(readFileSync(join(dist, file!), "utf8")).toBe(readFileSync(join(publicDir, file!), "utf8"));
@@ -72,23 +76,11 @@ describe("one job after a green deploy (points 2 and 3)", () => {
   });
 
   it("fires only on a real deploy — a first attempt of push, schedule or dispatch", () => {
-    expect(job).toContain("success()");
-    expect(job).toContain("github.run_attempt == 1");
-    for (const event of ["push", "schedule", "repository_dispatch"])
-      expect(job, `the ${event} deploy is not announced`).toContain(`github.event_name == '${event}'`);
-    // Neither a manual preview nor a re-run that deployed nothing.
-    expect(job).not.toContain("workflow_dispatch");
-    // The data-commit condition belongs to the lock, not to the announcement.
-    expect(job).not.toContain("needs.build.outputs.built");
+    expectFiresOnlyOnARealDeploy(job);
   });
 
   it("posts once to IndexNow with curl, and prints the status", () => {
-    expect(job).toContain("https://api.indexnow.org/indexnow");
-    expect(job).toMatch(/curl .*-X POST/);
-    expect(job).toContain("Content-Type: application/json; charset=utf-8");
-    expect(job).toMatch(/-w '%\{http_code\}'/);
-    // No action does the talking — the step is a shell and curl.
-    expect(job).not.toMatch(/uses: (?!actions\/checkout@)/);
+    expectPostsOnceWithCurl(job);
   });
 
   it("sends the four fields the protocol names", () => {
@@ -97,24 +89,56 @@ describe("one job after a green deploy (points 2 and 3)", () => {
   });
 
   it("reads the key from the committed file and types it nowhere", () => {
-    // The file is found by the shape of its name, and the name is the key.
-    expect(job).toContain("public/");
-    expect(job).toContain("[0-9a-f]{32}");
-    // The whole workflow carries no 32-hex literal: the key lives in one
-    // place, and `keyLocation` is spelled from the same filename.
-    expect(pages).not.toMatch(/(?<![0-9a-f])[0-9a-f]{32}(?![0-9a-f])/);
-    expect(job).toContain('"${SITE_URL%/}/${key}.txt"');
+    expectKeyReadFromTheFileAlone(job);
   });
 
   it("announces the addresses the build read from dist/sitemap.xml", () => {
-    const build = jobOf(pages, "build");
-    expect(build).toContain("dist/sitemap.xml");
-    expect(build).toMatch(/^\s{6}urls: \$\{\{ steps\.\w+\.outputs\.urls \}\}$/m);
-    // Through the environment, never interpolated into the script body.
-    expect(job).toContain("URLS: ${{ needs.build.outputs.urls }}");
-    expect(job).not.toContain("$URLS: ${{");
+    expectAnnouncesTheSitemapsAddresses(job);
   });
 });
+
+/** Checks the indexnow job fires only on a first attempt of a push, schedule or dispatch deploy. */
+function expectFiresOnlyOnARealDeploy(job: string): void {
+  expect(job).toContain("success()");
+  expect(job).toContain("github.run_attempt == 1");
+  for (const event of ["push", "schedule", "repository_dispatch"])
+    expect(job, `the ${event} deploy is not announced`).toContain(`github.event_name == '${event}'`);
+  // Neither a manual preview nor a re-run that deployed nothing.
+  expect(job).not.toContain("workflow_dispatch");
+  // The data-commit condition belongs to the lock, not to the announcement.
+  expect(job).not.toContain("needs.build.outputs.built");
+}
+
+/** Checks the indexnow job posts once to IndexNow with curl in a shell, and prints the status. */
+function expectPostsOnceWithCurl(job: string): void {
+  expect(job).toContain("https://api.indexnow.org/indexnow");
+  expect(job).toMatch(/curl .*-X POST/);
+  expect(job).toContain("Content-Type: application/json; charset=utf-8");
+  expect(job).toMatch(/-w '%\{http_code\}'/);
+  // No action does the talking — the step is a shell and curl.
+  expect(job).not.toMatch(/uses: (?!actions\/checkout@)/);
+}
+
+/** Checks the indexnow job reads the key from the committed file, and the workflow types it nowhere. */
+function expectKeyReadFromTheFileAlone(job: string): void {
+  // The file is found by the shape of its name, and the name is the key.
+  expect(job).toContain("public/");
+  expect(job).toContain("[0-9a-f]{32}");
+  // The whole workflow carries no 32-hex literal: the key lives in one
+  // place, and `keyLocation` is spelled from the same filename.
+  expect(pages).not.toMatch(/(?<![0-9a-f])[0-9a-f]{32}(?![0-9a-f])/);
+  expect(job).toContain('"${SITE_URL%/}/${key}.txt"');
+}
+
+/** Checks the indexnow job announces, through the environment, the addresses the build read from the sitemap. */
+function expectAnnouncesTheSitemapsAddresses(job: string): void {
+  const build = jobOf(pages, "build");
+  expect(build).toContain("dist/sitemap.xml");
+  expect(build).toMatch(/^\s{6}urls: \$\{\{ steps\.\w+\.outputs\.urls \}\}$/m);
+  // Through the environment, never interpolated into the script body.
+  expect(job).toContain("URLS: ${{ needs.build.outputs.urls }}");
+  expect(job).not.toContain("$URLS: ${{");
+}
 
 /**
  * The extraction is the workflow's own `grep | sed`, run over a real sitemap,

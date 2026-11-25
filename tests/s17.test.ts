@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { INTRO_SUBLINE, SHORT_SUBLINE } from "../src/lib/copy/interview.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
  * s17 — the comparison has no subject called "Code".
@@ -25,6 +26,9 @@ import { INTRO_SUBLINE, SHORT_SUBLINE } from "../src/lib/copy/interview.js";
 
 const here = (url: string): string => fileURLToPath(new URL(url, import.meta.url));
 const dist = here("../dist");
+/** Why the built pages cannot be read here, or null when they can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the built site, as a reader meets it (s17)", noBuild);
 const read = (path: string): string => readFileSync(path, "utf8").split("\r\n").join("\n");
 
 function builtPages(): { path: string; html: string }[] {
@@ -36,7 +40,7 @@ function builtPages(): { path: string; html: string }[] {
       else if (name.endsWith(".html")) out.push({ path: at.slice(dist.length).split("\\").join("/"), html: read(at) });
     }
   };
-  if (existsSync(dist)) walk(dist);
+  if (noBuild === null) walk(dist);
   return out;
 }
 
@@ -69,7 +73,7 @@ describe("the comparison has no subject called \"Code\" (s17)", () => {
   });
 });
 
-describe.skipIf(!existsSync(dist))("the built site, as a reader meets it (s17)", () => {
+describe.skipIf(noBuild !== null)("the built site, as a reader meets it (s17)", () => {
   const pages = builtPages();
 
   it("no built page carries \"Code compar\"", () => {

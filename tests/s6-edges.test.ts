@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FOR_KIND, audienceLine } from "../src/lib/copy/route-page.js";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { evaluate, notices, type Dataset, type Profile } from "permit-rulebook-data";
 import { arrivalOf, scopedFirst } from "../src/lib/scope.js";
@@ -8,8 +8,12 @@ import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { datasetDay, isoDay } from "../src/lib/copy/frame.js";
 import { audienceNoticeOf } from "./audience-notice.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 const ds = dataset as unknown as Dataset;
+/** Why the built home page cannot be read here, or null when it can. */
+const noBuild = whyNoBuild("dist/index.html");
+if (noBuild) warnBuildNotTested("the results stamp's element on the built page", noBuild);
 
 /**
  * The edge profiles, mandatory.
@@ -19,26 +23,29 @@ const ds = dataset as unknown as Dataset;
  * follows the call to action from a route page and must find that route first
  * in what comes back.
  */
+/** Checks the German Blue Card page says who it is for before its first rule, and its first rule card is the authority's notice. */
+function expectAudienceSaidBeforeTheFirstRule(): void {
+  const address = routeAddresses(ds).find((a) => a.route.id === "de-blue-card-general")!;
+  const page = routePage(ds, address);
+  const notice = audienceNoticeOf(ds);
+  // The notice is a dataset value like any other: quote, source, read date.
+  expect(notice.kind).toBe("no-permit-needed");
+  expect(page.html.indexOf(audienceLine("Germany")))
+    .toBeLessThan(page.html.indexOf('<article class="rule">'));
+  // And its own sentence, with its quote, is the first rule card — not a
+  // footnote at the bottom of seven rules she does not need.
+  const firstCard = page.html.slice(
+    page.html.indexOf('<article class="rule">'),
+    page.html.indexOf("</article>"),
+  );
+  expect(firstCard).toContain(FOR_KIND);
+  expect(firstCard).toContain(notice.body);
+  expect(firstCard).toContain(notice.source.quote);
+  expect(firstCard).toContain(notice.source.retrieved_at);
+}
+
 describe("s6 step 10 — the Irish reader on a German page", () => {
-  it("the page says who it is for before the first rule, in the authority's words", () => {
-    const address = routeAddresses(ds).find((a) => a.route.id === "de-blue-card-general")!;
-    const page = routePage(ds, address);
-    const notice = audienceNoticeOf(ds);
-    // The notice is a dataset value like any other: quote, source, read date.
-    expect(notice.kind).toBe("no-permit-needed");
-    expect(page.html.indexOf(audienceLine("Germany")))
-      .toBeLessThan(page.html.indexOf('<article class="rule">'));
-    // And its own sentence, with its quote, is the first rule card — not a
-    // footnote at the bottom of seven rules she does not need.
-    const firstCard = page.html.slice(
-      page.html.indexOf('<article class="rule">'),
-      page.html.indexOf("</article>"),
-    );
-    expect(firstCard).toContain(FOR_KIND);
-    expect(firstCard).toContain(notice.body);
-    expect(firstCard).toContain(notice.source.quote);
-    expect(firstCard).toContain(notice.source.retrieved_at);
-  });
+  it("the page says who it is for before the first rule, in the authority's words", expectAudienceSaidBeforeTheFirstRule);
 
   it("the call to action leads to the notice, not to a rejection", () => {
     const address = routeAddresses(ds).find((a) => a.route.id === "de-blue-card-general")!;
@@ -118,15 +125,15 @@ describe("s6 — one date format", () => {
   it("the results stamp prints today, as an ISO date, on the built page", () => {
     // The behaviour, not the identifier: a page could import the formatter and
     // print nothing (Standards review, 2026-09-07). The element the script
-    // fills is on the built page, and the formatter that fills it is pinned
-    // against a locale that is ISO by definition.
-    const built = new URL("../dist/index.html", import.meta.url);
-    if (existsSync(built)) {
-      const html = readFileSync(built, "utf8").split("\r\n").join("\n");
-      expect(html).toContain('id="stamp-date"');
-    }
+    // fills is on the built page (the case below), and the formatter that
+    // fills it is pinned against a locale that is ISO by definition.
     expect(isoDay(new Date())).toBe(new Date().toLocaleDateString("sv-SE"));
     expect(isoDay(new Date(2026, 8, 7))).toBe("2026-09-07");
+  });
+
+  it.skipIf(noBuild !== null)("the built page carries the element the results stamp is printed into", () => {
+    const html = readFileSync(new URL("../dist/index.html", import.meta.url), "utf8").split("\r\n").join("\n");
+    expect(html).toContain('id="stamp-date"');
   });
 
   it("the dataset version prints as a date, and a schema version does not", () => {

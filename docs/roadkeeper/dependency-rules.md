@@ -40,10 +40,6 @@
 - `scripts/deploy-finding.mjs` — decides the deploy's finding and words its Kept issue; the words move to `cli-deploy-finding.mjs` in #221 (v1.2.13)
 - `scripts/carry-assets/outcome/outcome-lines.mjs` — decides the carry's outcomes and words its log lines; the words move to a CLI file in #221 (v1.2.13)
 - `scripts/carry-assets/carry.mjs` — runs the carry and words its digest list's log lines; the words move to a CLI file in #221 (v1.2.13)
-- `scripts/smoke.mjs` — walks the pages and words every failure; the words move to `cli-smoke.mjs` in #361 (v1.2.9)
-- `scripts/smoke.mjs` → `scripts/browser/browser.mjs` — smoke's words make it presentation beside its infrastructure walk; gone when the words move in #361 (v1.2.9)
-- `scripts/smoke.mjs` → `scripts/dev-server.mjs` — the same, for the server it starts (v1.2.9)
-- `scripts/smoke.mjs` → `scripts/site-base.mjs` — the same, for the base it reads (v1.2.9)
 - `src/pages/index.astro` — draws the interview page's document and wires its ports; a presentation builder in #395 (v1.2.10)
 
 ## Tests

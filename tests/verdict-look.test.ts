@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import type { Profile } from "permit-rulebook-data";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { withSite } from "./browser-walk.js";
-
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
+import { withSite, skipReason } from "./browser-walk.js";
 
 /**
  * What looks like a control on the results, and where the status badge
@@ -20,14 +16,7 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
  * every title length: beside the country's name where the card carries it,
  * alone on that line where it does not.
  */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE VERDICT'S LOOK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
@@ -88,7 +77,8 @@ interface Look {
   railTicks: { margin: number; at: number; placed: number }[];
 }
 
-const READ_LOOK = `JSON.stringify((() => {
+// Everything a case below measures on a drawn results screen, read in the page in one evaluation.
+const READ_LOOK =`JSON.stringify((() => {
   const box = (el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom }; };
   const lines = (el) => {
     const range = document.createRange();
@@ -151,36 +141,11 @@ describe.skipIf(skipped !== null)("verdict look — in the browser", () => {
     ["1280x900", { width: 1280, height: 900 }, false],
   ] as const) {
     it(`${name}: the badge is on the card's first line, above the title — on the country's name's line where the card carries it, alone above the title where it does not`, async () => {
-      const [flat, sections] = await looksAt(viewport, mobile, [SPAIN_JOB_OFFER, FOUR_SPAIN_JOB_OFFER]);
-      for (const look of [flat!, sections!]) expect(look.state).toBe("results");
-      // The precondition: cards with the chip, cards without, and at 390 a
-      // one-line and a two-line title among the cards with it.
-      const withChip = flat!.cards.filter((c) => c.chip !== null);
-      const withoutChip = sections!.cards.filter((c) => c.chip === null);
-      expect(withChip.length).toBeGreaterThan(0);
-      expect(withoutChip.length).toBeGreaterThan(0);
-      if (viewport.width === 390) expect(new Set(withChip.map((c) => Math.min(c.titleLines, 2)))).toEqual(new Set([1, 2]));
-
-      for (const card of [...withChip, ...withoutChip]) {
-        expect(card.badge.bottom, "the badge is not above the title").toBeLessThanOrEqual(card.title.top + 0.5);
-        if (!card.chip) continue;
-        const centre = centreOf(card.badge);
-        expect(centre, "the badge's centre is above the country's name's line").toBeGreaterThanOrEqual(card.chip.top);
-        expect(centre, "the badge's centre is below the country's name's line").toBeLessThanOrEqual(card.chip.bottom);
-      }
+      await expectBadgeOnTheCardsFirstLine(viewport, mobile);
     }, 120_000);
 
     it(`${name}: a step heading and its step's name are ink, not the link's colour`, async () => {
-      const [look] = await looksAt(viewport, mobile, [GERMANY_JOB_OFFER]);
-      expect(look!.state).toBe("results");
-      // The precondition: steps on the screen, and a link whose colour is not ink.
-      expect(look!.steps.length).toBeGreaterThan(0);
-      expect(look!.link).not.toBe("");
-      expect(look!.link).not.toBe(look!.ink);
-      for (const step of look!.steps) {
-        expect(step.heading).toBe(look!.ink);
-        expect(step.name).toBe(look!.ink);
-      }
+      await expectStepHeadingsInInk(viewport, mobile);
     }, 120_000);
 
     it(`${name}: the strip's counters have no border`, async () => {
@@ -200,14 +165,54 @@ describe.skipIf(skipped !== null)("verdict look — in the browser", () => {
     }, 120_000);
 
     it(`${name}: a rail's tick carries no margin, so it sits on the amount it marks`, async () => {
-      const [look] = await looksAt(viewport, mobile, [GERMANY_JOB_OFFER]);
-      expect(look!.state).toBe("results");
-      expect(look!.railTicks.length, "precondition: a card draws a rail").toBeGreaterThan(0);
-      for (const tick of look!.railTicks) {
-        expect(tick.margin).toBe(0);
-        expect(Math.abs(tick.at - tick.placed), `the tick sits ${tick.at}px in, its amount at ${tick.placed}px`)
-          .toBeLessThanOrEqual(0.5);
-      }
+      await expectRailTicksOnTheirAmounts(viewport, mobile);
     }, 120_000);
   }
 });
+
+/** Checks, at this viewport, each card's badge sits above its title, on the country's name's line where it carries one. */
+async function expectBadgeOnTheCardsFirstLine(viewport: { width: number; height: number }, mobile: boolean): Promise<void> {
+  const [flat, sections] = await looksAt(viewport, mobile, [SPAIN_JOB_OFFER, FOUR_SPAIN_JOB_OFFER]);
+  for (const look of [flat!, sections!]) expect(look.state).toBe("results");
+  // The precondition: cards with the chip, cards without, and at 390 a
+  // one-line and a two-line title among the cards with it.
+  const withChip = flat!.cards.filter((c) => c.chip !== null);
+  const withoutChip = sections!.cards.filter((c) => c.chip === null);
+  expect(withChip.length).toBeGreaterThan(0);
+  expect(withoutChip.length).toBeGreaterThan(0);
+  if (viewport.width === 390) expect(new Set(withChip.map((c) => Math.min(c.titleLines, 2)))).toEqual(new Set([1, 2]));
+
+  for (const card of [...withChip, ...withoutChip]) {
+    expect(card.badge.bottom, "the badge is not above the title").toBeLessThanOrEqual(card.title.top + 0.5);
+    if (!card.chip) continue;
+    const centre = centreOf(card.badge);
+    expect(centre, "the badge's centre is above the country's name's line").toBeGreaterThanOrEqual(card.chip.top);
+    expect(centre, "the badge's centre is below the country's name's line").toBeLessThanOrEqual(card.chip.bottom);
+  }
+}
+
+/** Checks, at this viewport, each step heading and its step's name are drawn in ink, not the link's colour. */
+async function expectStepHeadingsInInk(viewport: { width: number; height: number }, mobile: boolean): Promise<void> {
+  const [look] = await looksAt(viewport, mobile, [GERMANY_JOB_OFFER]);
+  expect(look!.state).toBe("results");
+  // The precondition: steps on the screen, and a link whose colour is not ink.
+  expect(look!.steps.length).toBeGreaterThan(0);
+  expect(look!.link).not.toBe("");
+  expect(look!.link).not.toBe(look!.ink);
+  for (const step of look!.steps) {
+    expect(step.heading).toBe(look!.ink);
+    expect(step.name).toBe(look!.ink);
+  }
+}
+
+/** Checks, at this viewport, each rail tick carries no margin and sits on the amount it marks. */
+async function expectRailTicksOnTheirAmounts(viewport: { width: number; height: number }, mobile: boolean): Promise<void> {
+  const [look] = await looksAt(viewport, mobile, [GERMANY_JOB_OFFER]);
+  expect(look!.state).toBe("results");
+  expect(look!.railTicks.length, "precondition: a card draws a rail").toBeGreaterThan(0);
+  for (const tick of look!.railTicks) {
+    expect(tick.margin).toBe(0);
+    expect(Math.abs(tick.at - tick.placed), `the tick sits ${tick.at}px in, its amount at ${tick.placed}px`)
+      .toBeLessThanOrEqual(0.5);
+  }
+}

@@ -1,10 +1,10 @@
-import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, fieldOptions, fillRouteSlots, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { chromePath, walkSite, type BrowserPage, type PageOnSite, type Screen } from "../scripts/browser/browser.mjs";
+import { whyNoBuild } from "./why-no-build.js";
 
 /**
  * The interview walked in headless Chrome over the built page: what the
@@ -24,10 +24,7 @@ export function whyNoChrome(): string | null {
 
 /** Why the browser cannot walk here: no Chrome, or no build. Null when it can. */
 export function skipReason(): string | null {
-  const noChrome = whyNoChrome();
-  if (noChrome !== null) return noChrome;
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
+  return whyNoChrome() ?? whyNoBuild("dist/");
 }
 
 /** Says, loudly, that a suite's walk did not run, so a skipped suite is not

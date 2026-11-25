@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { PageLoad } from "../scripts/smoke.mjs";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
  * Does the site actually run in a browser?
@@ -32,6 +33,9 @@ const { notOurDevServer } = await import("../scripts/dev-server.mjs");
 const { skipReason, whyNoChrome } = await import("./browser-walk.js");
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
+/** Why the built site cannot be served here, or null when it can. */
+const noBuild = whyNoBuild("dist/");
+if (noBuild) warnBuildNotTested("the harness's refusal of the built site served statically", noBuild);
 
 const skipped = skipReason();
 
@@ -82,34 +86,40 @@ describe("the site, in a real browser", () => {
         .toEqual(new Set(DEFAULT_SURFACES));
       expect(DEFAULT_SURFACES).toContain("dist");
 
-      const broken = results.filter((r: { failures: string[] }) => r.failures.length);
-      expect(broken.map((r: { surface: string; path: string; failures: string[] }) =>
-        `[${r.surface}] ${r.path}: ${r.failures.join("; ")}`)).toEqual([]);
+      const broken = results.filter((r) => r.failures.length);
+      expect(broken.map((r) => `[${r.surface}] ${r.path}: ${JSON.stringify(r.failures)}`)).toEqual([]);
 
       // Said positively too, so a check that stopped checking cannot pass quietly.
       for (const r of results) {
         expect(r.thrown, `[${r.surface}] ${r.path} threw`).toEqual([]);
-        // Said positively per page, so a check that stopped checking cannot
-        // pass quietly. Four surfaces now: the interview, a route page, a
-        // country page and the data page (site map, 2026-09-08).
-        if (r.path === "/") {
-          expect(r.value.question.length, `[${r.surface}] no question`).toBeGreaterThan(0);
-          expect(r.value.options, `[${r.surface}] no answers`).toBeGreaterThan(0);
-        } else if (r.path === "/data/") {
-          expect(r.value.heading, `[${r.surface}] no heading`).toContain("The data");
-          expect(r.value.facts, `[${r.surface}] no facts about the dataset`).toBeGreaterThan(4);
-        } else if (r.path === "/germany/") {
-          expect(r.value.cards, `[${r.surface}] no route cards`).toBeGreaterThan(7);
-          expect(r.value.here, `[${r.surface}] the header marks nothing`).toBe("Germany");
-        } else {
-          expect(r.value.rules, `[${r.surface}] no rule cards`).toBeGreaterThan(2);
-          expect(r.value.stamp, `[${r.surface}] no stamp`).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-        }
+        expectWhatAReaderComesFor(r);
       }
     },
     180000,
   );
 });
+
+/**
+ * Asserts that `r`'s page showed what a reader comes for, said positively per
+ * page, so a check that stopped checking cannot pass quietly. Four surfaces:
+ * the interview, a route page, a country page and the data page (site map,
+ * 2026-09-08).
+ */
+function expectWhatAReaderComesFor(r: PageLoad): void {
+  if (r.path === "/") {
+    expect(r.value.question.length, `[${r.surface}] no question`).toBeGreaterThan(0);
+    expect(r.value.options, `[${r.surface}] no answers`).toBeGreaterThan(0);
+  } else if (r.path === "/data/") {
+    expect(r.value.heading, `[${r.surface}] no heading`).toContain("The data");
+    expect(r.value.facts, `[${r.surface}] no facts about the dataset`).toBeGreaterThan(4);
+  } else if (r.path === "/germany/") {
+    expect(r.value.cards, `[${r.surface}] no route cards`).toBeGreaterThan(7);
+    expect(r.value.here, `[${r.surface}] the header marks nothing`).toBe("Germany");
+  } else {
+    expect(r.value.rules, `[${r.surface}] no rule cards`).toBeGreaterThan(2);
+    expect(r.value.stamp, `[${r.surface}] no stamp`).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  }
+}
 
 /** A phone's viewport, as every fixture page declares it, so the walk's width check holds. */
 const VIEWPORT_META = '<meta name="viewport" content="width=device-width, initial-scale=1">';
@@ -138,7 +148,7 @@ async function smokeOver(pages: Record<string, string>): Promise<PageLoad[]> {
       mkdirSync(dirname(join(folder, name)), { recursive: true });
       writeFileSync(join(folder, name), html);
     }
-    return await smoke({ dir: folder, surfaces: ["dist"] });
+    return await smoke({ buildDirectory: folder, surfaces: ["dist"] });
   } finally {
     rmSync(folder, { recursive: true, force: true });
   }
@@ -147,36 +157,52 @@ async function smokeOver(pages: Record<string, string>): Promise<PageLoad[]> {
 const noChrome = whyNoChrome();
 
 describe.skipIf(noChrome !== null)("smoke's results over fixture pages", () => {
-  it("a page that throws shows its error in that page's line", async () => {
+  it("a page that throws fails that page's check with the page-threw reason, carrying its error", async () => {
     const thrown = "the interview broke";
     const results = await smokeOver({ ...QUIET_SITE, "index.html": throwing(thrown) });
     const interview = results.find((r) => r.path === "/");
-    expect(interview?.failures.join("\n")).toContain(`the page threw — exception: Error: ${thrown}`);
+    expect(interview?.kind).toBe("check");
+    expect(interview?.failures).toContainEqual(
+      { reason: "page-threw", message: expect.stringContaining(`exception: Error: ${thrown}`) });
     expect(results.filter((r) => r.path !== "/").flatMap((r) => r.thrown)).toEqual([]);
   }, 60000);
 
-  it("a page that throws after sending the reader to an address no check opens fails smoke in a line of its own, naming that address and the error", async () => {
+  it("a page that throws after sending the reader to an address no check opens fails smoke in an unplaced page load of its own, at that address, with the page-threw reason", async () => {
     const thrown = "the page the reader was sent to broke";
     // The interview's stand-in line keeps the first page from counting as
     // drawn, so the walk waits on the page it sends the reader to.
     const sendsTheReaderOn = `<!doctype html><html><head>${VIEWPORT_META}<script>location.replace("moved/");</script></head><body><p class="stand-in">…</p></body></html>`;
     const results = await smokeOver({ ...QUIET_SITE, "index.html": sendsTheReaderOn, "moved/index.html": throwing(thrown) });
-    const unplaced = results.filter((r) => r.path.endsWith("/moved/"));
-    expect(unplaced.map((r) => r.failures.length)).toEqual([1]);
-    expect(unplaced[0]?.failures[0]).toContain(`the page threw — exception: Error: ${thrown}`);
-    expect(results.filter((r) => !r.path.endsWith("/moved/")).flatMap((r) => r.failures).join("\n")).not.toContain(thrown);
+    const unplaced = results.filter((r) => r.kind === "unplaced");
+    expect(unplaced.map((r) => r.path.endsWith("/moved/"))).toEqual([true]);
+    expect(unplaced[0]?.failures).toEqual(
+      [{ reason: "page-threw", message: expect.stringContaining(`exception: Error: ${thrown}`) }]);
+    expect(JSON.stringify(results.filter((r) => r.kind !== "unplaced").flatMap((r) => r.failures))).not.toContain(thrown);
   }, 60000);
 
-  it("errors past the walk's cap fail smoke in a line of their own, saying how many came, placed on no page", async () => {
+  it("errors past the walk's cap fail smoke in a page load of their own, with the errors-past-the-cap reason carrying how many came", async () => {
     expect(ERRORS_KEPT, "the harness's entry gives no cap").toBeGreaterThan(0);
     const pastTheCap = 7;
     const logsPastTheCap = `<!doctype html><html><head>${VIEWPORT_META}</head><body><script>
 for (let i = 0; i < ${ERRORS_KEPT + pastTheCap}; i++) console.error("logged error " + i);
 </script></body></html>`;
     const results = await smokeOver({ ...QUIET_SITE, "index.html": logsPastTheCap });
-    const capLines = results.flatMap((r) => r.failures).filter((f) => f.includes("past the walk's cap"));
-    expect(capLines).toEqual([`and ${pastTheCap} more errors past the walk's cap, not placed on any page`]);
+    const pastTheCapLoads = results.filter((r) => r.failures.some((f) => f.reason === "errors-past-the-cap"));
+    expect(pastTheCapLoads.map((r) => [r.kind, r.path, r.failures])).toEqual(
+      [["past-the-cap", "*", [{ reason: "errors-past-the-cap", count: pastTheCap }]]]);
   }, 60000);
+});
+
+describe("smoke over a build that is not there", () => {
+  it("refuses to walk with the no-build reason, carrying the build directory and no sentence", async () => {
+    const buildDirectory = join(mkdtempSync(join(tmpdir(), "permit-rulebook-smoke-")), "dist");
+    try {
+      await expect(smoke({ buildDirectory, surfaces: ["dist"] })).rejects.toMatchObject(
+        { name: "SmokeRefusal", reason: "no-build", values: { buildDirectory }, message: "no-build" });
+    } finally {
+      rmSync(dirname(buildDirectory), { recursive: true, force: true });
+    }
+  });
 });
 
 /**
@@ -230,8 +256,7 @@ describe("the harness refuses to walk a process it did not start", () => {
     expect(reason).toContain("serves nothing of this project");
   }, 30000);
 
-  it("rejects the built site served statically — real pages, but not a dev server", async () => {
-    if (!existsSync(dist)) return;
+  it.skipIf(noBuild !== null)("rejects the built site served statically — real pages, but not a dev server", async () => {
     const server = await serve(dist);
     try {
       // The first half of the check passes here: it is our product, with its

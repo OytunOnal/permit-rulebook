@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, evaluate, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
@@ -11,7 +9,7 @@ import { routePages } from "../src/lib/route-page/route-page.js";
 import { learnLinkTextOf } from "../src/lib/quote.js";
 import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
-import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
+import { PICK_TURKEY, answerWith, withSite, skipReason } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, standingOn, verdictFor,
   verdictOn,
@@ -19,7 +17,6 @@ import {
 import { watchStateAt } from "./watch-state-at.js";
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 /**
  * s28 — a learn link says what the reader does there (v1.2 fix from the
@@ -77,38 +74,44 @@ const anchorsOf = (html: string): { href: string; text: string }[] =>
     href: /href="([^"]*)"/.exec(m[1])?.[1] ?? "", text: m[2],
   }));
 
+/** Checks the card's box explains the act in a label on a screen that has
+ * explained nothing, and not on one that has, both screens reached. */
+function expectBoxExplainsTheActOnlyOnAFreshScreen(): void {
+  // Two screens: the shortage card's, whose own title cites the act first,
+  // and a French card's, the same label put on its door, where nothing
+  // before the box cites it.
+  const FRENCH: Profile = {
+    destination: "fr", situation: "offer", qualification: "degree", fr_degree: "yes", citizenship: "TR",
+    fr_innovative_employer: "unknown", salary_eur_year: "band_0",
+  };
+  const branches = new Set<string>();
+  for (const [field, route, answers] of [
+    [SHORTAGE, "de-blue-card-shortage", UNSURE], ["fr_innovative_employer", "fr-talent-innovante", FRENCH],
+  ] as const) {
+    const seen = withLabel(field, SYMBOL_LABEL);
+    const door = seen.fields.find((f) => f.id === field)!.learn!;
+    const verdict = verdictOn(seen, answers);
+    const html = blocksIn(drawnRouteOn(verdict, route), "learn");
+    const [link, ...rest] = anchorsOf(html);
+    expect(rest, "the box carries more than the one door").toEqual([]);
+    // Whether anything above the box on this screen has already named the act.
+    const body = verdictHtml(verdict);
+    const spent = body.slice(0, body.indexOf(html)).includes(ACT_EXPANSION.replace("AufenthG ", ""));
+    branches.add(spent ? "spent" : "fresh");
+    if (spent) {
+      // A screen whose citation line already named the act prints the label as written.
+      expect(link.text, route).toBe(esc(learnLinkTextOf(door)));
+    } else {
+      expect(link.text, route).toBe(esc(firstUseLink(door)));
+      expect(html, route).toContain(ACT_EXPANSION);
+    }
+  }
+  expect(branches.size, `only the ${[...branches].join()} screen was reached`).toBe(2);
+}
+
 describe("2 — link text is glossed on the screen's memory (#151, ruling 8)", () => {
   it("the card's box explains the act in a label on a screen that has explained nothing, and not on one that has", () => {
-    // Two screens: the shortage card's, whose own title cites the act first,
-    // and a French card's, the same label put on its door, where nothing
-    // before the box cites it.
-    const FRENCH: Profile = {
-      destination: "fr", situation: "offer", qualification: "degree", fr_degree: "yes", citizenship: "TR",
-      fr_innovative_employer: "unknown", salary_eur_year: "band_0",
-    };
-    const branches = new Set<string>();
-    for (const [field, route, answers] of [
-      [SHORTAGE, "de-blue-card-shortage", UNSURE], ["fr_innovative_employer", "fr-talent-innovante", FRENCH],
-    ] as const) {
-      const seen = withLabel(field, SYMBOL_LABEL);
-      const door = seen.fields.find((f) => f.id === field)!.learn!;
-      const verdict = verdictOn(seen, answers);
-      const html = blocksIn(drawnRouteOn(verdict, route), "learn");
-      const [link, ...rest] = anchorsOf(html);
-      expect(rest, "the box carries more than the one door").toEqual([]);
-      // Whether anything above the box on this screen has already named the act.
-      const body = verdictHtml(verdict);
-      const spent = body.slice(0, body.indexOf(html)).includes(ACT_EXPANSION.replace("AufenthG ", ""));
-      branches.add(spent ? "spent" : "fresh");
-      if (spent) {
-        // A screen whose citation line already named the act prints the label as written.
-        expect(link.text, route).toBe(esc(learnLinkTextOf(door)));
-      } else {
-        expect(link.text, route).toBe(esc(firstUseLink(door)));
-        expect(html, route).toContain(ACT_EXPANSION);
-      }
-    }
-    expect(branches.size, `only the ${[...branches].join()} screen was reached`).toBe(2);
+    expectBoxExplainsTheActOnlyOnAFreshScreen();
   });
 
   it("the question line prints the same label, explained on the card's first use", () => {
@@ -124,6 +127,50 @@ describe("2 — link text is glossed on the screen's memory (#151, ruling 8)", (
     expect(link.text).toBe(esc(firstUseLink(seen.fields.find((f) => f.id === SHORTAGE)!.learn!)));
   });
 });
+
+/** A door as the dataset ships it, with the field it hangs on. */
+type FieldDoor = NonNullable<Dataset["fields"][number]["learn"]> & { field: string };
+
+/** Checks the door's question line, and every route page block that asks its
+ * question, carry the one label and the one href. */
+function expectQuestionLineAndRoutePagesAgreeOn(door: FieldDoor, asks: { path: string; html: string }[]): void {
+  const question = deriveQuestions(ds).find((q) => q.field === door.field)!;
+  const qhtml = questionCardHtml({ dataset: ds, question, answers: {}, asked: [], editing: null, total: 10 });
+  const qline = /<p class="qlearn">([\s\S]*?)<\/p>/.exec(qhtml)![1];
+  // Each surface is a screen of its own, and nothing before the door on
+  // any of them uses its shorthand: each prints the label's first use.
+  expect(anchorsOf(qline)).toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
+
+  // A route page draws the block only under a rule with no quote to show,
+  // so a door reaches this surface only where its rule is unquoted: the
+  // two German doors do, the French and the Dutch do not (corrected
+  // 2026-09-17). Where it is drawn, it agrees — label and href both. A
+  // block is found by the question it lists, never by the href it is
+  // then held to.
+  const asked = `<li>${esc(ds.fields.find((f) => f.id === door.field)!.label)}</li>`;
+  for (const b of asks.filter((b) => b.html.includes(asked))) {
+    // The route page draws its own external mark after the label.
+    const links = anchorsOf(b.html).map((a) => ({ href: a.href, text: a.text.replace(/\s*&#8599;$/, "") }));
+    expect(links.filter((a) => a.text === esc(firstUseLink(door)) || a.href === escAttr(door.url)), b.path)
+      .toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
+  }
+}
+
+/** Checks the shortage door's href is in the asks block of the shortage Blue Card's page and no other. */
+function expectOnlyTheShortageBlueCardPageAsksTheShortageDoor(asks: { path: string; html: string }[]): void {
+  const door = ds.fields.find((f) => f.id === SHORTAGE)!.learn!;
+  const on = asks.filter((b) => b.html.includes(`href="${escAttr(door.url)}"`)).map((b) => b.path);
+  expect(on).toEqual(["/germany/eu-blue-card-shortage-occupation"]);
+}
+
+/** Checks the route is on hold for this profile and the box on its card carries the field's door. */
+function expectHeldCardBoxCarriesTheDoor(field: string, route: string, profile: Profile): void {
+  const result = evaluate(ds, profile).find((r) => r.route.id === route)!;
+  expect(result.status, `${route} is not on hold`).toBe("hold");
+  const door = ds.fields.find((f) => f.id === field)!.learn!;
+  const box = blocksIn(drawnRouteOn(verdictFor(profile), route), "learn");
+  expect(anchorsOf(box)).toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
+}
 
 describe("3 — the three surfaces agree", () => {
   const doors = ds.fields.flatMap((f) => (f.learn ? [{ field: f.id, ...f.learn }] : []));
@@ -141,33 +188,12 @@ describe("3 — the three surfaces agree", () => {
 
   for (const door of doors) {
     it(`${door.field}: the question line and every route page that asks it carry one label and one href`, () => {
-      const question = deriveQuestions(ds).find((q) => q.field === door.field)!;
-      const qhtml = questionCardHtml({ dataset: ds, question, answers: {}, asked: [], editing: null, total: 10 });
-      const qline = /<p class="qlearn">([\s\S]*?)<\/p>/.exec(qhtml)![1];
-      // Each surface is a screen of its own, and nothing before the door on
-      // any of them uses its shorthand: each prints the label's first use.
-      expect(anchorsOf(qline)).toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
-
-      // A route page draws the block only under a rule with no quote to show,
-      // so a door reaches this surface only where its rule is unquoted: the
-      // two German doors do, the French and the Dutch do not (corrected
-      // 2026-09-17). Where it is drawn, it agrees — label and href both. A
-      // block is found by the question it lists, never by the href it is
-      // then held to.
-      const asked = `<li>${esc(ds.fields.find((f) => f.id === door.field)!.label)}</li>`;
-      for (const b of asks.filter((b) => b.html.includes(asked))) {
-        // The route page draws its own external mark after the label.
-        const links = anchorsOf(b.html).map((a) => ({ href: a.href, text: a.text.replace(/\s*&#8599;$/, "") }));
-        expect(links.filter((a) => a.text === esc(firstUseLink(door)) || a.href === escAttr(door.url)), b.path)
-          .toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
-      }
+      expectQuestionLineAndRoutePagesAgreeOn(door, asks);
     });
   }
 
   it("the shortage door reaches the third surface: the shortage Blue Card's page asks it", () => {
-    const door = ds.fields.find((f) => f.id === SHORTAGE)!.learn!;
-    const on = asks.filter((b) => b.html.includes(`href="${escAttr(door.url)}"`)).map((b) => b.path);
-    expect(on).toEqual(["/germany/eu-blue-card-shortage-occupation"]);
+    expectOnlyTheShortageBlueCardPageAsksTheShortageDoor(asks);
   });
 
   /** Two cards the doors still bind: the German one from the human's walk and
@@ -181,11 +207,7 @@ describe("3 — the three surfaces agree", () => {
     }],
   ] as const) {
     it(`${field}: the box on the card it still binds carries the label and href the other surfaces do`, () => {
-      const result = evaluate(ds, profile).find((r) => r.route.id === route)!;
-      expect(result.status, `${route} is not on hold`).toBe("hold");
-      const door = ds.fields.find((f) => f.id === field)!.learn!;
-      const box = blocksIn(drawnRouteOn(verdictFor(profile), route), "learn");
-      expect(anchorsOf(box)).toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
+      expectHeldCardBoxCarriesTheDoor(field, route, profile);
     });
   }
 });
@@ -195,6 +217,7 @@ describe("3 — the three surfaces agree", () => {
  * (#134), and only a reader out of IT is asked the shortage question straight
  * after the passport — and the answers it taps from there, in order. */
 const WALK_START: Profile = { destination: "de", situation: "offer", qualification: "degree", occupation_it: "no" };
+// Named once so the browser walk taps the same answers `walked()` composes its verdict from.
 const WALK_TAPS = ["unknown", "recognized", "lt2", "band_0", "none", "none", "band_0"];
 
 /** The answers the walk ends on: a Turkish passport, then the taps, one per
@@ -255,14 +278,9 @@ describe("a route standing carries its live unknowns and whether its row opens (
  * rest — a result where the shortage Blue Card is on hold with the door open
  * in its box; and the route page carries the same sentence.
  */
-const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
+const { PHONE } = await import("../scripts/browser/browser.mjs");
 
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S28 LINK WAS NOT READ IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
@@ -274,6 +292,7 @@ const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=$
 
 /** One link read off the page: its text as drawn and where it goes. */
 interface Link { text: string; href: string }
+// The page script that reads a selector's links, so the help line and the route page are read alike.
 const LINKS = (selector: string) =>
   `JSON.stringify([...document.querySelectorAll(${JSON.stringify(selector)})].map((a) => ({ text: a.textContent.trim(), href: a.getAttribute("href") })))`;
 interface Walk {

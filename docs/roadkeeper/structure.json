@@ -400,7 +400,8 @@
   "scripts/seeded-results.mjs": "domain",
   "scripts/shot.mjs": "infrastructure",
   "scripts/site-base.mjs": "infrastructure",
-  "scripts/smoke.mjs": "infrastructure presentation",
+  "scripts/smoke-reasons.mjs": "domain",
+  "scripts/smoke.mjs": "infrastructure",
   "src/lib/arrival-line.ts": "presentation",
   "src/lib/breakpoint-widths.ts": "presentation",
   "src/lib/browser-history.ts": "infrastructure",
@@ -829,6 +830,11 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/cli-smoke.mjs",
+   "to": "scripts/smoke-reasons.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/data-lock-run/check/cli-data-check.mjs",
    "to": "scripts/find-option-value.mjs",
    "kind": "dependency"
@@ -1200,6 +1206,11 @@
   },
   {
    "from": "scripts/main-smoke.mjs",
+   "to": "scripts/smoke-reasons.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-smoke.mjs",
    "to": "scripts/smoke.mjs",
    "kind": "dependency"
   },
@@ -1271,6 +1282,11 @@
   {
    "from": "scripts/smoke.mjs",
    "to": "scripts/site-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/smoke.mjs",
+   "to": "scripts/smoke-reasons.mjs",
    "kind": "dependency"
   },
   {
@@ -3320,11 +3336,6 @@
   },
   {
    "from": "tests/answers.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/answers.test.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
@@ -3351,11 +3362,6 @@
   {
    "from": "tests/answers.test.ts",
    "to": "tests/verdict-cards.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/arrival.test.ts",
-   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3589,6 +3595,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/browser-walk.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/browser.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -3780,6 +3791,11 @@
   },
   {
    "from": "tests/carry-assets/carry-step.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-step.test.ts",
    "to": "tests/workflow-text.ts",
    "kind": "dependency"
   },
@@ -3944,6 +3960,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/checked-words.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/chrome-path.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -3994,6 +4015,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/consolidated-text.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/countries.test.ts",
    "to": "src/lib/countries.ts",
    "kind": "dependency"
@@ -4016,6 +4042,11 @@
   {
    "from": "tests/csp.test.ts",
    "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/csp.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -4184,53 +4215,98 @@
    "kind": "type-only"
   },
   {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-arrivals.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-arrivals.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-arrivals.test.ts",
    "to": "src/lib/first-paint.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/first-paint.test.ts",
-   "to": "src/lib/question.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-arrivals.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-arrivals.test.ts",
    "to": "src/lib/scope.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/first-paint.test.ts",
-   "to": "src/lib/site.ts",
+   "from": "tests/first-paint-arrivals.test.ts",
+   "to": "tests/first-paint-measure.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/first-paint.test.ts",
-   "to": "tests/browser-walk.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-arrivals.test.ts",
    "to": "tests/layout-shifts.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/fold.test.ts",
+   "from": "tests/first-paint-built-html.test.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-built-html.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-built-html.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-built-html.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-head-script.test.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-head-script.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-in-pieces.test.ts",
    "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-in-pieces.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-in-pieces.test.ts",
+   "to": "tests/first-paint-measure.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-in-pieces.test.ts",
+   "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-measure.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/first-paint-measure.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -4301,6 +4377,11 @@
   {
    "from": "tests/footer.test.ts",
    "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -4376,11 +4457,6 @@
   {
    "from": "tests/framed-page.test.ts",
    "to": "tests/frame-alone.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/gloss.test.ts",
-   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -4605,11 +4681,6 @@
   },
   {
    "from": "tests/means.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/means.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
@@ -4689,6 +4760,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/name-sweep.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/no-errors-expected.test.ts",
    "to": "eslint.config.mjs",
    "kind": "dependency"
@@ -4744,8 +4820,18 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/orientation.test.ts",
+   "from": "tests/not-found.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation-browser-walks.test.ts",
    "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation-browser-walks.test.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -4790,12 +4876,12 @@
   },
   {
    "from": "tests/orientation.test.ts",
-   "to": "tests/browser-walk.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/orientation.test.ts",
-   "to": "tests/frame-alone.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -5040,6 +5126,11 @@
   },
   {
    "from": "tests/reader-pages.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.test.ts",
    "to": "tests/widened-screen.ts",
    "kind": "dependency"
   },
@@ -5074,6 +5165,11 @@
    "kind": "inheritance"
   },
   {
+   "from": "tests/reader-pages.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/reason.test.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
@@ -5084,23 +5180,23 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/record.test.ts",
+   "from": "tests/record-never-sent.test.ts",
    "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/record-never-sent.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/record-never-sent.test.ts",
+   "to": "tests/wire.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/record.test.ts",
    "to": "src/lib/record.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/record.test.ts",
-   "to": "tests/browser-walk.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/record.test.ts",
-   "to": "tests/wire.ts",
    "kind": "dependency"
   },
   {
@@ -5121,6 +5217,11 @@
   {
    "from": "tests/route-link-written-once.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-link-written-once.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -5359,6 +5460,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/route-slot.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s11.test.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
@@ -5439,93 +5545,203 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/s13.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
-   "to": "src/lib/clipboard.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
-   "to": "src/lib/copy/feedback.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
-   "to": "src/lib/copy/frame.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
-   "to": "src/lib/copy/verdict.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
+   "from": "tests/s13-feedback-door.ts",
    "to": "src/lib/feedback-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s13.test.ts",
-   "to": "src/lib/first-paint.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
-   "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
+   "from": "tests/s13-feedback-door.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s13.test.ts",
-   "to": "src/lib/scope.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
-   "to": "src/lib/site.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
-   "to": "src/lib/sitemap.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
-   "to": "src/lib/slug.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
-   "to": "src/lib/verdict/verdict.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
+   "from": "tests/s13-feedback-door.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s13.test.ts",
-   "to": "tests/fallback-stack.ts",
+   "from": "tests/s13-feedback-page.test.ts",
+   "to": "src/lib/clipboard.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s13.test.ts",
+   "from": "tests/s13-feedback-page.test.ts",
+   "to": "src/lib/copy/feedback.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-feedback-page.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-feedback-page.test.ts",
+   "to": "src/lib/feedback-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-feedback-page.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-feedback-page.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-feedback-page.test.ts",
+   "to": "tests/s13-feedback-door.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-feedback-walk.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/s13-feedback-walk.test.ts",
+   "to": "src/lib/copy/feedback.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-feedback-walk.test.ts",
+   "to": "src/lib/feedback-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-feedback-walk.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-feedback-walk.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-feedback-walk.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-feedback-walk.test.ts",
+   "to": "tests/s13-feedback-door.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-feedback-walk.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-frame.test.ts",
+   "to": "src/lib/clipboard.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-frame.test.ts",
+   "to": "src/lib/copy/feedback.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-frame.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-frame.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-frame.test.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-frame.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-frame.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-frame.test.ts",
+   "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-frame.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-frame.test.ts",
+   "to": "src/lib/verdict/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-frame.test.ts",
    "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s13.test.ts",
+   "from": "tests/s13-frame.test.ts",
+   "to": "tests/s13-feedback-door.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-frame.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-frame.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-header-row.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-header-row.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/s13-header-row.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-header-row.test.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-header-row.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-header-row.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-header-row.test.ts",
+   "to": "tests/fallback-stack.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13-header-row.test.ts",
+   "to": "tests/s13-feedback-door.ts",
    "kind": "dependency"
   },
   {
@@ -5574,8 +5790,8 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/s19.test.ts",
-   "to": "scripts/browser/browser.mjs",
+   "from": "tests/s17.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -5694,8 +5910,48 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/s21.test.ts",
-   "to": "scripts/browser/browser.mjs",
+   "from": "tests/s20.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "src/lib/verdict/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "tests/s21-country-question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -5715,11 +5971,6 @@
   },
   {
    "from": "tests/s21.test.ts",
-   "to": "src/lib/record.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s21.test.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
@@ -5730,12 +5981,7 @@
   },
   {
    "from": "tests/s21.test.ts",
-   "to": "src/lib/verdict/verdict.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s21.test.ts",
-   "to": "tests/browser-walk.ts",
+   "to": "tests/s21-country-question.ts",
    "kind": "dependency"
   },
   {
@@ -5819,8 +6065,8 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/s23-result-copy.test.ts",
-   "to": "scripts/browser/browser.mjs",
+   "from": "tests/s23-page-copy.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -5865,107 +6111,172 @@
   },
   {
    "from": "tests/s24.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s24.test.ts",
    "to": "tests/workflow-text.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s25.test.ts",
+   "from": "tests/s25-dataset.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
+   "from": "tests/s25-dataset.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
-   "to": "src/lib/gloss.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s25.test.ts",
+   "from": "tests/s25-dataset.test.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
+   "from": "tests/s25-dataset.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
+   "from": "tests/s25-dataset.test.ts",
    "to": "src/lib/scope.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
-   "to": "tests/browser-walk.ts",
+   "from": "tests/s25-dataset.test.ts",
+   "to": "tests/s25-experience.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s25.test.ts",
-   "to": "tests/reader-pages.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s25.test.ts",
-   "to": "tests/route-of.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s25.test.ts",
+   "from": "tests/s25-dataset.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s26.test.ts",
+   "from": "tests/s25-walk.test.ts",
    "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/s25-walk.test.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s26.test.ts",
+   "from": "tests/s25-walk.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s26.test.ts",
+   "from": "tests/s25-walk.test.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25-walk.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s26.test.ts",
-   "to": "src/lib/site.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s26.test.ts",
-   "to": "src/lib/situations.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s26.test.ts",
-   "to": "src/lib/verdict/verdict.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "tests/s26.test.ts",
+   "from": "tests/s25-walk.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s26.test.ts",
+   "from": "tests/s25-walk.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25-walk.test.ts",
+   "to": "tests/route-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25-walk.test.ts",
+   "to": "tests/s25-experience.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25-walk.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/s26.test.ts",
+   "from": "tests/s26-headline.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-headline.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-headline.test.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-headline.test.ts",
+   "to": "tests/s26-walks.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-headline.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "src/lib/verdict/verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "tests/s26-walks.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walk.test.ts",
    "to": "tests/wire.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26-walks.ts",
+   "to": "src/lib/situations.ts",
    "kind": "dependency"
   },
   {
@@ -6154,6 +6465,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s31.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s32.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -6246,6 +6562,11 @@
   {
    "from": "tests/s6-edges.test.ts",
    "to": "tests/audience-notice.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s6-edges.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -6535,7 +6856,17 @@
   },
   {
    "from": "tests/site-index.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
    "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -6546,6 +6877,21 @@
   {
    "from": "tests/situation-marks.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/smoke-report.test.ts",
+   "to": "scripts/cli-smoke.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/smoke-report.test.ts",
+   "to": "scripts/smoke-reasons.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/smoke-report.test.ts",
+   "to": "scripts/smoke.mjs",
    "kind": "dependency"
   },
   {
@@ -6576,6 +6922,11 @@
   {
    "from": "tests/smoke.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/smoke.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -6741,11 +7092,6 @@
   {
    "from": "tests/verdict-layout.test.ts",
    "to": "tests/verdict-cards.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/verdict-look.test.ts",
-   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -8097,12 +8443,42 @@
     "exported": true
    },
    {
+    "name": "SENTENCES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "CHECK_PAGE_NAMES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "KIND_NAMES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "sentenceOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pageNameOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "reportLinesOf",
     "kind": "fn",
     "exported": false
    },
    {
     "name": "smokeReportOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "smokeRefusalReportOf",
     "kind": "fn",
     "exported": true
    }
@@ -8342,6 +8718,11 @@
    }
   ],
   "scripts/main-smoke.mjs": [
+   {
+    "name": "reportOfRun",
+    "kind": "fn",
+    "exported": false
+   },
    {
     "name": "report",
     "kind": "const",
@@ -8661,6 +9042,23 @@
     "exported": true
    }
   ],
+  "scripts/smoke-reasons.mjs": [
+   {
+    "name": "SMOKE_REASONS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SmokeRefusal",
+    "kind": "class",
+    "exported": true
+   },
+   {
+    "name": "PAGE_LOAD_KINDS",
+    "kind": "const",
+    "exported": true
+   }
+  ],
   "scripts/smoke.mjs": [
    {
     "name": "dist",
@@ -8673,12 +9071,7 @@
     "exported": true
    },
    {
-    "name": "UNPLACED",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "threwLineOf",
+    "name": "threwFailureOf",
     "kind": "fn",
     "exported": false
    },
@@ -11839,6 +12232,7 @@
   "scripts/seeded-results.mjs",
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
+  "scripts/smoke-reasons.mjs",
   "scripts/smoke.mjs",
   "src/lib/arrival-line.ts",
   "src/lib/breakpoint-widths.ts",
@@ -11889,5 +12283,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "bd93c522b638ee602e609f196f20434589d493a291db89c8bcc0853daaaa35dc"
+ "digest": "3337064e3eb413d9fb30159012e6063cba7b31a3b6ff8b80df761220d46e15f0"
 }

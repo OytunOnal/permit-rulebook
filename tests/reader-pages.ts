@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
@@ -11,6 +11,7 @@ import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { WidthFailure, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { CARD_LINK, type CardLink } from "./card-link.js";
+import { whyNoBuild } from "./why-no-build.js";
 
 /**
  * Every page the build draws from the shipped dataset, as a reader meets it:
@@ -32,7 +33,8 @@ export interface ReaderPage {
 /** Every HTML page the build wrote: the home page, each country page, each
  * route page, `/data/` and the rest. Throws where there is no build. */
 export function builtPages(): ReaderPage[] {
-  if (!existsSync(dist)) throw new Error("no dist/ — run npm run build first");
+  const noBuild = whyNoBuild("dist/");
+  if (noBuild !== null) throw new Error(noBuild);
   const pages: ReaderPage[] = [];
   const walk = (dir: string, depth: number) => {
     if (depth > 6) return;

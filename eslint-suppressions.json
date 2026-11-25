@@ -213,19 +213,6 @@
       "count": 1
     }
   },
-  "tests/answers.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
-  "tests/arrival.test.ts": {
-    "max-lines-per-function": {
-      "count": 3
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
   "tests/asked-for.test.ts": {
     "max-lines-per-function": {
       "count": 1
@@ -307,30 +294,6 @@
       "count": 1
     }
   },
-  "tests/checked-words.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/consolidated-text.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/csp.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/named-condition": {
-      "count": 1
-    }
-  },
   "tests/dataset-ld.test.ts": {
     "max-lines-per-function": {
       "count": 1
@@ -342,35 +305,6 @@
     }
   },
   "tests/escaping.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/first-paint.test.ts": {
-    "max-lines-per-function": {
-      "count": 4
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/footer.test.ts": {
-    "max-lines-per-function": {
-      "count": 3
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/gloss.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
-  "tests/header.test.ts": {
     "max-lines-per-function": {
       "count": 1
     },
@@ -404,40 +338,11 @@
       "count": 2
     }
   },
-  "tests/means.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
   "tests/money-rows.test.ts": {
     "roadkeeper/constant-reason": {
       "count": 3
     },
     "roadkeeper/named-condition": {
-      "count": 1
-    }
-  },
-  "tests/name-sweep.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/not-found.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
-  "tests/orientation.test.ts": {
-    "max-lines-per-function": {
-      "count": 4
-    },
-    "roadkeeper/constant-reason": {
       "count": 1
     }
   },
@@ -457,27 +362,12 @@
       "count": 1
     }
   },
-  "tests/reader-pages.test.ts": {
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
   "tests/reason.test.ts": {
     "max-lines-per-function": {
       "count": 1
     }
   },
   "tests/rebuild-trigger.test.ts": {
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/record.test.ts": {
-    "max-lines-per-function": {
-      "count": 4
-    }
-  },
-  "tests/route-slot.test.ts": {
     "roadkeeper/constant-reason": {
       "count": 1
     }
@@ -495,68 +385,8 @@
       "count": 3
     }
   },
-  "tests/s13.test.ts": {
-    "max-lines-per-function": {
-      "count": 8
-    }
-  },
   "tests/s16.test.ts": {
     "max-lines-per-function": {
-      "count": 1
-    }
-  },
-  "tests/s19.test.ts": {
-    "max-lines-per-function": {
-      "count": 3
-    },
-    "roadkeeper/constant-reason": {
-      "count": 2
-    }
-  },
-  "tests/s20.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/s21.test.ts": {
-    "max-lines-per-function": {
-      "count": 6
-    },
-    "roadkeeper/constant-reason": {
-      "count": 2
-    }
-  },
-  "tests/s23-page-copy.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
-  "tests/s23-result-copy.test.ts": {
-    "max-lines-per-function": {
-      "count": 2
-    }
-  },
-  "tests/s24.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
-  "tests/s25.test.ts": {
-    "max-lines-per-function": {
-      "count": 3
-    },
-    "roadkeeper/constant-reason": {
-      "count": 5
-    }
-  },
-  "tests/s26.test.ts": {
-    "max-lines-per-function": {
-      "count": 4
-    },
-    "roadkeeper/named-condition": {
       "count": 1
     }
   },
@@ -568,14 +398,6 @@
       "count": 4
     }
   },
-  "tests/s28.test.ts": {
-    "max-lines-per-function": {
-      "count": 2
-    },
-    "roadkeeper/constant-reason": {
-      "count": 2
-    }
-  },
   "tests/s30.test.ts": {
     "max-lines-per-function": {
       "count": 4
@@ -584,40 +406,11 @@
       "count": 1
     }
   },
-  "tests/s31.test.ts": {
-    "max-lines-per-function": {
-      "count": 3
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/s32.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 3
-    }
-  },
-  "tests/s37.test.ts": {
-    "max-lines-per-function": {
-      "count": 2
-    },
-    "roadkeeper/constant-reason": {
-      "count": 6
-    }
-  },
   "tests/s5e.test.ts": {
     "max-lines-per-function": {
       "count": 2
     },
     "roadkeeper/named-condition": {
-      "count": 1
-    }
-  },
-  "tests/s6-edges.test.ts": {
-    "max-lines-per-function": {
       "count": 1
     }
   },
@@ -657,19 +450,6 @@
       "count": 1
     }
   },
-  "tests/site-index.test.ts": {
-    "max-lines-per-function": {
-      "count": 2
-    },
-    "roadkeeper/named-condition": {
-      "count": 1
-    }
-  },
-  "tests/smoke.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
   "tests/start-over.test.ts": {
     "roadkeeper/constant-reason": {
       "count": 1
@@ -691,14 +471,6 @@
   "tests/verdict-history.test.ts": {
     "roadkeeper/constant-reason": {
       "count": 2
-    }
-  },
-  "tests/verdict-look.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
     }
   },
   "tests/verdict-steps.test.ts": {
