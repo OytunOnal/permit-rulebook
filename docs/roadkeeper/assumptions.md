@@ -148,6 +148,11 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   The Chrome version printed in each deploy's log turns a guess about the
   runner into a fact the next time the browser tests fail on it alone (#467,
   from the retro of #453, the human's word 2026-11-25). — `untested`
+- **A39 — one module reading the results screen keeps its markup in one place.**
+  Once one module reads the results screen's cards, rows and headline, a
+  change to that markup touches the module and the cases that assert it, not
+  every results suite (#474, from the grill of #360, ruling Q405, 2026-11-25).
+  — `untested`
 
 ## The journey beyond the first permit (candidate bets, human's idea 2026-09-11)
 
