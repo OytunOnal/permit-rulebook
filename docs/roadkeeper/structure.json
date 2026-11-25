@@ -400,6 +400,7 @@
   "scripts/seeded-results.mjs": "domain",
   "scripts/shot.mjs": "infrastructure",
   "scripts/site-base.mjs": "infrastructure",
+  "scripts/smoke-reasons.mjs": "domain",
   "scripts/smoke.mjs": "infrastructure presentation",
   "src/lib/arrival-line.ts": "presentation",
   "src/lib/breakpoint-widths.ts": "presentation",
@@ -8661,6 +8662,18 @@
     "exported": true
    }
   ],
+  "scripts/smoke-reasons.mjs": [
+   {
+    "name": "SMOKE_REASONS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "PAGE_LOAD_KINDS",
+    "kind": "const",
+    "exported": true
+   }
+  ],
   "scripts/smoke.mjs": [
    {
     "name": "dist",
@@ -11839,6 +11852,7 @@
   "scripts/seeded-results.mjs",
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
+  "scripts/smoke-reasons.mjs",
   "scripts/smoke.mjs",
   "src/lib/arrival-line.ts",
   "src/lib/breakpoint-widths.ts",
@@ -11889,5 +11903,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "bd93c522b638ee602e609f196f20434589d493a291db89c8bcc0853daaaa35dc"
+ "digest": "17ff003485213f92d3c3b7fafc21d568e6d88c602c6f088b58ee9f28e5e7c335"
 }
