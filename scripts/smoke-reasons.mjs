@@ -1,7 +1,7 @@
 // @level domain
 /**
  * The names smoke's report is made of, declared once: every reason a page
- * load fails with, and every kind of page load. `smoke.mjs` judges with them
+ * load fails with or smoke refuses to walk with, and every kind of page load. `smoke.mjs` judges with them
  * and `cli-smoke.mjs` words them; neither imports the other.
  *
  * A failure is `{ reason, ...the values its words need }`; the values a
@@ -41,7 +41,22 @@ export const SMOKE_REASONS = Object.freeze({
   pageThrew: "page-threw",
   /** `{ count }`, how many errors came after the walk had kept its cap. */
   errorsPastCap: "errors-past-cap",
+  /** `{ folder }`, the build folder that is not there to walk: a `SmokeRefusal`'s reason, not a page load's. */
+  noBuild: "no-build",
 });
+
+/**
+ * Smoke's refusal to walk: `reason` is one of `SMOKE_REASONS`, beside it the
+ * values its words need, as a failure carries them. Its message is the reason
+ * alone; the words are the CLI's.
+ */
+export class SmokeRefusal extends Error {
+  constructor(reason, values) {
+    super(reason);
+    this.name = "SmokeRefusal";
+    Object.assign(this, values, { reason });
+  }
+}
 
 /**
  * What a page load is: a check's page, whose path names the check; errors at

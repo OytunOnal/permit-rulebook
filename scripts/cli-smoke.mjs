@@ -2,8 +2,9 @@
 /**
  * The smoke command's arguments and report: `--dev` or `--dist` as the
  * surfaces `smoke` in `smoke.mjs` walks, and the page loads it returns as
- * lines and an exit code. Every word of the report is here: each page's name
- * and each reason's sentence, from the names `smoke-reasons.mjs` declares.
+ * lines and an exit code, or its refusal to walk as one error line. Every
+ * word of the report is here: each page's name and each reason's sentence,
+ * from the names `smoke-reasons.mjs` declares.
  * It reads, runs and prints nothing; `main-smoke.mjs` prints what it returns.
  */
 import { PAGE_LOAD_KINDS, SMOKE_REASONS } from "./smoke-reasons.mjs";
@@ -39,6 +40,7 @@ const SENTENCES = new Map([
   [SMOKE_REASONS.pageUnreadable, ({ message }) => `the page could not even be read — ${message}`],
   [SMOKE_REASONS.pageThrew, ({ message }) => `the page threw — ${message}`],
   [SMOKE_REASONS.errorsPastCap, ({ count }) => `and ${count} more errors past the walk's cap, not placed on any page`],
+  [SMOKE_REASONS.noBuild, ({ folder }) => `run npm run build first: no ${folder} to walk`],
 ]);
 
 /** What the report calls each check's page, by the check's path. */
@@ -84,4 +86,9 @@ export function smokeReportOf(results) {
     out: [...results.flatMap(reportLinesOf), `\n${results.length} page loads in a real browser — ${failed} broken`],
     exitCode: failed === 0 ? 0 : 1,
   };
+}
+
+/** What the command prints to stderr when `smoke` refuses to walk with `refusal`, a `SmokeRefusal`, and the code it exits with. */
+export function smokeRefusalReportOf(refusal) {
+  return { err: [sentenceOf(refusal)], exitCode: 1 };
 }

@@ -189,6 +189,18 @@ for (let i = 0; i < ${ERRORS_KEPT + pastTheCap}; i++) console.error("logged erro
   }, 60000);
 });
 
+describe("smoke over a build that is not there", () => {
+  it("refuses to walk with the no-build reason, carrying the folder and no sentence", async () => {
+    const folder = join(mkdtempSync(join(tmpdir(), "permit-rulebook-smoke-")), "dist");
+    try {
+      await expect(smoke({ dir: folder, surfaces: ["dist"] })).rejects.toMatchObject(
+        { name: "SmokeRefusal", reason: "no-build", folder, message: "no-build" });
+    } finally {
+      rmSync(dirname(folder), { recursive: true, force: true });
+    }
+  });
+});
+
 /**
  * The probe's reason for refusing a local server that answers each path in
  * `answers` with a 200 and its body, and every other path with a 404; null

@@ -1206,6 +1206,11 @@
   },
   {
    "from": "scripts/main-smoke.mjs",
+   "to": "scripts/smoke-reasons.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-smoke.mjs",
    "to": "scripts/smoke.mjs",
    "kind": "dependency"
   },
@@ -8156,6 +8161,11 @@
     "name": "smokeReportOf",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "smokeRefusalReportOf",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "scripts/decode-png-size.mjs": [
@@ -8393,6 +8403,11 @@
    }
   ],
   "scripts/main-smoke.mjs": [
+   {
+    "name": "reportOfRun",
+    "kind": "fn",
+    "exported": false
+   },
    {
     "name": "report",
     "kind": "const",
@@ -8716,6 +8731,11 @@
    {
     "name": "SMOKE_REASONS",
     "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SmokeRefusal",
+    "kind": "class",
     "exported": true
    },
    {
@@ -11948,5 +11968,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "e906776e8d332318c1b53e2019bdc59463b0506c4ef86f167ef85b5b8bd1a42d"
+ "digest": "e7ebdad1f8cdfe746ecc65aa09b5f508a9b1d9de6bcc90c1b80c84f29cd2acf9"
 }

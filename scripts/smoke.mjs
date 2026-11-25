@@ -21,8 +21,9 @@
  *
  * `smoke` walks the surfaces it is given and returns what each page load
  * showed, its failures as reasons `smoke-reasons.mjs` declares, and prints
- * nothing: the report's words, lines and exit code are `cli-smoke.mjs`'s,
- * and `main-smoke.mjs` runs the two.
+ * nothing; with no build to walk it throws a `SmokeRefusal`. The report's
+ * words, lines and exit code are `cli-smoke.mjs`'s, and `main-smoke.mjs`
+ * runs the two.
  */
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -30,7 +31,7 @@ import { fileURLToPath } from "node:url";
 import { PHONE, walkSite } from "./browser/browser.mjs";
 import { startDev } from "./dev-server.mjs";
 import { siteBase } from "./site-base.mjs";
-import { PAGE_LOAD_KINDS, SMOKE_REASONS } from "./smoke-reasons.mjs";
+import { PAGE_LOAD_KINDS, SMOKE_REASONS, SmokeRefusal } from "./smoke-reasons.mjs";
 
 const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 
@@ -238,7 +239,7 @@ export async function smoke({ dir = dist, surfaces = DEFAULT_SURFACES } = {}) {
     try { results.push(...await walk({ address: dev.url("/") }, "dev")); } finally { dev.close(); }
   }
   if (surfaces.includes("dist")) {
-    if (!existsSync(dir)) throw new Error(`no ${dir} — run npm run build first`);
+    if (!existsSync(dir)) throw new SmokeRefusal(SMOKE_REASONS.noBuild, { folder: dir });
     results.push(...await walk({ folder: dir }, "dist"));
   }
   return results;

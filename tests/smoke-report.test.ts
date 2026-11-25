@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { smokeReportOf } from "../scripts/cli-smoke.mjs";
+import { smokeRefusalReportOf, smokeReportOf } from "../scripts/cli-smoke.mjs";
 import { CHECKS } from "../scripts/smoke.mjs";
-import { PAGE_LOAD_KINDS, SMOKE_REASONS } from "../scripts/smoke-reasons.mjs";
+import { PAGE_LOAD_KINDS, SMOKE_REASONS, SmokeRefusal } from "../scripts/smoke-reasons.mjs";
 
 /**
  * Smoke's report, without a browser: hand-made page loads through
@@ -63,7 +63,12 @@ const pageLoadOf = (kind: string, path: string, failures: object[]) =>
 
 describe("smoke's report", () => {
   it("has words for every declared reason, and for no reason the list does not declare", () => {
-    expect(Object.keys(SENTENCE_OF_EACH_REASON).sort()).toEqual(Object.values(SMOKE_REASONS).sort());
+    expect([...Object.keys(SENTENCE_OF_EACH_REASON), "no-build"].sort()).toEqual(Object.values(SMOKE_REASONS).sort());
+  });
+
+  it("words a missing build's refusal with the step that fixes it first, on stderr, and exits 1", () => {
+    const report = smokeRefusalReportOf(new SmokeRefusal("no-build", { folder: "/site/dist" }));
+    expect(report).toEqual({ err: ["run npm run build first: no /site/dist to walk"], exitCode: 1 });
   });
 
   it.each(Object.entries(SENTENCE_OF_EACH_REASON))("words the reason %s as today", (reason, [values, sentence]) => {
