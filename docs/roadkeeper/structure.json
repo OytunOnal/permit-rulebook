@@ -3592,6 +3592,11 @@
   },
   {
    "from": "tests/browser-walk.ts",
+   "to": "scripts/interview-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/browser-walk.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
@@ -12337,5 +12342,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "b9a9f200209f6a3598aeacd97ab2c2e8ac671d0f83167f0948afc9129b15a1d8"
+ "digest": "a77bb90ab0578f9ba05dcb043290fa43569517dcfeb99dc0a726a41de8d53658"
 }
