@@ -4205,48 +4205,93 @@
    "kind": "type-only"
   },
   {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-arrivals.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-arrivals.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-arrivals.test.ts",
    "to": "src/lib/first-paint.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/first-paint.test.ts",
-   "to": "src/lib/question.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-arrivals.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-arrivals.test.ts",
    "to": "src/lib/scope.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-arrivals.test.ts",
+   "to": "tests/first-paint-measure.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-arrivals.test.ts",
+   "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-built-html.test.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-built-html.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-built-html.test.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-head-script.test.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-head-script.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-in-pieces.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-in-pieces.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/first-paint.test.ts",
+   "from": "tests/first-paint-in-pieces.test.ts",
+   "to": "tests/first-paint-measure.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-in-pieces.test.ts",
    "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-measure.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/first-paint-measure.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -12153,5 +12198,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "7c9b994815b05d6af364ef445e0dc6ea2ee8b872fc1b831e480533d329eddd97"
+ "digest": "932958bfe7b9a9bb266c0eef67e6a5c9271ff98b7f5a14f14f4ccc89ca68e4a1"
 }

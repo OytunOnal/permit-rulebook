@@ -1,7 +1,4 @@
 {
-  "tests/first-paint.test.ts": {
-    "lines": 732
-  },
   "tests/s27.test.ts": {
     "lines": 526
   },
