@@ -194,7 +194,7 @@ describe("smoke over a build that is not there", () => {
     const buildDirectory = join(mkdtempSync(join(tmpdir(), "permit-rulebook-smoke-")), "dist");
     try {
       await expect(smoke({ buildDirectory, surfaces: ["dist"] })).rejects.toMatchObject(
-        { name: "SmokeRefusal", reason: "no-build", buildDirectory, message: "no-build" });
+        { name: "SmokeRefusal", reason: "no-build", values: { buildDirectory }, message: "no-build" });
     } finally {
       rmSync(dirname(buildDirectory), { recursive: true, force: true });
     }

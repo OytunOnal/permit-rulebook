@@ -90,5 +90,5 @@ export function smokeReportOf(results) {
 
 /** What the command prints to stderr when `smoke` refuses to walk with `refusal`, a `SmokeRefusal`, and the code it exits with. */
 export function smokeRefusalReportOf(refusal) {
-  return { err: [sentenceOf(refusal)], exitCode: 1 };
+  return { err: [sentenceOf({ ...refusal.values, reason: refusal.reason })], exitCode: 1 };
 }

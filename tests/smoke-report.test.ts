@@ -98,3 +98,11 @@ describe("smoke's report", () => {
     ]);
   });
 });
+
+describe("smoke's refusal to walk", () => {
+  it("keeps its own message and name when its values carry a message, and is worded from those values", () => {
+    const refusal = new SmokeRefusal("page-threw", { message: "boom", name: "elsewhere" });
+    expect([refusal.message, refusal.name]).toEqual(["page-threw", "SmokeRefusal"]);
+    expect(smokeRefusalReportOf(refusal)).toEqual({ err: ["the page threw — boom"], exitCode: 1 });
+  });
+});

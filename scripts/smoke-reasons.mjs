@@ -46,15 +46,17 @@ export const SMOKE_REASONS = Object.freeze({
 });
 
 /**
- * Smoke's refusal to walk: `reason` is one of `SMOKE_REASONS`, beside it the
- * values its words need, as a failure carries them. Its message is the reason
+ * Smoke's refusal to walk: `reason` is one of `SMOKE_REASONS`, and `values`
+ * the values its words need, kept under their own field so no value can
+ * overwrite the error's own `message` or `name`. Its message is the reason
  * alone; the words are the CLI's.
  */
 export class SmokeRefusal extends Error {
   constructor(reason, values) {
     super(reason);
     this.name = "SmokeRefusal";
-    Object.assign(this, values, { reason });
+    this.reason = reason;
+    this.values = values;
   }
 }
 
