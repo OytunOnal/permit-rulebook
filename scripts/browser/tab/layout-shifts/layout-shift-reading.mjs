@@ -50,25 +50,34 @@
  * @property {CountedShift[]} counted Those the measure counts, as CLS counts them.
  */
 
-/** The reading as a function of the page's, taking the region's selector, so one text serves every region. */
-const READ_LAYOUT_SHIFTS = `((region) => {
-  const elementOf = (node) => node && (node.nodeType === 1 ? node : node.parentElement);
-  const named = (node) => {
-    const parts = [];
-    const pathCanTake = (el) => el && el !== document.body && parts.length < 4;
-    for (let el = elementOf(node); pathCanTake(el); el = el.parentElement) {
-      if (el.id) { parts.unshift("#" + el.id); break; }
-      parts.unshift(el.tagName.toLowerCase() + (el.classList[0] ? "." + el.classList[0] : ""));
-    }
-    return parts.join(">") || "?";
-  };
-  const recordsOf = (type) => {
-    const observer = new PerformanceObserver(() => {});
-    observer.observe({ type, buffered: true });
-    const records = observer.takeRecords();
-    observer.disconnect();
-    return records;
-  };
+/** In the page: the element a shift's node is, or the element holding it. */
+function elementOf(node) {
+  return node && (node.nodeType === 1 ? node : node.parentElement);
+}
+
+/** In the page: `node` named as a path up to the nearest id, with `elementOf` handed in. */
+function nameOfNode(node, elementOf) {
+  const parts = [];
+  const pathCanTake = (el) => el && el !== document.body && parts.length < 4;
+  for (let el = elementOf(node); pathCanTake(el); el = el.parentElement) {
+    if (el.id) { parts.unshift("#" + el.id); break; }
+    parts.unshift(el.tagName.toLowerCase() + (el.classList[0] ? "." + el.classList[0] : ""));
+  }
+  return parts.join(">") || "?";
+}
+
+/** In the page: every entry of `type` the page's timeline holds since the navigation, read in this task. */
+function recordsOf(type) {
+  const observer = new PerformanceObserver(() => {});
+  observer.observe({ type, buffered: true });
+  const records = observer.takeRecords();
+  observer.disconnect();
+  return records;
+}
+
+/** In the page: the reading, as JSON, its sources marked when they lie in `region`, with its helpers handed in. */
+function readLayoutShifts({ elementOf, nameOfNode, recordsOf }, region) {
+  const named = (node) => nameOfNode(node, elementOf);
   const [firstInput] = recordsOf("first-input");
   const cameAfterAnInput = (e) => firstInput !== undefined && e.startTime >= firstInput.startTime;
   const shifts = recordsOf("layout-shift");
@@ -89,7 +98,11 @@ const READ_LAYOUT_SHIFTS = `((region) => {
       }),
     }));
   return JSON.stringify({ address: location.href, reported, counted });
-})`;
+}
+
+/** The reading as a function of the page's, taking the region's selector, so one text serves every region. */
+const READ_LAYOUT_SHIFTS = `(${readLayoutShifts}).bind(null, { elementOf: ${elementOf}, nameOfNode: ${nameOfNode}, `
+  + `recordsOf: ${recordsOf} })`;
 
 /**
  * The expression that reads the page's layout shifts, a `LayoutShifts` as
