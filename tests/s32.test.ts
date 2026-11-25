@@ -53,7 +53,9 @@ const DECIDED: { route: string; statement: string; field?: string }[] = [
 /** Three readers, one per changed card: a researcher in Germany, a transferee
  * in Germany, a transferee in France. */
 const RESEARCHER_DE: Profile = { destination: "de", situation: "research", citizenship: "TR" };
+// The reader whose ICT tenure the situation question does not ask, so de-ict-card keeps it under not checked here.
 const TRANSFEREE_DE: Profile = { destination: "de", situation: "ict", citizenship: "TR" };
+// The same reader in France, so fr-ict's tenure is held to the same decision.
 const TRANSFEREE_FR: Profile = { destination: "fr", situation: "ict", citizenship: "TR" };
 
 /**
@@ -69,25 +71,11 @@ const TRANSFEREE_FR: Profile = { destination: "fr", situation: "ict", citizenshi
  */
 describe("s32 — the card reads the statement's field, not its sentence", () => {
   it("de-researcher: the hosting agreement moves into the asked block, beside the research answer", () => {
-    const route = routeOf(ds, "de-researcher");
-    const hosting = statementOf(ds, "de-researcher", "hosting-agreement-with-a-research-facility");
-    expect(hosting.field).toBe("situation");
-    const { notChecked, asked } = blocksOf(cardFor(ds, RESEARCHER_DE, route.id));
-    expect(asked).toHaveLength(1);
-    expect(asked[0]).toContain(askedHeading(answerLabel(ds, "situation", "research")));
-    expect(asked[0]).toContain(hosting.text);
-    // Nothing else is stated on the route, so the not-checked list is gone.
-    expect(notChecked).toBeNull();
+    expectResearcherHostingAgreementAsked();
   });
 
   it("de-ict-card: the tenure stays under not checked here for a transferee — the situation question asks a transfer, not the tenure", () => {
-    const route = routeOf(ds, "de-ict-card");
-    const tenure = statementOf(ds, "de-ict-card", "six-months-with-the-company-before-the-transfer");
-    expect(tenure.field).toBeUndefined();
-    const { notChecked, asked } = blocksOf(cardFor(ds, TRANSFEREE_DE, route.id));
-    expect(asked).toEqual([]);
-    expect(notChecked).toContain(tenure.text);
-    expect(notChecked).toContain(statementOf(ds, "de-ict-card", "transfer-longer-than-ninety-days").text);
+    expectTransfereeTenureNotChecked();
   });
 
   it("fr-ict: likewise", () => {
@@ -100,25 +88,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
   });
 
   it("the field decides, whatever the sentences do", () => {
-    // The quote struck: still asked, because the field says so.
-    const reworded = clone();
-    const es = statementOf(reworded, "es-researcher", "hosting-agreement-or-contract-with-the-research-body");
-    es.source!.quote = "a sentence no criterion quotes";
-    const esHtml = cardFor(reworded, { destination: "es", situation: "research", citizenship: "TR" }, "es-researcher");
-    expect(blocksOf(esHtml).asked).toHaveLength(1);
-    expect(blocksOf(esHtml).notChecked).toBeNull();
-    // The field struck: not asked, though the criterion quotes the very sentence — the old key.
-    const unfielded = clone();
-    const nl = statementOf(unfielded, "nl-blue-card", "employment-contract-valid-for-six-months");
-    let verbatim = false;
-    forEachCriterion(routeOf(unfielded, "nl-blue-card").criteria, (c) => {
-      for (const p of provenancedValuesOf(c)) if (p.value.quote === nl.source!.quote) verbatim = true;
-    });
-    expect(verbatim).toBe(true);
-    delete nl.field;
-    const nlHtml = cardFor(unfielded, { destination: "nl", situation: "offer", citizenship: "TR" }, "nl-blue-card");
-    expect(blocksOf(nlHtml).asked).toEqual([]);
-    expect(blocksOf(nlHtml).notChecked).toContain(nl.text);
+    expectFieldDecidesWhateverTheSentences();
   });
 
   it("a field the reader has not declared is not asked of them — the heading that says so stays", () => {
@@ -132,20 +102,72 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
   });
 
   it("nothing else moves: every scored route draws exactly the asked blocks the eleven give it, and no other", () => {
-    // Held to the list above, not to the dataset's fields: a reader who has
-    // declared a situation, and nothing the employer question could cover.
-    const answers: Profile = { destination: "all", citizenship: "TR", situation: "offer", situation_country: "de" };
-    const drawnRoutes = everyDrawnRouteIn(verdictOn(ds, answers));
-    expect(drawnRoutes.length).toBe(evaluate(ds, answers).length);
-    for (const drawnRoute of drawnRoutes) {
-      const decided = DECIDED.filter((d) => d.route === drawnRoute.route && d.field !== undefined && answers[d.field] !== undefined);
-      const { asked } = blocksOf(withoutGlosses(drawnRoute.html));
-      expect(asked.length, drawnRoute.route).toBe(new Set(decided.map((d) => d.field)).size);
-      for (const d of decided)
-        expect(asked.join(" "), `${drawnRoute.route}: ${d.statement}`).toContain(esc(statementOf(ds, d.route, d.statement).text));
-    }
+    expectOnlyTheElevenDrawAskedBlocks();
   });
 });
+
+/** Checks de-researcher's hosting agreement names the situation question and is drawn in its asked block alone. */
+function expectResearcherHostingAgreementAsked(): void {
+  const route = routeOf(ds, "de-researcher");
+  const hosting = statementOf(ds, "de-researcher", "hosting-agreement-with-a-research-facility");
+  expect(hosting.field).toBe("situation");
+  const { notChecked, asked } = blocksOf(cardFor(ds, RESEARCHER_DE, route.id));
+  expect(asked).toHaveLength(1);
+  expect(asked[0]).toContain(askedHeading(answerLabel(ds, "situation", "research")));
+  expect(asked[0]).toContain(hosting.text);
+  // Nothing else is stated on the route, so the not-checked list is gone.
+  expect(notChecked).toBeNull();
+}
+
+/** Checks de-ict-card's tenure names no question and stays under not checked here for a transferee. */
+function expectTransfereeTenureNotChecked(): void {
+  const route = routeOf(ds, "de-ict-card");
+  const tenure = statementOf(ds, "de-ict-card", "six-months-with-the-company-before-the-transfer");
+  expect(tenure.field).toBeUndefined();
+  const { notChecked, asked } = blocksOf(cardFor(ds, TRANSFEREE_DE, route.id));
+  expect(asked).toEqual([]);
+  expect(notChecked).toContain(tenure.text);
+  expect(notChecked).toContain(statementOf(ds, "de-ict-card", "transfer-longer-than-ninety-days").text);
+}
+
+/** Checks the statement's field alone decides asked: a struck quote stays asked, a struck field does not. */
+function expectFieldDecidesWhateverTheSentences(): void {
+  // The quote struck: still asked, because the field says so.
+  const reworded = clone();
+  const es = statementOf(reworded, "es-researcher", "hosting-agreement-or-contract-with-the-research-body");
+  es.source!.quote = "a sentence no criterion quotes";
+  const esHtml = cardFor(reworded, { destination: "es", situation: "research", citizenship: "TR" }, "es-researcher");
+  expect(blocksOf(esHtml).asked).toHaveLength(1);
+  expect(blocksOf(esHtml).notChecked).toBeNull();
+  // The field struck: not asked, though the criterion quotes the very sentence — the old key.
+  const unfielded = clone();
+  const nl = statementOf(unfielded, "nl-blue-card", "employment-contract-valid-for-six-months");
+  let verbatim = false;
+  forEachCriterion(routeOf(unfielded, "nl-blue-card").criteria, (c) => {
+    for (const p of provenancedValuesOf(c)) if (p.value.quote === nl.source!.quote) verbatim = true;
+  });
+  expect(verbatim).toBe(true);
+  delete nl.field;
+  const nlHtml = cardFor(unfielded, { destination: "nl", situation: "offer", citizenship: "TR" }, "nl-blue-card");
+  expect(blocksOf(nlHtml).asked).toEqual([]);
+  expect(blocksOf(nlHtml).notChecked).toContain(nl.text);
+}
+
+/** Checks every scored route draws exactly the asked blocks DECIDED gives it for a reader who declared a situation. */
+function expectOnlyTheElevenDrawAskedBlocks(): void {
+  // Held to the list above, not to the dataset's fields: a reader who has
+  // declared a situation, and nothing the employer question could cover.
+  const answers: Profile = { destination: "all", citizenship: "TR", situation: "offer", situation_country: "de" };
+  const drawnRoutes = everyDrawnRouteIn(verdictOn(ds, answers));
+  expect(drawnRoutes.length).toBe(evaluate(ds, answers).length);
+  for (const drawnRoute of drawnRoutes) {
+    const decided = DECIDED.filter((d) => d.route === drawnRoute.route && d.field !== undefined && answers[d.field] !== undefined);
+    const { asked } = blocksOf(withoutGlosses(drawnRoute.html));
+    expect(asked.length, drawnRoute.route).toBe(new Set(decided.map((d) => d.field)).size);
+    for (const d of decided)
+      expect(asked.join(" "), `${drawnRoute.route}: ${d.statement}`).toContain(esc(statementOf(ds, d.route, d.statement).text));
+  }
+}
 
 /** A transferee in Germany, every question the interview puts to them
  * answered, so the record restores straight to the verdict (s22). */
@@ -177,6 +199,7 @@ const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S32 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
+// The transferee's finished record, stored so the page restores straight to their verdict.
 const SEED = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
   JSON.stringify(serialize(transferee, Object.keys(transferee), true))})`;
 

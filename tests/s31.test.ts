@@ -152,56 +152,69 @@ describe.skipIf(skipped !== null)("the hold state is one line under the eyebrow 
     ["1280x900", { width: 1280, height: 900 }, false],
   ] as const)
     it(`at ${name}: header, eyebrow, the line, and nothing else — then the verdict where it stays`, async () => {
-      const seen = (await walkSite({ site: { folder: dist, delayJsMs: HELD_MS }, screen: { viewport, mobile } }, async ({ page, url }) => {
-        await page.goto(url("/404.html"));
-        await page.evaluate(SEED_FINISHED);
-        await page.navigate(url("/"));
-        // The build's paint, before the module runs: the cover on, the
-        // document parsed, every stylesheet in.
-        await page.waitUntil(
-          `document.documentElement?.dataset.cover && document.readyState !== "loading"`
-          + ` && [...document.querySelectorAll('link[rel="stylesheet"]')].every((l) => l.sheet)`,
-          "the build's paint never laid out",
-        );
-        const held = JSON.parse(await page.evaluate(HOLD)) as Hold;
-        await page.waitUntil('!document.querySelector(".stand-in")', "the module never drew its first screen");
-        await page.waitUntilAtRest();
-        const drawn = JSON.parse(await page.evaluate(HOLD)) as Hold;
-        return { held, drawn };
-      })).returned;
-      const h = seen.held;
-      expect(h.cover, "the pre-paint script did not name a reader owed a verdict").toBe("verdict");
-      expect(h.state, "the module had already drawn — the hold was not held").toBe("questions");
-      expect(h.headerShown, "the site header is not on the screen").toBe(true);
-      expect(h.brandShown, "the eyebrow is not on the screen").toBe(true);
-      // The line, once, in the reader's own words.
-      expect(h.lines).toEqual([RETURNING_LINE]);
-      // Directly under the eyebrow: within the eyebrow's own height and one
-      // gap — the breath the header keeps under itself — of its bottom.
-      expect(h.line!.top, `the line's top is at ${h.line!.top}, the eyebrow's bottom at ${h.brand.bottom}`)
-        .toBeGreaterThanOrEqual(h.brand.bottom - 1);
-      expect(h.line!.top - h.brand.bottom, `the line sits ${h.line!.top - h.brand.bottom} px under the eyebrow`)
-        .toBeLessThanOrEqual(h.brand.height + h.gap);
-      // The covered things take no room: not hidden in place, gone from
-      // the flow until the module draws.
-      expect(h.room, "something covered still holds its room").toEqual({
-        headline: false, subline: false, stamp: false, app: false, footer: false,
-      });
-      expect(h.below, `painted below the line: ${h.below.join(", ")}`).toEqual([]);
+      const seen = await walkHeldThenDrawn(viewport, mobile);
+      expectHeldIsOneLineUnderTheEyebrow(seen.held);
 
       // The module has drawn: the line is gone, the verdict is there, and
       // it appeared under the eyebrow — where the line was — not somewhere
       // the reader has to scroll to.
-      const d = seen.drawn;
-      expect(d.state, "the module did not draw the verdict").toBe("results");
-      expect(d.standInsLeft, "a stand-in outlived the first screen").toBe(0);
-      expect(d.headlineShown).toBe(true);
-      expect(d.room.footer).toBe(true);
-      expect(d.headline.top, "the headline is not under the eyebrow").toBeGreaterThanOrEqual(d.brand.bottom - 1);
-      expect(d.headline.top - d.brand.bottom).toBeLessThanOrEqual(d.brand.height + d.gap);
-      expect(d.scrollY, "the first paint is not a gesture: nothing scrolls").toBe(0);
+      expectDrawnVerdictUnderTheEyebrow(seen.drawn);
     }, 180000);
 });
+
+/** Opens a finished record with the module held, and returns the page read while held and once drawn. */
+async function walkHeldThenDrawn(viewport: { width: number; height: number }, mobile: boolean): Promise<{ held: Hold; drawn: Hold }> {
+  return (await walkSite({ site: { folder: dist, delayJsMs: HELD_MS }, screen: { viewport, mobile } }, async ({ page, url }) => {
+    await page.goto(url("/404.html"));
+    await page.evaluate(SEED_FINISHED);
+    await page.navigate(url("/"));
+    // The build's paint, before the module runs: the cover on, the
+    // document parsed, every stylesheet in.
+    await page.waitUntil(
+      `document.documentElement?.dataset.cover && document.readyState !== "loading"`
+      + ` && [...document.querySelectorAll('link[rel="stylesheet"]')].every((l) => l.sheet)`,
+      "the build's paint never laid out",
+    );
+    const held = JSON.parse(await page.evaluate(HOLD)) as Hold;
+    await page.waitUntil('!document.querySelector(".stand-in")', "the module never drew its first screen");
+    await page.waitUntilAtRest();
+    const drawn = JSON.parse(await page.evaluate(HOLD)) as Hold;
+    return { held, drawn };
+  })).returned;
+}
+
+/** Checks the held page shows the header, the eyebrow and the one line directly under it, and nothing else holds room. */
+function expectHeldIsOneLineUnderTheEyebrow(h: Hold): void {
+  expect(h.cover, "the pre-paint script did not name a reader owed a verdict").toBe("verdict");
+  expect(h.state, "the module had already drawn — the hold was not held").toBe("questions");
+  expect(h.headerShown, "the site header is not on the screen").toBe(true);
+  expect(h.brandShown, "the eyebrow is not on the screen").toBe(true);
+  // The line, once, in the reader's own words.
+  expect(h.lines).toEqual([RETURNING_LINE]);
+  // Directly under the eyebrow: within the eyebrow's own height and one
+  // gap — the breath the header keeps under itself — of its bottom.
+  expect(h.line!.top, `the line's top is at ${h.line!.top}, the eyebrow's bottom at ${h.brand.bottom}`)
+    .toBeGreaterThanOrEqual(h.brand.bottom - 1);
+  expect(h.line!.top - h.brand.bottom, `the line sits ${h.line!.top - h.brand.bottom} px under the eyebrow`)
+    .toBeLessThanOrEqual(h.brand.height + h.gap);
+  // The covered things take no room: not hidden in place, gone from
+  // the flow until the module draws.
+  expect(h.room, "something covered still holds its room").toEqual({
+    headline: false, subline: false, stamp: false, app: false, footer: false,
+  });
+  expect(h.below, `painted below the line: ${h.below.join(", ")}`).toEqual([]);
+}
+
+/** Checks the drawn page is the verdict, with no stand-in left, its headline under the eyebrow and nothing scrolled. */
+function expectDrawnVerdictUnderTheEyebrow(d: Hold): void {
+  expect(d.state, "the module did not draw the verdict").toBe("results");
+  expect(d.standInsLeft, "a stand-in outlived the first screen").toBe(0);
+  expect(d.headlineShown).toBe(true);
+  expect(d.room.footer).toBe(true);
+  expect(d.headline.top, "the headline is not under the eyebrow").toBeGreaterThanOrEqual(d.brand.bottom - 1);
+  expect(d.headline.top - d.brand.bottom).toBeLessThanOrEqual(d.brand.height + d.gap);
+  expect(d.scrollY, "the first paint is not a gesture: nothing scrolls").toBe(0);
+}
 
 /**
  * Where the focus is, and what the live region says — read after the
@@ -244,6 +257,7 @@ const TAP_SALARY = `(() => {
   row.click();
   return "tapped";
 })()`;
+// The walk's last step: a band other than the one held, so the verdict it returns to is a new one.
 const ANSWER_ANOTHER_BAND = `(() => {
   const other = document.querySelector("#main .qcard .opt:not(.sel)");
   other.click();
@@ -256,36 +270,7 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
     ["1240x900, where the ledger is a sidebar", { width: 1240, height: 900 }, false],
   ] as const)
     it(`at ${name}: after a correction the headline holds the focus — the element the live region says`, async () => {
-      const seen = await withSite(async ({ page, url }) => {
-        await page.goto(url("/404.html"));
-        await page.evaluate(SEED_FINISHED);
-        await openAtRest(page, url("/"));
-        const arrived = JSON.parse(await page.evaluate(FOCUS)) as Focus;
-        await page.evaluate(TAP_SALARY);
-        await page.waitUntilAtRest();
-        const onQuestion = JSON.parse(await page.evaluate(FOCUS)) as Focus;
-        await answerWith(page, ANSWER_ANOTHER_BAND);
-        const back = JSON.parse(await page.evaluate(FOCUS)) as Focus;
-        return { arrived, onQuestion, back };
-      }, { viewport, mobile });
-      // The arrival keeps s10's rule: a reader who touched nothing has
-      // nothing taken from them.
-      expect(seen.arrived.state).toBe("results");
-      expect(seen.arrived.active, `the arrival focused ${seen.arrived.active}`).toBe("body");
-      expect(seen.onQuestion.state).toBe("questions");
-      // The return: the verdict is drawn, announced once, and the headline —
-      // the same element — holds the focus, out of the tab order.
-      const r = seen.back;
-      expect(r.state).toBe("results");
-      expect(r.headline).not.toBe("");
-      expect(r.headline).not.toBe(seen.arrived.headline);
-      expect(r.active, `the focus is on ${r.active || "nothing"}`).toBe("#headline");
-      expect(r.tabindex, "the headline is in the tab order, or not focusable").toBe("-1");
-      expect(r.live, "the live region does not say the headline").toBe(r.headline);
-      // One move: the reveal brought the masthead into view (s20), and the
-      // focus did not scroll a second time — the headline is on the screen.
-      expect(r.h1Top, `the headline's top is at ${r.h1Top} (scrollY ${r.scrollY})`).toBeGreaterThanOrEqual(0);
-      expect(r.h1Bottom, `the headline's bottom is at ${r.h1Bottom} of ${r.viewport}`).toBeLessThanOrEqual(r.viewport);
+      await expectCorrectionFocusesTheHeadline(viewport, mobile);
     }, 180000);
 
   for (const [name, path, seed] of [
@@ -303,6 +288,40 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
       expect(seen.at.active, `the arrival focused ${seen.at.active}`).toBe("body");
     }, 180000);
 });
+
+/** Checks that after s20's correction the headline holds the focus, says what the live region says, and is on the screen. */
+async function expectCorrectionFocusesTheHeadline(viewport: { width: number; height: number }, mobile: boolean): Promise<void> {
+  const seen = await withSite(async ({ page, url }) => {
+    await page.goto(url("/404.html"));
+    await page.evaluate(SEED_FINISHED);
+    await openAtRest(page, url("/"));
+    const arrived = JSON.parse(await page.evaluate(FOCUS)) as Focus;
+    await page.evaluate(TAP_SALARY);
+    await page.waitUntilAtRest();
+    const onQuestion = JSON.parse(await page.evaluate(FOCUS)) as Focus;
+    await answerWith(page, ANSWER_ANOTHER_BAND);
+    const back = JSON.parse(await page.evaluate(FOCUS)) as Focus;
+    return { arrived, onQuestion, back };
+  }, { viewport, mobile });
+  // The arrival keeps s10's rule: a reader who touched nothing has
+  // nothing taken from them.
+  expect(seen.arrived.state).toBe("results");
+  expect(seen.arrived.active, `the arrival focused ${seen.arrived.active}`).toBe("body");
+  expect(seen.onQuestion.state).toBe("questions");
+  // The return: the verdict is drawn, announced once, and the headline —
+  // the same element — holds the focus, out of the tab order.
+  const r = seen.back;
+  expect(r.state).toBe("results");
+  expect(r.headline).not.toBe("");
+  expect(r.headline).not.toBe(seen.arrived.headline);
+  expect(r.active, `the focus is on ${r.active || "nothing"}`).toBe("#headline");
+  expect(r.tabindex, "the headline is in the tab order, or not focusable").toBe("-1");
+  expect(r.live, "the live region does not say the headline").toBe(r.headline);
+  // One move: the reveal brought the masthead into view (s20), and the
+  // focus did not scroll a second time — the headline is on the screen.
+  expect(r.h1Top, `the headline's top is at ${r.h1Top} (scrollY ${r.scrollY})`).toBeGreaterThanOrEqual(0);
+  expect(r.h1Bottom, `the headline's bottom is at ${r.h1Bottom} of ${r.viewport}`).toBeLessThanOrEqual(r.viewport);
+}
 
 /**
  * The column's left edge and the platform's chrome, read with the scrollbars

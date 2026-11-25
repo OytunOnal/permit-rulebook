@@ -5820,6 +5820,46 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s21-walk.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "src/lib/verdict/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "tests/s21-country-question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21-walk.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s21.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
@@ -5836,11 +5876,6 @@
   },
   {
    "from": "tests/s21.test.ts",
-   "to": "src/lib/record.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s21.test.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
@@ -5851,12 +5886,7 @@
   },
   {
    "from": "tests/s21.test.ts",
-   "to": "src/lib/verdict/verdict.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s21.test.ts",
-   "to": "tests/browser-walk.ts",
+   "to": "tests/s21-country-question.ts",
    "kind": "dependency"
   },
   {
@@ -12123,5 +12153,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "ce88f7d299381eff48b9e43923caefe8ed776f9619e9a60cad3c15c166d5508a"
+ "digest": "7c9b994815b05d6af364ef445e0dc6ea2ee8b872fc1b831e480533d329eddd97"
 }

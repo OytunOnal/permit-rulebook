@@ -60,36 +60,11 @@ describe("s19 — the interview knows which situations a destination's scored ro
   });
 
   it("marks nothing a scored route takes, and never the fallback — every country lacking a seek route lacks `none`", () => {
-    const asked = situationsAsked(ds);
-    expect(asked.get("fr")!.has("none")).toBe(false);
-    expect(asked.get("es")!.has("none")).toBe(false);
-    for (const destination of ["de", "fr", "es", "nl", "all"])
-      for (const o of fieldOptions(ds, SITUATION_FIELD)) {
-        const mark = notScoredFor(ds, destination, o.value);
-        if (o.is_fallback || asked.get(destination)!.has(o.value)) expect(mark, `${destination}:${o.value}`).toBeNull();
-        else expect(mark, `${destination}:${o.value}`).not.toBeNull();
-      }
-    // Which leaves exactly one marked answer in the whole dataset today.
-    const marked = ["de", "fr", "es", "nl", "all"].flatMap((d) =>
-      fieldOptions(ds, SITUATION_FIELD).filter((o) => notScoredFor(ds, d, o.value)).map((o) => `${d}:${o.value}`));
-    expect(marked).toEqual(["fr:research"]);
-    // And no mark before the destination is known.
-    expect(notScoredFor(ds, undefined, "research")).toBeNull();
+    expectOnlyUnaskedSituationsMarked();
   });
 
   it("question 2 for France draws the mark under research only, with the link, and the option stays a button", () => {
-    const html = situationScreen("fr");
-    const marks = marksOn(html);
-    expect(Object.keys(marks)).toEqual(["research"]);
-    const country = ds.countries.find((c) => c.code === "FR")!;
-    const route = country.routes.find((r) => r.id === "fr-talent-chercheur")!;
-    expect(marks.research!.replace(/<[^>]+>/g, "")).toBe(notCheckedQuotedLine(country.name, route.name));
-    expect(marks.research).toContain(`<a href="${url("/france/talent-researcher")}">${READ_IT_HERE}</a>`);
-    // The mark sits after its button, never inside it: a link inside a button is not a link.
-    expect(html).toMatch(/<button class="opt" data-value="research"[^>]*>[\s\S]*?<\/button><small class="opt-mark"[^>]*data-for="research">/);
-    expect(html).not.toMatch(/<button[^>]*>[^<]*(?:<(?!\/button)[^<]*)*<small class="opt-mark"/);
-    // Selectable: the same button every other option is.
-    expect(html.match(/<button class="opt"/g)!.length).toBe(4);
+    expectFranceResearchMarkedAfterItsButton();
   });
 
   it("question 2 for Germany, Spain, the Netherlands and all four draws no mark", () => {
@@ -105,20 +80,60 @@ describe("s19 — the interview knows which situations a destination's scored ro
   });
 
   it("escapes the names it prints", () => {
-    // Ruling 19: the mark carries a route and its country, and the address is
-    // built from them. France's quoted route, renamed, its address a query.
-    const { country, route } = notScoredFor(ds, "fr", "research")!.quoted!;
-    const quoted = {
-      country: { ...country, name: "A" },
-      route: { ...route, name: "<x>", slug: "b?c=d&e" },
-    };
-    const html = notScoredMarkHtml({ country: "A & B", quoted });
-    expect(html).toContain("A &amp; B");
-    expect(html).toContain("&lt;x&gt;");
-    // Through `url`, like every internal link: the page's slash, then the query.
-    expect(html).toContain('href="/a/b/?c=d&amp;e"');
+    expectMarkEscapesTheNamesItPrints();
   });
 });
+
+/** Checks that only a situation no scored route asks is marked, never the fallback, and only `fr:research` today. */
+function expectOnlyUnaskedSituationsMarked(): void {
+  const asked = situationsAsked(ds);
+  expect(asked.get("fr")!.has("none")).toBe(false);
+  expect(asked.get("es")!.has("none")).toBe(false);
+  for (const destination of ["de", "fr", "es", "nl", "all"])
+    for (const o of fieldOptions(ds, SITUATION_FIELD)) {
+      const mark = notScoredFor(ds, destination, o.value);
+      if (o.is_fallback || asked.get(destination)!.has(o.value)) expect(mark, `${destination}:${o.value}`).toBeNull();
+      else expect(mark, `${destination}:${o.value}`).not.toBeNull();
+    }
+  // Which leaves exactly one marked answer in the whole dataset today.
+  const marked = ["de", "fr", "es", "nl", "all"].flatMap((d) =>
+    fieldOptions(ds, SITUATION_FIELD).filter((o) => notScoredFor(ds, d, o.value)).map((o) => `${d}:${o.value}`));
+  expect(marked).toEqual(["fr:research"]);
+  // And no mark before the destination is known.
+  expect(notScoredFor(ds, undefined, "research")).toBeNull();
+}
+
+/** Checks France's question 2 marks research alone, with its link, after a still-selectable button. */
+function expectFranceResearchMarkedAfterItsButton(): void {
+  const html = situationScreen("fr");
+  const marks = marksOn(html);
+  expect(Object.keys(marks)).toEqual(["research"]);
+  const country = ds.countries.find((c) => c.code === "FR")!;
+  const route = country.routes.find((r) => r.id === "fr-talent-chercheur")!;
+  expect(marks.research!.replace(/<[^>]+>/g, "")).toBe(notCheckedQuotedLine(country.name, route.name));
+  expect(marks.research).toContain(`<a href="${url("/france/talent-researcher")}">${READ_IT_HERE}</a>`);
+  // The mark sits after its button, never inside it: a link inside a button is not a link.
+  expect(html).toMatch(/<button class="opt" data-value="research"[^>]*>[\s\S]*?<\/button><small class="opt-mark"[^>]*data-for="research">/);
+  expect(html).not.toMatch(/<button[^>]*>[^<]*(?:<(?!\/button)[^<]*)*<small class="opt-mark"/);
+  // Selectable: the same button every other option is.
+  expect(html.match(/<button class="opt"/g)!.length).toBe(4);
+}
+
+/** Checks the mark escapes the country and route names it prints, and its address goes through `url`. */
+function expectMarkEscapesTheNamesItPrints(): void {
+  // Ruling 19: the mark carries a route and its country, and the address is
+  // built from them. France's quoted route, renamed, its address a query.
+  const { country, route } = notScoredFor(ds, "fr", "research")!.quoted!;
+  const quoted = {
+    country: { ...country, name: "A" },
+    route: { ...route, name: "<x>", slug: "b?c=d&e" },
+  };
+  const html = notScoredMarkHtml({ country: "A & B", quoted });
+  expect(html).toContain("A &amp; B");
+  expect(html).toContain("&lt;x&gt;");
+  // Through `url`, like every internal link: the page's slash, then the query.
+  expect(html).toContain('href="/a/b/?c=d&amp;e"');
+}
 
 describe("s19 — the zero-open result through a marked option is a written state", () => {
   it("the headline names the country and the situation, the subline names the route and what the rest need", () => {
@@ -164,6 +179,7 @@ describe("s19 — the zero-open result through a marked option is a written stat
 /** The two walks the browser takes below: France, then the marked answer; and
  * Spain, the same answer and a Turkish passport. */
 const FRANCE_RESEARCH: Profile = { destination: "fr", situation: "research" };
+// Spain's walk: the same answer, where a scored route does take it, so the mark must not change its verdict.
 const SPAIN_RESEARCH: Profile = { destination: "es", situation: "research", citizenship: "TR" };
 
 describe("s19 — the two walks' results, from the verdict", () => {
@@ -204,37 +220,8 @@ describe("s19 — the two walks' results, from the verdict", () => {
  * since, and this case reads that key — the decision it holds is unchanged.
  */
 describe("s19 — a condition the interview asked is never \"not checked here\"", () => {
-  /** Every question answered with a real answer — the widest walk there is. */
-  const full = (): Profile => {
-    const p: Profile = {};
-    for (const f of ds.fields) {
-      if (f.type === "money_band") { p[f.id] = deriveBands(ds, f.id).at(-1)!.id; continue; }
-      const real = fieldOptions(ds, f.id).find((o) => !o.is_unknown);
-      if (real) p[f.id] = real.value;
-    }
-    return p;
-  };
-
   it("over every scored route with a full profile", () => {
-    // Every country on the screen, so every scored route has its card.
-    const answers: Profile = { ...full(), destination: "all" };
-    const results = evaluate(ds, answers).filter((r) => isScored(r.route));
-    const drawnRoutes = everyDrawnRouteIn(verdictFor(answers));
-    expect(drawnRoutes.length).toBe(results.length);
-    let moved = 0;
-    for (const drawnRoute of drawnRoutes) {
-      const r = results.find((x) => x.route.id === drawnRoute.route)!;
-      const html = blocksIn(drawnRoute.html, "precond", "precond asked");
-      const notChecked = html.match(new RegExp(`<div class="precond"><b>${NOT_CHECKED_HEADING}</b>([\\s\\S]*?)</div>`))?.[1] ?? "";
-      for (const s of (r.route.statements ?? []).filter((x) => x.kind === "precondition")) {
-        if (s.field === undefined || answers[s.field] === undefined) continue;
-        moved++;
-        expect(notChecked, `${r.route.id}: ${s.id} is asked and still "not checked here"`).not.toContain(s.text);
-        expect(html, `${r.route.id}: ${s.id} is asked and not rendered as answered`).toContain("you declared");
-        expect(html, `${r.route.id}: ${s.id} dropped off the card`).toContain(s.text.replace(/&/g, "&amp;"));
-      }
-    }
-    expect(moved).toBeGreaterThan(0);
+    expectNoAskedPreconditionNotCheckedOnAFullProfile();
   });
 
   it("the Spanish researcher card says what was declared, in the s5 words", () => {
@@ -252,6 +239,40 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
     expect(precondFor({ salary_eur_month: "unknown" }, "nl-researcher")).not.toContain("you declared");
   });
 });
+
+/** Every question answered with a real answer — the widest walk there is. */
+const full = (): Profile => {
+  const p: Profile = {};
+  for (const f of ds.fields) {
+    if (f.type === "money_band") { p[f.id] = deriveBands(ds, f.id).at(-1)!.id; continue; }
+    const real = fieldOptions(ds, f.id).find((o) => !o.is_unknown);
+    if (real) p[f.id] = real.value;
+  }
+  return p;
+};
+
+/** Checks that on a full profile, no scored route's card leaves an asked precondition under "not checked here". */
+function expectNoAskedPreconditionNotCheckedOnAFullProfile(): void {
+  // Every country on the screen, so every scored route has its card.
+  const answers: Profile = { ...full(), destination: "all" };
+  const results = evaluate(ds, answers).filter((r) => isScored(r.route));
+  const drawnRoutes = everyDrawnRouteIn(verdictFor(answers));
+  expect(drawnRoutes.length).toBe(results.length);
+  let moved = 0;
+  for (const drawnRoute of drawnRoutes) {
+    const r = results.find((x) => x.route.id === drawnRoute.route)!;
+    const html = blocksIn(drawnRoute.html, "precond", "precond asked");
+    const notChecked = html.match(new RegExp(`<div class="precond"><b>${NOT_CHECKED_HEADING}</b>([\\s\\S]*?)</div>`))?.[1] ?? "";
+    for (const s of (r.route.statements ?? []).filter((x) => x.kind === "precondition")) {
+      if (s.field === undefined || answers[s.field] === undefined) continue;
+      moved++;
+      expect(notChecked, `${r.route.id}: ${s.id} is asked and still "not checked here"`).not.toContain(s.text);
+      expect(html, `${r.route.id}: ${s.id} is asked and not rendered as answered`).toContain("you declared");
+      expect(html, `${r.route.id}: ${s.id} dropped off the card`).toContain(s.text.replace(/&/g, "&amp;"));
+    }
+  }
+  expect(moved).toBeGreaterThan(0);
+}
 
 describe("s19 — the quoted route, the counts and the data page follow", () => {
   it("France's page says 7 routes, the checker asks about 5, and the researcher page renders through the quoted path", () => {
@@ -294,6 +315,7 @@ const seed = (answers: Record<string, string>) =>
     version: RECORD_VERSION, answers, history: Object.keys(answers),
   }))})`;
 
+// The page script that reads each drawn mark back, so the browser cases compare the marks the reader sees.
 const MARKS = 'JSON.stringify([...document.querySelectorAll(".qcard .opt-mark")].map((m) => ({'
   + ' under: m.dataset.for, text: m.textContent.trim(), href: m.querySelector("a") ? m.querySelector("a").getAttribute("href") : null })))';
 
@@ -305,62 +327,72 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
   });
 
   it("France marks research with the link; Germany, Spain, the Netherlands and all four mark nothing", async () => {
-    const seen = await withSite(async ({ page, url: addressOf }) => {
-      const out: Record<string, unknown> = {};
-      for (const destination of ["fr", "de", "es", "nl", "all"]) {
-        await page.goto(addressOf("/"));
-        await page.evaluate(seed({ destination }));
-        await openAtRest(page, addressOf("/"));
-        out[destination] = {
-          question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
-          marks: JSON.parse(await page.evaluate(MARKS)),
-        };
-      }
-      return out;
-    }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string,
-      { question: string; marks: { under: string; text: string; href: string | null }[] }>;
-    for (const [destination, s] of Object.entries(seen)) {
-      expect(s.question, destination).toBe("Which best describes your situation?");
-    }
-    expect(seen.fr!.marks).toEqual([{
-      under: "research",
-      text: "Not checked for France yet — Talent — researcher (chercheur) is quoted, not checked: read it here.",
-      href: url("/france/talent-researcher"),
-    }]);
-    for (const destination of ["de", "es", "nl", "all"]) expect(seen[destination]!.marks, destination).toEqual([]);
+    await expectOnlyFranceMarkedInTheBrowser();
   }, 120_000);
 
   it("France → research reads the written state; Spain → research is met, as before", async () => {
-    const seen = await withSite(async ({ page, url: addressOf }) => {
-      // Each screen is read once the page is at rest.
-      const read = async (answers: Profile) => ({
-        status: await page.evaluate('document.getElementById("cstatus").textContent'),
-        painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(answers)))),
-        state: await page.evaluate('document.getElementById("app").dataset.state'),
-      });
-      // France, by the buttons: the destination on the record, then the marked answer tapped.
-      await page.goto(addressOf("/"));
-      await page.evaluate(seed({ destination: "fr" }));
-      await page.goto(addressOf("/"));
-      await answerWith(page, 'document.querySelector(".opt[data-value=research]").click()');
-      const france = await read(FRANCE_RESEARCH);
-      // Spain, the same two answers — and the passport, which is Spain's third
-      // tap (CRITERIA MET in three).
-      await page.evaluate(seed(SPAIN_RESEARCH as Record<string, string>));
-      await openAtRest(page, addressOf("/"));
-      const spain = await read(SPAIN_RESEARCH);
-      return { france, spain };
-    }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string, {
-      status: string; painted: typeof PAINTED_AS_COMPOSED; state: string;
-    }>;
-
-    // What each screen says is the verdict's ("s19 — the two walks' results,
-    // from the verdict"); the page paints it, and says France's written state.
-    const { france, spain } = seen;
-    expect(france!.state).toBe("results");
-    expect(france!.status).toBe("No route we check in France takes a research hosting agreement.");
-    expect(france!.painted).toEqual(PAINTED_AS_COMPOSED);
-
-    expect(spain!.painted).toEqual(PAINTED_AS_COMPOSED);
+    await expectBothWalksPaintedInTheBrowser();
   }, 120_000);
 });
+
+/** Checks, in the browser, that question 2 marks research for France with its link and nothing for the rest. */
+async function expectOnlyFranceMarkedInTheBrowser(): Promise<void> {
+  const seen = await withSite(async ({ page, url: addressOf }) => {
+    const out: Record<string, unknown> = {};
+    for (const destination of ["fr", "de", "es", "nl", "all"]) {
+      await page.goto(addressOf("/"));
+      await page.evaluate(seed({ destination }));
+      await openAtRest(page, addressOf("/"));
+      out[destination] = {
+        question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
+        marks: JSON.parse(await page.evaluate(MARKS)),
+      };
+    }
+    return out;
+  }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string,
+    { question: string; marks: { under: string; text: string; href: string | null }[] }>;
+  for (const [destination, s] of Object.entries(seen)) {
+    expect(s.question, destination).toBe("Which best describes your situation?");
+  }
+  expect(seen.fr!.marks).toEqual([{
+    under: "research",
+    text: "Not checked for France yet — Talent — researcher (chercheur) is quoted, not checked: read it here.",
+    href: url("/france/talent-researcher"),
+  }]);
+  for (const destination of ["de", "es", "nl", "all"]) expect(seen[destination]!.marks, destination).toEqual([]);
+}
+
+/** Checks, in the browser, that France → research paints the written state and Spain → research paints its verdict. */
+async function expectBothWalksPaintedInTheBrowser(): Promise<void> {
+  const seen = await withSite(async ({ page, url: addressOf }) => {
+    // Each screen is read once the page is at rest.
+    const read = async (answers: Profile) => ({
+      status: await page.evaluate('document.getElementById("cstatus").textContent'),
+      painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(answers)))),
+      state: await page.evaluate('document.getElementById("app").dataset.state'),
+    });
+    // France, by the buttons: the destination on the record, then the marked answer tapped.
+    await page.goto(addressOf("/"));
+    await page.evaluate(seed({ destination: "fr" }));
+    await page.goto(addressOf("/"));
+    await answerWith(page, 'document.querySelector(".opt[data-value=research]").click()');
+    const france = await read(FRANCE_RESEARCH);
+    // Spain, the same two answers — and the passport, which is Spain's third
+    // tap (CRITERIA MET in three).
+    await page.evaluate(seed(SPAIN_RESEARCH as Record<string, string>));
+    await openAtRest(page, addressOf("/"));
+    const spain = await read(SPAIN_RESEARCH);
+    return { france, spain };
+  }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string, {
+    status: string; painted: typeof PAINTED_AS_COMPOSED; state: string;
+  }>;
+
+  // What each screen says is the verdict's ("s19 — the two walks' results,
+  // from the verdict"); the page paints it, and says France's written state.
+  const { france, spain } = seen;
+  expect(france!.state).toBe("results");
+  expect(france!.status).toBe("No route we check in France takes a research hosting agreement.");
+  expect(france!.painted).toEqual(PAINTED_AS_COMPOSED);
+
+  expect(spain!.painted).toEqual(PAINTED_AS_COMPOSED);
+}

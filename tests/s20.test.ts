@@ -160,6 +160,7 @@ const TAP_SALARY = `(() => {
   row.click();
   return "tapped";
 })()`;
+// The walk's last step: a band other than the one held, so the verdict it returns to must change.
 const ANSWER_ANOTHER_BAND = `(() => {
   const other = document.querySelector("#main .qcard .opt:not(.sel)");
   other.click();
@@ -244,39 +245,7 @@ describe.skipIf(skipped !== null)("every answer moves the focus to the next ques
 
 describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
   it("a half-done record: the line, its count, and the one Start over control", async () => {
-    const seen = await withSite(async ({ page, url }) => {
-      await page.goto(url("/404.html"));
-      await page.evaluate(seed(halfDone));
-      await openAtRest(page, url("/"));
-      const resumed = JSON.parse(await page.evaluate(WHERE)) as Where;
-      // One answer on: the line was for the arrival, not for the screen after it.
-      await answerWith(page, 'document.querySelector("#main .qcard .opt").click()');
-      const next = JSON.parse(await page.evaluate(WHERE)) as Where;
-      // Start over from the resumed line: the same control the panel carries.
-      await openAtRest(page, url("/"));
-      await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
-      const restarted = JSON.parse(await page.evaluate(WHERE)) as Where;
-      const stored = await page.evaluate(`localStorage.getItem(${JSON.stringify(STORAGE_KEY)})`);
-      return { resumed, next, restarted, stored };
-    }, PHONE);
-    expect(seen.resumed.state).toBe("questions");
-    // The count is the ledger's own: what the replay keeps of the record,
-    // not what was stored (France never asks situation_country).
-    const kept = replayRecord(ds, halfDone, Object.keys(halfDone)).order.length;
-    expect(kept).toBe(3);
-    expect(seen.resumed.resumed).toBe(`${resumedLine(kept)} ${START_OVER}`);
-    expect(seen.resumed.resumedRestart, "Start over is not in the line, or not shown").toBe(true);
-    expect(seen.resumed.restartsOnPage, "a second Start over control").toBe(1);
-    // The first paint does not take the focus: the reader has not acted.
-    expect(seen.resumed.activeInCard, `the first paint focused ${seen.resumed.active}`).toBe(false);
-    // The line is the arrival's; the next screen is a question like any other.
-    expect(seen.next.resumed).toBeNull();
-    expect(seen.next.restartsOnPage, "Start over went with the line").toBe(1);
-    expect(seen.next.activeIsFirst).toBe(true);
-    // Start over from the line does what Start over does.
-    expect(seen.restarted.resumed).toBeNull();
-    expect(seen.stored).toBeNull();
-    expect(seen.restarted.restartsOnPage).toBe(1);
+    await expectHalfDoneRecordSaysResumed();
   }, 180000);
 
   // A finished record's verdict is the first screen of a return too, and says
@@ -298,3 +267,40 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
       expect(seen.restartsOnPage).toBe(1);
     }, 180000);
 });
+
+/** Checks that a half-done record arrives with the resumed line and its count, which go after one answer, and its Start over clears the record. */
+async function expectHalfDoneRecordSaysResumed(): Promise<void> {
+  const seen = await withSite(async ({ page, url }) => {
+    await page.goto(url("/404.html"));
+    await page.evaluate(seed(halfDone));
+    await openAtRest(page, url("/"));
+    const resumed = JSON.parse(await page.evaluate(WHERE)) as Where;
+    // One answer on: the line was for the arrival, not for the screen after it.
+    await answerWith(page, 'document.querySelector("#main .qcard .opt").click()');
+    const next = JSON.parse(await page.evaluate(WHERE)) as Where;
+    // Start over from the resumed line: the same control the panel carries.
+    await openAtRest(page, url("/"));
+    await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
+    const restarted = JSON.parse(await page.evaluate(WHERE)) as Where;
+    const stored = await page.evaluate(`localStorage.getItem(${JSON.stringify(STORAGE_KEY)})`);
+    return { resumed, next, restarted, stored };
+  }, PHONE);
+  expect(seen.resumed.state).toBe("questions");
+  // The count is the ledger's own: what the replay keeps of the record,
+  // not what was stored (France never asks situation_country).
+  const kept = replayRecord(ds, halfDone, Object.keys(halfDone)).order.length;
+  expect(kept).toBe(3);
+  expect(seen.resumed.resumed).toBe(`${resumedLine(kept)} ${START_OVER}`);
+  expect(seen.resumed.resumedRestart, "Start over is not in the line, or not shown").toBe(true);
+  expect(seen.resumed.restartsOnPage, "a second Start over control").toBe(1);
+  // The first paint does not take the focus: the reader has not acted.
+  expect(seen.resumed.activeInCard, `the first paint focused ${seen.resumed.active}`).toBe(false);
+  // The line is the arrival's; the next screen is a question like any other.
+  expect(seen.next.resumed).toBeNull();
+  expect(seen.next.restartsOnPage, "Start over went with the line").toBe(1);
+  expect(seen.next.activeIsFirst).toBe(true);
+  // Start over from the line does what Start over does.
+  expect(seen.restarted.resumed).toBeNull();
+  expect(seen.stored).toBeNull();
+  expect(seen.restarted.restartsOnPage).toBe(1);
+}
