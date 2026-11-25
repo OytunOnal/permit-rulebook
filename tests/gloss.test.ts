@@ -32,6 +32,40 @@ const ds = dataset as unknown as Dataset;
 /** The words that are gone (amendment 6) — pinned absent, never present. */
 const RETIRED_EXPLAINER = "§ = section";
 
+/** Checks a citation that names an act says the act once, in the citation's own form, without the sign's words. */
+function expectActSaidOnceInTheCitationsForm(): void {
+  const seen: Glossary = new Set();
+  // Outside a bracket, the act's words follow the citation in one form, the
+  // form any abbreviation takes there: "§ 18g AufenthG (the Residence Act)"
+  // (#151, story 25; the fix round, 2026-10-22).
+  expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG (the Residence Act)");
+  expect(glossed("§ 18g AufenthG", new Set())).toBe(`§ 18g ${glossed("AufenthG", new Set())}`);
+  // And does not then explain AufenthG a second time.
+  expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG");
+  expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (the Employment Ordinance)");
+  // Inside a name's own bracket the words follow the citation there.
+  expect(glossSection("Card (§ 6 BeschV)", new Set())).toBe("Card (§ 6 BeschV; BeschV = the Employment Ordinance)");
+  for (const text of ["§ 18g AufenthG", "§ 6 BeschV", "Card (§ 6 BeschV)"])
+    expect(glossed(text, new Set()), text).not.toContain(RETIRED_EXPLAINER);
+}
+
+/** Checks nothing inside a citation is expanded, and a run of several sections stays whole. */
+function expectCitationsLeftWhole(): void {
+  // A route is known by its name, and a citation is a string a person pastes
+  // into a search box: "§ 19c / § 6 BeschV" has to survive whole (Spec
+  // review, 2026-09-08; it used to cut the run in half). The act is named
+  // only where one section cites it; a run of several adds nothing and
+  // leaves the act for the prose after it.
+  expect(glossSection("Experienced worker (§ 19c / § 6 BeschV)", new Set()))
+    .toBe("Experienced worker (§ 19c / § 6 BeschV)");
+  for (const name of [
+    "Experienced worker (§ 19c / § 6 BeschV)",
+    "Opportunity Card (Chancenkarte, § 20a)",
+    "Skilled worker — academic (§ 18b)",
+  ])
+    expect(glossSection(name, new Set()), name).toContain(name.slice(name.indexOf("§"), name.indexOf(")")));
+}
+
 describe("the section sign carries no explainer; the act it names is said once per page", () => {
   it("a citation naming no act is left exactly as written, first use or not", () => {
     // Amendment 6: "Researcher (§ 18d; § = section)" until the human's walk;
@@ -47,35 +81,11 @@ describe("the section sign carries no explainer; the act it names is said once p
   });
 
   it("says the act where the citation names one, in the citation's own bracket, without the sign's words", () => {
-    const seen: Glossary = new Set();
-    // Outside a bracket, the act's words follow the citation in one form, the
-    // form any abbreviation takes there: "§ 18g AufenthG (the Residence Act)"
-    // (#151, story 25; the fix round, 2026-10-22).
-    expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG (the Residence Act)");
-    expect(glossed("§ 18g AufenthG", new Set())).toBe(`§ 18g ${glossed("AufenthG", new Set())}`);
-    // And does not then explain AufenthG a second time.
-    expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG");
-    expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (the Employment Ordinance)");
-    // Inside a name's own bracket the words follow the citation there.
-    expect(glossSection("Card (§ 6 BeschV)", new Set())).toBe("Card (§ 6 BeschV; BeschV = the Employment Ordinance)");
-    for (const text of ["§ 18g AufenthG", "§ 6 BeschV", "Card (§ 6 BeschV)"])
-      expect(glossed(text, new Set()), text).not.toContain(RETIRED_EXPLAINER);
+    expectActSaidOnceInTheCitationsForm();
   });
 
   it("expands nothing inside a citation, and a run of several sections is left whole", () => {
-    // A route is known by its name, and a citation is a string a person pastes
-    // into a search box: "§ 19c / § 6 BeschV" has to survive whole (Spec
-    // review, 2026-09-08; it used to cut the run in half). The act is named
-    // only where one section cites it; a run of several adds nothing and
-    // leaves the act for the prose after it.
-    expect(glossSection("Experienced worker (§ 19c / § 6 BeschV)", new Set()))
-      .toBe("Experienced worker (§ 19c / § 6 BeschV)");
-    for (const name of [
-      "Experienced worker (§ 19c / § 6 BeschV)",
-      "Opportunity Card (Chancenkarte, § 20a)",
-      "Skilled worker — academic (§ 18b)",
-    ])
-      expect(glossSection(name, new Set()), name).toContain(name.slice(name.indexOf("§"), name.indexOf(")")));
+    expectCitationsLeftWhole();
   });
 
   it("leaves text with no citation alone", () => {

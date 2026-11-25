@@ -21,7 +21,8 @@ const { DESK, PHONE, walkSite } = await import("../scripts/browser/browser.mjs")
 
 const notMeasured = skipReason();
 
-const HEADER_BOX = 'JSON.stringify((() => {'
+// Everything identity.css owns of the header, read in the page, so each page's header can be compared with the route page's.
+const HEADER_BOX ='JSON.stringify((() => {'
   + ' const head = document.querySelector(".site-head");'
   + ' const mark = document.querySelector(".site-head .wordmark");'
   + ' const seal = document.querySelector(".site-head .seal");'
@@ -116,6 +117,25 @@ describe.skipIf(notMeasured !== null)("the header is one object, measured", () =
  * is not slack. This forces the generic stack — whatever this machine falls
  * back to — and asks for room to spare on the narrowest page the site builds.
  */
+/** Each page's header row, as `row` reads it, at 1100 px with the generic font stack forced. */
+async function headerRowsOnTheFallbackStack(row: string) {
+  return await withSite(async ({ page, url }) => {
+    const at: Record<string, unknown> = {};
+    for (const [name, path] of [
+      ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
+      ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"], ["error", "/404.html"],
+    ] as const) {
+      await page.goto(url(path));
+      await page.evaluate(FALLBACK_STACK);
+      await page.waitUntilAtRest();
+      at[name] = JSON.parse(await page.evaluate(row));
+    }
+    return at;
+  }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, {
+    height: number; have: number; need: number; rows: number;
+  }>;
+}
+
 describe.skipIf(notMeasured !== null)("the header holds on a machine with none of our fonts", () => {
   /**
    * The row's own items. Since s13 the four countries sit INSIDE a closed
@@ -134,21 +154,7 @@ describe.skipIf(notMeasured !== null)("the header holds on a machine with none o
     + '     .map((a) => Math.round(a.getBoundingClientRect().top))).size }; })())';
 
   it("one row at 1100 px, with room to spare, on every page", async () => {
-    const seen = await withSite(async ({ page, url }) => {
-      const at: Record<string, unknown> = {};
-      for (const [name, path] of [
-        ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
-        ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"], ["error", "/404.html"],
-      ] as const) {
-        await page.goto(url(path));
-        await page.evaluate(FALLBACK_STACK);
-        await page.waitUntilAtRest();
-        at[name] = JSON.parse(await page.evaluate(ROW));
-      }
-      return at;
-    }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, {
-      height: number; have: number; need: number; rows: number;
-    }>;
+    const seen = await headerRowsOnTheFallbackStack(ROW);
 
     const heights = new Set(Object.values(seen).map((v) => v.height));
     expect(heights.size, `header heights: ${[...heights].join(", ")}`).toBe(1);

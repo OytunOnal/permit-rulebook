@@ -26,7 +26,8 @@ import { widenedFailuresOf, widenedScreens } from "./widened-screen.js";
 
 const ds = rawDataset as unknown as Dataset;
 
-const LOWER_OPENINGS = countryVocabulary.countries
+// The phrases no heading or sentence may open with: the in-sentence form of each name that changes at a sentence's start.
+const LOWER_OPENINGS =countryVocabulary.countries
   .filter((c) => phraseOf(c.code) !== phraseAtStartOf(c.code))
   .map((c) => phraseOf(c.code));
 

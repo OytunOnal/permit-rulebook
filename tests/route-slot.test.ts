@@ -76,7 +76,8 @@ describe("no reader sees a route slot", () => {
  * asks block.
  */
 const SHORTAGE = "occupation_shortage";
-const SLOT = `${SLOT_OPENING}de-chancenkarte}`;
+// A slot naming the Opportunity Card, written into the label and help so each case can see it drawn filled.
+const SLOT =`${SLOT_OPENING}de-chancenkarte}`;
 
 function datasetWithShortageSlots(): Dataset {
   const slotted = JSON.parse(JSON.stringify(ds)) as Dataset;

@@ -30,6 +30,7 @@ const SCOPE_STATEMENT_AVOID_LIST = ["scored", "this interview", "rule set"] as c
 
 const ds = rawDataset as unknown as Dataset;
 const routes = ds.countries.flatMap((c) => c.routes);
+// /data/ keeps the model's words, so the avoid-list walk leaves this one page out and checks its terms instead.
 const DATA_PAGE = "/data/index.html";
 
 /**
@@ -122,27 +123,7 @@ describe.skipIf(noBuild !== null)("every page the build draws", () => {
   });
 
   it("/data/ keeps its terms: its lede, its Routes row, its meta description and its JSON-LD", () => {
-    const html = page(DATA_PAGE).html;
-    const places = {
-      lede: html.match(/<p class="lede">([\s\S]*?)<\/p>/)?.[1],
-      routes: html.match(/<dt>Routes<\/dt><dd>([\s\S]*?)<\/dd>/)?.[1],
-      meta: html.match(/<meta name="description" content="([^"]*)"/)?.[1],
-      ld: html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1],
-    };
-    for (const [place, text] of Object.entries(places)) {
-      expect(text, place).toBeDefined();
-      expect(avoidListWordsIn(readerTextOf(text!)), place).not.toEqual([]);
-    }
-    // Unchanged: each place reads what /data/'s own words compose from the
-    // dataset's counts, in the model's terms, which #151 leaves as they were.
-    const counts = reckonDatasetFacts(ds, watchState).counts;
-    const { scored, quotedOnly } = counts;
-    const countries = ds.countries.length;
-    expect(plainTextOf(places.lede!)).toContain(dataLedeOpen(scored, quotedOnly, countries));
-    expect(plainTextOf(places.meta!)).toBe(dataMetaDescription(scored, quotedOnly, countries));
-    expect((JSON.parse(places.ld!) as { description: string }).description)
-      .toBe(datasetDescription(counts));
-    expect(plainTextOf(places.routes!)).toMatch(new RegExp(`^${scored} scored, ${quotedOnly} quoted\\b`));
+    expectDataPageKeepsItsTerms(page(DATA_PAGE).html);
   });
 
   it("says the checked-against-your-answers form on no page: country and route pages carry the asks form", () => {
@@ -170,6 +151,30 @@ describe.skipIf(noBuild !== null)("every page the build draws", () => {
     expect(text).toContain(promise({ total: routes.length, scored: asked }).toLowerCase());
   });
 });
+
+/** Checks /data/'s lede, Routes row, meta description and JSON-LD keep the model's terms, composed from the dataset's counts. */
+function expectDataPageKeepsItsTerms(html: string): void {
+  const places = {
+    lede: html.match(/<p class="lede">([\s\S]*?)<\/p>/)?.[1],
+    routes: html.match(/<dt>Routes<\/dt><dd>([\s\S]*?)<\/dd>/)?.[1],
+    meta: html.match(/<meta name="description" content="([^"]*)"/)?.[1],
+    ld: html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1],
+  };
+  for (const [place, text] of Object.entries(places)) {
+    expect(text, place).toBeDefined();
+    expect(avoidListWordsIn(readerTextOf(text!)), place).not.toEqual([]);
+  }
+  // Unchanged: each place reads what /data/'s own words compose from the
+  // dataset's counts, in the model's terms, which #151 leaves as they were.
+  const counts = reckonDatasetFacts(ds, watchState).counts;
+  const { scored, quotedOnly } = counts;
+  const countries = ds.countries.length;
+  expect(plainTextOf(places.lede!)).toContain(dataLedeOpen(scored, quotedOnly, countries));
+  expect(plainTextOf(places.meta!)).toBe(dataMetaDescription(scored, quotedOnly, countries));
+  expect((JSON.parse(places.ld!) as { description: string }).description)
+    .toBe(datasetDescription(counts));
+  expect(plainTextOf(places.routes!)).toMatch(new RegExp(`^${scored} scored, ${quotedOnly} quoted\\b`));
+}
 
 const notWalked = skipReason();
 if (notWalked) warnNotWalked("the results and the arrival line", notWalked);

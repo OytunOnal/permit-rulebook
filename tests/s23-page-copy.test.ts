@@ -39,9 +39,14 @@ const textOf = (html: string): string =>
  * repeated itself, or spoke the model's language.
  */
 
-describe("the route page's liveness line names its own source or stays silent", () => {
-  const run = reckonDatasetFacts(ds, watchState).watchRun.lastRun;
-  const address = (id: string) => routeAddresses(ds).find((a) => a.route.id === id)!;
+/** A watched source, as the watchlist names it. */
+interface WatchedSource { id: string; url: string }
+
+/**
+ * Two unread sources: `own`, one of the Opportunity Card's own, and `other`,
+ * one no German route cites.
+ */
+function unreadSources(): { own: WatchedSource; other: WatchedSource } {
   /**
    * An unread source of the Opportunity Card's own: its points table's page.
    * Named through the criterion, since the page's first source is the
@@ -58,18 +63,41 @@ describe("the route page's liveness line names its own source or stays silent", 
     id: "es-uge-umbral-pdf",
     url: "https://www.inclusion.gob.es/documents/d/unidadgrandesempresas/umbral-salarial.pdf",
   };
+  return { own, other };
+}
+
+/** Checks the Opportunity Card's page, with `own` unread, says so and says its values still show their read day. */
+function expectOwnUnreadSourceSaid(page: string): void {
+  expect(textOf(page)).toContain(
+    "a daily check re-reads every source; the last run did not reach one of this route's sources; "
+    + "its values still show the day they were read.");
+  expect(dailyCheck(1)).toBe(
+    "a daily check re-reads every source; the last run did not reach one of this route's sources; "
+    + "its values still show the day they were read");
+  expect(dailyCheck(2)).toContain("two of this route's sources; their values");
+  // No country in the sentence.
+  expect(dailyCheck(1)).not.toMatch(/German|Spanish|French|Dutch/);
+}
+
+/** Checks, over every route page drawn with `own` unread, that only the pages citing it carry the clause. */
+function expectOnlyCitingPagesCarryTheClause(run: string, own: WatchedSource): void {
+  const state = watchStateAt(run, [own]);
+  const pages = routePages(ds, state);
+  const facts = reckonDatasetFacts(ds, state);
+  const citing = new Set(routeAddresses(ds).filter((a) => routeFactsOf(facts, a.route).unread.length).map((a) => a.path));
+  expect(citing.size).toBeGreaterThan(0);
+  expect(citing.size).toBeLessThan(pages.length);
+  for (const page of pages)
+    expect(textOf(page.html).includes("did not reach one of this route's sources"), page.path).toBe(citing.has(page.path));
+}
+
+describe("the route page's liveness line names its own source or stays silent", () => {
+  const run = reckonDatasetFacts(ds, watchState).watchRun.lastRun;
+  const address = (id: string) => routeAddresses(ds).find((a) => a.route.id === id)!;
+  const { own, other } = unreadSources();
 
   it("a route whose own source went unread says so, and says the values still show their read day", () => {
-    const html = routePage(ds, address("de-chancenkarte"), watchStateAt(run, [own])).html;
-    expect(textOf(html)).toContain(
-      "a daily check re-reads every source; the last run did not reach one of this route's sources; "
-      + "its values still show the day they were read.");
-    expect(dailyCheck(1)).toBe(
-      "a daily check re-reads every source; the last run did not reach one of this route's sources; "
-      + "its values still show the day they were read");
-    expect(dailyCheck(2)).toContain("two of this route's sources; their values");
-    // No country in the sentence.
-    expect(dailyCheck(1)).not.toMatch(/German|Spanish|French|Dutch/);
+    expectOwnUnreadSourceSaid(routePage(ds, address("de-chancenkarte"), watchStateAt(run, [own])).html);
   });
 
   it("a route none of whose sources went unread prints the plain line, whatever went unread elsewhere", () => {
@@ -85,14 +113,7 @@ describe("the route page's liveness line names its own source or stays silent", 
   });
 
   it("over every route: only the pages citing the unread source carry the clause", () => {
-    const state = watchStateAt(run, [own]);
-    const pages = routePages(ds, state);
-    const facts = reckonDatasetFacts(ds, state);
-    const citing = new Set(routeAddresses(ds).filter((a) => routeFactsOf(facts, a.route).unread.length).map((a) => a.path));
-    expect(citing.size).toBeGreaterThan(0);
-    expect(citing.size).toBeLessThan(pages.length);
-    for (const page of pages)
-      expect(textOf(page.html).includes("did not reach one of this route's sources"), page.path).toBe(citing.has(page.path));
+    expectOnlyCitingPagesCarryTheClause(run, own);
   });
 
   it("/data/ keeps s11's sentence", () => {

@@ -43,6 +43,42 @@ if (missing)
     "",
   ].join("\n"));
 
+/** Checks the generated page carries the masthead's identity pair from the frame's shared stylesheet alone. */
+function expectMastheadFromTheSharedRule(): void {
+  // The pair is drawn by identity.css, which the page inlines through the
+  // frame's stylesheet — never by a second copy of the geometry.
+  expect(page.html).toContain('<header class="masthead masthead-with-stamps">');
+  expect(page.html).toContain('<div class="stamps">');
+  expect(page.html).toContain('class="mark"');
+  expect(page.html).toContain(`<style>${frameSheet}</style>`);
+  // The geometry comes from that stylesheet and from nowhere else. Read off
+  // what ships: the page's own <style> is the shared sheet, and the pair's
+  // rules appear in it exactly as often as they appear there (Standards
+  // review, 2026-09-08 — this used to grep the module's source).
+  const own = page.html.slice(page.html.indexOf("<style>"), page.html.indexOf("</style>"));
+  for (const selector of [".stamps {", ".stamps .mark {", ".stamps .stamp {"]) {
+    expect(own, selector).toContain(selector);
+    expect(own.split(selector).length - 1, `${selector} is declared twice`)
+      .toBe(frameSheet.split(selector).length - 1);
+  }
+  // And it says the product's name where the mark stands.
+  expect(page.html).toContain(`title="${PRODUCT_NAME}"`);
+}
+
+/** Checks the generated page links the interview and every country page, each control at the tap floor. */
+function expectTheInterviewAndEveryCountryOffered(): void {
+  const hrefs = [...page.html.matchAll(/href="([^"]*)"/g)].map((m) => m[1]);
+  expect(hrefs).toContain(url("/"));
+  for (const link of countryLinks(ds))
+    expect(hrefs, `no way to ${link.name}`).toContain(url(link.path));
+  // Every control reaches the tap floor, by the same two classes every
+  // generated page uses.
+  for (const m of page.html.matchAll(/<(?:a|button)\b([^>]*)>/g)) {
+    const classes = (/class="([^"]*)"/.exec(m[1])?.[1] ?? "").split(/\s+/).filter(Boolean);
+    expect(classes.filter((c) => c === "tap" || c === "tap-min").length, m[0]).toBe(1);
+  }
+}
+
 describe("a wrong URL lands on a page of this product's own", () => {
   it("never lets a pipeline skip the built file", () => {
     if (missing) expect(process.env.CI, `CI cannot skip: ${missing}`).toBeFalsy();
@@ -50,24 +86,7 @@ describe("a wrong URL lands on a page of this product's own", () => {
   });
 
   it("carries the masthead with the identity pair, from the one shared rule", () => {
-    // The pair is drawn by identity.css, which the page inlines through the
-    // frame's stylesheet — never by a second copy of the geometry.
-    expect(page.html).toContain('<header class="masthead masthead-with-stamps">');
-    expect(page.html).toContain('<div class="stamps">');
-    expect(page.html).toContain('class="mark"');
-    expect(page.html).toContain(`<style>${frameSheet}</style>`);
-    // The geometry comes from that stylesheet and from nowhere else. Read off
-    // what ships: the page's own <style> is the shared sheet, and the pair's
-    // rules appear in it exactly as often as they appear there (Standards
-    // review, 2026-09-08 — this used to grep the module's source).
-    const own = page.html.slice(page.html.indexOf("<style>"), page.html.indexOf("</style>"));
-    for (const selector of [".stamps {", ".stamps .mark {", ".stamps .stamp {"]) {
-      expect(own, selector).toContain(selector);
-      expect(own.split(selector).length - 1, `${selector} is declared twice`)
-        .toBe(frameSheet.split(selector).length - 1);
-    }
-    // And it says the product's name where the mark stands.
-    expect(page.html).toContain(`title="${PRODUCT_NAME}"`);
+    expectMastheadFromTheSharedRule();
   });
 
   it("says in one sentence that the page does not exist", () => {
@@ -81,16 +100,7 @@ describe("a wrong URL lands on a page of this product's own", () => {
   });
 
   it("offers the interview and all four country pages", () => {
-    const hrefs = [...page.html.matchAll(/href="([^"]*)"/g)].map((m) => m[1]);
-    expect(hrefs).toContain(url("/"));
-    for (const link of countryLinks(ds))
-      expect(hrefs, `no way to ${link.name}`).toContain(url(link.path));
-    // Every control reaches the tap floor, by the same two classes every
-    // generated page uses.
-    for (const m of page.html.matchAll(/<(?:a|button)\b([^>]*)>/g)) {
-      const classes = (/class="([^"]*)"/.exec(m[1])?.[1] ?? "").split(/\s+/).filter(Boolean);
-      expect(classes.filter((c) => c === "tap" || c === "tap-min").length, m[0]).toBe(1);
-    }
+    expectTheInterviewAndEveryCountryOffered();
   });
 
   it.skipIf(missing !== null)("and the build emits that page as 404.html, which is the file GitHub serves", () => {

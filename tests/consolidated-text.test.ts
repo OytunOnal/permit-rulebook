@@ -9,7 +9,7 @@ import {
 import { OFFICIAL_PAGE, consolidatedTextOn, thisRouteOn } from "../src/lib/copy/quotes.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
-import { routeAddresses } from "../src/lib/slug.js";
+import { routeAddresses, type RouteAddress } from "../src/lib/slug.js";
 import type { PageOnSite } from "../scripts/browser/browser.mjs";
 import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { builtPages } from "./reader-pages.js";
@@ -137,22 +137,27 @@ const CLAIMS_OFFICIAL = /\bofficial\b/i;
 const consolidatedCaveats = (route: Route) => routeStatements(route)
   .filter((s) => s.kind === "caveat" && s.source && consolidatedHostOf(s.source.source_url));
 
+/** Checks each route page's scope paragraph, in our own words, claims no official page. */
+function expectScopeParagraphsClaimNoOfficialPage(quotingConsolidated: { address: RouteAddress; html: string }[]): void {
+  expect(quotingConsolidated.length, "precondition: a route page quotes a consolidated text").toBeGreaterThan(0);
+  for (const { address, html } of quotingConsolidated) {
+    const section = /<section class="scope"[\s\S]*?<\/section>/.exec(html)?.[0] ?? "";
+    expect(section, `${address.path}: no scope paragraph`).not.toBe("");
+    // Our own words in it: without the route's scope line and its authored reason.
+    const ours = section.replace(/<[^>]*>/g, " ")
+      .replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&")
+      .split(address.route.scope.reason).join(" ")
+      .split(scopeLine(address.route, { reader: "not-answered" })).join(" ");
+    expect(ours, address.path).not.toMatch(CLAIMS_OFFICIAL);
+  }
+}
+
 describe("no word claims an official page over a consolidated text (#151's fix round, ruling 1)", () => {
   const pages = routeAddresses(ds).map((address) => ({ address, html: routePage(ds, address).html }));
   const quotingConsolidated = pages.filter(({ html }) => linksIn(html, "").some((l) => consolidatedHostOf(l.href)));
 
   it("a route page that quotes a consolidated text says in its scope paragraph where its quotes come from without 'official'", () => {
-    expect(quotingConsolidated.length, "precondition: a route page quotes a consolidated text").toBeGreaterThan(0);
-    for (const { address, html } of quotingConsolidated) {
-      const section = /<section class="scope"[\s\S]*?<\/section>/.exec(html)?.[0] ?? "";
-      expect(section, `${address.path}: no scope paragraph`).not.toBe("");
-      // Our own words in it: without the route's scope line and its authored reason.
-      const ours = section.replace(/<[^>]*>/g, " ")
-        .replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&")
-        .split(address.route.scope.reason).join(" ")
-        .split(scopeLine(address.route, { reader: "not-answered" })).join(" ");
-      expect(ours, address.path).not.toMatch(CLAIMS_OFFICIAL);
-    }
+    expectScopeParagraphsClaimNoOfficialPage(quotingConsolidated);
   });
 
   it("a route page's block of quotes from a consolidated text is headed without 'official'", () => {
@@ -192,7 +197,8 @@ const UNSURE: Profile = {
   age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
 };
 
-const RESULT_LINKS = 'JSON.stringify([...document.querySelectorAll("#main a")].map((a) => ({'
+// The results screen's links as the browser draws them, read in the page so the walk sees what a reader sees.
+const RESULT_LINKS ='JSON.stringify([...document.querySelectorAll("#main a")].map((a) => ({'
   + ' href: a.getAttribute("href"), text: a.textContent })))';
 
 describe.skipIf(skipped !== null)("the results screen, as drawn", () => {

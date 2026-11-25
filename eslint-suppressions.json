@@ -294,22 +294,6 @@
       "count": 1
     }
   },
-  "tests/checked-words.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/consolidated-text.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
   "tests/dataset-ld.test.ts": {
     "max-lines-per-function": {
       "count": 1
@@ -321,19 +305,6 @@
     }
   },
   "tests/escaping.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/gloss.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
-  "tests/header.test.ts": {
     "max-lines-per-function": {
       "count": 1
     },
@@ -367,14 +338,6 @@
       "count": 2
     }
   },
-  "tests/means.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
   "tests/money-rows.test.ts": {
     "roadkeeper/constant-reason": {
       "count": 3
@@ -388,11 +351,6 @@
       "count": 1
     },
     "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/not-found.test.ts": {
-    "max-lines-per-function": {
       "count": 1
     }
   },
@@ -412,22 +370,12 @@
       "count": 1
     }
   },
-  "tests/reader-pages.test.ts": {
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
   "tests/reason.test.ts": {
     "max-lines-per-function": {
       "count": 1
     }
   },
   "tests/rebuild-trigger.test.ts": {
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/route-slot.test.ts": {
     "roadkeeper/constant-reason": {
       "count": 1
     }
@@ -450,21 +398,6 @@
       "count": 1
     }
   },
-  "tests/s23-page-copy.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
-  "tests/s23-result-copy.test.ts": {
-    "max-lines-per-function": {
-      "count": 2
-    }
-  },
-  "tests/s24.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
   "tests/s27.test.ts": {
     "max-lines-per-function": {
       "count": 1
@@ -479,14 +412,6 @@
     },
     "roadkeeper/constant-reason": {
       "count": 1
-    }
-  },
-  "tests/s37.test.ts": {
-    "max-lines-per-function": {
-      "count": 2
-    },
-    "roadkeeper/constant-reason": {
-      "count": 6
     }
   },
   "tests/s5e.test.ts": {
@@ -559,14 +484,6 @@
   "tests/verdict-history.test.ts": {
     "roadkeeper/constant-reason": {
       "count": 2
-    }
-  },
-  "tests/verdict-look.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
     }
   },
   "tests/verdict-steps.test.ts": {
