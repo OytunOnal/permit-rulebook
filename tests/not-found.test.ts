@@ -30,8 +30,10 @@ const ds = dataset as unknown as Dataset;
 const page = notFoundPage(ds);
 /** The frame's own stylesheet, the one every page built as a string opens with. */
 const frameSheet = styleIn(frameAlone(ds));
-const built = fileURLToPath(new URL("../dist/404.html", import.meta.url));
-const missing = whyNoBuild("dist/404.html");
+/** The built error page, from the project's root, as GitHub Pages serves it. */
+const BUILT_ERROR_PAGE = "dist/404.html";
+const built = fileURLToPath(new URL(`../${BUILT_ERROR_PAGE}`, import.meta.url));
+const missing = whyNoBuild(BUILT_ERROR_PAGE);
 
 if (missing)
   process.stderr.write([
