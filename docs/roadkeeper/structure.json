@@ -6767,7 +6767,7 @@
   },
   {
    "from": "tests/seed-finished-record.ts",
-   "to": "src/lib/record.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -12337,5 +12337,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "0aba8c3099696c927035bbfe0beae6848930470a4e02965281b280352400050b"
+ "digest": "824339a670b1f6532295ab3ea323e6bb9443126dfd05787b577895375c858f8f"
 }
