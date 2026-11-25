@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FOR_KIND, audienceLine } from "../src/lib/copy/route-page.js";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { evaluate, notices, type Dataset, type Profile } from "permit-rulebook-data";
 import { arrivalOf, scopedFirst } from "../src/lib/scope.js";
@@ -8,8 +8,12 @@ import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { datasetDay, isoDay } from "../src/lib/copy/frame.js";
 import { audienceNoticeOf } from "./audience-notice.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 const ds = dataset as unknown as Dataset;
+/** Why the built home page cannot be read here, or null when it can. */
+const noBuild = whyNoBuild("dist/index.html");
+if (noBuild) warnBuildNotTested("the results stamp's element on the built page", noBuild);
 
 /**
  * The edge profiles, mandatory.
@@ -121,15 +125,15 @@ describe("s6 — one date format", () => {
   it("the results stamp prints today, as an ISO date, on the built page", () => {
     // The behaviour, not the identifier: a page could import the formatter and
     // print nothing (Standards review, 2026-09-07). The element the script
-    // fills is on the built page, and the formatter that fills it is pinned
-    // against a locale that is ISO by definition.
-    const built = new URL("../dist/index.html", import.meta.url);
-    if (existsSync(built)) {
-      const html = readFileSync(built, "utf8").split("\r\n").join("\n");
-      expect(html).toContain('id="stamp-date"');
-    }
+    // fills is on the built page (the case below), and the formatter that
+    // fills it is pinned against a locale that is ISO by definition.
     expect(isoDay(new Date())).toBe(new Date().toLocaleDateString("sv-SE"));
     expect(isoDay(new Date(2026, 8, 7))).toBe("2026-09-07");
+  });
+
+  it.skipIf(noBuild !== null)("the built page carries the element the results stamp is printed into", () => {
+    const html = readFileSync(new URL("../dist/index.html", import.meta.url), "utf8").split("\r\n").join("\n");
+    expect(html).toContain('id="stamp-date"');
   });
 
   it("the dataset version prints as a date, and a schema version does not", () => {

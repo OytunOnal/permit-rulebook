@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { COPIED } from "../src/lib/copy/feedback.js";
 import { CHECK_YOURS, COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW, THE_DATA } from "../src/lib/copy/frame.js";
@@ -14,6 +14,7 @@ import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { verdictFor } from "./verdict-cards.js";
 import { footerIn, frameAlone, headerIn, interviewFrameAlone } from "./frame-alone.js";
 import { LAYOUTS, allRecord, ds, frRecord, page } from "./s13-feedback-door.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
  * s13 — the feedback door, where the frame and the verdict offer it.
@@ -25,6 +26,9 @@ import { LAYOUTS, allRecord, ds, frRecord, page } from "./s13-feedback-door.js";
  */
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
+/** Why the built first paint cannot be read here, or null when it can. */
+const noBuild = whyNoBuild("dist/index.html");
+if (noBuild) warnBuildNotTested("the results line in the built first paint", noBuild);
 const root = (p: string) => fileURLToPath(new URL(`../${p}`, import.meta.url));
 const read = (p: string): string => readFileSync(root(p), "utf8").split("\r\n").join("\n");
 
@@ -172,8 +176,7 @@ describe("the results line", () => {
       expect(verdictHtml(verdictFor(record))).toContain(line);
   });
 
-  it("is nowhere in the built first paint: a cold / is a question, not a result", () => {
-    if (!existsSync(`${dist}/index.html`)) return;
+  it.skipIf(noBuild !== null)("is nowhere in the built first paint: a cold / is a question, not a result", () => {
     const built = readFileSync(`${dist}/index.html`, "utf8");
     const main = /<main id="main">([\s\S]*?)<\/main>/.exec(built)?.[1] ?? "";
     expect(main, "the cold first paint offers the feedback line").not.toContain(url(FEEDBACK_PATH));

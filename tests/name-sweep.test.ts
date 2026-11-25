@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DISCLAIMER, PRODUCT_NAME, TAGLINE } from "../src/lib/copy/frame.js";
+import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
  * s6 decision 1 — the name changed in one sweep, and nothing user-facing may
@@ -163,7 +164,7 @@ function offendersIn(repo: string): string[] {
   return offenders;
 }
 
-/** Checks the new name stands in the places decision 1 names: both manifests, both READMEs, the built home page, a route page and the schema. */
+/** Checks the new name stands in the places decision 1 names: both manifests, both READMEs, a route page and the schema. */
 function expectNewNameInDecisionOnesPlaces(): void {
   const site = REPOS["permit-rulebook"];
   const data = REPOS["permit-rulebook-data"];
@@ -173,19 +174,24 @@ function expectNewNameInDecisionOnesPlaces(): void {
   expect(flowed(site, "README.md")).toContain("Every route, quoted and dated.");
   expect(flowed(data, "README.md")).toContain("Permit Rulebook");
   expect(flowed(data, "README.md")).toContain("Every route, quoted and dated.");
-  // What the build actually produces, not which identifier the template
-  // happens to use: a page could import PRODUCT_NAME and print nothing.
-  const built = new URL("../dist/index.html", import.meta.url);
-  if (existsSync(built)) {
-    const html = readFileSync(built, "utf8").split("\r\n").join("\n");
-    expect(/<title>([^<]*)<\/title>/.exec(html)?.[1]).toContain(PRODUCT_NAME);
-    expect(html).not.toMatch(WORKING_NAME);
-  }
-  // And the route pages, which the suite renders without a build.
+  // The route pages, which the suite renders without a build.
   const page = routePages(dataset as unknown as Dataset)[0];
   expect(page.title).toContain(PRODUCT_NAME);
   expect(page.html).not.toMatch(WORKING_NAME);
   expect(JSON.parse(read(data, "schema/ruleset.schema.json")).title).toBe("Permit Rulebook dataset");
+}
+
+/** Why the built home page cannot be read here, or null when it can. */
+const noBuild = whyNoBuild("dist/index.html");
+if (noBuild) warnBuildNotTested("the new name on the built home page", noBuild);
+
+/** Checks the built home page's title says the product's name and the page carries no working name. */
+function expectNewNameOnTheBuiltHomePage(): void {
+  // What the build actually produces, not which identifier the template
+  // happens to use: a page could import PRODUCT_NAME and print nothing.
+  const html = readFileSync(new URL("../dist/index.html", import.meta.url), "utf8").split("\r\n").join("\n");
+  expect(/<title>([^<]*)<\/title>/.exec(html)?.[1]).toContain(PRODUCT_NAME);
+  expect(html).not.toMatch(WORKING_NAME);
 }
 
 /** Checks the tagline and the disclaimer have one source and both READMEs quote it. */
@@ -209,6 +215,8 @@ describe("s6 — the working name is gone from everything a reader can see (ledg
     });
 
   it("and the new name is actually there, in the places decision 1 names", expectNewNameInDecisionOnesPlaces);
+
+  it.skipIf(noBuild !== null)("and on the built home page, whose title says it", expectNewNameOnTheBuiltHomePage);
 
   it("the tagline and the disclaimer have one source, and both READMEs quote it", expectTaglineAndDisclaimerQuotedFromOneSource);
 });

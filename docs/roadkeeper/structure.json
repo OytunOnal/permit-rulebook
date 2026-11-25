@@ -4760,6 +4760,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/name-sweep.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/no-errors-expected.test.ts",
    "to": "eslint.config.mjs",
    "kind": "dependency"
@@ -5695,6 +5700,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s13-frame.test.ts",
+   "to": "tests/why-no-build.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s13-header-row.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -6552,6 +6562,11 @@
   {
    "from": "tests/s6-edges.test.ts",
    "to": "tests/audience-notice.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s6-edges.test.ts",
+   "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
   {
@@ -12268,5 +12283,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "e450da1a2fa70435d5cd9bb0fa27bdff9f641621e865dfca0e8dbdb47b79fc21"
+ "digest": "3337064e3eb413d9fb30159012e6063cba7b31a3b6ff8b80df761220d46e15f0"
 }
