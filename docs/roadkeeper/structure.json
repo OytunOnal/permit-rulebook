@@ -5577,11 +5577,6 @@
   },
   {
    "from": "tests/s13-feedback-door.ts",
-   "to": "src/lib/record.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13-feedback-door.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
@@ -12342,5 +12337,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "5516c568082acc6c9d31847b18b50a171da58e6dc1fd45f4b1b51b57e170174c"
+ "digest": "316a6b2f5f932adc95d20c48b1a6dd3dacef61904d9a0e967177caa88380c6df"
 }
