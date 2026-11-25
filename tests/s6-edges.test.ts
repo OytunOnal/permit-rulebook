@@ -19,26 +19,29 @@ const ds = dataset as unknown as Dataset;
  * follows the call to action from a route page and must find that route first
  * in what comes back.
  */
+/** Checks the German Blue Card page says who it is for before its first rule, and its first rule card is the authority's notice. */
+function expectAudienceSaidBeforeTheFirstRule(): void {
+  const address = routeAddresses(ds).find((a) => a.route.id === "de-blue-card-general")!;
+  const page = routePage(ds, address);
+  const notice = audienceNoticeOf(ds);
+  // The notice is a dataset value like any other: quote, source, read date.
+  expect(notice.kind).toBe("no-permit-needed");
+  expect(page.html.indexOf(audienceLine("Germany")))
+    .toBeLessThan(page.html.indexOf('<article class="rule">'));
+  // And its own sentence, with its quote, is the first rule card — not a
+  // footnote at the bottom of seven rules she does not need.
+  const firstCard = page.html.slice(
+    page.html.indexOf('<article class="rule">'),
+    page.html.indexOf("</article>"),
+  );
+  expect(firstCard).toContain(FOR_KIND);
+  expect(firstCard).toContain(notice.body);
+  expect(firstCard).toContain(notice.source.quote);
+  expect(firstCard).toContain(notice.source.retrieved_at);
+}
+
 describe("s6 step 10 — the Irish reader on a German page", () => {
-  it("the page says who it is for before the first rule, in the authority's words", () => {
-    const address = routeAddresses(ds).find((a) => a.route.id === "de-blue-card-general")!;
-    const page = routePage(ds, address);
-    const notice = audienceNoticeOf(ds);
-    // The notice is a dataset value like any other: quote, source, read date.
-    expect(notice.kind).toBe("no-permit-needed");
-    expect(page.html.indexOf(audienceLine("Germany")))
-      .toBeLessThan(page.html.indexOf('<article class="rule">'));
-    // And its own sentence, with its quote, is the first rule card — not a
-    // footnote at the bottom of seven rules she does not need.
-    const firstCard = page.html.slice(
-      page.html.indexOf('<article class="rule">'),
-      page.html.indexOf("</article>"),
-    );
-    expect(firstCard).toContain(FOR_KIND);
-    expect(firstCard).toContain(notice.body);
-    expect(firstCard).toContain(notice.source.quote);
-    expect(firstCard).toContain(notice.source.retrieved_at);
-  });
+  it("the page says who it is for before the first rule, in the authority's words", expectAudienceSaidBeforeTheFirstRule);
 
   it("the call to action leads to the notice, not to a rejection", () => {
     const address = routeAddresses(ds).find((a) => a.route.id === "de-blue-card-general")!;

@@ -82,6 +82,7 @@ const read = (repo: string, file: string): string =>
 /** A sentence wrapped across two lines of prose is still the sentence. */
 const flowed = (repo: string, file: string): string => read(repo, file).replace(/\s+/g, " ");
 
+// The product's working names, in any spacing or case: the strings the rename of decision 1 retired.
 const WORKING_NAME = /visa[\s_-]?navigator|visa[\s_-]?rules/i;
 
 /**
@@ -145,58 +146,69 @@ const isTheDependencyPath = (file: string, line: string): boolean => {
 const isTheMigratedKey = (file: string, line: string): boolean =>
   file === "src/lib/record.ts" && /^export const LEGACY_STORAGE_KEY = /.test(line.trim());
 
+/** Every line of `repo`'s files outside the excluded history that still carries the working name, with its file. */
+function offendersIn(repo: string): string[] {
+  const offenders: string[] = [];
+  for (const file of inRepo(repo)) {
+    if (isHistory(file)) continue;
+    let text: string;
+    try { text = read(repo, file); } catch { continue; }
+    for (const line of text.split("\n")) {
+      if (!WORKING_NAME.test(line)) continue;
+      if (isTheDependencyPath(file, line)) continue;
+      if (isTheMigratedKey(file, line)) continue;
+      offenders.push(`${file}: ${line.trim().slice(0, 120)}`);
+    }
+  }
+  return offenders;
+}
+
+/** Checks the new name stands in the places decision 1 names: both manifests, both READMEs, the built home page, a route page and the schema. */
+function expectNewNameInDecisionOnesPlaces(): void {
+  const site = REPOS["permit-rulebook"];
+  const data = REPOS["permit-rulebook-data"];
+  expect(JSON.parse(read(site, "package.json")).name).toBe("permit-rulebook");
+  expect(JSON.parse(read(data, "package.json")).name).toBe("permit-rulebook-data");
+  expect(flowed(site, "README.md")).toContain("Permit Rulebook");
+  expect(flowed(site, "README.md")).toContain("Every route, quoted and dated.");
+  expect(flowed(data, "README.md")).toContain("Permit Rulebook");
+  expect(flowed(data, "README.md")).toContain("Every route, quoted and dated.");
+  // What the build actually produces, not which identifier the template
+  // happens to use: a page could import PRODUCT_NAME and print nothing.
+  const built = new URL("../dist/index.html", import.meta.url);
+  if (existsSync(built)) {
+    const html = readFileSync(built, "utf8").split("\r\n").join("\n");
+    expect(/<title>([^<]*)<\/title>/.exec(html)?.[1]).toContain(PRODUCT_NAME);
+    expect(html).not.toMatch(WORKING_NAME);
+  }
+  // And the route pages, which the suite renders without a build.
+  const page = routePages(dataset as unknown as Dataset)[0];
+  expect(page.title).toContain(PRODUCT_NAME);
+  expect(page.html).not.toMatch(WORKING_NAME);
+  expect(JSON.parse(read(data, "schema/ruleset.schema.json")).title).toBe("Permit Rulebook dataset");
+}
+
+/** Checks the tagline and the disclaimer have one source and both READMEs quote it. */
+function expectTaglineAndDisclaimerQuotedFromOneSource(): void {
+  const site = REPOS["permit-rulebook"];
+  const data = REPOS["permit-rulebook-data"];
+  const disclaimer =
+    "Permit Rulebook makes no immigration decision and no authority is bound by these results";
+  // The one source, read as the product reads it — the sentence is composed
+  // from the name, so the file does not contain the literal and should not.
+  expect(DISCLAIMER).toContain(disclaimer);
+  expect(TAGLINE).toBe("Every route, quoted and dated.");
+  expect(flowed(site, "README.md")).toContain(disclaimer);
+  expect(flowed(data, "README.md")).toContain(disclaimer);
+}
+
 describe("s6 — the working name is gone from everything a reader can see (ledgers, GLOSSARY.md, docs/roadkeeper, docs/adr, data/verify-* and git history excluded by name)", () => {
   for (const [name, repo] of Object.entries(REPOS))
     it(`${name}: no tracked file outside the excluded history carries the working name`, () => {
-      const offenders: string[] = [];
-      for (const file of inRepo(repo)) {
-        if (isHistory(file)) continue;
-        let text: string;
-        try { text = read(repo, file); } catch { continue; }
-        for (const line of text.split("\n")) {
-          if (!WORKING_NAME.test(line)) continue;
-          if (isTheDependencyPath(file, line)) continue;
-          if (isTheMigratedKey(file, line)) continue;
-          offenders.push(`${file}: ${line.trim().slice(0, 120)}`);
-        }
-      }
-      expect(offenders).toEqual([]);
+      expect(offendersIn(repo)).toEqual([]);
     });
 
-  it("and the new name is actually there, in the places decision 1 names", () => {
-    const site = REPOS["permit-rulebook"];
-    const data = REPOS["permit-rulebook-data"];
-    expect(JSON.parse(read(site, "package.json")).name).toBe("permit-rulebook");
-    expect(JSON.parse(read(data, "package.json")).name).toBe("permit-rulebook-data");
-    expect(flowed(site, "README.md")).toContain("Permit Rulebook");
-    expect(flowed(site, "README.md")).toContain("Every route, quoted and dated.");
-    expect(flowed(data, "README.md")).toContain("Permit Rulebook");
-    expect(flowed(data, "README.md")).toContain("Every route, quoted and dated.");
-    // What the build actually produces, not which identifier the template
-    // happens to use: a page could import PRODUCT_NAME and print nothing.
-    const built = new URL("../dist/index.html", import.meta.url);
-    if (existsSync(built)) {
-      const html = readFileSync(built, "utf8").split("\r\n").join("\n");
-      expect(/<title>([^<]*)<\/title>/.exec(html)?.[1]).toContain(PRODUCT_NAME);
-      expect(html).not.toMatch(WORKING_NAME);
-    }
-    // And the route pages, which the suite renders without a build.
-    const page = routePages(dataset as unknown as Dataset)[0];
-    expect(page.title).toContain(PRODUCT_NAME);
-    expect(page.html).not.toMatch(WORKING_NAME);
-    expect(JSON.parse(read(data, "schema/ruleset.schema.json")).title).toBe("Permit Rulebook dataset");
-  });
+  it("and the new name is actually there, in the places decision 1 names", expectNewNameInDecisionOnesPlaces);
 
-  it("the tagline and the disclaimer have one source, and both READMEs quote it", () => {
-    const site = REPOS["permit-rulebook"];
-    const data = REPOS["permit-rulebook-data"];
-    const disclaimer =
-      "Permit Rulebook makes no immigration decision and no authority is bound by these results";
-    // The one source, read as the product reads it — the sentence is composed
-    // from the name, so the file does not contain the literal and should not.
-    expect(DISCLAIMER).toContain(disclaimer);
-    expect(TAGLINE).toBe("Every route, quoted and dated.");
-    expect(flowed(site, "README.md")).toContain(disclaimer);
-    expect(flowed(data, "README.md")).toContain(disclaimer);
-  });
+  it("the tagline and the disclaimer have one source, and both READMEs quote it", expectTaglineAndDisclaimerQuotedFromOneSource);
 });
