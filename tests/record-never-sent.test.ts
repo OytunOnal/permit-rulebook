@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
-import { answerWith, skipReason } from "./browser-walk.js";
+import { skipReason } from "./browser-walk.js";
 import { expectNothingLeft } from "./wire.js";
 import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
@@ -38,19 +38,14 @@ if (skipped)
     "",
   ].join(String.fromCharCode(10)));
 
-/** In the page: clicks through whatever the current question offers, whatever kind it is. */
-function answerOne(): string {
-  const opt = document.querySelector<HTMLElement>(".qcard .opts .opt");
-  if (opt) { opt.click(); return "opt"; }
-  const row = document.querySelector<HTMLElement>(".clist [role=option]");
-  if (row) { row.click(); return "row"; }
-  const input = document.querySelector<HTMLInputElement>("#cfilter");
-  if (input) { input.value = "Turkey"; input.dispatchEvent(new Event("input", { bubbles: true })); return "typed"; }
-  return "none";
+/** Answers whatever the question on the screen offers, whatever kind it is: the passport search with Turkey, any
+ * other question with its first answer. The walk's one gesture, to the verdict and after it; returns the id
+ * answered. */
+async function answerOne(interview: InterviewPage): Promise<string> {
+  if ((await interview.readScreen()).search === null) return (await interview.answerFirstOffered()).value;
+  await interview.answer("citizenship", "TR");
+  return "TR";
 }
-
-// Whatever the current question offers, clicked: the walk's one gesture, to the verdict and after it.
-const ANSWER_ONE = `(${answerOne})()`;
 
 /** The answers the record on the device holds, by value. */
 async function declaredOn(interview: InterviewPage): Promise<string[]> {
@@ -68,7 +63,7 @@ async function requestsOfWalkThenEdit(site: PageOnSite) {
   const answered: string[] = [];
   for (let step = 0; step < 25; step++) {
     if ((await interview.readScreen()).screen === "results") break;
-    answered.push(await answerWith(page, ANSWER_ONE));
+    answered.push(await answerOne(interview));
   }
   const reached = (await interview.readScreen()).screen;
   const walk = page.requests();
@@ -77,7 +72,7 @@ async function requestsOfWalkThenEdit(site: PageOnSite) {
   // answer once a verdict is on the screen.
   page.forgetRequests();
   await page.evaluate('document.querySelector("#app .done").click()');
-  await answerWith(page, ANSWER_ONE);
+  await answerOne(interview);
   const afterEdit = page.requests();
 
   const declared = await declaredOn(interview);
@@ -179,7 +174,7 @@ describe.skipIf(skipped !== null)("arriving pre-scoped sends no more than arrivi
       await interview.clearRecord();
       await page.goto(`${url("/")}?route=de-blue-card-general`);
       for (let step = 0; step < 4; step++) {
-        await answerWith(page, ANSWER_ONE);
+        await answerOne(interview);
       }
       return { sent: page.requests(), declared: await declaredOn(interview), origin: new URL(url("/")).origin };
     });

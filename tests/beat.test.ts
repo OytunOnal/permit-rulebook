@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DESK, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
-import { openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite } from "./browser-walk.js";
-import {
-  CLOCK_THE_GESTURES, FIRST_OPTION, centresOf, clickOn, optionUnder, pointOf, readSpanAndBeat, waitUntilAnotherQuestionDrawn,
-  where, type Point, type SpanAndBeat, type Where,
-} from "./beat-card.js";
+import { InterviewPage, type Point, type ScreenShown } from "../scripts/interview-page/interview-page.mjs";
+import { BEAT_MS, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite } from "./browser-walk.js";
 import { shiftScoreSince } from "./layout-shifts.js";
 
 /**
@@ -30,10 +27,92 @@ import { shiftScoreSince } from "./layout-shifts.js";
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE BEAT BETWEEN QUESTIONS", skipped);
 
+/** Where the reader is: how many answers the record holds, the question on
+ * the screen, whether it is the search, whether the focus is on its first
+ * control, and how many animations the question card is running. */
+interface Where { answers: number; question: string; search: boolean; focusOnFirst: boolean; cardAnimations: number }
+
+/** Where the reader is on a screen a gesture drew, the card's layout aside. */
+type Drawn = Pick<Where, "answers" | "question" | "search">;
+
+/** Where the reader is, from the screen `shown` as read and the record read now. */
+const drawnOf = async (interview: InterviewPage, { question, search }: ScreenShown): Promise<Drawn> =>
+  ({ answers: Object.keys((await interview.readRecord())?.answers ?? {}).length, question, search: search !== null });
+
+/** Where the reader is now. */
+async function where(page: BrowserPage): Promise<Where> {
+  const interview = new InterviewPage({ page });
+  const drawn = await drawnOf(interview, await interview.readScreen());
+  const layout = await interview.readCardLayout();
+  return { ...drawn, focusOnFirst: layout?.focus.isOnFirstControl ?? false, cardAnimations: layout?.animations ?? 0 };
+}
+
+/** Waits until a gesture has drawn another screen than `from`, and returns it
+ * read the moment it is there: the page answers in the task that draws the
+ * card, and a history move draws on the browser's turn, not the gesture's. */
+async function drawnAfter(page: BrowserPage, from: ScreenShown): Promise<Drawn> {
+  const interview = new InterviewPage({ page });
+  return drawnOf(interview, await interview.waitUntilScreenChanges(from));
+}
+
+/** The centre of each answer the question card offers, in order, in viewport
+ * pixels: the first is what a reader's quick second click lands on. */
+const answerCentres = async (page: BrowserPage): Promise<Point[]> =>
+  ((await new InterviewPage({ page }).readCardLayout())?.answers ?? []).map((a) => a.centre);
+
+/** Clicks the centre of the card's first answer, as the platform's own click. */
+async function pressFirstOption(page: BrowserPage): Promise<void> {
+  const at = (await answerCentres(page))[0]!;
+  await page.clickAt(at.x, at.y);
+}
+
+/** In the page: the centre of the first element `selector` finds, in viewport pixels, as JSON. */
+function readCentreOf(selector: string): string {
+  const r = document.querySelector(selector)!.getBoundingClientRect();
+  return JSON.stringify({ x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) });
+}
+
+/** Clicks the centre of the first element a selector finds, as the platform's own click. */
+async function clickOn(page: BrowserPage, selector: string): Promise<void> {
+  const at = JSON.parse(await page.evaluate(`(${readCentreOf})(${JSON.stringify(selector)})`)) as Point;
+  await page.clickAt(at.x, at.y);
+}
+
+/** On the page's clock, the span of the clocked gestures and the beat the page declares. */
+interface SpanAndBeat { spanMs: number; beatMs: number }
+
+/** Starts the page's clock on the reader's gestures: when each reaches the
+ * page, by its own time stamp, before a handler of the page's can begin a
+ * beat, and when each is done, after the page's handlers have judged it. */
+function startClockingGestures(): string {
+  const clock = { reached: [] as number[], done: [] as number[] };
+  Object.assign(window, { __gestures: clock });
+  for (const type of ["click", "keydown", "popstate"]) {
+    addEventListener(type, (e) => clock.reached.push(e.timeStamp), true);
+    addEventListener(type, () => clock.done.push(performance.now()));
+  }
+  return "clocking";
+}
+
+// The clock started on the page: each walk starts it before the gesture it times.
+const CLOCK_THE_GESTURES = `(${startClockingGestures})()`;
+
+/** In the page: from the first gesture clocked reaching the page to the last done, beside `beatMs`, as JSON. */
+function readSpanBeside(beatMs: number): string {
+  const { reached, done } = (window as unknown as { __gestures: { reached: number[]; done: number[] } }).__gestures;
+  return JSON.stringify({ spanMs: done[done.length - 1]! - reached[0]!, beatMs });
+}
+
+/** On the page's clock, from the first gesture clocked reaching the page to the
+ * last done, beside the beat the page declares: a span shorter than the beat
+ * puts the last press inside it. */
+const readSpanAndBeat = async (page: BrowserPage): Promise<SpanAndBeat> =>
+  JSON.parse(await page.evaluate(`(${readSpanBeside})(${BEAT_MS})`)) as SpanAndBeat;
+
 /** The first screen with nothing on the record, and its first option's centre. */
 async function coldStart(site: PageOnSite): Promise<Point> {
   await openCold(site);
-  return pointOf(site.page, FIRST_OPTION);
+  return (await answerCentres(site.page))[0]!;
 }
 
 /** Answers `count` questions with the first option each, each after its
@@ -42,7 +121,7 @@ async function coldStart(site: PageOnSite): Promise<Point> {
 async function answerFirstOptions(page: BrowserPage, count: number): Promise<Where> {
   for (let i = 0; i < count; i++) {
     await waitUntilPastTheBeat(page);
-    await clickOn(page, FIRST_OPTION);
+    await pressFirstOption(page);
     await page.waitUntilAtRest();
   }
   return where(page);
@@ -56,9 +135,7 @@ const answerTwoQuestions = (page: BrowserPage) => answerFirstOptions(page, 2);
  * walk is taken again; late on every walk, the case says so. */
 const WALKS_FOR_A_PRESS_INSIDE = 3;
 
-const pressFirstOption = (page: BrowserPage) => clickOn(page, FIRST_OPTION);
-
-interface AroundTheBeat<T> extends SpanAndBeat { walked: T; drawn: Where; within: Where; after: Where }
+interface AroundTheBeat<T> extends SpanAndBeat { walked: T; drawn: Drawn; within: Where; after: Where }
 
 type Step<T> = (page: BrowserPage) => Promise<T>;
 interface Walk<T> { walkUp: Step<T>; gesture: Step<void>; press?: Step<void> }
@@ -73,10 +150,10 @@ async function pressedAroundTheBeat<T>(site: PageOnSite, { walkUp, gesture, pres
   for (let walk = 1; ; walk++) {
     await coldStart(site);
     const walked = await walkUp(page);
-    const before = (await where(page)).question;
+    const before = await new InterviewPage({ page }).readScreen();
     await page.evaluate(CLOCK_THE_GESTURES);
     await gesture(page);
-    const drawn = await waitUntilAnotherQuestionDrawn(page, before);
+    const drawn = await drawnAfter(page, before);
     await press(page);
     await page.waitUntilAtRest();
     const within = await where(page);
@@ -98,7 +175,7 @@ function expectTheBeatHeld(seen: AroundTheBeat<unknown>): void {
   expect(seen.after.question, "the guard did not lift after the beat").not.toBe(seen.drawn.question);
 }
 
-interface DoubleClick extends SpanAndBeat { cold: Where; drawn: Where; under: string; after: Where }
+interface DoubleClick extends SpanAndBeat { cold: ScreenShown; drawn: Drawn; under: string; after: Where }
 
 /**
  * Two clicks at one point of a cold card, the second on the card the first
@@ -110,16 +187,17 @@ interface DoubleClick extends SpanAndBeat { cold: Where; drawn: Where; under: st
  */
 async function doubleClickOnAnOption(site: PageOnSite): Promise<DoubleClick | null> {
   const { page } = site;
+  const interview = new InterviewPage({ page });
   for (let i = 0; ; i++)
     for (let walk = 1; ; walk++) {
       await coldStart(site);
-      const at = (await centresOf(page, FIRST_OPTION))[i];
+      const at = (await answerCentres(page))[i];
       if (!at) return null;
-      const cold = await where(page);
+      const cold = await interview.readScreen();
       await page.evaluate(CLOCK_THE_GESTURES);
       await page.clickAt(at.x, at.y);
-      const drawn = await waitUntilAnotherQuestionDrawn(page, cold.question);
-      const under = await optionUnder(page, at);
+      const drawn = await drawnAfter(page, cold);
+      const under = await interview.readAnswerAt(at);
       if (!under) break;
       await page.clickAt(at.x, at.y);
       await page.waitUntilAtRest();
@@ -250,10 +328,10 @@ async function expectStartOverDrawnWithNoBeat(): Promise<void> {
     await answerFirstOptions(page, 2);
     // The resumed line carries "Start over" while a question is on the table.
     await page.goto(site.url("/"));
-    const resumed = await where(page);
+    const resumed = await new InterviewPage({ page }).readScreen();
     await clickOn(page, "#restart");
-    const drawn = await waitUntilAnotherQuestionDrawn(page, resumed.question);
-    await clickOn(page, FIRST_OPTION);
+    const drawn = await drawnAfter(page, resumed);
+    await pressFirstOption(page);
     await page.waitUntilAtRest();
     return { drawn, after: await where(page) };
   }, DESK);

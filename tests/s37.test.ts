@@ -3,7 +3,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { PHONE, type BrowserPage, type PageOnSite, type Screen } from "../scripts/browser/browser.mjs";
 import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
-import { answerOnce, withSite, skipReason } from "./browser-walk.js";
+import { withSite, skipReason } from "./browser-walk.js";
 
 /**
  * s37 — Back on a restored record, and the Back gesture, in a real browser:
@@ -24,24 +24,6 @@ const asks = (field: string) => ds.fields.find((f) => f.id === field)!.label;
 /** Three answers, in the order they were given. */
 const RECORD = { destination: "de", citizenship: "IN", situation: "offer" };
 
-/** In the page: answers whatever the current question offers, whichever kind
- * it is: "opt" or "row" for what it tapped, or why it tapped nothing. A search
- * list shows no rows until something is typed: one letter draws them. */
-function answerAny(): string {
-  const opt = document.querySelector<HTMLElement>(".qcard .opts .opt");
-  if (opt) { opt.click(); return "opt"; }
-  const input = document.getElementById("cfilter") as HTMLInputElement | null;
-  if (input && !document.querySelector(".clist [role=option]")) {
-    input.value = "a";
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-  }
-  const row = document.querySelector<HTMLElement>(".clist [role=option]");
-  if (row) { row.click(); return "row"; }
-  return "the screen offered no answer";
-}
-
-// Whatever the current question offers, tapped: how a live walk answers.
-const ANSWER = `(${answerAny})()`;
 // The screen's own Back control, tapped, which the cases set against the browser's.
 const SCREEN_BACK = 'document.getElementById("back").click()';
 // The browser's Back, as a reader's back gesture makes it.
@@ -52,17 +34,17 @@ const BROWSER_FORWARD = "history.forward()";
 const RELOAD = "location.reload()";
 
 interface Where { path: string; question: string; length: number; step: number | null }
-// Where the tab stands, read in the page: what a case compares before and after each gesture.
-const WHERE ='JSON.stringify({ path: location.pathname,'
-  + ' question: ((document.querySelector(".qlabel") || {}).textContent || "").trim(),'
-  + ' length: history.length, step: (history.state || {}).step ?? null })';
+// Where the tab stands in the browser's history, read in the page: with the question, what a case compares before
+// and after each gesture.
+const IN_HISTORY = "JSON.stringify({ path: location.pathname, length: history.length, step: (history.state || {}).step ?? null })";
 
-const whereOf = async (page: BrowserPage): Promise<Where> => JSON.parse(await page.evaluate(WHERE)) as Where;
-
-/** Whether the tab stands anywhere other than `before`, a reading of WHERE. A
- * history move draws on the browser's turn, not the gesture's, so a gesture
- * that stays on the page is waited on until the screen it leaves is gone. */
-const hasMovedFrom = (before: string) => `${WHERE} !== ${JSON.stringify(before)}`;
+/** Where the tab stands: its place in the browser's history, and the question on the screen, "" off the interview,
+ * which is the site's `/` alone. */
+async function whereOf(interview: InterviewPage, page: BrowserPage): Promise<Where> {
+  const inHistory = JSON.parse(await page.evaluate(IN_HISTORY)) as Omit<Where, "question">;
+  const question = inHistory.path === "/" ? (await interview.readScreen()).question : "";
+  return { ...inHistory, question };
+}
 
 /** Opens `/` from `/data/`, an outside entrance, onto the three answers
  * stored, or with no record stored, so a live walk starts from a first
@@ -73,7 +55,7 @@ async function openFromData(site: PageOnSite, record: "stored" | "none"): Promis
   await site.page.goto(site.url("/data/"));
   if (record === "none") await interview.clearRecord();
   await site.page.goto(site.url("/"));
-  return whereOf(site.page);
+  return whereOf(interview, site.page);
 }
 
 /** A walk: `at()` reads where the tab stands, `act` makes a gesture that stays
@@ -82,19 +64,23 @@ async function openFromData(site: PageOnSite, record: "stored" | "none"): Promis
  * answers seeded from `/data/` — an outside entrance — and `live(n)` answers
  * n questions in the tab. */
 function walker(page: BrowserPage, url: (path: string) => string) {
-  const at = () => whereOf(page);
+  const interview = new InterviewPage({ page, url });
+  const at = () => whereOf(interview, page);
   // The gesture runs on the page's next task, so the evaluation has returned
   // before a Back that leaves the site tears the document down.
   const runOnTheNextTask = (expression: string) => page.evaluate(`setTimeout(() => { ${expression}; }, 0), 0`);
+  // A history move draws on the browser's turn, not the gesture's, so a
+  // gesture that stays on the page is waited on until the screen it leaves is gone.
   const act = async (expression: string) => {
-    const before = await page.evaluate(WHERE);
+    const before = await interview.readScreen();
     await runOnTheNextTask(expression);
-    await page.waitUntil(hasMovedFrom(before), `${expression} moved nothing`);
+    await interview.waitUntilScreenChanges(before);
     await page.waitUntilAtRest();
     return at();
   };
+  // Whatever the question on the screen offers first, tapped: how a live walk answers.
   const answer = async () => {
-    await answerOnce(page, ANSWER, "the question on the screen");
+    await interview.answerFirstOffered();
     return at();
   };
   const actAcross = async (expression: string) => {

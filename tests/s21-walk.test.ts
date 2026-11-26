@@ -11,7 +11,7 @@ import {
   PAINTED_AS_COMPOSED, answerWordsOf, countryNamed, paintedAsComposedScript, saidLineOf, verdictOn,
 } from "./verdict-cards.js";
 import { withSite, skipReason } from "./browser-walk.js";
-import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
+import { InterviewPage, type ScreenShown } from "../scripts/interview-page/interview-page.mjs";
 import { countryQuestion } from "./s21-country-question.js";
 
 const ds = dataset as unknown as Dataset;
@@ -107,15 +107,12 @@ const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S21 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-// The page script that reads each drawn mark back, with its id and link glyph, so the walk compares what the reader gets.
-const MARKS = 'JSON.stringify([...document.querySelectorAll(".qcard .opt-mark")].map((m) => ({'
-  + ' under: m.dataset.for, id: m.id, text: m.textContent.trim(),'
-  + ' href: m.querySelector("a") ? m.querySelector("a").getAttribute("href") : null,'
-  + ' glyph: m.querySelector("a") ? getComputedStyle(m.querySelector("a"), "::after").content : null })))';
-// The page script that reads which mark each option is described by, so the walk checks the mark is announced.
-const DESCRIBED = 'JSON.stringify([...document.querySelectorAll(".qcard .opt")].map((b) => ({'
-  + ' value: b.dataset.value, by: b.getAttribute("aria-describedby"),'
-  + ' resolves: b.getAttribute("aria-describedby") ? !!document.getElementById(b.getAttribute("aria-describedby")) : null })))';
+/** Each mark drawn under an answer on the screen, with its id and link glyph, so the walk compares what the reader gets. */
+const marksOf = ({ answers }: ScreenShown) =>
+  answers.flatMap(({ value, mark }) => (mark ? [{ under: value, ...mark }] : []));
+/** Which mark each answer on the screen is described by, so the walk checks the mark is announced. */
+const describedOf = ({ answers }: ScreenShown) =>
+  answers.map(({ value, describedBy }) => ({ value, by: describedBy?.id ?? null, resolves: describedBy?.resolves ?? null }));
 /** The mark the stylesheet draws after the link in each country's line that
  * carries one. */
 const LINK_GLYPHS = 'JSON.stringify([...document.querySelectorAll(".country-sec .tally a")]'
@@ -154,11 +151,8 @@ async function walkAllFourResearchThroughFrance(): Promise<AllFourWalk> {
     await interview.open();
     // Nothing thrown is read once the page is at rest.
     await page.waitUntilAtRest();
-    const q3 = {
-      question: (await interview.readScreen()).question,
-      marks: JSON.parse(await page.evaluate(MARKS)),
-      described: JSON.parse(await page.evaluate(DESCRIBED)),
-    };
+    const third = await interview.readScreen();
+    const q3 = { question: third.question, marks: marksOf(third), described: describedOf(third) };
     // France, by the button — then the quickest profile to a result that
     // contradicts nothing: no qualification, a Turkish passport, no Dutch
     // graduation, no top-200 degree. Seven answers; nothing open, as the

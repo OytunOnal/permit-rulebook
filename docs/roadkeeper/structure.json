@@ -3555,34 +3555,14 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/beat-card.ts",
+   "from": "tests/beat.test.ts",
    "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
-   "from": "tests/beat-card.ts",
+   "from": "tests/beat.test.ts",
    "to": "scripts/interview-page/interview-page.mjs",
    "kind": "dependency"
-  },
-  {
-   "from": "tests/beat-card.ts",
-   "to": "tests/browser-walk.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/beat.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/beat.test.ts",
-   "to": "tests/beat-card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/beat.test.ts",
-   "to": "tests/beat-card.ts",
-   "kind": "inheritance"
   },
   {
    "from": "tests/beat.test.ts",
@@ -12615,5 +12595,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "0b4b25bbe7855d27af0d4e40b48bdef741a0feaa4d83f61cf5562a66bbd0d316"
+ "digest": "65be717809b124e0e0ee8dac8cb20547c61c98ae8ac9afc5d08cf9475a7f3d6c"
 }
