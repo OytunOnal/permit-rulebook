@@ -88,9 +88,10 @@ export class InterviewPage {
   }
 
   /**
-   * Puts a record of `answers` on the device, asked in the order `history`
-   * gives (the answers' own order by default), unfinished unless `done`, as
-   * the page writes one; the next `open` opens on it.
+   * Puts a record of `answers` on the device, asked in the order the
+   * option `history` gives (the answers' own order by default), unfinished
+   * unless the option `done` says so, as the page writes one; the next
+   * `open` opens on it.
    *
    * Where an answer's id comes from: it is `fields[].options[].value` in the
    * data package's `data/dataset.json`; a money question's ids are `band_<i>`,
@@ -98,10 +99,9 @@ export class InterviewPage {
    * apply to me, or I don't know" is `UNKNOWN_BAND` (its `src/questions.ts`).
    *
    * @param {Profile} answers
-   * @param {string[]} [history]
-   * @param {boolean} [done]
+   * @param {{ history?: string[], done?: boolean }} [options]
    */
-  async seed(answers, history = Object.keys(answers), done = false) {
+  async seed(answers, { history = Object.keys(answers), done = false } = {}) {
     await this.#page.goto(this.#addressOf(OUTSIDE_THE_INTERVIEW));
     await this.#page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(serialize(answers, history, done))})`);
     this.#seeded = true;

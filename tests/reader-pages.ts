@@ -216,7 +216,7 @@ async function screenDrawnAt(site: PageOnSite, path: string, record: Walk | null
  * no record. */
 export async function openWithRecord(site: PageOnSite, path: string, record: Walk | null): Promise<void> {
   const interview = new InterviewPage(site);
-  if (record) await interview.seed(record.answers, record.order, true);
+  if (record) await interview.seed(record.answers, { history: record.order, done: true });
   await interview.open(path);
 }
 

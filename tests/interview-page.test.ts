@@ -72,7 +72,7 @@ describe.skipIf(skipped !== null)("InterviewPage drives the interview on the bui
   it("readRecord() reads back what seed wrote", async () => {
     const history = [first.field];
     const record = await withInterview(async (interview) => {
-      await interview.seed(FIRST_ANSWER, history, true);
+      await interview.seed(FIRST_ANSWER, { history, done: true });
       return interview.readRecord();
     });
     expect(record).toEqual({ answers: FIRST_ANSWER, history, done: true });
