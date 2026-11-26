@@ -68,6 +68,9 @@ const REFUSED: readonly (readonly [string, (filePath: string) => string])[] = [
     const extension = filePath.endsWith(".ts") ? "js" : "ts";
     return `const up = "${up}";\nexport const load = () => import(\`\${up}src/lib/record.${extension}\`);`;
   }],
+  ["a dynamic import by a template with an expression", () =>
+    'const name = "record";\nexport const load = () => import(`src/lib/${name}.js`);'],
+  ["a dynamic import by a variable", () => 'const path = "src/lib/record.js";\nexport const load = () => import(path);'],
 ];
 
 describe("the guard refuses, in a test file and in a script file", () => {
