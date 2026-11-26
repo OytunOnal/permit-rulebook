@@ -55,6 +55,21 @@ const seededAndCleared = () => withInterview(async (interview) => {
   return { seeded, cleared: await interview.readRecord() };
 });
 
+/** What `run` threw, or null where it threw nothing. */
+const messageOf = (run: Promise<unknown>): Promise<string | null> => run.then(() => null, (e: Error) => e.message);
+
+/** What an answer the first question does not offer throws, from a cold start. */
+const refusedAnswer = () => withInterview(async (interview) => {
+  await interview.open();
+  return messageOf(interview.answer(first.field, "no-such-answer"));
+});
+
+/** What reading the screen throws on the page a seed leaves, outside the interview. */
+const screenReadOffTheInterview = () => withInterview(async (interview) => {
+  await interview.seed(FIRST_ANSWER);
+  return messageOf(interview.readScreen());
+});
+
 describe.skipIf(skipped !== null)("InterviewPage drives the interview on the built site", () => {
   it("a seeded record opens on its screen: the one answering it from a cold start reaches", async () => {
     const { answered, seeded } = await answeredAndSeeded();
@@ -85,10 +100,10 @@ describe.skipIf(skipped !== null)("InterviewPage drives the interview on the bui
   }, 120000);
 
   it("a refused answer throws, naming the field", async () => {
-    const thrown = await withInterview(async (interview) => {
-      await interview.open();
-      return interview.answer(first.field, "no-such-answer").then(() => null, (e: Error) => e.message);
-    });
-    expect(thrown).toContain(first.field);
+    expect(await refusedAnswer()).toContain(first.field);
+  }, 120000);
+
+  it("readScreen() off the interview throws, naming the page's address", async () => {
+    expect(await screenReadOffTheInterview()).toMatch(/^readScreen: no interview on http:\/\/\S+\/404\.html$/);
   }, 120000);
 });

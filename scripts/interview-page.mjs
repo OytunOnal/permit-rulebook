@@ -51,10 +51,12 @@ function readBeatMsInPage() {
 
 /** In the page: which screen the interview is on, and its question's label where a reader can see it, as JSON. */
 function readScreenInPage() {
+  const app = document.getElementById("app");
+  if (app === null) return JSON.stringify({ offTheInterview: location.href });
   const label = document.querySelector("#main .qcard .qlabel");
   const style = label && getComputedStyle(label);
   const isShown = style !== null && style.visibility === "visible" && style.display !== "none" && label.offsetParent !== null;
-  return JSON.stringify({ screen: document.getElementById("app").dataset.state, question: isShown ? label.textContent.trim() : "" });
+  return JSON.stringify({ screen: app.dataset.state, question: isShown ? label.textContent.trim() : "" });
 }
 
 /** In the page: taps `value` on the question on the screen, its button or, on the search, the row `searchFor`
@@ -155,9 +157,12 @@ export class InterviewPage {
     await this.#page.waitUntilAtRest();
   }
 
-  /** Which screen the interview is on, and its question. @returns {Promise<ScreenShown>} */
+  /** Which screen the interview is on, and its question; throws, naming the page's address, on a page that holds
+   * no interview. @returns {Promise<ScreenShown>} */
   async readScreen() {
-    return JSON.parse(await this.#page.evaluate(`(${readScreenInPage})()`));
+    const { offTheInterview, ...shown } = JSON.parse(await this.#page.evaluate(`(${readScreenInPage})()`));
+    if (offTheInterview !== undefined) throw new Error(`readScreen: no interview on ${offTheInterview}`);
+    return shown;
   }
 
   /** The record the device holds, or null where it holds none. @returns {Promise<RecordOnDevice | null>} */
