@@ -4267,17 +4267,17 @@
   },
   {
    "from": "tests/first-paint-arrivals.test.ts",
+   "to": "scripts/interview-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-arrivals.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/first-paint-arrivals.test.ts",
    "to": "src/lib/first-paint.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/first-paint-arrivals.test.ts",
-   "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
@@ -4772,7 +4772,7 @@
   },
   {
    "from": "tests/money-rows.test.ts",
-   "to": "src/lib/record.ts",
+   "to": "scripts/interview-page.mjs",
    "kind": "dependency"
   },
   {
@@ -4787,12 +4787,12 @@
   },
   {
    "from": "tests/more-quotes-page.test.ts",
-   "to": "src/lib/copy/verdict.ts",
+   "to": "scripts/interview-page.mjs",
    "kind": "dependency"
   },
   {
    "from": "tests/more-quotes-page.test.ts",
-   "to": "src/lib/record.ts",
+   "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -5073,6 +5073,21 @@
   {
    "from": "tests/pull-request-check.test.ts",
    "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/question-landing.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/question-landing.ts",
+   "to": "scripts/interview-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/question-landing.ts",
+   "to": "src/lib/first-paint.ts",
    "kind": "dependency"
   },
   {
@@ -5952,17 +5967,17 @@
   },
   {
    "from": "tests/s20.test.ts",
+   "to": "scripts/interview-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s20.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s20.test.ts",
    "to": "src/lib/question.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s20.test.ts",
-   "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
@@ -6537,12 +6552,7 @@
   },
   {
    "from": "tests/s30.test.ts",
-   "to": "src/lib/first-paint.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s30.test.ts",
-   "to": "src/lib/record.ts",
+   "to": "scripts/interview-page.mjs",
    "kind": "dependency"
   },
   {
@@ -6551,8 +6561,18 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s30.test.ts",
+   "to": "tests/question-landing.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s31.test.ts",
    "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s31.test.ts",
+   "to": "scripts/interview-page.mjs",
    "kind": "dependency"
   },
   {
@@ -6563,11 +6583,6 @@
   {
    "from": "tests/s31.test.ts",
    "to": "src/lib/question.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s31.test.ts",
-   "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
@@ -6587,17 +6602,17 @@
   },
   {
    "from": "tests/s32.test.ts",
+   "to": "scripts/interview-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s32.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s32.test.ts",
    "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s32.test.ts",
-   "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
@@ -6872,12 +6887,12 @@
   },
   {
    "from": "tests/set-aside.test.ts",
-   "to": "src/lib/copy/interview.ts",
+   "to": "scripts/interview-page.mjs",
    "kind": "dependency"
   },
   {
    "from": "tests/set-aside.test.ts",
-   "to": "src/lib/record.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
@@ -7047,7 +7062,7 @@
   },
   {
    "from": "tests/start-over.test.ts",
-   "to": "src/lib/record.ts",
+   "to": "scripts/interview-page.mjs",
    "kind": "dependency"
   },
   {
@@ -7207,7 +7222,7 @@
   },
   {
    "from": "tests/verdict-look.test.ts",
-   "to": "src/lib/record.ts",
+   "to": "scripts/interview-page.mjs",
    "kind": "dependency"
   },
   {
@@ -12467,5 +12482,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "75a4e7717d09e9b21e94f771b74b92a872a3e3954811810a19e383c24360fe19"
+ "digest": "4cbed4bcd9e7bff8a9761cc4b64f1084ee5ed81c2187cea487342d77cf42f03c"
 }

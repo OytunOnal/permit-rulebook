@@ -6,7 +6,7 @@ import {
 } from "permit-rulebook-data";
 import { NOT_CHECKED_HEADING, STATUS_LABEL, askedHeading } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
-import { STORAGE_KEY, serialize } from "../src/lib/record.js";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 import {
   PAINTED_AS_COMPOSED, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, placed, verdictOn, withoutGlosses,
 } from "./verdict-cards.js";
@@ -199,16 +199,14 @@ const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S32 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-// The transferee's finished record, stored so the page restores straight to their verdict.
-const SEED = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
-  JSON.stringify(serialize(transferee, Object.keys(transferee), true))})`;
-
 describe.skipIf(skipped !== null)("s32 — in the browser", () => {
   it("a transferee in Germany reads the tenure under not checked here on the ICT card at 390×844", async () => {
-    const seen = await withSite(async ({ page, url }) => {
-      await page.goto(url("/404.html"));
-      await page.evaluate(SEED);
-      await page.goto(url("/"));
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      const interview = new InterviewPage(site);
+      // The transferee's finished record, stored so the page restores straight to their verdict.
+      await interview.seed(transferee, { done: true });
+      await interview.open();
       return {
         state: await page.evaluate('document.getElementById("app").dataset.state'),
         painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictOn(ds, transferee)))) as typeof PAINTED_AS_COMPOSED,

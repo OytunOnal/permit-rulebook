@@ -325,14 +325,6 @@
       "count": 2
     }
   },
-  "tests/money-rows.test.ts": {
-    "roadkeeper/constant-reason": {
-      "count": 3
-    },
-    "roadkeeper/named-condition": {
-      "count": 1
-    }
-  },
   "tests/paths-named.test.ts": {
     "max-lines-per-function": {
       "count": 1
@@ -377,14 +369,6 @@
       "count": 1
     }
   },
-  "tests/s30.test.ts": {
-    "max-lines-per-function": {
-      "count": 4
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
   "tests/s5e.test.ts": {
     "max-lines-per-function": {
       "count": 2
@@ -416,20 +400,7 @@
       "count": 2
     }
   },
-  "tests/set-aside.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 3
-    }
-  },
   "tests/shorthand.test.ts": {
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "tests/start-over.test.ts": {
     "roadkeeper/constant-reason": {
       "count": 1
     }
