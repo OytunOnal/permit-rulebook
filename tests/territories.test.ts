@@ -6,7 +6,7 @@ import {
 } from "permit-rulebook-data";
 import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "../src/lib/copy/interview.js";
 import { countrySearchOf } from "../src/lib/country-search/country-search.js";
-import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { PHONE, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
   skipReason, warnNotWalked, withSite,
@@ -90,36 +90,17 @@ if (skipped) warnNotWalked("the territory line in a browser", skipped);
 
 /** Answers that bring the passport question next. */
 const BEFORE_PASSPORT = { destination: "de", situation: "offer", qualification: "degree", occupation_it: "no" };
-interface Listed { query: string; rows: number; line: string; status: string }
-
-/** In the page: what the passport search shows, its query, its rows, its line and its live region, as JSON once its
- * line for `typed` is drawn; false until then. */
-function readListOnceDrawnForInPage(typed: string): string | false {
-  const listed: Listed = {
-    query: (document.getElementById("cfilter") as HTMLInputElement | null)?.value ?? "",
-    rows: document.querySelectorAll("#clist [role=option]").length,
-    line: (document.querySelector("#clist .cnone")?.textContent || "").trim(),
-    status: (document.getElementById("cstatus")?.textContent || "").trim(),
-  };
-  return listed.query === typed && listed.line ? JSON.stringify(listed) : false;
-}
-
-/** The list once the search has drawn its line for `typed`. */
-async function listFor(page: BrowserPage, typed: string): Promise<Listed> {
-  const drawn = `(${readListOnceDrawnForInPage})(${JSON.stringify(typed)})`;
-  return JSON.parse(String(await page.waitUntil(drawn, `the search drew no line for "${typed}"`))) as Listed;
-}
 
 describe.skipIf(skipped !== null)("#160 — in the browser at 390×844", () => {
   it("typing \"Puerto Rico\" into the passport search shows the territory line and no row", async () => {
     const seen = await withSite(async (site: PageOnSite) => {
-      const { page } = site;
       const interview = new InterviewPage(site);
       await interview.seed(BEFORE_PASSPORT);
       await interview.open();
-      await page.evaluate('document.getElementById("cfilter").focus()');
-      await page.type("Puerto Rico");
-      return listFor(page, "Puerto Rico");
+      await interview.searchFor("Puerto Rico");
+      const { answers, search } = await interview.readScreen();
+      if (search === null) throw new Error("the passport search is not on the screen");
+      return { rows: answers.length, line: search.line, status: search.status };
     }, PHONE);
 
     expect(seen.rows).toBe(0);

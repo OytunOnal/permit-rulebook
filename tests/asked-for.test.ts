@@ -5,7 +5,7 @@ import { glossSection, type Glossary } from "../src/lib/gloss.js";
 import { DESK, PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
-  answer, middleBandOf, skipReason, topBandOf, waitUntilPastTheBeat, walkTo, warnNotWalked, withSite,
+  answer, middleBandOf, skipReason, topBandOf, walkTo, warnNotWalked, withSite,
 } from "./browser-walk.js";
 import { shiftScoreSince } from "./layout-shifts.js";
 import { routeOf } from "./route-of.js";
@@ -62,22 +62,8 @@ const IT_NO_DEGREE: Profile = {
 const labelOf = (field: string): string => ds.fields.find((f) => f.id === field)!.label;
 const cardNameOf = (route: string): string => routeOf(ds, route).name;
 
-/** In the page, as JSON: what the line on the question card marks: the routes it names, each with
- * its country, and the count per country where it counts. */
-function readLineInPage(): string {
-  const card = document.querySelector("#main .qcard");
-  const line = card && card.querySelector("[data-asked-for]");
-  if (!line) return JSON.stringify(null);
-  return JSON.stringify({
-    named: [...line.querySelectorAll<HTMLElement>("[data-route]")].map((el) => ({
-      route: el.dataset.route, country: el.dataset.country, text: el.textContent,
-    })),
-    counted: [...line.querySelectorAll<HTMLElement>("[data-routes]")].map((el) => ({
-      country: el.dataset.country, routes: Number(el.dataset.routes),
-    })),
-  });
-}
-
+/** What the line on the question card marks: the routes it names, each with its country, and the count per country
+ * where it counts. */
 interface Line {
   named: { route: string; country: string; text: string }[];
   counted: { country: string; routes: number }[];
@@ -85,8 +71,8 @@ interface Line {
 
 /** The question on the screen and its line, read together. */
 async function screenOf(page: BrowserPage): Promise<{ question: string; line: Line | null }> {
-  const { question } = await new InterviewPage({ page }).readScreen();
-  return { question, line: JSON.parse(await page.evaluate(`(${readLineInPage})()`)) as Line | null };
+  const { question, askedFor } = await new InterviewPage({ page }).readScreen();
+  return { question, line: askedFor };
 }
 
 /** The card is the question's, and it carries a line. */
@@ -97,25 +83,25 @@ function expectTheCardWithALine<T extends { question: string; line: Line | null 
 
 const namedRoutes = (line: Line) => line.named.map((n) => [n.route, n.country]);
 
-/** In the page, as JSON: the asked-for line's box against its card's: inside it or not, how many
- * lines it wraps to, and whether each option stays on the card. */
-function readLineGeometryInPage(): string {
-  const card = document.querySelector("#main .qcard")!.getBoundingClientRect();
-  const el = document.querySelector("#main .qcard [data-asked-for]");
-  if (!el) return JSON.stringify(null);
-  const line = el.getBoundingClientRect();
-  const lineHeight = parseFloat(getComputedStyle(el).lineHeight);
-  const inside = (b: DOMRect) => b.left >= card.left && b.right <= card.right && b.top >= card.top && b.bottom <= card.bottom;
-  return JSON.stringify({
-    lineInside: inside(line),
-    lineOverflows: el.scrollWidth > el.clientWidth,
-    lines: Math.round(line.height / lineHeight),
-    options: [...document.querySelectorAll("#main .qcard .opt")].map((o) => inside(o.getBoundingClientRect())),
-    pageOverflows: document.documentElement.scrollWidth > window.innerWidth,
-  });
-}
-
 interface LineGeometry { lineInside: boolean; lineOverflows: boolean; lines: number; options: boolean[]; pageOverflows: boolean }
+
+// Whether the page is wider than the viewport, so it scrolls sideways.
+const PAGE_OVERFLOWS = "document.documentElement.scrollWidth > window.innerWidth";
+
+/** The asked-for line's box against its card's: inside it or not, whether its text overflows, how many lines it
+ * wraps to, whether each option stays on the card, and whether the page scrolls sideways; null where the card
+ * draws no line. */
+async function lineGeometryOf(page: BrowserPage): Promise<LineGeometry | null> {
+  const layout = await new InterviewPage({ page }).readCardLayout();
+  if (layout === null || layout.askedFor === null) return null;
+  return {
+    lineInside: layout.askedFor.isInsideCard,
+    lineOverflows: layout.askedFor.isOverflowing,
+    lines: layout.askedFor.lines,
+    options: layout.answers.map((a) => a.isInsideCard),
+    pageOverflows: Boolean(await page.evaluate(PAGE_OVERFLOWS)),
+  };
+}
 
 /** In the page, as JSON: the row of `field` in the declared panel scrolled to the middle, and the point at its
  * centre; null where the panel has no such row. */
@@ -247,10 +233,8 @@ describe.skipIf(skipped !== null)(THE_ASKED_FOR_LINE, () => {
       // The shifts from now on: the walk's own scripted answers shifted the page before, and are not the card's.
       const since = Number(await page.evaluate("performance.now()"));
       // The answer that draws the seven-year card, by a real tap.
-      await waitUntilPastTheBeat(page);
-      await page.tapOn(`#main .qcard .opt[data-value='${IT_NO_DEGREE.experience_5y}']`);
-      await page.waitUntilAtRest();
-      const geometry = JSON.parse(await page.evaluate(`(${readLineGeometryInPage})()`)) as LineGeometry | null;
+      await new InterviewPage({ page }).answer("experience_5y", IT_NO_DEGREE.experience_5y!, { by: "hand" });
+      const geometry = await lineGeometryOf(page);
       return {
         ...(await screenOf(page)), geometry, cls: await shiftScoreSince(page, since),
       };

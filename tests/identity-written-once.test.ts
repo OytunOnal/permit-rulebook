@@ -163,7 +163,7 @@ describe(ONE_DEFINITION, () => {
     // Built, the interview's stylesheet is minified together with identity.css, so the pair's
     // drawing rules are counted: as many as identity.css writes, and no more.
     const built = withoutPrint(builtStylesheetsOfTheInterview());
-    expect(built, "precondition: the interview's stylesheet is among them").toContain(".qcard");
+    expect(built, "precondition: the interview's stylesheet is among them").toContain(".decl-count");
     const own = withoutPrint(identity);
     for (const part of ["mark", "stamp"]) {
       const written = own.split(`.stamps .${part} {`).length - 1;
