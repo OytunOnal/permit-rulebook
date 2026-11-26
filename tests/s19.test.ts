@@ -7,7 +7,6 @@ import {
   type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { esc } from "../src/lib/reason.js";
-import { RECORD_VERSION } from "../src/lib/record.js";
 import { notScoredMarkHtml } from "../src/lib/question.js";
 import { notScoredFor } from "../src/lib/situations.js";
 import { NOT_CHECKED_HEADING, READ_ITS_RULES, STATUS_LABEL } from "../src/lib/copy/verdict.js";
@@ -22,7 +21,8 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
 } from "./verdict-cards.js";
-import { answerWith, openAtRest, withSite, skipReason } from "./browser-walk.js";
+import { withSite, skipReason } from "./browser-walk.js";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 import { marksOn, situationScreen, unscoredOf } from "./situation-marks.js";
 import { watchStateAt } from "./watch-state-at.js";
 
@@ -310,11 +310,6 @@ const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S19 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-const seed = (answers: Record<string, string>) =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: RECORD_VERSION, answers, history: Object.keys(answers),
-  }))})`;
-
 // The page script that reads each drawn mark back, so the browser cases compare the marks the reader sees.
 const MARKS = 'JSON.stringify([...document.querySelectorAll(".qcard .opt-mark")].map((m) => ({'
   + ' under: m.dataset.for, text: m.textContent.trim(), href: m.querySelector("a") ? m.querySelector("a").getAttribute("href") : null })))';
@@ -337,14 +332,16 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
 
 /** Checks, in the browser, that question 2 marks research for France with its link and nothing for the rest. */
 async function expectOnlyFranceMarkedInTheBrowser(): Promise<void> {
-  const seen = await withSite(async ({ page, url: addressOf }) => {
+  const seen = await withSite(async (site) => {
+    const { page } = site;
+    const interview = new InterviewPage(site);
     const out: Record<string, unknown> = {};
     for (const destination of ["fr", "de", "es", "nl", "all"]) {
-      await page.goto(addressOf("/"));
-      await page.evaluate(seed({ destination }));
-      await openAtRest(page, addressOf("/"));
+      await interview.seed({ destination });
+      await interview.open();
+      await page.waitUntilAtRest();
       out[destination] = {
-        question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
+        question: (await interview.readScreen()).question,
         marks: JSON.parse(await page.evaluate(MARKS)),
       };
     }
@@ -364,23 +361,25 @@ async function expectOnlyFranceMarkedInTheBrowser(): Promise<void> {
 
 /** Checks, in the browser, that France → research paints the written state and Spain → research paints its verdict. */
 async function expectBothWalksPaintedInTheBrowser(): Promise<void> {
-  const seen = await withSite(async ({ page, url: addressOf }) => {
+  const seen = await withSite(async (site) => {
+    const { page } = site;
+    const interview = new InterviewPage(site);
     // Each screen is read once the page is at rest.
     const read = async (answers: Profile) => ({
       status: await page.evaluate('document.getElementById("cstatus").textContent'),
       painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(answers)))),
-      state: await page.evaluate('document.getElementById("app").dataset.state'),
+      state: (await interview.readScreen()).screen,
     });
     // France, by the buttons: the destination on the record, then the marked answer tapped.
-    await page.goto(addressOf("/"));
-    await page.evaluate(seed({ destination: "fr" }));
-    await page.goto(addressOf("/"));
-    await answerWith(page, 'document.querySelector(".opt[data-value=research]").click()');
+    await interview.seed({ destination: "fr" });
+    await interview.open();
+    await interview.answer("situation", "research");
     const france = await read(FRANCE_RESEARCH);
     // Spain, the same two answers — and the passport, which is Spain's third
     // tap (CRITERIA MET in three).
-    await page.evaluate(seed(SPAIN_RESEARCH as Record<string, string>));
-    await openAtRest(page, addressOf("/"));
+    await interview.seed(SPAIN_RESEARCH);
+    await interview.open();
+    await page.waitUntilAtRest();
     const spain = await read(SPAIN_RESEARCH);
     return { france, spain };
   }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string, {

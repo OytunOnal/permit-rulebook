@@ -1,40 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
-import dataset from "permit-rulebook-data/data/dataset.json";
-import { deriveBands, evaluate, fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
+import { evaluate } from "permit-rulebook-data";
 import { MENU, MENU_CLOSE, PRODUCT_NAME } from "../src/lib/copy/frame.js";
 import { NOT_FOUND_START, NOT_FOUND_START_NOTE } from "../src/lib/copy/not-found.js";
 import { ROUTE_DOOR } from "../src/lib/copy/verdict.js";
 import { ROUTE_TAGLINE } from "../src/lib/copy/route-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { declarationHtml } from "../src/lib/question.js";
-import { RECORD_VERSION } from "../src/lib/record.js";
-import { glossSection } from "../src/lib/gloss.js";
-import { esc } from "../src/lib/reason.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
-import { routeAddresses, routePath } from "../src/lib/slug.js";
+import { routeAddresses } from "../src/lib/slug.js";
 import { url } from "../src/lib/site.js";
 import { frameAlone, headerIn, interviewFrameAlone } from "./frame-alone.js";
-import {
-  PAINTED_AS_COMPOSED, blocksIn, countryNamed, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, verdictFor,
-} from "./verdict-cards.js";
-import { DESK, PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
-
-const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
-const read = (path: string): string => readFileSync(path, "utf8").split("\r\n").join("\n");
+import { blocksIn, countryNamed, drawnRouteOn, everyDrawnRouteIn, verdictFor } from "./verdict-cards.js";
+import { OPENED, SENTENCE, WALKED_TO_FOUR, ds, headerOf, mastheadOf, nameOf } from "./s27-slips.js";
 
 const textOf = (html: string): string =>
   html.replace(/<[^>]*>/g, " ").split("&nbsp;").join(" ").split(/\s+/).join(" ").split(String.fromCharCode(160)).join(" ").trim();
-
-/** The masthead's own markup, from its opening tag to its close. */
-const mastheadOf = (html: string): string => {
-  const start = html.indexOf('<header class="masthead');
-  return start < 0 ? "" : html.slice(start, html.indexOf("</header>", start));
-};
 
 /**
  * s27 — five small slips (v1.1 gate critique, P8).
@@ -69,11 +49,6 @@ describe("1 — the menu button says what it does", () => {
   });
 });
 
-/** The 404's sentence as a key: case-folded, without its "Or" and its full
- * stop, so a hidden heading that says the same thing in other clothes counts
- * as the second carrier it is. */
-const SENTENCE = NOT_FOUND_START.toLowerCase().replace(/^or\s+/, "").replace(/[.]$/, "");
-
 describe("3 — the 404 says it once", () => {
   it("the sentence is the section's heading, the section is labelled by it, and nothing else on the page carries it", () => {
     const { html } = notFoundPage(ds);
@@ -105,15 +80,6 @@ describe("4 — the pencil never stands alone", () => {
     expect(textOf(html)).toContain("University degree ✎");
   });
 });
-
-/** The H1 a route page gives itself: its name, glossed once, escaped as it ships. */
-const nameOf = (route: { name: string }): string => esc(glossSection(route.name, new Set()));
-
-/** The masthead's H1 and the element after it, as the markup carries them. */
-const headerOf = (html: string): { h1: string; next: string } | null => {
-  const m = /<h1>([^<]*)<\/h1>\s*<p class="tagline">([^<]*)<\/p>/.exec(mastheadOf(html));
-  return m ? { h1: m[1]!, next: m[2]! } : null;
-};
 
 describe("5 — a route's H1 is its name", () => {
   it("on every route page the H1 is the name the data gives it — no full stop after it — and the tagline follows as a line of its own", () => {
@@ -147,12 +113,6 @@ describe("7 — the tagline ends in a colon", () => {
   });
 });
 
-/** The German Opportunity Card open: one result card with the door under its scope line. */
-const OPENED: Profile = {
-  destination: "all", situation: "research", situation_country: "fr", citizenship: "TR", qualification: "degree",
-  recognition_de: "recognized", nl_recent_grad: "no", top200_grad: "no", german: "a1", funds_eur_month: "band_1",
-};
-
 describe("8 — the card's door is a door", () => {
   it("the scope line stands alone, no separator after it; the door follows as its own element, the copy's words, an internal href", () => {
     const address = routeAddresses(ds).find((a) => a.route.id === "de-chancenkarte")!;
@@ -172,329 +132,11 @@ describe("8 — the card's door is a door", () => {
   });
 });
 
-/** The four-country walk s26 takes, to the result where every section is
- * drawn: all four, research, France at question 3, no qualification, a
- * Turkish passport, no Dutch graduation, no top-200 degree. */
-const WALKED_TO_FOUR: Profile = {
-  destination: "all", situation: "research", situation_country: "fr", qualification: "none", citizenship: "TR",
-  nl_recent_grad: "no", top200_grad: "no",
-};
-
 describe("2 — the four-country result's sections, from the verdict", () => {
   it("France leads, then the others in the dataset's order; France's line is the one that says the s21 sentence", () => {
     const { layout } = verdictFor(WALKED_TO_FOUR);
     if (layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
     expect(layout.sections.map((s) => countryNamed(s.country))).toEqual(["France", "Germany", "Spain", "Netherlands"]);
     expect(layout.sections.filter((s) => s.tally.mark !== null).map((s) => countryNamed(s.country))).toEqual(["France"]);
-  });
-});
-
-/**
- * The browser: the four slips a stylesheet decides are measured on the built
- * site at the phone and the desktop the critique named.
- */
-
-const skipped = skipReason();
-if (skipped) warnNotWalked("THE S27 SLIPS", skipped);
-
-const SCREENS = [["390x844", PHONE], ["1280x900", DESK]] as const;
-
-const seed = (answers: Record<string, string>) =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: RECORD_VERSION, answers, history: Object.keys(answers),
-  }))})`;
-const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
-
-const BUTTON = '(() => { const b = document.querySelector(".menu"); return JSON.stringify({ text: b.textContent.trim(), expanded: b.getAttribute("aria-expanded") }); })()';
-/** The menu button read by `BUTTON` at each step of its walk. */
-type MenuButtonSeen = Record<"closed" | "open" | "escaped" | "reopened" | "outside", { text: string; expanded: string }>;
-
-/**
- * Every country section's summary, measured: the mark's right edge against
- * the name's left edge, and where the name and the tally sit. The mark is the
- * name element's own `::before`, laid as an inline block so its width can be
- * read back; the name's text starts where the range over its text node
- * starts.
- */
-const SECTIONS = `JSON.stringify([...document.querySelectorAll(".country-sec")].map((d) => {
-  const summary = d.querySelector("summary");
-  const name = summary.querySelector(".cname");
-  const tally = summary.querySelector(".tally");
-  const nameBox = name.getBoundingClientRect();
-  const range = document.createRange();
-  range.selectNodeContents(name);
-  const text = [...range.getClientRects()].sort((a, b) => a.left - b.left)[0];
-  const mark = getComputedStyle(name, "::before");
-  const tallyBox = tally.getBoundingClientRect();
-  const sum = summary.getBoundingClientRect();
-  return {
-    name: name.textContent.trim(), open: d.open, said: summary.classList.contains("said"),
-    fontSize: parseFloat(getComputedStyle(summary).fontSize),
-    markWidth: parseFloat(mark.width), markContent: mark.content,
-    gap: text.left - (nameBox.left + parseFloat(mark.width)),
-    nameLeft: nameBox.left - sum.left, nameTop: nameBox.top, nameBottom: nameBox.bottom,
-    tallyLeft: tallyBox.left - sum.left, tallyRight: sum.right - tallyBox.right, tallyTop: tallyBox.top,
-  };
-}))`;
-
-interface Section {
-  name: string; open: boolean; said: boolean; fontSize: number; markWidth: number; markContent: string; gap: number;
-  nameLeft: number; nameTop: number; nameBottom: number; tallyLeft: number; tallyRight: number; tallyTop: number;
-}
-
-/** Where a section's tally sits against its name: on the name's line or beneath it, aligned or adrift. */
-function tallyPlaceOf(s: Section): string {
-  if (s.tallyTop < s.nameBottom) return s.tallyRight < 2 ? "right, on the name's line" : "adrift on the name's line";
-  return s.tallyLeft < 2 ? "beneath, left-aligned" : "beneath, adrift";
-}
-
-/** The four-country walk s26 seeds, to the result where every section is drawn: France leads, the other three closed. */
-const walkToFour = async (page: BrowserPage, base: string): Promise<void> => {
-  await page.goto(base);
-  await page.evaluate(seed({ destination: "all", situation: "research" }));
-  await openAtRest(page, base);
-  await answerWith(page, tap("fr"));
-  await answerWith(page, tap("none"));
-  await evaluateAtRest(page, '(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); })()');
-  await answerWith(page, 'document.querySelector(".clist [role=option]").click()');
-  await answerWith(page, tap("no"));
-  await answerWith(page, tap("no"));
-};
-
-/**
- * Every ledger row the dataset can produce, drawn into the real ledger at its
- * real width, and each pen measured against the last line of its answer.
- */
-const ledgerRows = (): string => {
-  const rows: string[] = [];
-  for (const field of ds.fields) {
-    const values = [
-      ...fieldOptions(ds, field.id).map((o) => o.value),
-      ...(field.type === "money_band" ? deriveBands(ds, field.id).map((b) => b.id) : []),
-    ];
-    for (const value of values) rows.push(declarationHtml(ds, { answers: { [field.id]: value }, asked: [field.id], currentField: null }));
-  }
-  return rows.join("");
-};
-
-const PENS = `JSON.stringify([...document.querySelectorAll("#decl-list .done")].map((row) => {
-  const dd = row.querySelector("dd");
-  const pen = dd.querySelector(".pen");
-  const range = document.createRange();
-  range.setStart(dd, 0);
-  range.setEndBefore(pen);
-  const lines = [...range.getClientRects()].filter((r) => r.width > 0);
-  const last = lines.reduce((a, b) => (b.top > a.top ? b : a));
-  const box = pen.getBoundingClientRect();
-  return {
-    field: row.dataset.field, text: dd.textContent.trim(), lines: new Set(lines.map((l) => Math.round(l.top))).size,
-    penTop: box.top, penLeft: box.left, lastTop: last.top, lastLeft: last.left,
-    width: row.getBoundingClientRect().width,
-  };
-}))`;
-
-interface Pen {
-  field: string; text: string; lines: number; penTop: number; penLeft: number;
-  lastTop: number; lastBottom: number; lastLeft: number; width: number;
-}
-
-const HEADER = `JSON.stringify((() => {
-  const h1 = document.querySelector(".masthead-with-stamps h1");
-  const next = h1.nextElementSibling;
-  const style = (el) => { const s = getComputedStyle(el); return { font: s.font, color: s.color, display: s.display }; };
-  return { h1: h1.textContent.trim(), nextTag: next.tagName, nextClass: next.className, nextText: next.textContent.trim(),
-    tagline: style(next), em: h1.querySelector("em") ? style(h1.querySelector("em")) : null };
-})())`;
-
-/** The route the critique quoted: a name that ends in a bracket. */
-const EXPERIENCED = (() => {
-  const germany = ds.countries.find((c) => c.code === "DE")!;
-  return routePath(germany, germany.routes.find((r) => r.id === "de-experienced-worker")!);
-})();
-
-interface Header {
-  h1: string; nextTag: string; nextClass: string; nextText: string;
-  tagline: { font: string; color: string; display: string };
-  em: { font: string; color: string; display: string } | null;
-}
-
-describe.skipIf(skipped !== null)("s27 — in the browser", () => {
-  for (const [name, screen] of SCREENS) {
-    it(`${name}: the menu button reads Menu, then Close, then Menu again after Escape and after a tap outside`, async () => {
-      const seen = await withSite<MenuButtonSeen>(async ({ page, url: addressOf }) => {
-        await page.goto(addressOf("/germany/"));
-        const closed = JSON.parse(await page.evaluate(BUTTON));
-        await page.evaluate('document.querySelector(".menu").click()');
-        const open = JSON.parse(await page.evaluate(BUTTON));
-        await page.evaluate('document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))');
-        const escaped = JSON.parse(await page.evaluate(BUTTON));
-        await page.evaluate('document.querySelector(".menu").click()');
-        const reopened = JSON.parse(await page.evaluate(BUTTON));
-        await page.evaluate('document.querySelector("footer").click()');
-        const outside = JSON.parse(await page.evaluate(BUTTON));
-        return { closed, open, escaped, reopened, outside };
-      }, screen);
-      expect(seen.closed).toEqual({ text: MENU, expanded: "false" });
-      expect(seen.open).toEqual({ text: MENU_CLOSE, expanded: "true" });
-      expect(seen.escaped).toEqual({ text: MENU, expanded: "false" });
-      expect(seen.reopened).toEqual({ text: MENU_CLOSE, expanded: "true" });
-      expect(seen.outside).toEqual({ text: MENU, expanded: "false" });
-    }, 180_000);
-
-    it(`${name}: on the four-country result the mark is within 0.6 em of the name, closed and open, on every section`, async () => {
-      const seen = await withSite(async ({ page, url: addressOf }) => {
-        await walkToFour(page, addressOf("/"));
-        const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALKED_TO_FOUR))));
-        const asDrawn = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
-        await evaluateAtRest(page, 'document.querySelectorAll(".country-sec").forEach((d) => { d.open = !d.open; })');
-        const toggled = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
-        return { painted, asDrawn, toggled };
-      }, screen) as {
-        painted: typeof PAINTED_AS_COMPOSED; asDrawn: Section[]; toggled: Section[];
-      };
-      // The sections, their order and which line says the sentence are the
-      // verdict's ("2 — the four-country result's sections, from the
-      // verdict"); the walk ends on that verdict, painted.
-      expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
-      expect(seen.asDrawn).toHaveLength(4);
-      // Both states of every section: the one it was drawn in, and the other.
-      expect(seen.toggled.map((s) => s.open)).toEqual(seen.asDrawn.map((s) => !s.open));
-      for (const s of [...seen.asDrawn, ...seen.toggled]) {
-        const where = `${name} ${s.name} ${s.open ? "open" : "closed"}`;
-        expect(s.markContent, where).toBe(s.open ? '"▾"' : '"▸"');
-        expect(s.markWidth, where).toBeGreaterThan(0);
-        expect(s.gap, where).toBeGreaterThanOrEqual(0);
-        expect(s.gap, `${where}: the mark is ${s.gap.toFixed(1)} px from the name (0.6 em is ${(0.6 * s.fontSize).toFixed(1)} px)`)
-          .toBeLessThanOrEqual(0.6 * s.fontSize);
-        // The group sits at the line's start.
-        expect(s.nameLeft, where).toBeLessThan(2);
-        // The tally is level with the name, at the right — or, on the phone
-        // only, wrapped beneath it and left-aligned. One of the two, never a
-        // third place.
-        const place = tallyPlaceOf(s);
-        if (screen === DESK) expect(place, where).toBe("right, on the name's line");
-        else expect(["right, on the name's line", "beneath, left-aligned"], where).toContain(place);
-      }
-      // The s21 sentence keeps its own row on the phone.
-      const said = seen.asDrawn.find((s) => s.said)!;
-      if (screen === PHONE) expect(said.tallyTop).toBeGreaterThanOrEqual(said.nameBottom);
-    }, 180_000);
-
-    it(`${name}: the 404 carries the sentence once, as the visible heading its section is labelled by`, async () => {
-      const seen = JSON.parse(await withSite(async ({ page, url: addressOf }) => {
-        await page.goto(addressOf("/404.html"));
-        return page.evaluate(`JSON.stringify((() => {
-          const section = document.querySelector("section.cta");
-          const label = document.getElementById(section.getAttribute("aria-labelledby"));
-          const box = label.getBoundingClientRect();
-          const carriers = [...document.querySelectorAll("body *")].filter((el) =>
-            [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.toLowerCase().includes(${JSON.stringify(SENTENCE)})));
-          return { tag: label.tagName, text: label.textContent.trim(), visible: box.width > 10 && box.height > 10
-            && getComputedStyle(label).position !== "absolute", carriers: carriers.length,
-            carrierIsLabel: carriers.length === 1 && carriers[0] === label };
-        })())`);
-      }, screen) as string) as { tag: string; text: string; visible: boolean; carriers: number; carrierIsLabel: boolean };
-      expect(seen.tag).toBe("H2");
-      expect(seen.text).toBe(NOT_FOUND_START);
-      expect(seen.visible).toBe(true);
-      // One element on the page says it, and it is the one the section is labelled by.
-      expect(seen.carriers).toBe(1);
-      expect(seen.carrierIsLabel).toBe(true);
-    }, 180_000);
-
-    it(`${name}: a route page's H1 is the name; the tagline is the next element, in the type the em had`, async () => {
-      const seen = await withSite(async ({ page, url: addressOf }) => {
-        await page.goto(addressOf(EXPERIENCED));
-        const route = JSON.parse(await page.evaluate(HEADER)) as Header;
-        // The country page keeps the em: the type the tagline must match.
-        await page.goto(addressOf("/germany/"));
-        const country = JSON.parse(await page.evaluate(HEADER)) as Header;
-        return { route, country };
-      }, screen) as { route: Header; country: Header };
-      // The name alone — and since s32's amendment 6 without the sign's
-      // explainer after the citation.
-      expect(seen.route.h1).toBe("Experienced worker (§ 19c / § 6 BeschV)");
-      expect(seen.route.nextTag).toBe("P");
-      expect(seen.route.nextClass).toBe("tagline");
-      expect(seen.route.nextText).toBe(ROUTE_TAGLINE);
-      expect(seen.route.tagline.display).toBe("block");
-      expect(seen.country.em, "the country page lost its em").not.toBeNull();
-      expect(seen.route.tagline.font).toBe(seen.country.em!.font);
-      expect(seen.route.tagline.color).toBe(seen.country.em!.color);
-    }, 180_000);
-  }
-
-  it("1280x900: in the ledger, over every answer the dataset offers, the pen sits on the answer's last line and never as its first glyph", async () => {
-    const rows = ledgerRows();
-    const seen = await withSite(async ({ page, url: addressOf }) => {
-      await openAtRest(page, addressOf("/"));
-      await evaluateAtRest(page, `document.getElementById("decl-list").innerHTML = ${JSON.stringify(rows)}`);
-      return { pens: JSON.parse(await page.evaluate(PENS)) as Pen[] };
-    }, DESK) as { pens: Pen[] };
-    expect(seen.pens.length).toBeGreaterThan(200);
-    // The measurement is of the real sidebar, at its real width: the 15.5rem
-    // column less the panel's padding, and no wider.
-    expect(seen.pens[0]!.width).toBeGreaterThan(200);
-    expect(seen.pens[0]!.width).toBeLessThan(260);
-    // Some answers do wrap here — the measurement has to cover a second line to mean anything.
-    expect(seen.pens.filter((p) => p.lines > 1).length).toBeGreaterThan(0);
-    for (const p of seen.pens) {
-      const where = `${p.field}: "${p.text}"`;
-      expect(Math.abs(p.penTop - p.lastTop), `${where} — the pen's top is ${(p.penTop - p.lastTop).toFixed(1)} px off its answer's last line`).toBeLessThanOrEqual(2);
-      expect(p.penLeft, `${where} — the pen is the first glyph on its line`).toBeGreaterThan(p.lastLeft + 1);
-    }
-  }, 180_000);
-
-  for (const [name, screen] of SCREENS) {
-    it(`${name}: under the open card the door is underlined, in the prose-link colour, on a line of its own beneath the scope line, at the tap size`, async () => {
-      const seen = await withSite(async ({ page, url: addressOf }) => {
-        await page.goto(addressOf("/"));
-        await page.evaluate(seed(OPENED as Record<string, string>));
-        await openAtRest(page, addressOf("/"));
-        const door = JSON.parse(await page.evaluate(`JSON.stringify((() => {
-          const scoped = document.querySelector(".route .scoped");
-          const door = scoped.querySelector(".door");
-          const s = getComputedStyle(door);
-          const range = document.createRange();
-          range.setStart(scoped, 0);
-          range.setEndBefore(door);
-          const line = [...range.getClientRects()].filter((r) => r.width > 0).pop();
-          const box = door.getBoundingClientRect();
-          return { decoration: s.textDecorationLine, color: s.color,
-            band: getComputedStyle(document.documentElement).getPropertyValue("--color-band").trim(),
-            beneath: line && box.top >= line.bottom - 1, left: Math.round(box.left - scoped.getBoundingClientRect().left),
-            height: box.height, tapMin: parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tap-min")) };
-        })())`)) as {
-          decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number;
-        };
-        return { door };
-      }, screen) as {
-        door: { decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number };
-      };
-      // The door's words and its internal href are the verdict's ("8 — the
-      // card's door is a door"); here, how it is drawn.
-      const { door } = seen;
-      expect(door.decoration).toBe("underline");
-      // The band colour, read back as the browser states it.
-      const [r, g, b] = [1, 3, 5].map((i) => parseInt(door.band.slice(i, i + 2), 16));
-      expect(door.color).toBe(`rgb(${r}, ${g}, ${b})`);
-      expect(door.beneath, `${name}: the door shares the scope line's last line`).toBe(true);
-      expect(door.left).toBe(0);
-      expect(door.height).toBeGreaterThanOrEqual(door.tapMin);
-    }, 180_000);
-  }
-
-  it("every built route page: the H1 is the route's name with no full stop after it, and the tagline element follows", () => {
-    const addresses = routeAddresses(ds);
-    expect(addresses.length).toBeGreaterThan(20);
-    for (const address of addresses) {
-      const built = join(dist, address.path, "index.html");
-      expect(existsSync(built), `${address.path} was not built`).toBe(true);
-      const header = headerOf(read(built));
-      expect(header, `${address.path}: the H1 is not a name followed by the tagline`).not.toBeNull();
-      expect(header!.h1, address.path).toBe(nameOf(address.route));
-      expect(header!.h1, address.path).not.toMatch(/\.$/);
-      expect(header!.next, address.path).toBe(ROUTE_TAGLINE);
-    }
   });
 });

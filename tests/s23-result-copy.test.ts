@@ -4,12 +4,12 @@ import {
   SITUATION_FIELD, deriveBands, evaluate, fieldOptions, unlockTitleOf, unlocks,
   type Dataset, type Profile,
 } from "permit-rulebook-data";
-import { RECORD_VERSION } from "../src/lib/record.js";
 import { SEEK_HINT, WOULD_BE_MET, nearestLine, orAbove, pointsOfNeeded } from "../src/lib/copy/verdict.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, hintsIn, paintedAsComposedScript, placed, standingOn, stepsIn, verdictFor,
 } from "./verdict-cards.js";
 import { withSite, skipReason } from "./browser-walk.js";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 import { DENIZ, PRIYA_EXPLORING_ALL } from "./personas.js";
 
 const ds = dataset as unknown as Dataset;
@@ -294,20 +294,15 @@ const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! s23's screen was not walked: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-const seed = (answers: Record<string, string>) =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: RECORD_VERSION, answers, history: Object.keys(answers),
-  }))})`;
-
 describe.skipIf(skipped !== null)("the result screen, as drawn", () => {
   it("Priya's not-yet Opportunity Card shows its tally; her steps start with one she can take; the German rungs are one", async () => {
-    const seen = await withSite(async ({ page, url }) => {
-      await page.goto(url("/"));
-      await page.evaluate(seed(PRIYA_EXPLORING_ALL as Record<string, string>));
-      await page.goto(url("/"));
+    const seen = await withSite(async (site) => {
+      const interview = new InterviewPage(site);
+      await interview.seed(PRIYA_EXPLORING_ALL);
+      await interview.open();
       return {
-        state: await page.evaluate('document.querySelector("#app").dataset.state'),
-        painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(PRIYA_EXPLORING_ALL)))),
+        state: (await interview.readScreen()).screen,
+        painted: JSON.parse(await site.page.evaluate(paintedAsComposedScript(verdictFor(PRIYA_EXPLORING_ALL)))),
       };
     }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
       { state: string; painted: typeof PAINTED_AS_COMPOSED };

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
 import { type Profile } from "permit-rulebook-data";
-import { RECORD_VERSION } from "../src/lib/record.js";
 import { NOTHING_OPEN_HEADLINE } from "../src/lib/copy/verdict.js";
 import { url } from "../src/lib/site.js";
 import type { CountrySection, Verdict, VerdictGroup } from "../src/lib/verdict/verdict.js";
@@ -9,8 +8,9 @@ import {
   PAINTED_AS_COMPOSED, countryNamed, paintedAsComposedScript, routeIdsIn, saidLineOf, verdictFor,
 } from "./verdict-cards.js";
 import { expectNothingLeft } from "./wire.js";
-import { walkSite, type BrowserPage, type SentRequest } from "../scripts/browser/browser.mjs";
-import { PICK_TURKEY, answerWith, skipReason } from "./browser-walk.js";
+import { walkSite, type BrowserPage, type PageOnSite, type SentRequest } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
+import { fieldOnScreen, skipReason } from "./browser-walk.js";
 import { WALKED_TO_A_GERMAN_ROUTE, WALKED_TO_NOTHING_OPEN } from "./s26-walks.js";
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -181,13 +181,6 @@ const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S26 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-const seed = (answers: Record<string, string>) =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: RECORD_VERSION, answers, history: Object.keys(answers),
-  }))})`;
-
-const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
-
 interface Result {
   state: string; status: string;
   /** Whether the page painted the verdict the walk's answers compose. */
@@ -199,13 +192,11 @@ interface Result {
 }
 
 /** The results screen, read once it is drawn, against the verdict it should paint. */
-const readResult = async (page: BrowserPage, verdict: Verdict): Promise<Result> => ({
-  state: await page.evaluate('document.getElementById("app").dataset.state'),
+const readResult = async (interview: InterviewPage, page: BrowserPage, verdict: Verdict): Promise<Result> => ({
+  state: (await interview.readScreen()).screen,
   status: await page.evaluate('document.getElementById("cstatus").textContent'),
   painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdict))),
-  declared: JSON.parse(await page.evaluate(
-    'JSON.stringify(Object.values(JSON.parse(localStorage.getItem("permit-rulebook.record.v1") || "{}").answers || {}))',
-  )),
+  declared: Object.values((await interview.readRecord())?.answers ?? {}),
   routes: JSON.parse(await page.evaluate(
     'JSON.stringify([...document.querySelectorAll("#app a[href]")]'
     + '.map((a) => a.getAttribute("href")).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+[/]?$/.test(h))'
@@ -222,16 +213,16 @@ interface Walk {
 
 /** Question 3 answered France by the button, then the walk's answers, one tap
  * each, to the results the reader's whole record composes. */
-const walkFrom = async (page: BrowserPage, base: string, walk: Walk): Promise<Result> => {
+const walkFrom = async (site: PageOnSite, walk: Walk): Promise<Result> => {
   const { taps, reader } = walk;
-  await page.goto(base);
-  await page.evaluate(seed({ destination: "all", situation: "research" }));
+  const interview = new InterviewPage(site);
+  await interview.seed({ destination: "all", situation: "research" });
   // The walk's own requests: from the load that draws question 3 on.
-  page.forgetRequests();
-  await page.goto(base);
-  for (const value of ["fr", ...taps]) await answerWith(page, value === "TR" ? PICK_TURKEY : tap(value));
+  site.page.forgetRequests();
+  await interview.open();
+  for (const value of ["fr", ...taps]) await interview.answer(await fieldOnScreen(site.page), value);
   // The last answer left the page at rest: what it sent has been sent.
-  return readResult(page, verdictFor(reader));
+  return readResult(interview, site.page, verdictFor(reader));
 };
 
 describe.skipIf(skipped !== null)("s26 — in the browser", () => {
@@ -241,12 +232,12 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
   ] as const) {
     it(`${name}: all four → research → France → nothing open reads France's written state, France's section first and open; a German route opening reads the open headline; nothing leaves the device`, async () => {
       const walk = { site: { folder: dist }, screen: { viewport, mobile }, network: true, trafficCounter: "cloudflare's copy" } as const;
-      const seen = (await walkSite(walk, async ({ page, url: addressOf }) => ({
-        nothingOpen: await walkFrom(page, addressOf("/"), { taps: ["none", "TR", "no", "no"], reader: WALKED_TO_NOTHING_OPEN }),
-        opened: await walkFrom(page, addressOf("/"), {
+      const seen = (await walkSite(walk, async (site) => ({
+        nothingOpen: await walkFrom(site, { taps: ["none", "TR", "no", "no"], reader: WALKED_TO_NOTHING_OPEN }),
+        opened: await walkFrom(site, {
           taps: ["degree", "TR", "recognized", "no", "no", "a1", "band_1"], reader: WALKED_TO_A_GERMAN_ROUTE,
         }),
-        origin: new URL(addressOf("/")).origin,
+        origin: new URL(site.url("/")).origin,
       }))).returned;
 
       const { nothingOpen, opened } = seen;
