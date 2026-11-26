@@ -191,8 +191,9 @@ const SPELLED_KEY = String.raw`/permit-rulebook\.record\.v1/`;
  */
 const CARD_SELECTORS =
   String.raw`/#cfilter(?![\w-])|\.qcard(?![\w-])|\.qlabel(?![\w-])|#clist(?![\w-])|\.copt(?![\w-])|(^|[^\w-])cstatus(?![\w-])/`;
-/** A string opening with an arrow or function body: `(() =>`, `((…) =>`, `(async (`, `(function` (Q397, Q415). */
-const FUNCTION_BODY_OPENING = String.raw`/^\s*\((\([^()]*\)\s*=>|async\s*\(|function\b)/`;
+/** An arrow or a function body anywhere in a string or in any part of a template: `=>`, or the function keyword
+ * before its parameters (Q397, Q415, #484 review). An object literal or a short expression holds neither. */
+const FUNCTION_BODY = String.raw`/=>|\bfunction\b\s*[\w$]*\s*\(/`;
 
 /** Each refused string, in a literal and in a template, with what it says. */
 const REFUSED_STRINGS = [
@@ -277,8 +278,8 @@ export default [
           message: RECORD_REFUSED,
         },
         { selector: IMPORT_OF_AN_UNWRITTEN_PATH, message: WRITE_THE_IMPORT_PATH_OUT },
-        { selector: `Literal[value=${FUNCTION_BODY_OPENING}]`, message: STRING_PROBE },
-        { selector: `TemplateLiteral[quasis.0.value.raw=${FUNCTION_BODY_OPENING}]`, message: STRING_PROBE },
+        { selector: `Literal[value=${FUNCTION_BODY}]`, message: STRING_PROBE },
+        { selector: `TemplateLiteral:has(> TemplateElement[value.raw=${FUNCTION_BODY}])`, message: STRING_PROBE },
       ],
     },
   },

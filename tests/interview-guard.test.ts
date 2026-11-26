@@ -72,6 +72,14 @@ const REFUSED: readonly (readonly [string, (filePath: string) => string])[] = [
   [`a string opening with ((x) ${ARROW}`, () => `export const probe = "((link) ${ARROW} link.href)(document.links[0])";`],
   ["a template opening with (async (", () => `export const probe = \`(async () ${ARROW} document.title)()\`;`],
   [`a string opening with (${FUNCTION}`, () => `export const probe = "(${FUNCTION} () { return document.title; })()";`],
+  [`a string opening with an arrow of one bare parameter, (x ${ARROW}`, () => `export const probe = "(link ${ARROW} link.href)(document.links[0])";`],
+  [`a string opening with (async ${FUNCTION}`, () => `export const probe = "(async ${FUNCTION} () { return document.title; })()";`],
+  [`a string opening with () ${ARROW} {`, () => `export const probe = "() ${ARROW} { return document.title; }";`],
+  ["a probe wrapped in JSON.stringify((", () => `export const probe = "JSON.stringify((() ${ARROW} document.title)())";`],
+  ["a probe wrapped in new Promise((", () => `export const probe = "new Promise((resolve) ${ARROW} resolve(document.title))";`],
+  ["an arrow in a template past its first part", () => `const x = 1;\nexport const probe = \`\${x}; (() ${ARROW} document.title)()\`;`],
+  [`a ${FUNCTION} body in a template past its first part`, () =>
+    `const x = 1;\nexport const probe = \`\${x}; (${FUNCTION} () { return document.title; })()\`;`],
   ["a dynamic import of the record module", (filePath) => `export const load = () ${ARROW} import("${writeRecordPath(filePath)}");`],
   ["a dynamic import of the record module by a template", (filePath) => {
     const [up, file] = writeRecordPath(filePath).split("src/");

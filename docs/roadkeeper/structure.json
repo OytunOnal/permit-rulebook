@@ -8398,7 +8398,7 @@
     "exported": false
    },
    {
-    "name": "FUNCTION_BODY_OPENING",
+    "name": "FUNCTION_BODY",
     "kind": "const",
     "exported": false
    },
@@ -12679,5 +12679,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "97203bfa6f11c976612fac74c29b4ea12d54d0ecae254d25c2b191e032216929"
+ "digest": "a692b5312778c1ddee62f05a836c11e9922638e9336b4b6b7ae0e461a098fd68"
 }
