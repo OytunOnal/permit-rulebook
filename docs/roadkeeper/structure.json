@@ -8656,6 +8656,11 @@
     "exported": false
    },
    {
+    "name": "readBeatMsInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "readScreenInPage",
     "kind": "fn",
     "exported": false
@@ -12337,5 +12342,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "89fcf59cbda53e0373527deb17bb00b8e3889b323c1bbce222b4f50df1e869bc"
+ "digest": "22263364240fb17b73d48bfacf5746f47cffddeccca0b1435d7f5731d5ed3b3b"
 }

@@ -146,7 +146,6 @@ export async function answerOnce(page: AnsweringPage, pickExpression: string, wh
 /** Answers the question on the screen with `value` once its beat is over,
  * and returns once the screen has moved on and the page is at rest. */
 export async function answer(page: AnsweringPage, field: string, value: string): Promise<void> {
-  await waitUntilPastTheBeat(page);
   await new InterviewPage({ page }).answer(field, value);
 }
 

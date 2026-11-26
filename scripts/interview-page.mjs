@@ -20,7 +20,7 @@ import { STORAGE_KEY, serialize } from "../src/lib/record.ts";
  * which makes the site's address of a path. Without `url` the interview
  * answers and reads the page it is on, and cannot seed or open one.
  *
- * @typedef {{ page: Pick<BrowserPage, "goto" | "evaluate" | "waitUntilAtRest">, url?: (path: string) => string }} PageOfInterview
+ * @typedef {{ page: Pick<BrowserPage, "goto" | "evaluate" | "waitUntil" | "waitUntilAtRest">, url?: (path: string) => string }} PageOfInterview
  */
 
 /**
@@ -41,6 +41,13 @@ import { STORAGE_KEY, serialize } from "../src/lib/record.ts";
 /** A page of the site the interview never runs on: storage is written there before the interview opens, so the
  * interview reads it on its first paint. */
 const OUTSIDE_THE_INTERVIEW = "/404.html";
+
+/** In the page: the beat in milliseconds, as the built stylesheet carries it, in either unit (`tokens.css` says
+ * why). */
+function readBeatMsInPage() {
+  const value = getComputedStyle(document.documentElement).getPropertyValue("--motion-beat").trim();
+  return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
+}
 
 /** In the page: which screen the interview is on, and its question's label, as JSON. */
 function readScreenInPage() {
@@ -124,11 +131,10 @@ export class InterviewPage {
   }
 
   /**
-   * Answers the question on the screen, `field`, with `value`: its button,
-   * or on the search the row its name finds. Returns once the screen has
-   * moved on and the page is at rest; a refused answer throws, naming the
-   * field and the value. A card a gesture drew refuses every tap for its
-   * beat, so a caller waits the beat out first.
+   * Answers the question on the screen, `field`, with `value`, once the
+   * card's beat is over: its button, or on the search the row its name
+   * finds. Returns once the screen has moved on and the page is at rest; a
+   * refused answer throws, naming the field and the value.
    *
    * Where an answer's id comes from: it is `fields[].options[].value` in the
    * data package's `data/dataset.json`; a money question's ids are `band_<i>`,
@@ -139,6 +145,7 @@ export class InterviewPage {
    * @param {string} value
    */
   async answer(field, value) {
+    await this.#waitUntilPastTheBeat();
     const before = await this.readScreen();
     const how = await this.#page.evaluate(`(${pickInPage})(${JSON.stringify(value)}, ${JSON.stringify(nameOf(field, value))})`);
     const refusal = refusalOf(how, before, await this.readScreen());
@@ -162,6 +169,19 @@ export class InterviewPage {
   /** Takes the record off the device. */
   async clearRecord() {
     await this.#page.evaluate(`localStorage.removeItem(${JSON.stringify(STORAGE_KEY)})`);
+  }
+
+  /**
+   * Returns once the beat of the card on the screen is over, by the page's
+   * own clock: the moment this read sees the card, plus the page's beat. A
+   * card shows only once it is drawn, and its beat begins as it is drawn. A
+   * page without the beat's token fails here rather than waiting nothing.
+   */
+  async #waitUntilPastTheBeat() {
+    const seenAt = Number(await this.#page.evaluate("performance.now()"));
+    const beatMs = Number(await this.#page.evaluate(`(${readBeatMsInPage})()`));
+    if (!(beatMs > 0)) throw new Error("the page declares no --motion-beat");
+    await this.#page.waitUntil(`performance.now() >= ${seenAt + beatMs}`, "the page's clock never passed the beat");
   }
 
   /** The site's address of `path`; throws where the interview was made without the site's `url`. */
