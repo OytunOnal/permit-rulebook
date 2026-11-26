@@ -81,6 +81,50 @@ function readScreenInPage(kit) {
 // The readers `readScreenInPage` is handed in the page, each carried there as its source text.
 const SCREEN_READERS = `{ textOf: ${textOfInPage}, readCardWords: ${readCardWordsInPage}, readAnswer: ${readAnswerInPage}, readAskedFor: ${readAskedForInPage} }`;
 
+/** In the page: the asked-for line `el` against `isInsideCard`: inside the card or not, overflowing its box, and
+ * how many lines it wraps to; null where there is no line. */
+function readAskedForBoxInPage(el, isInsideCard) {
+  if (el === null) return null;
+  const box = el.getBoundingClientRect();
+  const lineHeight = parseFloat(getComputedStyle(el).lineHeight);
+  return { isInsideCard: isInsideCard(box), isOverflowing: el.scrollWidth > el.clientWidth, lines: Math.round(box.height / lineHeight) };
+}
+
+/** In the page: where the question card sits, where the focus is against its first control, how many animations
+ * it runs, where each answer sits, and the asked-for line's box, as JSON; null where no card is drawn. The first
+ * control is the one the page focuses: the first button or the search's box, else the question's heading. */
+function readCardLayoutInPage(readAskedForBox) {
+  const card = document.querySelector("#main .qcard");
+  if (card === null) return JSON.stringify(null);
+  const cardBox = card.getBoundingClientRect();
+  const isInsideCard = (b) => b.left >= cardBox.left && b.right <= cardBox.right && b.top >= cardBox.top && b.bottom <= cardBox.bottom;
+  const firstControl = card.querySelector(".opt, #cfilter") ?? card.querySelector(".qlabel");
+  const active = document.activeElement;
+  const answers = [...card.querySelectorAll(".opts .opt, #clist .copt")].map((el) => {
+    const box = el.getBoundingClientRect();
+    const centre = { x: Math.round(box.left + box.width / 2), y: Math.round(box.top + box.height / 2) };
+    return { value: el.dataset.value, centre, isInsideCard: isInsideCard(box) };
+  });
+  return JSON.stringify({
+    top: cardBox.top,
+    left: cardBox.left,
+    focus: {
+      isOnFirstControl: firstControl !== null && active === firstControl,
+      isInCard: active !== null && card.contains(active),
+      isFirstControlShown: firstControl !== null && getComputedStyle(firstControl).visibility === "visible",
+    },
+    animations: card.getAnimations({ subtree: true }).length,
+    answers,
+    askedFor: readAskedForBox(card.querySelector("[data-asked-for]"), isInsideCard),
+  });
+}
+
+/** In the page: the id of the answer on the question card under `point`, or "" where it is on none. */
+function readAnswerAtInPage({ x, y }) {
+  const answer = document.elementFromPoint(x, y)?.closest("#main .qcard .opt, #main .qcard .copt");
+  return answer?.dataset.value ?? "";
+}
+
 /** In the page: taps `value` on the question on the screen, its button or, on the search, the row `searchFor`
  * finds; says "opt" or "row" for what it tapped, or why it tapped nothing. */
 function pickInPage(value, searchFor) {
@@ -102,6 +146,10 @@ export const questionCardProbes = {
   beatMsNow: `(${readBeatMsInPage})()`,
   /** The screen as a reader sees it, as JSON. */
   screenNow: `(${readScreenInPage})(${SCREEN_READERS})`,
+  /** Where the question card and its parts sit, and the focus, as JSON. */
+  cardLayoutNow: `(${readCardLayoutInPage})(${readAskedForBoxInPage})`,
+  /** The answer under `point`. */
+  answerAt: (point) => `(${readAnswerAtInPage})(${JSON.stringify(point)})`,
   /** The tap of `value` on the question on the screen, or on the search the row `searchFor` finds. */
   pickOf: (value, searchFor) => `(${pickInPage})(${JSON.stringify(value)}, ${JSON.stringify(searchFor)})`,
 };

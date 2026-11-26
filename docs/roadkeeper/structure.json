@@ -4752,6 +4752,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/interview-page-layout.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page-layout.test.ts",
+   "to": "tests/interview-on-site.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/interview-page.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
@@ -9119,6 +9129,21 @@
     "exported": false
    },
    {
+    "name": "readAskedForBoxInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readCardLayoutInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readAnswerAtInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "pickInPage",
     "kind": "fn",
     "exported": false
@@ -12621,5 +12646,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "7545478ef702e564f4a949f19f61c76b4926ca4efe1664e852db9c0ca1a735b4"
+ "digest": "66fe423301d293d1a552364a8531c076416a9f8479a5e12927b588af79b5e558"
 }

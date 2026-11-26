@@ -80,6 +80,21 @@ import { questionCardProbes } from "./question-card-probes.mjs";
  */
 
 /**
+ * Where the question card sits, as a reader's eye finds it, in viewport
+ * pixels: its `top` and `left`; the `focus` against the card's first control
+ * (the one the page focuses: the first button or the search's box, else the
+ * question's heading), whether it is in the card, and whether that control
+ * can be seen; how many `animations` the card runs; each answer offered, by
+ * its id, with its centre and whether it lies inside the card; and the
+ * asked-for line's box, whether it lies inside the card, overflows, and how
+ * many lines it wraps to (null where the card has no line).
+ *
+ * @typedef {{ top: number, left: number, focus: { isOnFirstControl: boolean, isInCard: boolean, isFirstControlShown: boolean }, animations: number, answers: { value: string, centre: Point, isInsideCard: boolean }[], askedFor: { isInsideCard: boolean, isOverflowing: boolean, lines: number } | null }} CardLayout
+ */
+
+/** A point of the viewport, in pixels. @typedef {{ x: number, y: number }} Point */
+
+/**
  * The record the device holds, as the page wrote it: the answers, the fields
  * in the order they were asked, and whether nothing was left to ask.
  *
@@ -179,6 +194,17 @@ export class InterviewPage {
     const { offTheInterview, ...shown } = JSON.parse(await this.#page.evaluate(questionCardProbes.screenNow));
     if (offTheInterview !== undefined) throw new Error(`readScreen: no interview on ${offTheInterview}`);
     return shown;
+  }
+
+  /** Where the question card sits and where the focus is; null where no card is drawn. @returns {Promise<CardLayout | null>} */
+  async readCardLayout() {
+    return JSON.parse(await this.#page.evaluate(questionCardProbes.cardLayoutNow));
+  }
+
+  /** The id of the answer on the question card under `point`, or "" where the point is on none, as the page's own
+   * hit-test finds it. @param {Point} point @returns {Promise<string>} */
+  async readAnswerAt(point) {
+    return this.#page.evaluate(questionCardProbes.answerAt(point));
   }
 
   /** The record the device holds, or null where it holds none. @returns {Promise<RecordOnDevice | null>} */
