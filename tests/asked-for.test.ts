@@ -3,8 +3,9 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossSection, type Glossary } from "../src/lib/gloss.js";
 import { DESK, PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 import {
-  QLABEL, answer, middleBandOf, skipReason, topBandOf, waitUntilPastTheBeat, walkTo, warnNotWalked, withSite,
+  answer, middleBandOf, skipReason, topBandOf, waitUntilPastTheBeat, walkTo, warnNotWalked, withSite,
 } from "./browser-walk.js";
 import { shiftScoreSince } from "./layout-shifts.js";
 import { routeOf } from "./route-of.js";
@@ -61,21 +62,21 @@ const IT_NO_DEGREE: Profile = {
 const labelOf = (field: string): string => ds.fields.find((f) => f.id === field)!.label;
 const cardNameOf = (route: string): string => routeOf(ds, route).name;
 
-/** What the line on the question card marks: the routes it names, each with
+/** In the page, as JSON: what the line on the question card marks: the routes it names, each with
  * its country, and the count per country where it counts. */
-const LINE = `JSON.stringify((() => {
+function readLineInPage(): string {
   const card = document.querySelector("#main .qcard");
   const line = card && card.querySelector("[data-asked-for]");
-  if (!line) return null;
-  return {
-    named: [...line.querySelectorAll("[data-route]")].map((el) => ({
+  if (!line) return JSON.stringify(null);
+  return JSON.stringify({
+    named: [...line.querySelectorAll<HTMLElement>("[data-route]")].map((el) => ({
       route: el.dataset.route, country: el.dataset.country, text: el.textContent,
     })),
-    counted: [...line.querySelectorAll("[data-routes]")].map((el) => ({
+    counted: [...line.querySelectorAll<HTMLElement>("[data-routes]")].map((el) => ({
       country: el.dataset.country, routes: Number(el.dataset.routes),
     })),
-  };
-})())`;
+  });
+}
 
 interface Line {
   named: { route: string; country: string; text: string }[];
@@ -84,7 +85,8 @@ interface Line {
 
 /** The question on the screen and its line, read together. */
 async function screenOf(page: BrowserPage): Promise<{ question: string; line: Line | null }> {
-  return { question: await page.evaluate(QLABEL), line: JSON.parse(await page.evaluate(LINE)) as Line | null };
+  const { question } = await new InterviewPage({ page }).readScreen();
+  return { question, line: JSON.parse(await page.evaluate(`(${readLineInPage})()`)) as Line | null };
 }
 
 /** The card is the question's, and it carries a line. */
@@ -95,27 +97,40 @@ function expectTheCardWithALine<T extends { question: string; line: Line | null 
 
 const namedRoutes = (line: Line) => line.named.map((n) => [n.route, n.country]);
 
-/** The asked-for line's box against its card's: inside it or not, how many
+/** In the page, as JSON: the asked-for line's box against its card's: inside it or not, how many
  * lines it wraps to, and whether each option stays on the card. */
-const LINE_GEOMETRY = `JSON.stringify((() => {
-  const card = document.querySelector("#main .qcard").getBoundingClientRect();
+function readLineGeometryInPage(): string {
+  const card = document.querySelector("#main .qcard")!.getBoundingClientRect();
   const el = document.querySelector("#main .qcard [data-asked-for]");
-  if (!el) return null;
+  if (!el) return JSON.stringify(null);
   const line = el.getBoundingClientRect();
   const lineHeight = parseFloat(getComputedStyle(el).lineHeight);
-  const inside = (b) => b.left >= card.left && b.right <= card.right && b.top >= card.top && b.bottom <= card.bottom;
-  return {
+  const inside = (b: DOMRect) => b.left >= card.left && b.right <= card.right && b.top >= card.top && b.bottom <= card.bottom;
+  return JSON.stringify({
     lineInside: inside(line),
     lineOverflows: el.scrollWidth > el.clientWidth,
     lines: Math.round(line.height / lineHeight),
     options: [...document.querySelectorAll("#main .qcard .opt")].map((o) => inside(o.getBoundingClientRect())),
     pageOverflows: document.documentElement.scrollWidth > window.innerWidth,
-  };
-})())`;
+  });
+}
 
 interface LineGeometry { lineInside: boolean; lineOverflows: boolean; lines: number; options: boolean[]; pageOverflows: boolean }
 
-describe.skipIf(skipped !== null)("a question says which routes ask it: the asked-for line (#139)", () => {
+/** In the page, as JSON: the row of `field` in the declared panel scrolled to the middle, and the point at its
+ * centre; null where the panel has no such row. */
+function readDeclaredRowCentreInPage(field: string): string {
+  const row = document.querySelector(`#decl-list [data-field="${field}"]`);
+  if (!row) return JSON.stringify(null);
+  row.scrollIntoView({ block: "center" });
+  const box = row.getBoundingClientRect();
+  return JSON.stringify({ x: Math.round(box.left + box.width / 2), y: Math.round(box.top + box.height / 2) });
+}
+
+// The title these cases have always sat under; every block below repeats it, so each case keeps its id.
+const THE_ASKED_FOR_LINE = "a question says which routes ask it: the asked-for line (#139)";
+
+describe.skipIf(skipped !== null)(THE_ASKED_FOR_LINE, () => {
   for (const field of ["funds_eur_month", "age_band"])
     it(`on a Germany-offer walk, ${field} names the Opportunity Card in Germany`, async () => {
       const seen = await withSite(async (site) => {
@@ -143,7 +158,9 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     // making, not because the page draws none.
     expectTheCardWithALine(seen.next, "recognition_de");
   }, 120_000);
+});
 
+describe.skipIf(skipped !== null)(THE_ASKED_FOR_LINE, () => {
   it("on the any-of-four path with the offer in Spain, each Dutch question names its Dutch route", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
@@ -174,7 +191,9 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     ]);
     expect(seen.line.named).toEqual([]);
   }, 120_000);
+});
 
+describe.skipIf(skipped !== null)(THE_ASKED_FOR_LINE, () => {
   it("a route name in the line reads as its card names it, through the screen's one-time § expansion", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
@@ -197,13 +216,7 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     const seen = await withSite(async (site) => {
       const { page } = site;
       await walkTo(site, GERMANY_JOB_OFFER, "funds_eur_month");
-      const at = JSON.parse(await page.evaluate(`JSON.stringify((() => {
-        const row = document.querySelector('#decl-list [data-field="experience_5y"]');
-        if (!row) return null;
-        row.scrollIntoView({ block: "center" });
-        const box = row.getBoundingClientRect();
-        return { x: Math.round(box.left + box.width / 2), y: Math.round(box.top + box.height / 2) };
-      })())`)) as { x: number; y: number } | null;
+      const at = JSON.parse(await page.evaluate(`(${readDeclaredRowCentreInPage})("experience_5y")`)) as { x: number; y: number } | null;
       if (!at) throw new Error("no experience_5y row in the declared panel");
       await page.clickAt(at.x, at.y);
       await page.waitUntilAtRest();
@@ -214,7 +227,9 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     // no route; without it, the experienced worker and the Opportunity Card.
     expect(namedRoutes(seen.line)).toEqual([["de-experienced-worker", "DE"], ["de-chancenkarte", "DE"]]);
   }, 120_000);
+});
 
+describe.skipIf(skipped !== null)(THE_ASKED_FOR_LINE, () => {
   it("on Germany, the seven-year question names the Blue Card and the Opportunity Card for an IT reader with no degree", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
@@ -235,7 +250,7 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
       await waitUntilPastTheBeat(page);
       await page.tapOn(`#main .qcard .opt[data-value='${IT_NO_DEGREE.experience_5y}']`);
       await page.waitUntilAtRest();
-      const geometry = JSON.parse(await page.evaluate(LINE_GEOMETRY)) as LineGeometry | null;
+      const geometry = JSON.parse(await page.evaluate(`(${readLineGeometryInPage})()`)) as LineGeometry | null;
       return {
         ...(await screenOf(page)), geometry, cls: await shiftScoreSince(page, since),
       };

@@ -4,10 +4,11 @@ import { FEEDBACK_ADDRESS, FEEDBACK_PATH, url } from "../src/lib/site.js";
 import { feedbackGmail, feedbackMailto } from "../src/lib/feedback-page.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import { answerWith, openAtRest, withSite } from "./browser-walk.js";
-import { LAYOUTS, ds, frRecord, seed, skipped, warnFeedbackDoorNotWalked } from "./s13-feedback-door.js";
+import { withSite } from "./browser-walk.js";
+import { LAYOUTS, ds, frRecord, skipped, warnFeedbackDoorNotWalked } from "./s13-feedback-door.js";
 import type { Profile } from "permit-rulebook-data";
 import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 
 /**
  * s13 — the feedback door, walked in a browser: the line under the verdict on
@@ -21,22 +22,27 @@ import type { BrowserPage } from "../scripts/browser/browser.mjs";
 
 warnFeedbackDoorNotWalked();
 
-/** What the results screen says about feedback, and what it carries. */
-const SAY = 'JSON.stringify((() => {'
-  + ' const main = document.getElementById("main");'
-  + ' const say = main.querySelector(".say");'
-  + ' const link = say && say.querySelector("a");'
-  + ' return { present: !!say,'
-  + '   height: link ? Math.round(link.getBoundingClientRect().height) : 0,'
-  + '   mailtos: [...document.querySelectorAll("a[href^=\'mailto:\']")].map((a) => a.getAttribute("href")) };'
-  + '})())';
+/** In the page: what the results screen says about feedback, and what it carries, as JSON. */
+function readSayInPage(): string {
+  const main = document.getElementById("main")!;
+  const say = main.querySelector(".say");
+  const link = say && say.querySelector("a");
+  return JSON.stringify({ present: !!say,
+    height: link ? Math.round(link.getBoundingClientRect().height) : 0,
+    mailtos: [...document.querySelectorAll("a[href^='mailto:']")].map((a) => a.getAttribute("href")) });
+}
+
+/** What the results screen says about feedback, and what it carries: the expression a case evaluates. */
+const SAY = `(${readSayInPage})()`;
 
 /** Checks the results screen `arrival` opens on, with `profile` saved, paints its verdict with a tap-sized line and no mailto. */
 async function expectLineOnResultsScreen(profile: Profile, arrival: string): Promise<void> {
-  const seen = await withSite(async ({ page: tab, url }) => {
-    await tab.goto(url("/"));
-    await tab.evaluate(seed(profile));
-    await openAtRest(tab, url(arrival));
+  const seen = await withSite(async (site) => {
+    const { page: tab } = site;
+    const interview = new InterviewPage(site);
+    await interview.seed(profile);
+    await interview.open(arrival);
+    await tab.waitUntilAtRest();
     return {
       say: JSON.parse(await tab.evaluate(SAY)),
       // The record as the page restores it: replayed through the
@@ -63,10 +69,11 @@ async function expectLineOnResultsScreen(profile: Profile, arrival: string): Pro
 
 /** Checks /feedback/, reached from the results line, carries no query and only the constant mail links. */
 async function expectFeedbackHrefsAreConstants(): Promise<void> {
-  const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
-    await tab.goto(url("/"));
-    await tab.evaluate(seed(frRecord));
-    await tab.goto(url("/?country=fr"));
+  const seen = JSON.parse(await withSite(async (site) => {
+    const { page: tab } = site;
+    const interview = new InterviewPage(site);
+    await interview.seed(frRecord);
+    await interview.open("/?country=fr");
     await tab.evaluate('document.querySelector(".say a").click()');
     await tab.waitUntilNewDocumentDrawn();
     return tab.evaluate(
@@ -92,11 +99,14 @@ async function expectFeedbackHrefsAreConstants(): Promise<void> {
 
 /** Checks neither the first question screen nor the second offers the results line. */
 async function expectNoQuestionScreenCarriesLine(): Promise<void> {
-  const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
-    await openAtRest(tab, url("/"));
+  const seen = JSON.parse(await withSite(async (site) => {
+    const { page: tab } = site;
+    const interview = new InterviewPage(site);
+    await interview.open();
+    await tab.waitUntilAtRest();
     const first = await tab.evaluate(SAY);
-    // One answer in, still a question screen.
-    await answerWith(tab, 'document.querySelector(".qcard .opt").click()');
+    // One answer in, still a question screen: question one's first option.
+    await interview.answer("destination", "de");
     const second = await tab.evaluate(SAY);
     return JSON.stringify({ first: JSON.parse(first), second: JSON.parse(second) });
   }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
@@ -165,6 +175,15 @@ function copyButtonRead(tab: BrowserPage, { before, afterIcon, later, afterText 
   );
 }
 
+/** In the page: the clipboard stood in for by a stub that records, in `window.__copied`, each text it is handed. */
+function stubTheClipboardInPage(): number {
+  const page = window as unknown as { __copied: string[] };
+  page.__copied = [];
+  Object.defineProperty(navigator, "clipboard", { value: {
+    writeText: (t: string) => { page.__copied.push(t); return Promise.resolve(); } }, configurable: true });
+  return 1;
+}
+
 /** The copy button walked on /feedback/ with the clipboard stubbed: what it copied, said and looks like. */
 async function copyButtonSeen(): Promise<CopyButtonSeen> {
   return JSON.parse(await withSite(async ({ page: tab, url }) => {
@@ -173,11 +192,7 @@ async function copyButtonSeen(): Promise<CopyButtonSeen> {
     // by a stub that records what it was handed, which is the fact under
     // test — the script hands the clipboard the page's address and nothing
     // else. The button's own words are read off the screen.
-    await tab.evaluate(
-      '(() => { window.__copied = []; Object.defineProperty(navigator, "clipboard", { value: {'
-      + ' writeText: (t) => { window.__copied.push(t); return Promise.resolve(); } }, configurable: true });'
-      + ' return 1; })()',
-    );
+    await tab.evaluate(`(${stubTheClipboardInPage})()`);
     return copyButtonRead(tab, await tapGlyphThenAddress(tab));
   }, { viewport: { width: 1000, height: 900 }, mobile: false }) as string) as CopyButtonSeen;
 }

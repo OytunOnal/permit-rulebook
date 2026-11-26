@@ -143,6 +143,18 @@ describe.skipIf(skipped !== null)("the nav folds where it says it does", () => {
   it("Escape closes it from anywhere on the page, and so does a tap outside", expectEscapeAndTapOutsideClose, 180000);
 });
 
+/** In the page, as JSON: each per-route JSON list's heading, its box, and the box of the list's first link. */
+function readJsonListHeadsInPage(): string {
+  return JSON.stringify([...document.querySelectorAll(".jsonlinks")].map((nav) => {
+    const label = nav.querySelector(".label")!;
+    const link = nav.querySelector("a")!;
+    const l = label.getBoundingClientRect();
+    const a = link.getBoundingClientRect();
+    return { text: (label.textContent ?? "").trim(), height: Math.round(l.height),
+      bottom: Math.round(l.bottom), linkTop: Math.round(a.top),
+      linkHeight: Math.round(a.height) }; }));
+}
+
 /**
  * On the live site the country headings over the per-route JSON lists were
  * clipped: the list started over the lower half of the letters, so only their
@@ -155,16 +167,7 @@ describe.skipIf(skipped !== null)("the data page's headings sit clear of their l
     it(`no country heading is overlapped at ${width} px`, async () => {
       const heads = JSON.parse(await withSite(async ({ page, url: addressOf }) => {
         await page.goto(addressOf("/data/"));
-        return page.evaluate(
-          'JSON.stringify([...document.querySelectorAll(".jsonlinks")].map((nav) => {'
-          + ' const label = nav.querySelector(".label");'
-          + ' const link = nav.querySelector("a");'
-          + ' const l = label.getBoundingClientRect();'
-          + ' const a = link.getBoundingClientRect();'
-          + ' return { text: label.textContent.trim(), height: Math.round(l.height),'
-          + '   bottom: Math.round(l.bottom), linkTop: Math.round(a.top),'
-          + '   linkHeight: Math.round(a.height) }; }))',
-        );
+        return page.evaluate(`(${readJsonListHeadsInPage})()`);
       }, { viewport: { width, height }, mobile: width < 500 }) as string) as
         { text: string; height: number; bottom: number; linkTop: number; linkHeight: number }[];
 
@@ -180,6 +183,14 @@ describe.skipIf(skipped !== null)("the data page's headings sit clear of their l
     }, 180000);
 });
 
+/** In the page: the menu button clicked, and its `aria-expanded` after, or "no button" where the page has none. */
+function openTheMenuInPage(): string | null {
+  const b = document.querySelector<HTMLElement>(".menu");
+  if (!b) return "no button";
+  b.click();
+  return b.getAttribute("aria-expanded");
+}
+
 /** And the pages still work under their own policy, in a browser: the walk
  * fails on anything the policy refused on any of them, naming its page. */
 describe.skipIf(skipped !== null)("nothing the site does is refused by its own policy", () => {
@@ -193,10 +204,7 @@ describe.skipIf(skipped !== null)("nothing the site does is refused by its own p
         await page.goto(addressOf(path));
         // Every load has run, so the policy has met each, before the next page opens.
         await page.waitUntilAtRest();
-        out[name] = await page.evaluate(
-          '(() => { const b = document.querySelector(".menu"); if (!b) return "no button";'
-          + ' b.click(); return b.getAttribute("aria-expanded"); })()',
-        );
+        out[name] = await page.evaluate(`(${openTheMenuInPage})()`);
       }
       return out;
     }, PHONE);
