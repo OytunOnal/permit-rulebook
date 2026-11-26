@@ -26,7 +26,7 @@ import { STORAGE_KEY, serialize } from "../src/lib/record.ts";
 /**
  * The screen as a reader tells one from the next: which screen the interview
  * is on (`questions` or `results`), and the label of the question on it, or
- * "" where none is.
+ * "" where none is shown: absent, or hidden from the reader.
  *
  * @typedef {{ screen: string, question: string }} ScreenShown
  */
@@ -49,10 +49,12 @@ function readBeatMsInPage() {
   return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
 }
 
-/** In the page: which screen the interview is on, and its question's label, as JSON. */
+/** In the page: which screen the interview is on, and its question's label where a reader can see it, as JSON. */
 function readScreenInPage() {
   const label = document.querySelector("#main .qcard .qlabel");
-  return JSON.stringify({ screen: document.getElementById("app").dataset.state, question: label ? label.textContent.trim() : "" });
+  const style = label && getComputedStyle(label);
+  const isShown = style !== null && style.visibility === "visible" && style.display !== "none" && label.offsetParent !== null;
+  return JSON.stringify({ screen: document.getElementById("app").dataset.state, question: isShown ? label.textContent.trim() : "" });
 }
 
 /** In the page: taps `value` on the question on the screen, its button or, on the search, the row `searchFor`

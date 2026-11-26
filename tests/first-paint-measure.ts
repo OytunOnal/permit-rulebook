@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
 import type { BrowserPage, LayoutShifts } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**
@@ -119,13 +120,21 @@ export const detail = (m: Measured) =>
  * the box, because from s10's second round the built page carries question one
  * AND the two lines that stand in for it, and which of the three shows is the
  * stylesheet's answer to a cover — not something the built HTML can be read for
- * (human's walk, 2026-09-15).
+ * (human's walk, 2026-09-15). The question is read by the interview's own
+ * `readScreen`, in the same moment, the module still held.
  */
-export const AT_FIRST_PAINT = `(${readAtFirstPaint})()`;
+export async function readAtFirstPaint(page: BrowserPage): Promise<AtFirstPaint> {
+  const built = JSON.parse(await page.evaluate(AT_FIRST_PAINT)) as Omit<AtFirstPaint, "question">;
+  const { question } = await new InterviewPage({ page }).readScreen();
+  return { ...built, question };
+}
 
-/** In the page: what is on the screen at the first paint, as JSON, with the box's node and the footer's top left on
- * the window for the read once the module has drawn. */
-function readAtFirstPaint(): string {
+/** What is on the screen at the first paint, its question aside: the expression the read evaluates. */
+export const AT_FIRST_PAINT = `(${readBuiltPaint})()`;
+
+/** In the page: what is on the screen at the first paint, its question aside, as JSON, with the box's node and the
+ * footer's top left on the window for the read once the module has drawn. */
+function readBuiltPaint(): string {
   const marks = window as FirstPaintMarks;
   marks.__built = document.querySelector("#main > *");
   const foot = document.querySelector("footer.site-foot")!;
@@ -134,12 +143,10 @@ function readAtFirstPaint(): string {
   // Null, not false, for an element the page does not draw: the read says so as it always has.
   const shown = (el: Element | null) => el && getComputedStyle(el).visibility === "visible"
     && getComputedStyle(el).display !== "none" && !!(el as HTMLElement).offsetParent;
-  const question = document.querySelector(".qlabel");
   return JSON.stringify({
     held: !!marks.__built,
     cover: document.documentElement.dataset.cover ?? "",
     box: Math.round(document.getElementById("main")!.getBoundingClientRect().height),
-    question: shown(question) ? question!.textContent : "",
     standIn: [...document.querySelectorAll(".stand-in")].filter(shown).map((el) => el.textContent),
     footBox,
     count: document.getElementById("decl-count")?.textContent ?? "",

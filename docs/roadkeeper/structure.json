@@ -4317,6 +4317,11 @@
   },
   {
    "from": "tests/first-paint-measure.ts",
+   "to": "scripts/interview-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint-measure.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
@@ -12342,5 +12347,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "22263364240fb17b73d48bfacf5746f47cffddeccca0b1435d7f5731d5ed3b3b"
+ "digest": "ee81965c712e913e1ca83190a8a7229cfce07ba7f7f2326909a64bb3bee4cf06"
 }
