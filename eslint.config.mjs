@@ -267,6 +267,10 @@ export default [
       "no-restricted-syntax": ["error",
         ...REFUSED_STRINGS,
         { selector: `ImportExpression[source.value=${RECORD_MODULE}]`, message: `the record is built and read ${THROUGH_INTERVIEW_PAGE}` },
+        {
+          selector: `ImportExpression > TemplateLiteral[expressions.length=0] > TemplateElement[value.raw=${RECORD_MODULE}]`,
+          message: `the record is built and read ${THROUGH_INTERVIEW_PAGE}`,
+        },
         { selector: UNREAD_IMPORT_PATH, message: IMPORT_PATH_UNREAD },
         { selector: `Literal[value=${FUNCTION_BODY_OPENING}]`, message: STRING_PROBE },
         { selector: `TemplateLiteral[quasis.0.value.raw=${FUNCTION_BODY_OPENING}]`, message: STRING_PROBE },
