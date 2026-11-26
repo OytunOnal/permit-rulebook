@@ -29,46 +29,63 @@ export interface TextBox {
 /** The window property the page's decode writes its reading on, once done. */
 const READING = "__inksOnGround";
 
-/** Reads, in the page, the box of the text of the first element each selector
- * finds, or null for a selector that finds none. */
-const textBoxesOf = (selectors: string[]): string => `JSON.stringify(${JSON.stringify(selectors)}.map((selector) => {
-  const element = document.querySelector(selector);
-  if (!element) return null;
-  const text = document.createRange();
-  text.selectNodeContents(element);
-  const { left, top, width, height } = text.getBoundingClientRect();
-  return { left, top, width, height };
-}))`;
+/** In the page: the box of the text of the first element each selector
+ * finds, or null for a selector that finds none, as JSON. */
+function readTextBoxes(selectors: string[]): string {
+  return JSON.stringify(selectors.map((selector) => {
+    const element = document.querySelector(selector);
+    if (!element) return null;
+    const text = document.createRange();
+    text.selectNodeContents(element);
+    const { left, top, width, height } = text.getBoundingClientRect();
+    return { left, top, width, height };
+  }));
+}
 
-/** The script that starts, in the page, decoding `png` (base64) and reading
- * the ground and the ink over each box, at the screenshot's scale; the
- * reading, or the decode's error, is written on the window once done. */
-const inkReadingScript = (png: string, boxes: TextBox[]): string => `(() => {
-  window.${READING} = undefined;
-  const bytes = Uint8Array.from(atob(${JSON.stringify(png)}), (c) => c.charCodeAt(0));
+/** The expression that reads the box of the text each selector finds. */
+const textBoxesOf = (selectors: string[]): string => `(${readTextBoxes})(${JSON.stringify(selectors)})`;
+
+/** In the page: the ground and the ink over each box of the image `context` holds, its pixels `scale` times the
+ * page's. */
+function readInksOnGround(context: OffscreenCanvasRenderingContext2D, boxes: TextBox[], scale: number): InkOnGround[] {
+  return boxes.map((box) => {
+    const { data } = context.getImageData(Math.round(box.left * scale), Math.round(box.top * scale),
+      Math.max(1, Math.round(box.width * scale)), Math.max(1, Math.round(box.height * scale)));
+    const counts = new Map<string, number>();
+    for (let i = 0; i < data.length; i += 4) {
+      const key = data[i] + "," + data[i + 1] + "," + data[i + 2];
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    const ground = [...counts].sort((a, b) => b[1] - a[1])[0]![0].split(",").map(Number) as Rgb;
+    let ink = ground;
+    let farthest = -1;
+    for (let i = 0; i < data.length; i += 4) {
+      const away = Math.hypot(data[i]! - ground[0], data[i + 1]! - ground[1], data[i + 2]! - ground[2]);
+      if (away > farthest) { farthest = away; ink = [data[i]!, data[i + 1]!, data[i + 2]!]; }
+    }
+    return { ground, ink };
+  });
+}
+
+/** In the page: starts decoding `png` (base64) and reading the ground and the ink over each box with `readInks`,
+ * at the screenshot's scale; the reading, or the decode's error, is written on the window under `reading` once
+ * done. */
+function startInkReading(png: string, boxes: TextBox[], { reading, readInks }: {
+  reading: string; readInks: typeof readInksOnGround;
+}): void {
+  const marks = window as unknown as Record<string, string | undefined>;
+  marks[reading] = undefined;
+  const bytes = Uint8Array.from(atob(png), (c) => c.charCodeAt(0));
   createImageBitmap(new Blob([bytes], { type: "image/png" })).then((bitmap) => {
-    const context = new OffscreenCanvas(bitmap.width, bitmap.height).getContext("2d");
+    const context = new OffscreenCanvas(bitmap.width, bitmap.height).getContext("2d")!;
     context.drawImage(bitmap, 0, 0);
-    const scale = bitmap.width / innerWidth;
-    window.${READING} = JSON.stringify(${JSON.stringify(boxes)}.map((box) => {
-      const { data } = context.getImageData(Math.round(box.left * scale), Math.round(box.top * scale),
-        Math.max(1, Math.round(box.width * scale)), Math.max(1, Math.round(box.height * scale)));
-      const counts = new Map();
-      for (let i = 0; i < data.length; i += 4) {
-        const key = data[i] + "," + data[i + 1] + "," + data[i + 2];
-        counts.set(key, (counts.get(key) ?? 0) + 1);
-      }
-      const ground = [...counts].sort((a, b) => b[1] - a[1])[0][0].split(",").map(Number);
-      let ink = ground;
-      let farthest = -1;
-      for (let i = 0; i < data.length; i += 4) {
-        const away = Math.hypot(data[i] - ground[0], data[i + 1] - ground[1], data[i + 2] - ground[2]);
-        if (away > farthest) { farthest = away; ink = [data[i], data[i + 1], data[i + 2]]; }
-      }
-      return { ground, ink };
-    }));
-  }, (error) => { window.${READING} = JSON.stringify({ error: String(error) }); });
-})()`;
+    marks[reading] = JSON.stringify(readInks(context, boxes, bitmap.width / innerWidth));
+  }, (error) => { marks[reading] = JSON.stringify({ error: String(error) }); });
+}
+
+/** The script that starts, in the page, decoding `png` and reading the ground and the ink over each box. */
+const inkReadingScript = (png: string, boxes: TextBox[]): string =>
+  `(${startInkReading})(${JSON.stringify(png)}, ${JSON.stringify(boxes)}, { reading: ${JSON.stringify(READING)}, readInks: ${readInksOnGround} })`;
 
 /** How far apart two colours are: the straight distance between them in RGB. */
 export const distanceBetween = (a: Rgb, b: Rgb): number => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);

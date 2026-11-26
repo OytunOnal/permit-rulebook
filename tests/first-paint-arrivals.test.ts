@@ -8,7 +8,7 @@ import { replayRecord } from "../src/lib/scope.js";
 import { walkSite, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { ABOVE_THE_BOX } from "./layout-shifts.js";
 import {
-  ARRIVALS, AT_FIRST_PAINT, HELD_MODULE, LANDS_ON, VIEWPORTS, detail, readMeasured, skipped,
+  ARRIVALS, HELD_MODULE, LANDS_ON, VIEWPORTS, detail, readAtFirstPaint, readMeasured, skipped,
   type AtFirstPaint, type Measured,
 } from "./first-paint-measure.js";
 
@@ -137,7 +137,7 @@ async function readTheArrival(page: BrowserPage, address: string, label: string)
   await page.navigate(href);
   await page.waitUntil(`location.href === ${JSON.stringify(href)} && document.readyState !== "loading"`,
     `${href} was never parsed`);
-  const built = JSON.parse(await page.evaluate(AT_FIRST_PAINT)) as AtFirstPaint;
+  const built = await readAtFirstPaint(page);
   expect(built.held, `${label}: the built page painted nothing into #main`)
     .toBe(true);
   atFirstPaint.set(label, built);

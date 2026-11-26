@@ -15,20 +15,23 @@ import { openWithRecord, screensToOpen, walks } from "./reader-pages.js";
 const WIDENED_SPACING_EM = 0.1;
 
 /** Reads, in the page, the width it lays out at with every element's letter
- * spacing widened by WIDENED_SPACING_EM of its font size, then puts each
- * element's own style attribute back. */
-const WIDENED_WIDTH = `(() => {
-  const all = [document.documentElement, ...document.querySelectorAll("*")];
+ * spacing widened by `spacingEm` of its font size, then puts each element's
+ * own style attribute back. */
+function readWidenedWidth(spacingEm: number): number {
+  const all = [document.documentElement, ...document.querySelectorAll<HTMLElement>("*")];
   const widened = all.map((el) => {
     const style = getComputedStyle(el);
-    return (parseFloat(style.letterSpacing) || 0) + ${WIDENED_SPACING_EM} * parseFloat(style.fontSize);
+    return (parseFloat(style.letterSpacing) || 0) + spacingEm * parseFloat(style.fontSize);
   });
   const own = all.map((el) => el.getAttribute("style"));
   all.forEach((el, i) => { el.style.letterSpacing = widened[i] + "px"; });
   const width = innerWidth;
-  all.forEach((el, i) => { if (own[i] === null) el.removeAttribute("style"); else el.setAttribute("style", own[i]); });
+  all.forEach((el, i) => { if (own[i] === null) el.removeAttribute("style"); else el.setAttribute("style", own[i]!); });
   return width;
-})()`;
+}
+
+/** The width the page lays out at with its text widened: the expression the wide pass evaluates. */
+const WIDENED_WIDTH = `(${readWidenedWidth})(${WIDENED_SPACING_EM})`;
 
 /** A screen drawn with its text widened: where it was read, and the width the
  * page laid out at; null where the screen already failed its width check as

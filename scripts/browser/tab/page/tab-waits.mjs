@@ -37,33 +37,8 @@ const REPLACED_CONTEXT = /Execution context was destroyed|Cannot find default ex
  * `scrollend`, or once its scroller has no more than a pixel left to go: a
  * scroll asked of a scroller already there moves nothing and fires none.
  */
-const WATCH_SMOOTH_SCROLLS = `(() => {
+function watchSmoothScrolls({ untilSettled, untilScrollEndOr, isSmooth, askedFor, isWithinAPixelOf, leftToGo }) {
   const going = new Set();
-  const untilSettled = (end) => {
-    let settled = false;
-    const settle = () => { settled = true; };
-    end.then(settle, settle);
-    return () => !settled;
-  };
-  const untilScrollEndOr = (there) => {
-    let ended = false;
-    addEventListener("scrollend", () => { ended = true; }, { capture: true, once: true });
-    return () => !ended && !there();
-  };
-  const isSmooth = (options, scroller) => options?.behavior === "smooth"
-    || (options?.behavior !== "instant" && getComputedStyle(scroller).scrollBehavior === "smooth");
-  // Where a scrollTo, scroll or scrollBy call asks its scroller to go, each axis within the scroll it has.
-  const askedFor = (scroller, name, [first, second]) => {
-    const asked = typeof first === "object" && first !== null ? [first.left, first.top] : [first, second];
-    const now = [scroller.scrollLeft, scroller.scrollTop];
-    const furthest = [scroller.scrollWidth - scroller.clientWidth, scroller.scrollHeight - scroller.clientHeight];
-    return asked.map((to, axis) => {
-      if (!Number.isFinite(Number(to))) return now[axis];
-      const at = name === "scrollBy" ? now[axis] + Number(to) : Number(to);
-      return Math.min(Math.max(at, 0), furthest[axis]);
-    });
-  };
-  const isWithinAPixelOf = (scroller, [x, y]) => Math.abs(scroller.scrollLeft - x) <= 1 && Math.abs(scroller.scrollTop - y) <= 1;
   for (const owner of [window, Element.prototype])
     for (const name of ["scrollTo", "scroll", "scrollBy"]) {
       const ask = owner[name];
@@ -76,14 +51,6 @@ const WATCH_SMOOTH_SCROLLS = `(() => {
         return end;
       };
     }
-  // How far the viewport still has to scroll to bring el where block asks, within the scroll it has.
-  const leftToGo = (el, block) => {
-    const { top, bottom } = el.getBoundingClientRect();
-    const by = { start: top, end: bottom - innerHeight, center: (top + bottom - innerHeight) / 2,
-      nearest: top < 0 && bottom > innerHeight ? 0 : top < 0 ? top : Math.max(bottom - innerHeight, 0) }[block];
-    const furthest = document.documentElement.scrollHeight - innerHeight;
-    return Math.min(Math.max(scrollY + by, 0), furthest) - scrollY;
-  };
   const intoView = Element.prototype.scrollIntoView;
   Element.prototype.scrollIntoView = function (...args) {
     const returned = intoView.apply(this, args);
@@ -97,7 +64,65 @@ const WATCH_SMOOTH_SCROLLS = `(() => {
       return going.size;
     },
   });
-})()`;
+}
+
+/** In the page: a scroll that ends when `end`, the promise its call returned, settles; called, says whether it
+ * is still going. */
+function untilSettled(end) {
+  let settled = false;
+  const settle = () => { settled = true; };
+  end.then(settle, settle);
+  return () => !settled;
+}
+
+/** In the page: a scroll that ends at the next `scrollend`, or once `there()` holds; called, says whether it is
+ * still going. */
+function untilScrollEndOr(there) {
+  let ended = false;
+  addEventListener("scrollend", () => { ended = true; }, { capture: true, once: true });
+  return () => !ended && !there();
+}
+
+/** In the page: whether a scroll asked with `options` of `scroller` is smooth, by the options or the stylesheet. */
+function isSmooth(options, scroller) {
+  return options?.behavior === "smooth"
+    || (options?.behavior !== "instant" && getComputedStyle(scroller).scrollBehavior === "smooth");
+}
+
+/** In the page: where a scrollTo, scroll or scrollBy call asks its scroller to go, each axis within the scroll it has. */
+function askedFor(scroller, name, [first, second]) {
+  const asked = typeof first === "object" && first !== null ? [first.left, first.top] : [first, second];
+  const now = [scroller.scrollLeft, scroller.scrollTop];
+  const furthest = [scroller.scrollWidth - scroller.clientWidth, scroller.scrollHeight - scroller.clientHeight];
+  return asked.map((to, axis) => {
+    if (!Number.isFinite(Number(to))) return now[axis];
+    const at = name === "scrollBy" ? now[axis] + Number(to) : Number(to);
+    return Math.min(Math.max(at, 0), furthest[axis]);
+  });
+}
+
+/** In the page: whether `scroller` stands within a pixel of `[x, y]`. */
+function isWithinAPixelOf(scroller, [x, y]) {
+  return Math.abs(scroller.scrollLeft - x) <= 1 && Math.abs(scroller.scrollTop - y) <= 1;
+}
+
+/** In the page: how far the viewport still has to scroll to bring `el` where `block` asks, within the scroll it has. */
+function leftToGo(el, block) {
+  const { top, bottom } = el.getBoundingClientRect();
+  const nearest = () => {
+    if (top < 0 && bottom > innerHeight) return 0;
+    if (top < 0) return top;
+    return Math.max(bottom - innerHeight, 0);
+  };
+  const by = { start: top, end: bottom - innerHeight, center: (top + bottom - innerHeight) / 2, nearest: nearest() }[block];
+  const furthest = document.documentElement.scrollHeight - innerHeight;
+  return Math.min(Math.max(scrollY + by, 0), furthest) - scrollY;
+}
+
+/** The watch as the script every document runs: `watchSmoothScrolls` called on its helpers, each handed in, so it
+ * closes over nothing. */
+const WATCH_SMOOTH_SCROLLS = `(${watchSmoothScrolls})({ ${
+  [untilSettled, untilScrollEndOr, isSmooth, askedFor, isWithinAPixelOf, leftToGo].map((f) => `${f.name}: ${f}`).join(", ")} })`;
 
 /**
  * At rest, as the page sees it: no animation or transition running, no

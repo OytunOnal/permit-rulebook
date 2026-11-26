@@ -1,7 +1,6 @@
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { feedbackPage } from "../src/lib/feedback-page.js";
-import { serialize } from "../src/lib/record.js";
-import { skipReason } from "./browser-walk.js";
+import { recordSeedScript, skipReason } from "./browser-walk.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 
 /**
@@ -39,9 +38,7 @@ export const allRecord: Profile = {
   nl_recent_grad: "yes",
 };
 /** The script that saves `profile` as the device's record. */
-export const seed = (profile: Profile): string =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${
-    JSON.stringify(serialize(profile, Object.keys(profile)))})`;
+export const seed = (profile: Profile): string => recordSeedScript(profile);
 
 /** The two layouts the walks read: the flat one, with no country
  * sections, and the four-country one, a section per country. */
