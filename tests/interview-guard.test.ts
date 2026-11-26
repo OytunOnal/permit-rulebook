@@ -50,6 +50,8 @@ const writeRecordImport = (name: string, filePath: string): string =>
 const KEY = ["permit-rulebook", "record", "v1"].join(".");
 /** The card's three selectors, put together here for the same reason. */
 const [CFILTER, QCARD, QLABEL] = [["#", "cfilter"], [".", "qcard"], [".", "qlabel"]].map((parts) => parts.join(""));
+/** The search's list, its rows and its live region's id, put together here for the same reason. */
+const [CLIST, COPT, CSTATUS] = [["#", "clist"], [".", "copt"], ["c", "status"]].map((parts) => parts.join(""));
 
 /** An in-page probe written as a string, the form the guard refuses and every probe that is no function body is
  * set against. */
@@ -63,6 +65,9 @@ const REFUSED: readonly (readonly [string, (filePath: string) => string])[] = [
   [`${CFILTER} in a string`, () => `export const search = "${CFILTER}";`],
   [`${QCARD} in a string`, () => `export const card = '#main ${QCARD}';`],
   [`${QLABEL} in a template`, () => `export const label = \`${QLABEL}\`;`],
+  [`${CLIST} in a string`, () => `export const list = "${CLIST}";`],
+  [`${COPT} in a template`, () => `export const row = \`#main ${COPT}\`;`],
+  [`${CSTATUS} in a string`, () => `export const live = "${CSTATUS}";`],
   [`a string opening with (() ${ARROW}`, () => A_STRING_PROBE],
   [`a string opening with ((x) ${ARROW}`, () => `export const probe = "((link) ${ARROW} link.href)(document.links[0])";`],
   ["a template opening with (async (", () => `export const probe = \`(async () ${ARROW} document.title)()\`;`],

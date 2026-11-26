@@ -183,8 +183,14 @@ const THROUGH_INTERVIEW_PAGE =
 
 /** The record's storage key, spelled (Q396). */
 const SPELLED_KEY = String.raw`/permit-rulebook\.record\.v1/`;
-/** The question card's selectors (Q396). */
-const CARD_SELECTORS = String.raw`/#cfilter(?![\w-])|\.qcard(?![\w-])|\.qlabel(?![\w-])/`;
+/**
+ * The question card's selectors (Q396) and the search's own markup, its list, its rows and its live region's id
+ * (Q446), each as a whole name. Only CSS forms and the id are read: an HTML form in a markup builder's own unit
+ * test (`tests/listbox.test.ts`, `tests/s25-dataset.test.ts`) is the markup's test, which goes red when the markup
+ * changes, not drift (Q447).
+ */
+const CARD_SELECTORS =
+  String.raw`/#cfilter(?![\w-])|\.qcard(?![\w-])|\.qlabel(?![\w-])|#clist(?![\w-])|\.copt(?![\w-])|(^|[^\w-])cstatus(?![\w-])/`;
 /** A string opening with an arrow or function body: `(() =>`, `((…) =>`, `(async (`, `(function` (Q397, Q415). */
 const FUNCTION_BODY_OPENING = String.raw`/^\s*\((\([^()]*\)\s*=>|async\s*\(|function\b)/`;
 
