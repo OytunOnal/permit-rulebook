@@ -7,7 +7,7 @@ import {
 import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "../src/lib/copy/interview.js";
 import { countrySearchOf } from "../src/lib/country-search/country-search.js";
 import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
   skipReason, warnNotWalked, withSite,
 } from "./browser-walk.js";

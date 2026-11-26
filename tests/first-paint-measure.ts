@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 import type { BrowserPage, LayoutShifts } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**

@@ -8,7 +8,7 @@ import { withSite } from "./browser-walk.js";
 import { LAYOUTS, ds, frRecord, skipped, warnFeedbackDoorNotWalked } from "./s13-feedback-door.js";
 import type { Profile } from "permit-rulebook-data";
 import type { BrowserPage } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 
 /**
  * s13 — the feedback door, walked in a browser: the line under the verdict on

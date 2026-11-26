@@ -1,5 +1,5 @@
 import type { BrowserPage } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { BEAT_MS } from "./browser-walk.js";
 
 /**

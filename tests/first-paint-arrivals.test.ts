@@ -5,7 +5,7 @@ import { LINK_ARRIVAL_LINE, RETURNING_LINE } from "../src/lib/copy/interview.js"
 import { WIDE_FROM_PX } from "../src/lib/first-paint.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { walkSite, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { ABOVE_THE_BOX } from "./layout-shifts.js";
 import {
   ARRIVALS, HELD_MODULE, LANDS_ON, VIEWPORTS, detail, readAtFirstPaint, readMeasured, skipped,

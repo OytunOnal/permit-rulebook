@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Profile } from "permit-rulebook-data";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { skipReason, withSite } from "./browser-walk.js";
 import { FALLBACK_STACK } from "./fallback-stack.js";
 

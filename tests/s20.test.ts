@@ -7,7 +7,7 @@ import { START_OVER, resumedLine } from "../src/lib/copy/interview.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { evaluateAtRest, fieldOnScreen, openAtRest, withSite, skipReason } from "./browser-walk.js";
 import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 

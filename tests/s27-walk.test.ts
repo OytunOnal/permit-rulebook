@@ -10,7 +10,7 @@ import { declarationHtml } from "../src/lib/question.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { DESK, PHONE, type PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { evaluateAtRest, openAtRest, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { OPENED, SENTENCE, WALKED_TO_FOUR, ds, headerOf, nameOf } from "./s27-slips.js";
 

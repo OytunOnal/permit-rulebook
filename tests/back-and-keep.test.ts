@@ -8,7 +8,7 @@ import {
 } from "../src/lib/interview/start-interview.js";
 import { openInterviewHistory, type InterviewHistory } from "../src/lib/interview-history/interview-history.js";
 import { DESK, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
   fieldOnScreen, skipReason, warnNotWalked, withSite,
 } from "./browser-walk.js";

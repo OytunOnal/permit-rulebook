@@ -9,7 +9,7 @@ import {
 import { glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { WidthFailure, type PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { CARD_LINK, type CardLink } from "./card-link.js";
 import { whyNoBuild } from "./why-no-build.js";
 

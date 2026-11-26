@@ -9,7 +9,7 @@ import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, hintsIn, paintedAsComposedScript, placed, standingOn, stepsIn, verdictFor,
 } from "./verdict-cards.js";
 import { withSite, skipReason } from "./browser-walk.js";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { DENIZ, PRIYA_EXPLORING_ALL } from "./personas.js";
 
 const ds = dataset as unknown as Dataset;

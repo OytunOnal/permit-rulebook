@@ -3,7 +3,7 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossSection, type Glossary } from "../src/lib/gloss.js";
 import { DESK, PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
   answer, middleBandOf, skipReason, topBandOf, waitUntilPastTheBeat, walkTo, warnNotWalked, withSite,
 } from "./browser-walk.js";

@@ -8,7 +8,7 @@ import { ANY_PATH, EITHER_PATH } from "../src/lib/copy/route-page.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { DESK, type PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { walkFrom } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, everyDrawnRouteIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";

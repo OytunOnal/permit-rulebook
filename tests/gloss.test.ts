@@ -8,7 +8,7 @@ import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { withSite, skipReason } from "./browser-walk.js";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 
 const ds = dataset as unknown as Dataset;
 

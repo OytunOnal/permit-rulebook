@@ -9,7 +9,7 @@ import { learnLinkTextOf } from "../src/lib/quote.js";
 import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
 import { fieldOnScreen, withSite, skipReason } from "./browser-walk.js";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, standingOn, verdictFor,
   verdictOn,

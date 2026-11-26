@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
 import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
   fieldOnScreen, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
 } from "./browser-walk.js";

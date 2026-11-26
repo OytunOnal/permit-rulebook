@@ -6,7 +6,7 @@ import { ABBREVIATIONS } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import type { PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { watchStateAt } from "./watch-state-at.js";
 

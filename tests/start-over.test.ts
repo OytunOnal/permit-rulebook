@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Profile } from "permit-rulebook-data";
 import { DESK, PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
   fieldOnScreen, openAtRest, skipReason, warnNotWalked, withSite,
 } from "./browser-walk.js";

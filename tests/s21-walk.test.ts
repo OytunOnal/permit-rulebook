@@ -11,7 +11,7 @@ import {
   PAINTED_AS_COMPOSED, answerWordsOf, countryNamed, paintedAsComposedScript, saidLineOf, verdictOn,
 } from "./verdict-cards.js";
 import { withSite, skipReason } from "./browser-walk.js";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { countryQuestion } from "./s21-country-question.js";
 
 const ds = dataset as unknown as Dataset;

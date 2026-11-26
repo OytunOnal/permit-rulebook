@@ -4,7 +4,7 @@ import { deriveBands, fillRouteSlots, type Dataset, type Profile } from "permit-
 import { glossed } from "../src/lib/gloss.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { chromePath, walkSite, type BrowserPage, type PageOnSite, type Screen } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { whyNoBuild } from "./why-no-build.js";
 
 /**

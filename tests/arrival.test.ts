@@ -15,7 +15,7 @@ import type { Dataset, Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { everyDrawnRouteIn, verdictOn } from "./verdict-cards.js";
 import { withSite, skipReason } from "./browser-walk.js";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import type { PageOnSite } from "../scripts/browser/browser.mjs";
 
 const ds = dataset as unknown as Dataset;
