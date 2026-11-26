@@ -289,22 +289,35 @@ export function blocksIn(html: string, ...classes: string[]): string {
  */
 export function paintedAsComposedScript(verdict: Verdict): string {
   const m = verdict.action.masthead;
-  const subline = m.sublineHtml === undefined
-    ? `subline.textContent === ${JSON.stringify(m.subline)}`
-    : `subline.innerHTML === parsed(subline, ${JSON.stringify(m.sublineHtml)})`;
-  return `JSON.stringify((() => {
-    const parsed = (el, html) => { const spare = el.cloneNode(false); spare.innerHTML = html; return spare.innerHTML; };
-    const headline = document.getElementById("headline");
-    const subline = document.getElementById("subline");
-    const stepsLine = document.getElementById("steps-line");
-    const main = document.getElementById("main");
-    return {
-      headline: headline.innerHTML === parsed(headline, ${JSON.stringify(m.headline)}),
-      subline: ${subline},
-      stepsLine: stepsLine !== null && stepsLine.innerHTML === parsed(stepsLine, ${JSON.stringify(m.stepsLineHtml ?? "")}),
-      body: main.innerHTML.endsWith(parsed(main, ${JSON.stringify(verdictHtml(verdict))})),
-    };
-  })())`;
+  const composed: Composed = {
+    headline: m.headline, subline: m.subline ?? null, sublineHtml: m.sublineHtml ?? null,
+    stepsLineHtml: m.stepsLineHtml ?? "", bodyHtml: verdictHtml(verdict),
+  };
+  return `(${readPaintedAsComposedInPage})(${JSON.stringify(composed)})`;
+}
+
+/** A verdict's pieces as composed: the masthead's headline, its subline as words or as markup (null where it has
+ * none of that kind), its Steps line, and the body. */
+interface Composed { headline: string; subline: string | null; sublineHtml: string | null; stepsLineHtml: string; bodyHtml: string }
+
+/** In the page: whether it painted each of `composed`'s pieces, each parsed into an empty copy of the box it is
+ * painted in, as JSON. */
+function readPaintedAsComposedInPage(composed: Composed): string {
+  const parse = (el: Element, html: string) => {
+    const spare = el.cloneNode(false) as Element;
+    spare.innerHTML = html;
+    return spare.innerHTML;
+  };
+  const headline = document.getElementById("headline")!;
+  const subline = document.getElementById("subline")!;
+  const stepsLine = document.getElementById("steps-line");
+  const main = document.getElementById("main")!;
+  return JSON.stringify({
+    headline: headline.innerHTML === parse(headline, composed.headline),
+    subline: composed.sublineHtml === null ? subline.textContent === composed.subline : subline.innerHTML === parse(subline, composed.sublineHtml),
+    stepsLine: stepsLine !== null && stepsLine.innerHTML === parse(stepsLine, composed.stepsLineHtml),
+    body: main.innerHTML.endsWith(parse(main, composed.bodyHtml)),
+  });
 }
 
 /** What `paintedAsComposedScript` reads on a page that painted the verdict

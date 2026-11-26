@@ -87,6 +87,21 @@ export async function evaluateAtRest(page: GesturedPage, expression: string): Pr
   return value;
 }
 
+/** In the page: opens the ledger and taps the ✎ of `field`'s row, found by its field, never by its words; with
+ * `scrollToRow`, scrolls the row to the middle of the viewport first. */
+function tapPencilInPage(field: string, { scrollToRow }: { scrollToRow: boolean }): void {
+  (document.getElementById("decl") as HTMLDetailsElement).open = true;
+  const row = document.querySelector<HTMLElement>(`#decl-list [data-field="${field}"]`)!;
+  if (scrollToRow) row.scrollIntoView({ block: "center" });
+  row.click();
+}
+
+/** Taps the ledger's ✎ on `field`'s row, the ledger opened first, the way a reader reaches it, and returns at once;
+ * with the option `scrollToRow`, the row is scrolled to the middle of the viewport before the tap. */
+export async function tapPencil(page: Pick<BrowserPage, "evaluate">, field: string, { scrollToRow = false } = {}): Promise<void> {
+  await page.evaluate(`(${tapPencilInPage})(${JSON.stringify(field)}, ${JSON.stringify({ scrollToRow })})`);
+}
+
 /** A band in the middle of a money field's ladder, for a reader who knows. */
 export const middleBandOf = (field: string): string => {
   const bands = deriveBands(ds, field);

@@ -108,15 +108,17 @@ if (skipped)
   process.stderr.write(`\n  !! THE S21 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
 /** Each mark drawn under an answer on the screen, with its id and link glyph, so the walk compares what the reader gets. */
-const marksOf = ({ answers }: ScreenShown) =>
+const listMarks = ({ answers }: ScreenShown) =>
   answers.flatMap(({ value, mark }) => (mark ? [{ under: value, ...mark }] : []));
 /** Which mark each answer on the screen is described by, so the walk checks the mark is announced. */
-const describedOf = ({ answers }: ScreenShown) =>
+const listDescriptions = ({ answers }: ScreenShown) =>
   answers.map(({ value, describedBy }) => ({ value, by: describedBy?.id ?? null, resolves: describedBy?.resolves ?? null }));
-/** The mark the stylesheet draws after the link in each country's line that
- * carries one. */
-const LINK_GLYPHS = 'JSON.stringify([...document.querySelectorAll(".country-sec .tally a")]'
-  + '.map((a) => getComputedStyle(a, "::after").content))';
+/** In the page: the mark the stylesheet draws after the link in each country's line that carries one, as JSON. */
+function readLinkGlyphsInPage(): string {
+  return JSON.stringify([...document.querySelectorAll(".country-sec .tally a")].map((a) => getComputedStyle(a, "::after").content));
+}
+/** Those marks, read in the page. */
+const LINK_GLYPHS = `(${readLinkGlyphsInPage})()`;
 
 describe.skipIf(skipped !== null)("s21 — in the browser", () => {
   it("question 3 is never in the cold HTML; the mark is drawn from the two answers before it", () => {
@@ -152,7 +154,7 @@ async function walkAllFourResearchThroughFrance(): Promise<AllFourWalk> {
     // Nothing thrown is read once the page is at rest.
     await page.waitUntilAtRest();
     const third = await interview.readScreen();
-    const q3 = { question: third.question, marks: marksOf(third), described: describedOf(third) };
+    const q3 = { question: third.question, marks: listMarks(third), described: listDescriptions(third) };
     // France, by the button — then the quickest profile to a result that
     // contradicts nothing: no qualification, a Turkish passport, no Dutch
     // graduation, no top-200 degree. Seven answers; nothing open, as the

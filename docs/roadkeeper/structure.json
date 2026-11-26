@@ -408,6 +408,7 @@
   "scripts/main-smoke.mjs": "main",
   "scripts/measure-taps.mjs": "infrastructure",
   "scripts/print-report.mjs": "presentation",
+  "scripts/read-in-page.mjs": "infrastructure",
   "scripts/refresh-traffic-counter-copy.mjs": "infrastructure",
   "scripts/render-assets.mjs": "infrastructure",
   "scripts/required-controls.mjs": "domain",
@@ -1251,6 +1252,11 @@
   },
   {
    "from": "scripts/measure-taps.mjs",
+   "to": "scripts/read-in-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/measure-taps.mjs",
    "to": "scripts/required-controls.mjs",
    "kind": "dependency"
   },
@@ -1307,6 +1313,11 @@
   {
    "from": "scripts/smoke.mjs",
    "to": "scripts/interview-page/interview-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/smoke.mjs",
+   "to": "scripts/read-in-page.mjs",
    "kind": "dependency"
   },
   {
@@ -4685,6 +4696,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/interview-guard.test.ts",
+   "to": "tests/code-to-lint.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/interview-on-site.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -4922,6 +4938,16 @@
   {
    "from": "tests/no-errors-expected.test.ts",
    "to": "eslint.config.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/no-errors-expected.test.ts",
+   "to": "tests/code-to-lint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/no-fixed-wait.test.ts",
+   "to": "tests/code-to-lint.ts",
    "kind": "dependency"
   },
   {
@@ -7784,17 +7810,22 @@
     "exported": false
    },
    {
-    "name": "nameOf",
+    "name": "STORAGE_KEY_SOURCE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "findSearchName",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "refusalOf",
+    "name": "findRefusal",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "screenOf",
+    "name": "parseScreen",
     "kind": "fn",
     "exported": false
    },
@@ -8372,17 +8403,22 @@
     "exported": false
    },
    {
-    "name": "RECORD_MODULE",
+    "name": "RECORD_MODULE_PATH",
     "kind": "const",
     "exported": false
    },
    {
-    "name": "UNREAD_IMPORT_PATH",
+    "name": "RECORD_REFUSED",
     "kind": "const",
     "exported": false
    },
    {
-    "name": "IMPORT_PATH_UNREAD",
+    "name": "IMPORT_OF_AN_UNWRITTEN_PATH",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "WRITE_THE_IMPORT_PATH_OUT",
     "kind": "const",
     "exported": false
    },
@@ -9063,7 +9099,7 @@
     "exported": false
    },
    {
-    "name": "textOf",
+    "name": "readTextInPage",
     "kind": "fn",
     "exported": false
    },
@@ -9073,27 +9109,22 @@
     "exported": false
    },
    {
-    "name": "measureControls",
+    "name": "measureControlsInPage",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "measureStripLines",
+    "name": "measureStripLinesInPage",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "requiredControlCountsOf",
+    "name": "countRequiredControlsInPage",
     "kind": "fn",
     "exported": false
    },
    {
     "name": "readResultBodyInPage",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "callInPage",
     "kind": "fn",
     "exported": false
    },
@@ -9146,6 +9177,13 @@
   "scripts/print-report.mjs": [
    {
     "name": "printReport",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/read-in-page.mjs": [
+   {
+    "name": "readInPage",
     "kind": "fn",
     "exported": true
    }
@@ -9418,17 +9456,12 @@
     "exported": false
    },
    {
-    "name": "readInPage",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "CHECKS",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "threwFailureOf",
+    "name": "makeThrownFailure",
     "kind": "fn",
     "exported": false
    },
@@ -9448,17 +9481,17 @@
     "exported": false
    },
    {
-    "name": "pageLoadOf",
+    "name": "makeCheckLoad",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "unplacedLoadOf",
+    "name": "makeUnplacedLoad",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "pastTheCapLoadOf",
+    "name": "makePastTheCapLoad",
     "kind": "fn",
     "exported": false
    },
@@ -12582,6 +12615,7 @@
   "scripts/main-smoke.mjs",
   "scripts/measure-taps.mjs",
   "scripts/print-report.mjs",
+  "scripts/read-in-page.mjs",
   "scripts/refresh-traffic-counter-copy.mjs",
   "scripts/render-assets.mjs",
   "scripts/required-controls.mjs",
@@ -12640,5 +12674,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "06c9dd26dc77733db3fc69604f6b9b12744ddce33e6ff44a979e4267601b3991"
+ "digest": "e56a8cd533c973417b93d6151a55c42fb99efc10cf68b7be990e61af953ecdb8"
 }

@@ -1,11 +1,36 @@
 // @level infrastructure
 /**
  * The probes `InterviewPage` sends into the page, as the expressions it
- * evaluates there: the question card's markup lives here and in
- * `interview-page.mjs` alone. Each function below runs in the page, not
- * here: it reads nothing from this module, and takes the others it calls as
- * arguments.
+ * evaluates there: the question card's markup lives here alone, in `MARKUP`,
+ * which each probe is handed. Each function below runs in the page, not here:
+ * it reads nothing from this module, and takes the markup and the others it
+ * calls as arguments.
  */
+
+/** The card's answer buttons, in their list. */
+const BUTTONS = ".opts .opt";
+/** The search's rows, in its list. */
+const ROWS = "#clist .copt";
+
+/** The question card's markup, as the page draws it; handed to each probe below. */
+const MARKUP = {
+  card: "#main .qcard",
+  label: ".qlabel",
+  meta: ".qmeta",
+  recorded: "p.recorded",
+  button: ".opt",
+  buttons: BUTTONS,
+  chosen: ".opt.sel, .copt.sel",
+  answers: `${BUTTONS}, ${ROWS}`,
+  askedFor: "[data-asked-for]",
+  search: "#cfilter",
+  row: ROWS,
+  noRow: "#clist .cnone",
+  statusId: "cstatus",
+};
+
+/** The markup as the page is handed it, in a probe's source. */
+const MARKUP_SOURCE = JSON.stringify(MARKUP);
 
 /** In the page: the beat in milliseconds, as the built stylesheet carries it, in either unit (`tokens.css` says
  * why). */
@@ -15,7 +40,7 @@ function readBeatMsInPage() {
 }
 
 /** In the page: the words of `el`, trimmed; "" where there is no `el`. */
-function textOfInPage(el) {
+function readTextInPage(el) {
   return el ? (el.textContent ?? "").trim() : "";
 }
 
@@ -29,7 +54,7 @@ function readAskedForInPage(line) {
 }
 
 /** In the page: `el`, a button or a search's row on `card`, as the answer a reader sees. */
-function readAnswerInPage(el, card, textOf) {
+function readAnswerInPage(el, card, readText) {
   const words = el.querySelector(".opt-label") ?? el.querySelector("span");
   const label = [...words.childNodes].filter((n) => !n.classList?.contains("tick")).map((n) => n.textContent).join("").trim();
   const means = el.querySelector(".opt-means");
@@ -39,54 +64,56 @@ function readAnswerInPage(el, card, textOf) {
   return {
     value: el.dataset.value,
     label,
-    means: means ? textOf(means) : null,
-    mark: mark && { id: mark.id, text: textOf(mark), href: link && link.getAttribute("href"), glyph: link && getComputedStyle(link, "::after").content },
+    means: means ? readText(means) : null,
+    mark: mark && { id: mark.id, text: readText(mark), href: link && link.getAttribute("href"), glyph: link && getComputedStyle(link, "::after").content },
     describedBy: describedBy === null ? null : { id: describedBy, resolves: document.getElementById(describedBy) !== null },
   };
 }
 
 /** In the page: the words of `card`, a question card shown to the reader, its question aside. */
-function readCardWordsInPage(card, { textOf, readAnswer, readAskedFor }) {
-  const box = card.querySelector("#cfilter");
+function readCardWordsInPage(card, { markup, readText, readAnswer, readAskedFor }) {
+  const box = card.querySelector(markup.search);
   const linesAbove = [];
   for (const el of card.children) {
-    if (el.classList.contains("qlabel")) break;
-    if (el.matches("p.recorded")) linesAbove.push(textOf(el));
+    if (el.matches(markup.label)) break;
+    if (el.matches(markup.recorded)) linesAbove.push(readText(el));
   }
   return {
-    meta: textOf(card.querySelector(".qmeta")),
+    meta: readText(card.querySelector(markup.meta)),
     arrival: linesAbove.join(" "),
-    chosen: card.querySelector(".opt.sel, .copt.sel")?.dataset.value ?? "",
-    askedFor: readAskedFor(card.querySelector("[data-asked-for]")),
-    answers: [...card.querySelectorAll(".opts .opt, #clist .copt")].map((el) => readAnswer(el, card, textOf)),
-    search: box && { query: box.value, line: textOf(card.querySelector("#clist .cnone")), status: textOf(document.getElementById("cstatus")) },
+    chosen: card.querySelector(markup.chosen)?.dataset.value ?? "",
+    askedFor: readAskedFor(card.querySelector(markup.askedFor)),
+    answers: [...card.querySelectorAll(markup.answers)].map((el) => readAnswer(el, card, readText)),
+    search: box && { query: box.value, line: readText(card.querySelector(markup.noRow)), status: readText(document.getElementById(markup.statusId)) },
   };
 }
 
-/** In the page: which screen the interview is on, and the question card shown to the reader as `kit`'s readers read
- * it, as JSON; `{ offTheInterview }`, naming the page's address, on a page with no interview. */
-function readScreenInPage(kit) {
+/** In the page: which screen the interview is on, and the question card shown to the reader as `readers` read it,
+ * as JSON; `{ offTheInterview }`, naming the page's address, on a page with no interview. */
+function readScreenInPage(readers) {
   const app = document.getElementById("app");
   if (app === null) return JSON.stringify({ offTheInterview: location.href });
-  const card = document.querySelector("#main .qcard");
-  const label = card && card.querySelector(".qlabel");
+  const card = document.querySelector(readers.markup.card);
+  const label = card && card.querySelector(readers.markup.label);
   const style = label && getComputedStyle(label);
   const isShown = style !== null && style.visibility === "visible" && style.display !== "none" && label.offsetParent !== null;
   const words = isShown
-    ? kit.readCardWords(card, kit)
+    ? readers.readCardWords(card, readers)
     : { meta: "", arrival: "", chosen: "", askedFor: null, answers: [], search: null };
-  return JSON.stringify({ screen: app.dataset.state, question: isShown ? kit.textOf(label) : "", ...words });
+  return JSON.stringify({ screen: app.dataset.state, question: isShown ? readers.readText(label) : "", ...words });
 }
 
-// The readers `readScreenInPage` is handed in the page, each carried there as its source text.
-const SCREEN_READERS = `{ textOf: ${textOfInPage}, readCardWords: ${readCardWordsInPage}, readAnswer: ${readAnswerInPage}, readAskedFor: ${readAskedForInPage} }`;
+// The markup and the readers `readScreenInPage` is handed in the page, each reader carried there as its source text.
+const SCREEN_READERS = `{ markup: ${MARKUP_SOURCE}, readText: ${readTextInPage}, readCardWords: ${readCardWordsInPage}, readAnswer: ${
+  readAnswerInPage}, readAskedFor: ${readAskedForInPage} }`;
 
-/** In the page: once the screen `readScreenNow` reads is another than `from` (its screen or its question), and is
- * not a question card still hidden from the reader, that screen, read in the same task as the change is seen. */
-function readScreenOnceChangedInPage(from, readScreenNow) {
+/** In the page: once the screen `readScreen` reads with `readers` is another than `from` (its screen or its
+ * question), and is not a question card still hidden from the reader, that screen, read in the same task as the
+ * change is seen. */
+function readScreenOnceChangedInPage(from, readScreen, readers) {
   return new Promise((resolve) => {
     const check = () => {
-      const now = JSON.parse(readScreenNow());
+      const now = JSON.parse(readScreen(readers));
       const isUnchanged = now.screen === from.screen && now.question === from.question;
       const isQuestionHidden = now.screen === "questions" && now.question === "";
       if (isUnchanged || isQuestionHidden) return;
@@ -111,14 +138,14 @@ function readAskedForBoxInPage(el, isInsideCard) {
 /** In the page: where the question card sits, where the focus is against its first control, how many animations
  * it runs, where each answer sits, and the asked-for line's box, as JSON; null where no card is drawn. The first
  * control is the one the page focuses: the first button or the search's box, else the question's heading. */
-function readCardLayoutInPage(readAskedForBox) {
-  const card = document.querySelector("#main .qcard");
+function readCardLayoutInPage(markup, readAskedForBox) {
+  const card = document.querySelector(markup.card);
   if (card === null) return JSON.stringify(null);
   const cardBox = card.getBoundingClientRect();
   const isInsideCard = (b) => b.left >= cardBox.left && b.right <= cardBox.right && b.top >= cardBox.top && b.bottom <= cardBox.bottom;
-  const firstControl = card.querySelector(".opt, #cfilter") ?? card.querySelector(".qlabel");
+  const firstControl = card.querySelector(`${markup.button}, ${markup.search}`) ?? card.querySelector(markup.label);
   const active = document.activeElement;
-  const answers = [...card.querySelectorAll(".opts .opt, #clist .copt")].map((el) => {
+  const answers = [...card.querySelectorAll(markup.answers)].map((el) => {
     const box = el.getBoundingClientRect();
     const centre = { x: Math.round(box.left + box.width / 2), y: Math.round(box.top + box.height / 2) };
     return { value: el.dataset.value, centre, isInsideCard: isInsideCard(box) };
@@ -133,76 +160,82 @@ function readCardLayoutInPage(readAskedForBox) {
     },
     animations: card.getAnimations({ subtree: true }).length,
     answers,
-    askedFor: readAskedForBox(card.querySelector("[data-asked-for]"), isInsideCard),
+    askedFor: readAskedForBox(card.querySelector(markup.askedFor), isInsideCard),
   });
 }
 
 /** In the page: the id of the answer on the question card under `point`, or "" where it is on none. */
-function readAnswerAtInPage({ x, y }) {
-  const answer = document.elementFromPoint(x, y)?.closest("#main .qcard .opt, #main .qcard .copt");
-  return answer?.dataset.value ?? "";
+function readAnswerAtInPage(markup, { x, y }) {
+  const answer = document.elementFromPoint(x, y)?.closest(markup.answers);
+  return answer && answer.closest(markup.card) ? answer.dataset.value : "";
 }
 
-/** In the page: taps `value` on the question on the screen, its button or, on the search, the row `searchFor`
- * finds; says "opt" or "row" for what it tapped, or why it tapped nothing. */
-function pickInPage(value, searchFor) {
-  const option = document.querySelector(`#main .qcard .opt[data-value='${value}']`);
-  if (option) { option.click(); return "opt"; }
-  const search = document.querySelector("#cfilter");
-  if (!search) return "no option";
+/** In the page: answers `value` to the question on the screen with a click on its button or, on the search, on the
+ * row `searchFor` finds; says which it clicked as `kind`, "button" or "row", or why it clicked nothing as
+ * `refusal`. */
+function answerInPage(markup, value, searchFor) {
+  const button = document.querySelector(`${markup.card} ${markup.button}[data-value='${value}']`);
+  if (button) { button.click(); return { kind: "button", refusal: null }; }
+  const search = document.querySelector(markup.search);
+  if (!search) return { kind: null, refusal: "no option" };
   search.value = searchFor;
   search.dispatchEvent(new Event("input", { bubbles: true }));
-  const row = document.querySelector(`#clist .copt[data-value='${value}']`);
-  if (!row) return "no row";
+  const row = document.querySelector(`${markup.row}[data-value='${value}']`);
+  if (!row) return { kind: null, refusal: "no row" };
   row.click();
-  return "row";
+  return { kind: "row", refusal: null };
 }
 
-/** In the page: taps the first answer the question on the screen offers, its first button or, on the search, the
- * first row it lists; says what it tapped and its id, or why it tapped nothing. */
-function pickFirstInPage() {
-  const option = document.querySelector("#main .qcard .opts .opt");
-  if (option) { option.click(); return { how: "opt", value: option.dataset.value }; }
-  const search = document.querySelector("#main .qcard #cfilter");
-  if (!search) return { how: "the screen offered no answer" };
-  if (!document.querySelector("#clist .copt")) {
+/** In the page: answers the question on the screen with the first answer it offers, a click on its first button
+ * or, on the search, on the first row it lists; says which it clicked as `kind` and its id as `value`, or why it
+ * clicked nothing as `refusal`. */
+function answerFirstInPage(markup) {
+  const button = document.querySelector(`${markup.card} ${markup.buttons}`);
+  if (button) { button.click(); return { kind: "button", value: button.dataset.value, refusal: null }; }
+  const search = document.querySelector(`${markup.card} ${markup.search}`);
+  if (!search) return { kind: null, value: "", refusal: "the screen offered no answer" };
+  if (!document.querySelector(markup.row)) {
     // An untouched search lists no row; one letter, which nearly every country's name holds, lists them.
     search.value = "a";
     search.dispatchEvent(new Event("input", { bubbles: true }));
   }
-  const row = document.querySelector("#clist .copt");
-  if (!row) return { how: "the search listed no row" };
+  const row = document.querySelector(markup.row);
+  if (!row) return { kind: null, value: "", refusal: "the search listed no row" };
   const { value } = row.dataset;
   row.click();
-  return { how: "row", value };
+  return { kind: "row", value, refusal: null };
 }
 
-/** In the page: `pickFirst` tapped, then, in the same task, before the browser draws a frame, the card's layout as
- * `readCardLayout` reads it and the caller's `readAlso` (null for none), as JSON. */
-function pickFirstAndReadInPage(pickFirst, readCardLayout, readAlso) {
-  const picked = pickFirst();
-  const read = readAlso === null ? null : readAlso.probe(...readAlso.args);
-  return JSON.stringify({ ...picked, layout: JSON.parse(readCardLayout()), read });
+/** In the page: the first answer offered answered by `answerFirst`, then, in the same task, before the browser
+ * draws a frame, the card's layout as `readCardLayout` reads it with `readAskedForBox`, and the caller's
+ * `readAtOnce` (null for none), as JSON. */
+function answerFirstAndReadInPage(markup, { answerFirst, readCardLayout, readAskedForBox }, readAtOnce) {
+  const answered = answerFirst(markup);
+  const read = readAtOnce === null ? null : readAtOnce.probe(...readAtOnce.args);
+  return JSON.stringify({ ...answered, layout: JSON.parse(readCardLayout(markup, readAskedForBox)), readAtOnce: read });
 }
 
-/** In the page: the search's box focused, where it was not, and what it holds selected, so typing replaces it;
- * false where the screen shows no search. */
-function focusSearchInPage() {
-  const box = document.querySelector("#main .qcard #cfilter");
-  if (!box) return false;
+/** In the page: whether the screen shows a search. */
+function isSearchShownInPage(markup) {
+  return document.querySelector(`${markup.card} ${markup.search}`) !== null;
+}
+
+/** In the page: focuses the search's box, where it was not, and selects what it holds, so typing replaces it. */
+function focusSearchInPage(markup) {
+  const box = document.querySelector(`${markup.card} ${markup.search}`);
   if (document.activeElement !== box) box.focus();
   box.select();
-  return true;
 }
 
 /** In the page: whether the search holds `typed` and its list has drawn for it, a row or its line. */
-function isSearchListedForInPage(typed) {
-  const box = document.querySelector("#main .qcard #cfilter");
-  return box !== null && box.value === typed && document.querySelector("#clist .copt, #clist .cnone") !== null;
+function isSearchListedForInPage(markup, typed) {
+  const box = document.querySelector(`${markup.card} ${markup.search}`);
+  return box !== null && box.value === typed && document.querySelector(`${markup.row}, ${markup.noRow}`) !== null;
 }
 
-// Where the question card is laid out, read in the page, as `readCardLayoutInPage` is handed its reader.
-const CARD_LAYOUT_NOW = `(${readCardLayoutInPage})(${readAskedForBoxInPage})`;
+/** The source of a call in the page of `probe`, one of the functions above, handed the markup and then `args`,
+ * each given as its source text. */
+const callWithMarkup = (probe, ...args) => `(${probe})(${[MARKUP_SOURCE, ...args].join(", ")})`;
 
 /** Each probe as the expression `InterviewPage` evaluates in the page. */
 export const questionCardProbes = {
@@ -211,21 +244,24 @@ export const questionCardProbes = {
   /** The screen as a reader sees it, as JSON. */
   screenNow: `(${readScreenInPage})(${SCREEN_READERS})`,
   /** The screen as a reader sees it once it is another than `from`, as JSON. */
-  screenOnceChangedFrom: ({ screen, question }) =>
-    `(${readScreenOnceChangedInPage})(${JSON.stringify({ screen, question })}, () => (${readScreenInPage})(${SCREEN_READERS}))`,
+  readScreenOnceChangedFrom: ({ screen, question }) =>
+    `(${readScreenOnceChangedInPage})(${JSON.stringify({ screen, question })}, ${readScreenInPage}, ${SCREEN_READERS})`,
   /** Where the question card and its parts sit, and the focus, as JSON. */
-  cardLayoutNow: CARD_LAYOUT_NOW,
-  /** The first answer offered tapped, and read in the same task with `readAtOnce`, a probe and its arguments. */
-  firstPickedAndRead: (readAtOnce) => `(${pickFirstAndReadInPage})(${pickFirstInPage}, () => ${CARD_LAYOUT_NOW}, ${
-    readAtOnce ? `{ probe: ${readAtOnce.probe}, args: ${JSON.stringify(readAtOnce.args ?? [])} }` : "null"})`,
-  /** The search's box focused and its words selected; false where there is no search. */
-  searchFocused: `(${focusSearchInPage})()`,
+  cardLayoutNow: callWithMarkup(readCardLayoutInPage, readAskedForBoxInPage),
+  /** The first answer offered answered, and read in the same task with `readAtOnce`, a probe and its arguments. */
+  answerFirstAndRead: (readAtOnce) => callWithMarkup(answerFirstAndReadInPage,
+    `{ answerFirst: ${answerFirstInPage}, readCardLayout: ${readCardLayoutInPage}, readAskedForBox: ${readAskedForBoxInPage} }`,
+    readAtOnce ? `{ probe: ${readAtOnce.probe}, args: ${JSON.stringify(readAtOnce.args ?? [])} }` : "null"),
+  /** Whether the screen shows a search. */
+  isSearchShown: callWithMarkup(isSearchShownInPage),
+  /** The search's box focused and its words selected. */
+  focusSearch: callWithMarkup(focusSearchInPage),
   /** Whether the search holds `typed` and has listed for it. */
-  searchListedFor: (typed) => `(${isSearchListedForInPage})(${JSON.stringify(typed)})`,
+  isSearchListedFor: (typed) => callWithMarkup(isSearchListedForInPage, JSON.stringify(typed)),
   /** Where a real tap lands on the button of `value`. */
-  buttonOf: (value) => `#main .qcard .opt[data-value='${value}']`,
+  buildButtonSelector: (value) => `${MARKUP.card} ${MARKUP.button}[data-value='${value}']`,
   /** The answer under `point`. */
-  answerAt: (point) => `(${readAnswerAtInPage})(${JSON.stringify(point)})`,
-  /** The tap of `value` on the question on the screen, or on the search the row `searchFor` finds. */
-  pickOf: (value, searchFor) => `(${pickInPage})(${JSON.stringify(value)}, ${JSON.stringify(searchFor)})`,
+  readAnswerAt: (point) => callWithMarkup(readAnswerAtInPage, JSON.stringify(point)),
+  /** The answer `value` clicked on the question on the screen, or on the search the row `searchFor` finds. */
+  answer: (value, searchFor) => callWithMarkup(answerInPage, JSON.stringify(value), JSON.stringify(searchFor)),
 };

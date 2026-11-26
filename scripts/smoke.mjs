@@ -31,14 +31,14 @@ import { fileURLToPath } from "node:url";
 import { PHONE, walkSite } from "./browser/browser.mjs";
 import { startDev } from "./dev-server.mjs";
 import { InterviewPage } from "./interview-page/interview-page.mjs";
+import { readInPage } from "./read-in-page.mjs";
 import { siteBase } from "./site-base.mjs";
 import { PAGE_LOAD_KINDS, SMOKE_REASONS, SmokeRefusal } from "./smoke-reasons.mjs";
 
 const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 
-// The functions below, up to `readInPage`, run in the page, not here:
-// `readInPage` carries their source text into it, so each reads nothing from
-// this module.
+// The four functions below run in the page, not here: `readInPage` carries
+// their source text into it, so each reads nothing from this module.
 
 /** The interview's first screen, its question card aside: whether the declaration panel is drawn, and the
  * masthead's stamp in plain words, "" while it is hidden. */
@@ -83,9 +83,6 @@ function readDataPageInPage() {
     marked: [...document.querySelectorAll('.site-head .nav a[aria-current]')].map((a) => a.textContent.trim()),
   };
 }
-
-/** What `probe`, one of the functions above, reads on `page`, carried back as JSON. */
-const readInPage = async (page, probe) => JSON.parse(await page.evaluate(`JSON.stringify((${probe})())`));
 
 /** What each page must be true of. Every assertion is something a reader sees. */
 export const CHECKS = [
@@ -177,8 +174,8 @@ export const CHECKS = [
  * @property {Failure[]} failures Every reason the page load failed; none when it passed.
  */
 
-/** The failure of `message`, an error the page threw or logged. */
-const threwFailureOf = (message) => ({ reason: SMOKE_REASONS.pageThrew, message });
+/** Makes the failure of `message`, an error the page threw or logged. */
+const makeThrownFailure = (message) => ({ reason: SMOKE_REASONS.pageThrew, message });
 
 /** What `check` read on the page the walk's `site` shows, or why the page could not be read. */
 async function probeRead(site, check) {
@@ -209,26 +206,26 @@ function messagesByAddress(errors) {
   return byAddress;
 }
 
-/** The page load of a check on `surface`, judged on what its probe read and on `thrown`, its page's errors. */
-function pageLoadOf({ check, value, unreadable }, surface, thrown) {
+/** Makes the page load of a check on `surface`, judged on what its probe read and on `thrown`, its page's errors. */
+function makeCheckLoad({ check, value, unreadable }, surface, thrown) {
   return {
     surface, path: check.path, kind: PAGE_LOAD_KINDS.check, value, thrown,
-    failures: [...unreadable, ...(unreadable.length ? [] : check.expect(value)), ...thrown.map(threwFailureOf)],
+    failures: [...unreadable, ...(unreadable.length ? [] : check.expect(value)), ...thrown.map(makeThrownFailure)],
   };
 }
 
-/** A page load of its own for `thrown`, the errors at `address`, which none of the checks opened. */
-function unplacedLoadOf(address, surface, thrown) {
-  return { surface, path: address, kind: PAGE_LOAD_KINDS.unplaced, value: {}, thrown, failures: thrown.map(threwFailureOf) };
+/** Makes a page load of its own for `thrown`, the errors at `address`, which none of the checks opened. */
+function makeUnplacedLoad(address, surface, thrown) {
+  return { surface, path: address, kind: PAGE_LOAD_KINDS.unplaced, value: {}, thrown, failures: thrown.map(makeThrownFailure) };
 }
 
 /**
- * A page load of its own for the `leftOut` errors that came after the walk had
+ * Makes a page load of its own for the `leftOut` errors that came after the walk had
  * kept its cap: the walk counts them but keeps neither their messages nor their
  * addresses, so a page whose errors all fell past the cap would otherwise read
  * as having thrown none.
  */
-function pastTheCapLoadOf(leftOut, surface) {
+function makePastTheCapLoad(leftOut, surface) {
   return {
     surface, path: "*", kind: PAGE_LOAD_KINDS.pastTheCap, value: {}, thrown: [],
     failures: [{ reason: SMOKE_REASONS.errorsPastTheCap, count: leftOut }],
@@ -251,9 +248,9 @@ async function walk(site, surface) {
   const opened = new Set(reads.map((read) => read.address));
   const unplaced = [...thrownAt].filter(([address]) => !opened.has(address));
   return [
-    ...reads.map((read) => pageLoadOf(read, surface, thrownAt.get(read.address) ?? [])),
-    ...unplaced.map(([address, thrown]) => unplacedLoadOf(address, surface, thrown)),
-    ...(errorsLeftOut > 0 ? [pastTheCapLoadOf(errorsLeftOut, surface)] : []),
+    ...reads.map((read) => makeCheckLoad(read, surface, thrownAt.get(read.address) ?? [])),
+    ...unplaced.map(([address, thrown]) => makeUnplacedLoad(address, surface, thrown)),
+    ...(errorsLeftOut > 0 ? [makePastTheCapLoad(errorsLeftOut, surface)] : []),
   ];
 }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
 import { ESLint } from "eslint";
+import { ARROW, FUNCTION } from "./code-to-lint.js";
 
 /**
  * The lint keeps the interview's record and question card inside
@@ -36,45 +37,46 @@ async function lintForTheGuard(code: string, filePath: string): Promise<string[]
   return result!.messages.filter((m) => GUARD_RULES.includes(m.ruleId ?? "")).map((m) => m.message);
 }
 
-/** The record's import, as a file at `filePath` writes its path. */
-const importOf = (name: string, filePath: string): string => {
-  const up = "../".repeat(filePath.split("/").length - 1);
-  return `import { ${name} } from "${up}src/lib/record.${filePath.endsWith(".ts") ? "js" : "ts"}";\nexport const used = ${name};`;
-};
+/** Writes the record module's path as the file at `filePath` imports it: up to the root, and the extension a file
+ * of its kind writes. */
+const writeRecordPath = (filePath: string): string =>
+  `${"../".repeat(filePath.split("/").length - 1)}src/lib/record.${filePath.endsWith(".ts") ? "js" : "ts"}`;
+
+/** Writes the record's import of `name`, as the file at `filePath` writes it, and a use of it. */
+const writeRecordImport = (name: string, filePath: string): string =>
+  `import { ${name} } from "${writeRecordPath(filePath)}";\nexport const used = ${name};`;
 
 /** The storage key, put together here so this suite spells no refused text itself. */
 const KEY = ["permit-rulebook", "record", "v1"].join(".");
 /** The card's three selectors, put together here for the same reason. */
 const [CFILTER, QCARD, QLABEL] = [["#", "cfilter"], [".", "qcard"], [".", "qlabel"]].map((parts) => parts.join(""));
 
+/** An in-page probe written as a string, the form the guard refuses and every probe that is no function body is
+ * set against. */
+const A_STRING_PROBE = `export const probe = "(() ${ARROW} document.title)()";`;
+
 /** Each refused form as one line of code, by what it is. */
 const REFUSED: readonly (readonly [string, (filePath: string) => string])[] = [
-  ["an import of STORAGE_KEY", (filePath) => importOf("STORAGE_KEY", filePath)],
-  ["an import of RECORD_VERSION", (filePath) => importOf("RECORD_VERSION", filePath)],
+  ["an import of STORAGE_KEY", (filePath) => writeRecordImport("STORAGE_KEY", filePath)],
+  ["an import of RECORD_VERSION", (filePath) => writeRecordImport("RECORD_VERSION", filePath)],
   ["the literal storage key", () => `export const key = "${KEY}";`],
   [`${CFILTER} in a string`, () => `export const search = "${CFILTER}";`],
   [`${QCARD} in a string`, () => `export const card = '#main ${QCARD}';`],
   [`${QLABEL} in a template`, () => `export const label = \`${QLABEL}\`;`],
-  ["a string opening with (() =>", () => 'export const probe = "(() => document.title)()";'],
-  ["a string opening with ((x) =>", () => 'export const probe = "((link) => link.href)(document.links[0])";'],
-  ["a template opening with (async (", () => "export const probe = `(async () => document.title)()`;"],
-  ["a string opening with (function", () => 'export const probe = "(function () { return document.title; })()";'],
-  ["a dynamic import of the record module", (filePath) => {
-    const up = "../".repeat(filePath.split("/").length - 1);
-    return `export const load = () => import("${up}src/lib/record.${filePath.endsWith(".ts") ? "js" : "ts"}");`;
-  }],
+  [`a string opening with (() ${ARROW}`, () => A_STRING_PROBE],
+  [`a string opening with ((x) ${ARROW}`, () => `export const probe = "((link) ${ARROW} link.href)(document.links[0])";`],
+  ["a template opening with (async (", () => `export const probe = \`(async () ${ARROW} document.title)()\`;`],
+  [`a string opening with (${FUNCTION}`, () => `export const probe = "(${FUNCTION} () { return document.title; })()";`],
+  ["a dynamic import of the record module", (filePath) => `export const load = () ${ARROW} import("${writeRecordPath(filePath)}");`],
   ["a dynamic import of the record module by a template", (filePath) => {
-    const up = "../".repeat(filePath.split("/").length - 1);
-    const extension = filePath.endsWith(".ts") ? "js" : "ts";
-    return `const up = "${up}";\nexport const load = () => import(\`\${up}src/lib/record.${extension}\`);`;
+    const [up, file] = writeRecordPath(filePath).split("src/");
+    return `const up = "${up}";\nexport const load = () ${ARROW} import(\`\${up}src/${file}\`);`;
   }],
-  ["a dynamic import of the record module by a template with no expression", (filePath) => {
-    const up = "../".repeat(filePath.split("/").length - 1);
-    return `export const load = () => import(\`${up}src/lib/record.${filePath.endsWith(".ts") ? "js" : "ts"}\`);`;
-  }],
+  ["a dynamic import of the record module by a template with no expression", (filePath) =>
+    `export const load = () ${ARROW} import(\`${writeRecordPath(filePath)}\`);`],
   ["a dynamic import by a template with an expression", () =>
-    'const name = "record";\nexport const load = () => import(`src/lib/${name}.js`);'],
-  ["a dynamic import by a variable", () => 'const path = "src/lib/record.js";\nexport const load = () => import(path);'],
+    `const name = "record";\nexport const load = () ${ARROW} import(\`src/lib/\${name}.js\`);`],
+  ["a dynamic import by a variable", () => `const path = "src/lib/record.js";\nexport const load = () ${ARROW} import(path);`],
 ];
 
 describe("the guard refuses, in a test file and in a script file", () => {
@@ -98,10 +100,10 @@ describe("the guard leaves a probe that is no function body free", () => {
   for (const [what, code] of [
     ["a short expression string", 'export const where = "location.pathname";'],
     ["an object-literal string", 'export const size = "({ width: innerWidth, height: innerHeight })";'],
-    ["a real function serialised into a template", "const read = () => document.title;\nexport const probe = `(${read})()`;"],
+    ["a real function serialised into a template", `const read = () ${ARROW} document.title;\nexport const probe = \`(\${read})()\`;`],
   ] as const)
     it(`${what} is not an error`, async () => {
-      expect(await lintForTheGuard(REFUSED[6]![1](A_TEST), A_TEST), "the guard refuses no string probe").toHaveLength(1);
+      expect(await lintForTheGuard(A_STRING_PROBE, A_TEST), "the guard refuses no string probe").toHaveLength(1);
       expect(await lintForTheGuard(code, A_TEST)).toEqual([]);
     });
 });

@@ -21,23 +21,33 @@ const { DESK, PHONE, walkSite } = await import("../scripts/browser/browser.mjs")
 
 const notMeasured = skipReason();
 
-// Everything identity.css owns of the header, read in the page, so each page's header can be compared with the route page's.
-const HEADER_BOX ='JSON.stringify((() => {'
-  + ' const head = document.querySelector(".site-head");'
-  + ' const mark = document.querySelector(".site-head .wordmark");'
-  + ' const seal = document.querySelector(".site-head .seal");'
-  + ' const box = (el) => { const r = el.getBoundingClientRect();'
-  + '   return { height: Math.round(r.height), width: Math.round(r.width) }; };'
-  + ' const font = getComputedStyle(mark);'
-  + ' return { head: box(head), mark: box(mark), seal: box(seal),'
-  + '   family: font.fontFamily, size: font.fontSize, weight: font.fontWeight,'
-  + '   rule: getComputedStyle(head).borderBottomWidth };'
-  + '})())';
+/** In the page: everything identity.css owns of the header, so each page's header can be compared with the route
+ * page's, as JSON. */
+function readHeaderBoxInPage(): string {
+  const head = document.querySelector(".site-head")!;
+  const mark = document.querySelector(".site-head .wordmark")!;
+  const seal = document.querySelector(".site-head .seal")!;
+  const measureBox = (el: Element) => {
+    const r = el.getBoundingClientRect();
+    return { height: Math.round(r.height), width: Math.round(r.width) };
+  };
+  const font = getComputedStyle(mark);
+  return JSON.stringify({
+    head: measureBox(head), mark: measureBox(mark), seal: measureBox(seal),
+    family: font.fontFamily, size: font.fontSize, weight: font.fontWeight,
+    rule: getComputedStyle(head).borderBottomWidth,
+  });
+}
+// Everything identity.css owns of the header, read in the page.
+const HEADER_BOX = `(${readHeaderBoxInPage})()`;
 
-/** The wordmark's left edge and top, from the page's own top-left corner. */
-const MARK_PLACE = 'JSON.stringify((() => {'
-  + ' const r = document.querySelector(".site-head .wordmark").getBoundingClientRect();'
-  + ' return { left: Math.round(r.left + scrollX), top: Math.round(r.top + scrollY) }; })())';
+/** In the page: the wordmark's left edge and top, from the page's own top-left corner, as JSON. */
+function readMarkPlaceInPage(): string {
+  const r = document.querySelector(".site-head .wordmark")!.getBoundingClientRect();
+  return JSON.stringify({ left: Math.round(r.left + scrollX), top: Math.round(r.top + scrollY) });
+}
+/** The wordmark's left edge and top, read in the page. */
+const MARK_PLACE = `(${readMarkPlaceInPage})()`;
 
 type MarkPlace = { left: number; top: number };
 
@@ -136,6 +146,21 @@ async function headerRowsOnTheFallbackStack(row: string) {
   }>;
 }
 
+/** In the page: the header's height and width, the width its wordmark and nav need, and how many rows the nav's
+ * own items stand on, as JSON. */
+function readHeaderRowInPage(): string {
+  const head = document.querySelector(".site-head")!;
+  const mark = document.querySelector(".site-head .wordmark")!;
+  const nav = document.querySelector(".site-head .nav")!;
+  return JSON.stringify({
+    height: Math.round(head.getBoundingClientRect().height),
+    have: Math.round(head.getBoundingClientRect().width),
+    need: Math.round(mark.getBoundingClientRect().width + nav.getBoundingClientRect().width),
+    rows: new Set([...nav.querySelectorAll(":scope > a, :scope > details > summary")]
+      .map((a) => Math.round(a.getBoundingClientRect().top))).size,
+  });
+}
+
 describe.skipIf(notMeasured !== null)("the header holds on a machine with none of our fonts", () => {
   /**
    * The row's own items. Since s13 the four countries sit INSIDE a closed
@@ -143,15 +168,7 @@ describe.skipIf(notMeasured !== null)("the header holds on a machine with none o
    * which read as a second row the first time this probe met one — so what is
    * counted is the disclosure's word and the links beside it.
    */
-  const ROW = 'JSON.stringify((() => {'
-    + ' const head = document.querySelector(".site-head");'
-    + ' const mark = document.querySelector(".site-head .wordmark");'
-    + ' const nav = document.querySelector(".site-head .nav");'
-    + ' return { height: Math.round(head.getBoundingClientRect().height),'
-    + '   have: Math.round(head.getBoundingClientRect().width),'
-    + '   need: Math.round(mark.getBoundingClientRect().width + nav.getBoundingClientRect().width),'
-    + '   rows: new Set([...nav.querySelectorAll(":scope > a, :scope > details > summary")]'
-    + '     .map((a) => Math.round(a.getBoundingClientRect().top))).size }; })())';
+  const ROW = `(${readHeaderRowInPage})()`;
 
   it("one row at 1100 px, with room to spare, on every page", async () => {
     const seen = await headerRowsOnTheFallbackStack(ROW);

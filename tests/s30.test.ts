@@ -3,7 +3,7 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, type Dataset, type Profile } from "permit-rulebook-data";
 import { DESK, PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
-import { evaluateAtRest, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { evaluateAtRest, skipReason, tapPencil, warnNotWalked, withSite } from "./browser-walk.js";
 import { answerFirstAndReadAtOnce, expectLanded, where, type Where } from "./question-landing.js";
 
 /**
@@ -49,15 +49,6 @@ async function pressBack(page: BrowserPage): Promise<void> {
  * viewport, so the card's top is still on the screen and the browser has
  * something of theirs to bring back. */
 const READ_ON = 'window.scrollBy({ top: Math.round(window.innerHeight / 4), behavior: "instant" })';
-
-/** In the page: the ledger's ✎ on `field`'s row, found by its field, never by
- * its words — opened first, the way a reader reaches it. */
-function openAndTapPencil(field: string): void {
-  (document.getElementById("decl") as HTMLDetailsElement).open = true;
-  document.querySelector<HTMLElement>(`#decl-list [data-field="${field}"]`)!.click();
-}
-/** The ledger's ✎ on the first row: the gesture a case evaluates. */
-const OPEN_AND_TAP_DESTINATION = `(${openAndTapPencil})("destination")`;
 
 /** Opens the interview on a record of `answers`, or cold where there is none,
  * and reads where the reader is once it is at rest. */
@@ -182,7 +173,8 @@ describe.skipIf(skipped !== null)("what does not change", () => {
       // screen — then reopens the first row from the ledger beside it.
       await page.evaluate(READ_ON);
       const before = await where(page);
-      await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
+      await tapPencil(page, "destination");
+      await page.waitUntilAtRest();
       const corrected = await where(page);
       return { cold, answered, before, corrected };
     }, DESK);
@@ -275,7 +267,8 @@ const ANOTHER_BAND = deriveQuestions(ds).find((q) => q.field === "salary_eur_yea
 async function verdictWalk(site: PageOnSite) {
   const { page } = site;
   const verdict = await openOn(site, finished, { done: true });
-  await evaluateAtRest(page, `(${openAndTapPencil})("salary_eur_year")`);
+  await tapPencil(page, "salary_eur_year");
+  await page.waitUntilAtRest();
   const corrected = await where(page);
   await new InterviewPage(site).answer("salary_eur_year", ANOTHER_BAND);
   const returned = await where(page);
@@ -340,7 +333,8 @@ describe.skipIf(skipped !== null)("on a phone a correction lands too (amendment 
         await openOn(site, null);
         await new InterviewPage(site).answerFirstOffered();
         const answered = await where(page);
-        await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
+        await tapPencil(page, "destination");
+        await page.waitUntilAtRest();
         const corrected = await where(page);
         return { answered, corrected };
       }, { viewport, mobile: true });

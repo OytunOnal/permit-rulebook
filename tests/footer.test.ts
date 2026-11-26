@@ -282,6 +282,19 @@ async function expectFooterColumnsAt(width: number, columns: number) {
 }
 
 /** The data line at phone width under wider fonts: its column's width, its two lines and every token held whole. */
+/** In the page: the footer line's width, each token's, and each element held on one line (`nowrap`) with how many
+ * lines it sits on, as JSON. An inline element that wraps has fragments at more than one top edge (a fragment count
+ * would not do: a token holding a `time` child has one per child on a single line). */
+function readFooterTokensInPage(): string {
+  const measureWidth = (el: Element) => Math.round(el.getBoundingClientRect().width);
+  return JSON.stringify({
+    column: measureWidth(document.querySelector(".site-foot .line")!),
+    lines: [...document.querySelectorAll(".site-foot .line > span")].map((el) => ({ text: el.textContent!.trim().slice(0, 30), width: measureWidth(el) })),
+    held: [...document.querySelectorAll(".site-foot .line *")].filter((el) => getComputedStyle(el).whiteSpace === "nowrap")
+      .map((el) => ({ text: el.textContent!.trim(), width: measureWidth(el), lines: new Set([...el.getClientRects()].map((r) => Math.round(r.top))).size })),
+  });
+}
+
 async function heldTokensAtPhoneWidth() {
   return JSON.parse(await withSite(async ({ page, url: addressOf }) => {
     await page.goto(addressOf("/germany/eu-blue-card-general/"));
@@ -290,23 +303,7 @@ async function heldTokensAtPhoneWidth() {
     await page.evaluate(FALLBACK_STACK);
     await page.evaluate(`(${trackWiderInPage})()`);
     await page.waitUntilAtRest();
-    return page.evaluate(
-      // An inline element that wraps sits on more than one line: its
-      // fragments start at more than one top edge. (A count of fragments
-      // would not do, since a token holding a `time` child has one per
-      // child on a single line.)
-      'JSON.stringify({ column: Math.round(document.querySelector(".site-foot .line")'
-      + '.getBoundingClientRect().width),'
-      + ' lines: [...document.querySelectorAll(".site-foot .line > span")]'
-      + '  .map((el) => ({ text: el.textContent.trim().slice(0, 30),'
-      + '    width: Math.round(el.getBoundingClientRect().width) })),'
-      + ' held: [...document.querySelectorAll(".site-foot .line *")]'
-      + '  .filter((el) => getComputedStyle(el).whiteSpace === "nowrap")'
-      + '  .map((el) => ({ text: el.textContent.trim(),'
-      + '    width: Math.round(el.getBoundingClientRect().width),'
-      + '    lines: new Set([...el.getClientRects()]'
-      + '      .map((r) => Math.round(r.top))).size })) })',
-    );
+    return page.evaluate(`(${readFooterTokensInPage})()`);
   }, PHONE) as string) as {
     column: number; lines: { text: string; width: number }[];
     held: { text: string; width: number; lines: number }[];

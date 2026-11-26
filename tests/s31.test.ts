@@ -7,7 +7,7 @@ import { deriveQuestions, type Dataset } from "permit-rulebook-data";
 import { RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { holdLineHtml } from "../src/lib/question.js";
 import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
-import { withSite, skipReason } from "./browser-walk.js";
+import { withSite, skipReason, tapPencil } from "./browser-walk.js";
 import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
@@ -168,6 +168,13 @@ describe.skipIf(skipped !== null)("the hold state is one line under the eyebrow 
     }, 180000);
 });
 
+/** In the page: whether the build's paint has laid out: the cover on, the document parsed, every stylesheet in. */
+function isBuildPaintLaidOutInPage(): boolean {
+  const isCovered = Boolean(document.documentElement?.dataset.cover);
+  return isCovered && document.readyState !== "loading"
+    && [...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')].every((l) => l.sheet);
+}
+
 /** Opens a finished record with the module held, and returns the page read while held and once drawn. */
 async function walkHeldThenDrawn(viewport: { width: number; height: number }, mobile: boolean): Promise<{ held: Hold; drawn: Hold }> {
   return (await walkSite({ site: { folder: dist, delayJsMs: HELD_MS }, screen: { viewport, mobile } }, async (site) => {
@@ -176,11 +183,7 @@ async function walkHeldThenDrawn(viewport: { width: number; height: number }, mo
     await page.navigate(url("/"));
     // The build's paint, before the module runs: the cover on, the
     // document parsed, every stylesheet in.
-    await page.waitUntil(
-      `document.documentElement?.dataset.cover && document.readyState !== "loading"`
-      + ` && [...document.querySelectorAll('link[rel="stylesheet"]')].every((l) => l.sheet)`,
-      "the build's paint never laid out",
-    );
+    await page.waitUntil(`(${isBuildPaintLaidOutInPage})()`, "the build's paint never laid out");
     const held = JSON.parse(await page.evaluate(HOLD)) as Hold;
     await page.waitUntil('!document.querySelector(".stand-in")', "the module never drew its first screen");
     await page.waitUntilAtRest();
@@ -258,15 +261,6 @@ interface Focus {
   viewport: number;
 }
 
-/** In the page: s20's walk, on the verdict: the ledger opened, and the
- * salary row's ✎ tapped. The row is found by its field, never by its words. */
-function tapSalary(): string {
-  (document.getElementById("decl") as HTMLDetailsElement).open = true;
-  const row = document.querySelector<HTMLElement>('#decl-list [data-field="salary_eur_year"]')!;
-  row.scrollIntoView({ block: "center" });
-  row.click();
-  return "tapped";
-}
 /** The walk's last step: the first band the salary question offers other than the one held, so the verdict it
  * returns to is a new one. */
 const ANOTHER_BAND = deriveQuestions(ds).find((q) => q.field === "salary_eur_year")!
@@ -307,7 +301,8 @@ async function expectCorrectionFocusesTheHeadline(viewport: { width: number; hei
     await interview.open();
     await page.waitUntilAtRest();
     const arrived = JSON.parse(await page.evaluate(FOCUS)) as Focus;
-    await page.evaluate(`(${tapSalary})()`);
+    // s20's walk, on the verdict: the ledger opened, and the salary row scrolled to and its ✎ tapped.
+    await tapPencil(page, "salary_eur_year", { scrollToRow: true });
     await page.waitUntilAtRest();
     const onQuestion = JSON.parse(await page.evaluate(FOCUS)) as Focus;
     await interview.answer("salary_eur_year", ANOTHER_BAND);

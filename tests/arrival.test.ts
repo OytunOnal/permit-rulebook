@@ -135,6 +135,15 @@ function readCameFromCard(): string {
     inView: r ? r.top > -240 && r.top < window.innerHeight : false, open });
 }
 
+/** In the page: the address's query, each verdict's country, the lines of what was recorded, and the screen's
+ * first words, as JSON. */
+function readArrivedVerdicts(): string {
+  return JSON.stringify({ url: location.search,
+    countries: [...document.querySelectorAll("#main .country")].map((c) => c.textContent!.trim()),
+    recorded: [...document.querySelectorAll(".recorded")].map((p) => p.textContent!.trim()),
+    text: (document.getElementById("main")!.textContent || "").split(/\s+/).join(" ").slice(0, 300) });
+}
+
 /** Checks a German record following France's "Check yours" lands on French verdicts and a line saying so. */
 async function expectFranceCheckYoursShowsFrance() {
   const seen = JSON.parse(await withSite(async (site) => {
@@ -142,12 +151,7 @@ async function expectFranceCheckYoursShowsFrance() {
     await openWithTheGermanRecord(site, "/france/");
     await page.evaluate(CLICK_CHECK_YOURS);
     await page.waitUntilNewDocumentDrawn();
-    return page.evaluate(
-      'JSON.stringify({ url: location.search,'
-      + ' countries: [...document.querySelectorAll("#main .country")].map((c) => c.textContent.trim()),'
-      + ' recorded: [...document.querySelectorAll(".recorded")].map((p) => p.textContent.trim()),'
-      + ' text: (document.getElementById("main").textContent || "").split(/\\s+/).join(" ").slice(0, 300) })',
-    );
+    return page.evaluate(`(${readArrivedVerdicts})()`);
   }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
     { url: string; countries: string[]; recorded: string[]; text: string };
 

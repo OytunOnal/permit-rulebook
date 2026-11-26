@@ -113,6 +113,11 @@ async function walk(site: PageOnSite, profile: Profile, painted: string): Promis
   return { asked, painted: JSON.parse(await site.page.evaluate(painted)) };
 }
 
+/** In the page: the field of each row the ledger lists, in order, joined by commas. */
+function readLedgerFieldsInPage(): string {
+  return [...document.querySelectorAll<HTMLElement>("#decl-list [data-field]")].map((r) => r.dataset.field).join(",");
+}
+
 describe.skipIf(skipped !== null)("s25 — in the browser", () => {
   for (const [five, seven, expected] of WAYS)
     it(`${five} / ${seven}: the experienced worker reads ${expected.worker}, the card's tally ${expected.tally ?? "names no experience"}`, async () => {
@@ -144,7 +149,7 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
       return {
         resumed: await page.evaluate(RESUMED),
         first: (await interview.readScreen()).question,
-        rows: await page.evaluate('[...document.querySelectorAll("#decl-list [data-field]")].map((r) => r.dataset.field).join(",")'),
+        rows: await page.evaluate(`(${readLedgerFieldsInPage})()`),
       };
     }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
       { resumed: string; first: string; rows: string };

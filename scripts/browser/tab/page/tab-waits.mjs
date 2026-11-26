@@ -19,8 +19,18 @@
  */
 export const WAIT_BACKSTOP = { ms: 15000, everyMs: 50 };
 
-/** The document the tab shows, told from every other by the moment it began. */
-const DOCUMENT_SHOWN = "String(performance.timeOrigin)";
+/** In the page: the document the tab shows, told from every other by the moment it began. */
+function readDocumentShownInPage() {
+  return String(performance.timeOrigin);
+}
+
+/** The document the tab shows, read in the page. */
+const DOCUMENT_SHOWN = `(${readDocumentShownInPage})()`;
+
+/** In the page: `held`, what a condition read, once it settles, with the document `readDocumentShown` reads it in. */
+async function readHeldWithDocumentInPage(held, readDocumentShown) {
+  return { held: await held, document: readDocumentShown() };
+}
 
 /** Chrome's refusals of a read while the page's document is being replaced: asked again. */
 const REPLACED_CONTEXT = /Execution context was destroyed|Cannot find default execution context|Cannot find context with specified id|Inspected target navigated or closed/;
@@ -125,19 +135,24 @@ const WATCH_SMOOTH_SCROLLS = `(${watchSmoothScrolls})({ ${
   [untilSettled, untilScrollEndOr, isSmooth, askedFor, isWithinAPixelOf, leftToGo].map((f) => `${f.name}: ${f}`).join(", ")} })`;
 
 /**
- * At rest, as the page sees it: no animation or transition running, no
- * smooth scroll the page asked for still going, and the scroll position the
- * same across two animation frames. The requests in flight are counted from
- * the tab's network events, outside the page.
+ * In the page: whether it is at rest, as the page sees it: no animation or
+ * transition running, no smooth scroll the page asked for still going, and
+ * the scroll position the same across two animation frames. The requests in
+ * flight are counted from the tab's network events, outside the page.
  */
-const AT_REST = `new Promise((resolve) => {
-  const scrolled = () => scrollX + "," + scrollY;
-  const before = scrolled();
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    const moving = document.getAnimations().some((a) => a.pending || a.playState === "running");
-    resolve(!moving && !window.__smoothScrollsUnfinished && scrolled() === before);
-  }));
-})`;
+function isAtRestInPage() {
+  return new Promise((resolve) => {
+    const scrolled = () => scrollX + "," + scrollY;
+    const before = scrolled();
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const moving = document.getAnimations().some((a) => a.pending || a.playState === "running");
+      resolve(!moving && !window.__smoothScrollsUnfinished && scrolled() === before);
+    }));
+  });
+}
+
+/** Whether the page is at rest, read in the page. */
+const AT_REST = `(${isAtRestInPage})()`;
 
 /**
  * Whether the tab stands on a document other than `left` that has drawn.
@@ -310,7 +325,7 @@ export class TabWaits {
   /** `condition` read once in the page, with the document it ran in; null
    * when Chrome refused the read because the document was being replaced. */
   async #readOnce(condition) {
-    const expression = `Promise.resolve((\n${condition}\n)).then((held) => ({ held, document: ${DOCUMENT_SHOWN} }))`;
+    const expression = `(${readHeldWithDocumentInPage})((\n${condition}\n), ${readDocumentShownInPage})`;
     let reply;
     try {
       reply = await this.#sendToTab("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });

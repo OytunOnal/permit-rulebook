@@ -67,6 +67,14 @@ async function expectLineOnResultsScreen(profile: Profile, arrival: string): Pro
   expect(seen.say.mailtos, "a mailto: on the results screen").toEqual([]);
 }
 
+/** In the page: its path and query, and the address of every mail link and every Gmail link on it, as JSON. */
+function readFeedbackLinksInPage(): string {
+  return JSON.stringify({ path: location.pathname,
+    mailtos: [...document.querySelectorAll("a[href^='mailto:']")].map((a) => a.getAttribute("href")),
+    gmails: [...document.querySelectorAll("a[href^='https://mail.google.com/']")].map((a) => a.getAttribute("href")),
+    search: location.search });
+}
+
 /** Checks /feedback/, reached from the results line, carries no query and only the constant mail links. */
 async function expectFeedbackHrefsAreConstants(): Promise<void> {
   const seen = JSON.parse(await withSite(async (site) => {
@@ -76,13 +84,7 @@ async function expectFeedbackHrefsAreConstants(): Promise<void> {
     await interview.open("/?country=fr");
     await tab.evaluate('document.querySelector(".say a").click()');
     await tab.waitUntilNewDocumentDrawn();
-    return tab.evaluate(
-      'JSON.stringify({ path: location.pathname,'
-      + ' mailtos: [...document.querySelectorAll("a[href^=\'mailto:\']")].map((a) => a.getAttribute("href")),'
-      + ' gmails: [...document.querySelectorAll("a[href^=\'https://mail.google.com/\']")]'
-      + '   .map((a) => a.getAttribute("href")),'
-      + ' search: location.search })',
-    );
+    return tab.evaluate(`(${readFeedbackLinksInPage})()`);
   }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
     { path: string; mailtos: string[]; gmails: string[]; search: string };
 
@@ -216,17 +218,18 @@ async function expectCopyButtonCopiesAndSays(): Promise<void> {
   expect(seen.visible).toBe(FEEDBACK_ADDRESS);
 }
 
+/** In the page: how far it scrolls sideways, and each link and button in its main with its words and height, as JSON. */
+function readTapTargetsInPage(): string {
+  return JSON.stringify({ overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    targets: [...document.querySelectorAll("main a, main button")]
+      .map((el) => ({ text: el.textContent!.trim().slice(0, 40), height: Math.round(el.getBoundingClientRect().height) })) });
+}
+
 /** Checks every link and button on /feedback/ is at least 44 px tall and the page never scrolls sideways at `width`. */
 async function expectTapFloorAt(width: number, height: number, mobile: boolean): Promise<void> {
   const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
     await tab.goto(url("/feedback/"));
-    return tab.evaluate(
-      'JSON.stringify({ overflow: document.documentElement.scrollWidth'
-      + ' - document.documentElement.clientWidth,'
-      + ' targets: [...document.querySelectorAll("main a, main button")].map((el) => ({'
-      + '   text: el.textContent.trim().slice(0, 40),'
-      + '   height: Math.round(el.getBoundingClientRect().height) })) })',
-    );
+    return tab.evaluate(`(${readTapTargetsInPage})()`);
   }, { viewport: { width, height }, mobile })) as
     { overflow: number; targets: { text: string; height: number }[] };
 

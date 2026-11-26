@@ -5,7 +5,7 @@ import { EDIT_LINE } from "../src/lib/copy/interview.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
-import { skipReason, waitUntilPastTheBeat, warnNotWalked, withSite } from "./browser-walk.js";
+import { skipReason, tapPencil, waitUntilPastTheBeat, warnNotWalked, withSite } from "./browser-walk.js";
 import { shiftScoreSince } from "./layout-shifts.js";
 
 /**
@@ -97,12 +97,12 @@ interface Screen {
 
 /** What a screen shows, read from the page: the card or the verdict, the
  * panel, and each answer the set-aside line shows, with the name it shows. */
-const screenOf = async (page: BrowserPage) => {
+const readSeenScreen = async (page: BrowserPage) => {
   const { screen: state, question, meta } = await new InterviewPage({ page }).readScreen();
   const beside = JSON.parse(await page.evaluate(`(${readScreenBesideTheQuestion})()`)) as Omit<Screen, "state" | "question" | "meta">;
   return { state, question, meta, ...beside, field: fieldByLabel.get(question) ?? null };
 };
-type Seen = Awaited<ReturnType<typeof screenOf>>;
+type Seen = Awaited<ReturnType<typeof readSeenScreen>>;
 
 /**
  * Runs `make`, a gesture that draws a screen, once the beat of the card on the
@@ -113,30 +113,23 @@ async function screenAfter(page: BrowserPage, make: () => Promise<unknown>): Pro
   await waitUntilPastTheBeat(page);
   await make();
   await page.waitUntilAtRest();
-  return screenOf(page);
+  return readSeenScreen(page);
 }
 
-/** In the page: the ledger opened, and the ✎ of `field`'s row tapped. */
-function tapPencil(field: string): string {
-  (document.getElementById("decl") as HTMLDetailsElement).open = true;
-  document.querySelector<HTMLElement>(`#decl-list [data-field="${field}"]`)!.click();
-  return "tapped";
-}
-
-/** The ✎ of `field`'s row tapped, and the screen it draws. */
-const pencil = (page: BrowserPage, field: string): Promise<Seen> =>
-  screenAfter(page, () => page.evaluate(`(${tapPencil})(${JSON.stringify(field)})`));
+/** Taps the ✎ of `field`'s row, and reads the screen it draws. */
+const tapPencilAndRead = (page: BrowserPage, field: string): Promise<Seen> =>
+  screenAfter(page, () => tapPencil(page, field));
 /** `field` answered with `value`, and the screen it draws, at rest. */
 async function answerAndRead(site: PageOnSite, field: string, value: string): Promise<Seen> {
   await new InterviewPage(site).answer(field, value);
-  return screenOf(site.page);
+  return readSeenScreen(site.page);
 }
 /** `field` answered with `value` by a real tap, as a reader's finger does, and the screen it draws, at rest. */
 async function tapAnswerAndRead(site: PageOnSite, field: string, value: string): Promise<Seen> {
   await new InterviewPage(site).answer(field, value, { by: "hand" });
-  return screenOf(site.page);
+  return readSeenScreen(site.page);
 }
-const named = (fields: string[]) => fields.map((field) => ({ field, name: shortLabelOf(ds, field) }));
+const nameEach = (fields: string[]) => fields.map((field) => ({ field, name: shortLabelOf(ds, field) }));
 
 /** Seed the walk's record and open on its verdict. */
 async function openOnVerdict(site: PageOnSite, walk: Walk): Promise<Seen> {
@@ -144,13 +137,13 @@ async function openOnVerdict(site: PageOnSite, walk: Walk): Promise<Seen> {
   await interview.seed(walk.answers, { history: walk.order, done: true });
   await interview.open();
   await site.page.waitUntilAtRest();
-  return screenOf(site.page);
+  return readSeenScreen(site.page);
 }
 
 /** Seed the walk's record, open on its verdict, and move its destination. */
 async function moveDestination(site: PageOnSite, walk: Walk, to: string) {
   const verdict = await openOnVerdict(site, walk);
-  const editing = await pencil(site.page, "destination");
+  const editing = await tapPencilAndRead(site.page, "destination");
   const next = await answerAndRead(site, "destination", to);
   return { verdict, editing, next };
 }
@@ -193,7 +186,7 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
     expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
     expect(seen.next.field, "Spain did not ask its own question next").toBe("qualification_recent");
     expect(seen.next.rows, "the panel is not drawn").toBeGreaterThan(0);
-    expect(seen.next.named).toEqual(named(["fr_degree", "fr_innovative_employer"]));
+    expect(seen.next.named).toEqual(nameEach(["fr_degree", "fr_innovative_employer"]));
     expect(seen.after.state, "the answer did not lead to the verdict").toBe("results");
     expect(seen.after.rows, "the panel is not drawn").toBeGreaterThan(0);
     expect(seen.after.named).toEqual([]);
@@ -205,7 +198,7 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
     expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
     expect(seen.next.state, "Spain asked another question").toBe("results");
     expect(seen.next.rows, "the panel is not drawn").toBeGreaterThan(0);
-    expect(seen.next.named).toEqual(named(["fr_innovative_employer"]));
+    expect(seen.next.named).toEqual(nameEach(["fr_innovative_employer"]));
   }, 180_000);
 
   it("a change that sets nothing aside draws no set-aside line", async () => {
@@ -223,7 +216,7 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
     const seen = await withSite(async (site) => {
       const moved = await moveDestination(site, TO_A_QUESTION, "es");
       const inSpain = await answerAndRead(site, "qualification_recent", "yes");
-      const editing = await pencil(site.page, "destination");
+      const editing = await tapPencilAndRead(site.page, "destination");
       const back = await answerAndRead(site, "destination", "fr");
       return { moved, inSpain, editing, back };
     }, DESKTOP) as { moved: { next: Seen }; inSpain: Seen; editing: Seen; back: Seen };

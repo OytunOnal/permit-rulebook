@@ -8,7 +8,7 @@ import { questionCardHtml } from "../src/lib/question.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
-import { evaluateAtRest, openAtRest, withSite, skipReason } from "./browser-walk.js";
+import { evaluateAtRest, openAtRest, withSite, skipReason, tapPencil } from "./browser-walk.js";
 import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
@@ -162,18 +162,6 @@ interface Where {
   restartsOnPage: number;
 }
 
-/**
- * In the page: the critique's walk, on a result: the panel opened, the salary
- * row scrolled to and its ✎ tapped. The row is found by its field, never by
- * its words.
- */
-function tapSalary(): string {
-  (document.getElementById("decl") as HTMLDetailsElement).open = true;
-  const row = document.querySelector<HTMLElement>('#decl-list [data-field="salary_eur_year"]')!;
-  row.scrollIntoView({ block: "center" });
-  row.click();
-  return "tapped";
-}
 /** The walk's last step: the first band the salary question offers other than the one held, so the verdict it
  * returns to must change. */
 const ANOTHER_BAND = deriveQuestions(ds).find((q) => q.field === "salary_eur_year")!
@@ -184,7 +172,9 @@ async function correction(site: PageOnSite) {
   const { page } = site;
   const interview = await openOnRecord(site, finished);
   const result = await where(page);
-  await evaluateAtRest(page, `(${tapSalary})()`);
+  // The critique's walk, on a result: the panel opened, the salary row scrolled to and its ✎ tapped.
+  await tapPencil(page, "salary_eur_year", { scrollToRow: true });
+  await page.waitUntilAtRest();
   const onQuestion = await where(page);
   await interview.answer("salary_eur_year", ANOTHER_BAND);
   const back = await where(page);

@@ -191,17 +191,20 @@ interface Result {
   sent: SentRequest[];
 }
 
+/** In the page: the id of every route the screen links to, as JSON. */
+function readRoutesLinkedInPage(): string {
+  return JSON.stringify([...document.querySelectorAll("#app a[href]")]
+    .map((a) => a.getAttribute("href")!).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+[/]?$/.test(h))
+    .map((h) => h.replace(/[/]$/, "").split("/").pop()));
+}
+
 /** The results screen, read once it is drawn, against the verdict it should paint. */
 const readResult = async (interview: InterviewPage, page: BrowserPage, verdict: Verdict): Promise<Result> => ({
   state: (await interview.readScreen()).screen,
   status: await page.evaluate('document.getElementById("cstatus").textContent'),
   painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdict))),
   declared: Object.values((await interview.readRecord())?.answers ?? {}),
-  routes: JSON.parse(await page.evaluate(
-    'JSON.stringify([...document.querySelectorAll("#app a[href]")]'
-    + '.map((a) => a.getAttribute("href")).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+[/]?$/.test(h))'
-    + '.map((h) => h.replace(/[/]$/, "").split("/").pop()))',
-  )),
+  routes: JSON.parse(await page.evaluate(`(${readRoutesLinkedInPage})()`)),
   sent: page.requests(),
 });
 

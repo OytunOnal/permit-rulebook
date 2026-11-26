@@ -286,9 +286,12 @@ if (skipped)
 
 /** One link read off the page: its text as drawn and where it goes. */
 interface Link { text: string; href: string }
+/** In the page: each link `selector` finds, its text as drawn and where it goes, as JSON. */
+function readLinksInPage(selector: string): string {
+  return JSON.stringify([...document.querySelectorAll(selector)].map((a) => ({ text: a.textContent!.trim(), href: a.getAttribute("href") })));
+}
 // The page script that reads a selector's links, so the help line and the route page are read alike.
-const LINKS = (selector: string) =>
-  `JSON.stringify([...document.querySelectorAll(${JSON.stringify(selector)})].map((a) => ({ text: a.textContent.trim(), href: a.getAttribute("href") })))`;
+const LINKS = (selector: string) => `(${readLinksInPage})(${JSON.stringify(selector)})`;
 
 /** In the page: the text of the "What the checker asks" block holding the link `selector` finds, or "". */
 function readAsksBlockOf(selector: string): string {

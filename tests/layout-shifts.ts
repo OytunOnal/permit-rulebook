@@ -22,6 +22,24 @@ export async function shiftScoreSince(page: Pick<BrowserPage, "readLayoutShifts"
   return counted.filter((e) => e.startTime >= sinceMs).reduce((sum, e) => sum + e.value, 0);
 }
 
+/** In the page that moves: its script, run as it loads, which moves it down once Chrome has reported its first
+ * paint and again on a tap, and notes a reported shift and a tap on `window`. */
+function moveEarlyAndOnATapInPage(): void {
+  const noted = window as unknown as { __shiftReported: boolean; __tapped: boolean };
+  const moveDown = (text: string) => {
+    const block = document.createElement("p");
+    block.style.height = "100px";
+    block.textContent = text;
+    document.body.prepend(block);
+  };
+  new PerformanceObserver((_, observer) => {
+    observer.disconnect();
+    moveDown("in the first frames");
+  }).observe({ type: "paint", buffered: true });
+  new PerformanceObserver(() => { noted.__shiftReported = true; }).observe({ type: "layout-shift", buffered: true });
+  addEventListener("click", () => { moveDown("on the tap"); noted.__tapped = true; });
+}
+
 /**
  * A page that moves twice: once Chrome has reported its first paint to it,
  * with nothing done to it, and in answer to a tap. A frame was presented
@@ -33,18 +51,7 @@ export async function shiftScoreSince(page: Pick<BrowserPage, "readLayoutShifts"
  */
 export const MOVES_EARLY_AND_ON_A_TAP = `<!doctype html><html><head>
 <meta name="viewport" content="width=device-width, initial-scale=1"><script>
-const moveDown = (text) => {
-  const block = document.createElement("p");
-  block.style.height = "100px";
-  block.textContent = text;
-  document.body.prepend(block);
-};
-new PerformanceObserver((_, observer) => {
-  observer.disconnect();
-  moveDown("in the first frames");
-}).observe({ type: "paint", buffered: true });
-new PerformanceObserver(() => { window.__shiftReported = true; }).observe({ type: "layout-shift", buffered: true });
-addEventListener("click", () => { moveDown("on the tap"); window.__tapped = true; });
+(${moveEarlyAndOnATapInPage})();
 </script></head><body><p>above</p><p id="below" style="height:400px">below</p></body></html>`;
 
 export interface ShiftsSeen {

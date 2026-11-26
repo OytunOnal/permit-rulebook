@@ -34,9 +34,14 @@ const ERRORS_LOGGED = 150;
 /** Whether Cloudflare's script ran on the page: it sets `__cfBeacon` from its tag; an empty script sets nothing. */
 const COUNTER_RAN = 'typeof window.__cfBeacon === "object"';
 
-/** The statuses the page's reports to the counter were answered with, as the page's own resource timing reads them. */
-const REPORT_ANSWERS = `JSON.stringify(performance.getEntriesByType("resource")
-  .filter((e) => e.name === ${JSON.stringify(site.TRAFFIC_COUNTER_REPORTS)}).map((e) => e.responseStatus))`;
+/** In the page: the statuses its requests to `address` were answered with, as its own resource timing reads them,
+ * as JSON. */
+function readAnswerStatusesInPage(address: string): string {
+  return JSON.stringify((performance.getEntriesByType("resource") as PerformanceResourceTiming[])
+    .filter((e) => e.name === address).map((e) => e.responseStatus));
+}
+/** The statuses the page's reports to the counter were answered with, read in the page. */
+const REPORT_ANSWERS = `(${readAnswerStatusesInPage})(${JSON.stringify(site.TRAFFIC_COUNTER_REPORTS)})`;
 
 /** How many requests a page aborts on each path to its own origin and the counter: the race between a page dropping a request and the walk answering it showed in 114 of 300. */
 const ABORTED = 300;
@@ -44,6 +49,73 @@ const ABORTED = 300;
 const ABORTED_OUTSIDE = 30;
 /** The longest delay before an abort the one-at-a-time requests reach: far past a refusal's few milliseconds, few enough doublings (13) to keep their errors under the walk's 100. */
 const ABORT_DELAY_CEILING_MS = 4096;
+
+/** What the fixture pages' scripts note on `window`, for a walk to wait on. */
+type Noted = { __aborted: boolean; __opened: Window | null; __fetched: boolean };
+
+/** In the page: sends `count` requests to its own origin and as many reports to `reports`, aborts each soon after
+ * it is sent, and notes in `window.__aborted` once all have settled. */
+function abortOwnRequestsInPage(count: number, reports: string): void {
+  const sent: Promise<unknown>[] = [];
+  const abortSoon = (address: string, init: RequestInit) => {
+    const controller = new AbortController();
+    sent.push(fetch(address, { ...init, signal: controller.signal }).catch(() => {}));
+    setTimeout(() => controller.abort(), 0);
+  };
+  for (let i = 0; i < count; i++) {
+    abortSoon("/quiet.html?n=" + i, {});
+    abortSoon(reports + "?n=" + i, { method: "POST", body: "{}" });
+  }
+  void Promise.all(sent).then(() => { (window as unknown as Noted).__aborted = true; });
+}
+
+/**
+ * In the page: sends requests to the address its query names as `outside`,
+ * one at a time, each aborted twice as late as the last from 1 ms up to
+ * `ceilingMs`, until the page sees the walk's answer before an abort; then
+ * `burst` more at once, each aborted at once; and notes in `window.__aborted`
+ * once they have settled. A request settles on "walk answered" when the page
+ * saw the walk's answer (its refusal reaches the page as a TypeError) before
+ * its abort, else on "abort first"; an "abort first" request may still have
+ * reached the walk.
+ */
+async function abortOutsideRequestsInPage(ceilingMs: number, burst: number): Promise<void> {
+  const outside = new URLSearchParams(location.search).get("outside")!;
+  let sentCount = 0;
+  const sendAndAbortAfter = (ms: number) => {
+    const controller = new AbortController();
+    const settled = fetch(outside + "?n=" + sentCount++, { mode: "no-cors", signal: controller.signal });
+    setTimeout(() => controller.abort(), ms);
+    return settled.then(() => "walk answered", (e: Error) => (e.name === "AbortError" ? "abort first" : "walk answered"));
+  };
+  let ms = 1;
+  while (ms <= ceilingMs && (await sendAndAbortAfter(ms)) === "abort first") ms *= 2;
+  await Promise.all(Array.from({ length: burst }, () => sendAndAbortAfter(0)));
+  (window as unknown as Noted).__aborted = true;
+}
+
+/** In the page: on a tap of `#open`, opens the address its query names as `open` in a new tab, noted in
+ * `window.__opened`. */
+function openTheGivenAddressOnATapInPage(): void {
+  document.getElementById("open")!.addEventListener("click", () => {
+    (window as unknown as Noted).__opened = window.open(new URLSearchParams(location.search).get("open")!);
+  });
+}
+
+/** In the frame's page: on a tap of `#open`, opens `/quiet.html` in a new tab, noted on the page around the frame. */
+function openAPageFromTheFrameOnATapInPage(): void {
+  document.getElementById("open")!.addEventListener("click", () => { (top as unknown as Noted).__opened = open("/quiet.html"); });
+}
+
+/** In the page: fetches the address its query names as `fetch`, and notes in `window.__fetched` once it settles. */
+function fetchTheGivenAddressInPage(): void {
+  void fetch(new URLSearchParams(location.search).get("fetch")!, { mode: "no-cors" })
+    .catch(() => {})
+    .finally(() => { (window as unknown as Noted).__fetched = true; });
+}
+
+/** Escapes `text` to stand in a double-quoted attribute's value. */
+const escapeForAnAttribute = (text: string): string => text.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
 
 /** The fixture pages, by file name, and the icon Chrome asks every site for, so its absence is no error. */
 const PAGES = {
@@ -58,17 +130,7 @@ window.__logged = true;
 </script></body></html>`,
   "counted.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>counted</p>${site.renderTrafficCounterTag()}</body></html>`,
   "aborts.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>aborts its requests</p><script>
-const sent = [];
-const abortSoon = (address, init) => {
-  const controller = new AbortController();
-  sent.push(fetch(address, { ...init, signal: controller.signal }).catch(() => {}));
-  setTimeout(() => controller.abort(), 0);
-};
-for (let i = 0; i < ${ABORTED}; i++) {
-  abortSoon("/quiet.html?n=" + i, {});
-  abortSoon(${JSON.stringify(site.TRAFFIC_COUNTER_REPORTS)} + "?n=" + i, { method: "POST", body: "{}" });
-}
-Promise.all(sent).then(() => { window.__aborted = true; });
+(${abortOwnRequestsInPage})(${ABORTED}, ${JSON.stringify(site.TRAFFIC_COUNTER_REPORTS)});
 </script></body></html>`,
   // An abort can come before its request leaves the page, so the walk never
   // sees it: the requests sent one at a time, each aborted twice as late as the
@@ -78,39 +140,17 @@ Promise.all(sent).then(() => { window.__aborted = true; });
   // at once, lands most of its aborts while the walk holds the request paused,
   // where a second refusal would come from.
   "aborts-outside.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>aborts its requests to another origin</p><script>
-const outside = new URLSearchParams(location.search).get("outside");
-let sentCount = 0;
-/**
- * Sends a request to the outside address, aborts it after ms milliseconds, and
- * settles on "walk answered" when the page saw the walk's answer (its refusal
- * reaches the page as a TypeError) before its abort, else "abort first"; an
- * "abort first" request may still have reached the walk.
- */
-const sendAndAbortAfter = (ms) => {
-  const controller = new AbortController();
-  const settled = fetch(outside + "?n=" + sentCount++, { mode: "no-cors", signal: controller.signal });
-  setTimeout(() => controller.abort(), ms);
-  return settled.then(() => "walk answered", (e) => (e.name === "AbortError" ? "abort first" : "walk answered"));
-};
-(async () => {
-  for (let ms = 1; ms <= ${ABORT_DELAY_CEILING_MS} && (await sendAndAbortAfter(ms)) === "abort first"; ms *= 2);
-  await Promise.all(Array.from({ length: ${ABORTED_OUTSIDE} }, () => sendAndAbortAfter(0)));
-  window.__aborted = true;
-})();
+(${abortOutsideRequestsInPage})(${ABORT_DELAY_CEILING_MS}, ${ABORTED_OUTSIDE});
 </script></body></html>`,
   "opens-outside.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><button id="open">open</button><script>
-document.getElementById("open").addEventListener("click", () => {
-  window.__opened = window.open(new URLSearchParams(location.search).get("open"));
-});
+(${openTheGivenAddressOnATapInPage})();
 </script></body></html>`,
   // A tap on the frame lands in the frame's document, so the page around it never reports a first input.
-  "opens-from-a-frame.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><iframe id="frame" style="width:300px;height:200px;border:0" srcdoc="<button id=open style='position:fixed;inset:0;width:100%;height:100%'>open</button><script>
-document.getElementById('open').addEventListener('click', () => { top.__opened = open('/quiet.html'); });
-</script>"></iframe></body></html>`,
+  "opens-from-a-frame.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><iframe id="frame" style="width:300px;height:200px;border:0" srcdoc="${
+    escapeForAnAttribute(`<button id=open style='position:fixed;inset:0;width:100%;height:100%'>open</button><script>(${openAPageFromTheFrameOnATapInPage})();</script>`)
+  }"></iframe></body></html>`,
   "fetches-outside.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>fetches the address it is given</p><script>
-fetch(new URLSearchParams(location.search).get("fetch"), { mode: "no-cors" })
-  .catch(() => {})
-  .finally(() => { window.__fetched = true; });
+(${fetchTheGivenAddressInPage})();
 </script></body></html>`,
 };
 

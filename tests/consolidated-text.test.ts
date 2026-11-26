@@ -199,9 +199,12 @@ const UNSURE: Profile = {
   age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
 };
 
-// The results screen's links as the browser draws them, read in the page so the walk sees what a reader sees.
-const RESULT_LINKS ='JSON.stringify([...document.querySelectorAll("#main a")].map((a) => ({'
-  + ' href: a.getAttribute("href"), text: a.textContent })))';
+/** In the page: the results screen's links as the browser draws them, so the walk sees what a reader sees, as JSON. */
+function readResultLinksInPage(): string {
+  return JSON.stringify([...document.querySelectorAll("#main a")].map((a) => ({ href: a.getAttribute("href"), text: a.textContent })));
+}
+// The results screen's links, read in the page.
+const RESULT_LINKS = `(${readResultLinksInPage})()`;
 
 describe.skipIf(skipped !== null)("the results screen, as drawn", () => {
   it("every link to a consolidated text carries that label, and none the authority's", async () => {

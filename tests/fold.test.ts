@@ -72,23 +72,43 @@ if (skipped)
     "",
   ].join("\n"));
 
+/** In the page: how far down the page `el` starts, in pixels; -1 where there is no `el`. */
+function readPageYInPage(el: Element | null): number {
+  return el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : -1;
+}
+
+/** In the page: where a route page's answer box, its number, its call to action and its read date start, by
+ * `readPageY`, and how tall the page is, as JSON. */
+function readRoutePageFoldInPage(readPageY: (el: Element | null) => number): string {
+  const number = [...document.querySelectorAll(".answer .mono, .answer b")].find((n) => n.textContent!.includes("50,700")) ?? null;
+  return JSON.stringify({
+    box: readPageY(document.querySelector(".answer")),
+    number: readPageY(number),
+    cta: readPageY(document.querySelector('a[href*="route="]')),
+    date: readPageY(document.querySelector(".answer time")),
+    page: document.documentElement.scrollHeight,
+  });
+}
+
+/** In the page: where a country page's header, its heading, its first route card and that card's name start, by
+ * `readPageY`, and how tall the page is, as JSON. */
+function readCountryPageFoldInPage(readPageY: (el: Element | null) => number): string {
+  const card = document.querySelector(".routes li");
+  return JSON.stringify({
+    head: readPageY(document.querySelector(".site-head")),
+    h1: readPageY(document.querySelector("h1")),
+    card: readPageY(card),
+    name: readPageY(card && card.querySelector(".name")),
+    page: document.documentElement.scrollHeight,
+  });
+}
+
 describe.skipIf(skipped !== null)("measured in a browser", () => {
   for (const [width, height, mobile] of [[1100, 900, false], [390, 844, true]] as const)
     it(`the number, the read date and the way in are in the first screen at ${width} px`, async () => {
       const seen = JSON.parse(await withSite(async ({ page, url }) => {
         await page.goto(url("/germany/eu-blue-card-general/"));
-        return page.evaluate(
-          'JSON.stringify((() => {'
-          + ' const box = document.querySelector(".answer");'
-          + ' const number = [...document.querySelectorAll(".answer .mono, .answer b")]'
-          + '   .find((n) => n.textContent.includes("50,700"));'
-          + ' const cta = document.querySelector("a[href*=\\"route=\\"]");'
-          + ' const date = document.querySelector(".answer time");'
-          + ' const y = (el) => el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : -1;'
-          + ' return { box: y(box), number: y(number), cta: y(cta), date: y(date),'
-          + '   page: document.documentElement.scrollHeight };'
-          + '})())',
-        );
+        return page.evaluate(`(${readRoutePageFoldInPage})(${readPageYInPage})`);
       }, { viewport: { width, height }, mobile }) as string) as
         { box: number; number: number; cta: number; date: number; page: number };
 
@@ -112,15 +132,7 @@ describe.skipIf(skipped !== null)("a country page's first route is in the first 
     it(`the first card is above the fold at ${width} px`, async () => {
       const seen = JSON.parse(await withSite(async ({ page, url }) => {
         await page.goto(url("/germany/"));
-        return page.evaluate(
-          'JSON.stringify((() => {'
-          + ' const y = (el) => el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : -1;'
-          + ' const card = document.querySelector(".routes li");'
-          + ' return { head: y(document.querySelector(".site-head")), h1: y(document.querySelector("h1")),'
-          + '   card: y(card), name: y(card && card.querySelector(".name")),'
-          + '   page: document.documentElement.scrollHeight };'
-          + '})())',
-        );
+        return page.evaluate(`(${readCountryPageFoldInPage})(${readPageYInPage})`);
       }, { viewport: { width, height }, mobile }) as string) as
         { head: number; h1: number; card: number; name: number; page: number };
 

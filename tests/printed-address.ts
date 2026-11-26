@@ -22,22 +22,33 @@ export interface PrintedLink {
   addressStart: TextBox;
 }
 
-/** The script that reads, in the page, the first link `selector` finds as a
- * PrintedLink, or null where it finds none. */
-export const printedLinkScript = (selector: string): string => `JSON.stringify((() => {
-  const link = document.querySelector(${JSON.stringify(selector)});
+/** The reads `readPrintedLinkInPage` is handed in the page. */
+interface PrintedLinkReaders {
+  readOneLineWidth: (link: Element) => number;
+  readDetachedWidth: (link: Element, text: string, pseudo?: string) => number;
+  addressStartLength: number;
+}
+
+/** In the page: the first link `selector` finds as a PrintedLink, or null where it finds none. */
+function readPrintedLinkInPage(selector: string, { readOneLineWidth, readDetachedWidth, addressStartLength }: PrintedLinkReaders): PrintedLink | null {
+  const link = document.querySelector(selector);
   if (!link) return null;
   const printed = " (" + link.getAttribute("href") + ")";
   const words = document.createRange();
   words.selectNodeContents(link);
   const lines = [...words.getClientRects()];
-  const last = lines[lines.length - 1];
+  const last = lines[lines.length - 1]!;
   return {
-    widthPastWords: ${ONE_LINE_WIDTH}(link) - ${DETACHED_WIDTH}(link, link.textContent),
-    addressWidth: ${DETACHED_WIDTH}(link, printed, "::after"),
+    widthPastWords: readOneLineWidth(link) - readDetachedWidth(link, link.textContent!),
+    addressWidth: readDetachedWidth(link, printed, "::after"),
     addressStart: {
       left: last.right, top: last.top, height: last.height,
-      width: ${DETACHED_WIDTH}(link, printed.slice(0, ${ADDRESS_START_LENGTH}), "::after"),
+      width: readDetachedWidth(link, printed.slice(0, addressStartLength), "::after"),
     },
   };
-})())`;
+}
+
+/** The script that reads, in the page, the first link `selector` finds as a
+ * PrintedLink, or null where it finds none. */
+export const printedLinkScript = (selector: string): string => `JSON.stringify((${readPrintedLinkInPage})(${JSON.stringify(selector)}, {
+  readOneLineWidth: ${ONE_LINE_WIDTH}, readDetachedWidth: ${DETACHED_WIDTH}, addressStartLength: ${ADDRESS_START_LENGTH} }))`;

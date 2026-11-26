@@ -63,11 +63,17 @@ describe.skipIf(skipped !== null)("the harness's two ways onto a page", () => {
   }, 60000);
 });
 
+/** In the page: notes "here" in `window.__arrived` `laterMs` from now, and returns at once. */
+function noteArrivalLaterInPage(laterMs: number): number {
+  setTimeout(() => { (window as unknown as { __arrived: string }).__arrived = "here"; }, laterMs);
+  return 0;
+}
+
 describe.skipIf(skipped !== null)("the harness's waitUntil", () => {
   it("waitUntil returns the condition's value once it holds", async () => {
     const held = await onSite(async (page, url) => {
       await page.goto(url("/404.html"));
-      await page.evaluate('setTimeout(() => { window.__arrived = "here"; }, 300), 0');
+      await page.evaluate(`(${noteArrivalLaterInPage})(300)`);
       return page.waitUntil("window.__arrived", "the value never arrived");
     });
     expect(held).toBe("here");
@@ -142,8 +148,8 @@ function askThenWorkOnInPage(scroll: () => unknown): string {
   while (performance.now() < done);
   return "asked for";
 }
-/** `askThenWorkOnInPage` on `scroll`, an expression: the expression a case evaluates. */
-const askThenWorkOn = (scroll: string) => `(${askThenWorkOnInPage})(() => ${scroll})`;
+/** `askThenWorkOnInPage` on `scroll`, a function run in the page: the expression a case evaluates. */
+const askThenWorkOn = (scroll: () => unknown) => `(${askThenWorkOnInPage})(${scroll})`;
 /**
  * `scroll`, a scroll asked for on a Chrome without scroll promises, played on
  * this one: while it runs, the native `scrollTo`, as the harness's watch of
@@ -159,8 +165,21 @@ function typeReturnedWithoutTheScrollPromiseInPage(scroll: () => unknown): strin
   };
   try { return typeof scroll(); } finally { Function.prototype.apply = apply; }
 }
-/** `typeReturnedWithoutTheScrollPromiseInPage` on `scroll`, an expression: the expression a case evaluates. */
-const withoutTheScrollPromise = (scroll: string) => `(${typeReturnedWithoutTheScrollPromiseInPage})(() => ${scroll})`;
+/** `typeReturnedWithoutTheScrollPromiseInPage` on `scroll`, a function run in the page: the expression a case evaluates. */
+const withoutTheScrollPromise = (scroll: () => unknown) => `(${typeReturnedWithoutTheScrollPromiseInPage})(${scroll})`;
+
+/** In the page: a smooth scroll 3000 px down, by `scrollTo`; what the call returned. */
+function scrollFarDownSmoothlyInPage(): unknown {
+  return scrollTo({ top: 3000, behavior: "smooth" });
+}
+/** In the page: a smooth scroll to the mark, by `scrollIntoView`; what the call returned. */
+function scrollToTheMarkSmoothlyInPage(): unknown {
+  return document.getElementById("mark")!.scrollIntoView({ block: "start", behavior: "smooth" });
+}
+/** In the page: a smooth scroll to where the page already stands, by `scrollTo`; what the call returned. */
+function scrollWhereItStandsSmoothlyInPage(): unknown {
+  return scrollTo({ top: scrollY, behavior: "smooth" });
+}
 
 describe.skipIf(skipped !== null)("the harness's waitUntilAtRest, after a smooth scroll", () => {
   // Two frames reading the same scroll is not a smooth scroll's end: its
@@ -168,9 +187,8 @@ describe.skipIf(skipped !== null)("the harness's waitUntilAtRest, after a smooth
   // interview asks: `scrollTo` lands a card, `scrollIntoView` reveals the
   // masthead; the wait has begun its look when the gesture asks.
   for (const [how, start, offEnd] of [
-    ["scrollTo", 'scrollTo({ top: 3000, behavior: "smooth" })', "scrollY - 3000"],
-    ["scrollIntoView", 'document.getElementById("mark").scrollIntoView({ block: "start", behavior: "smooth" })',
-      'document.getElementById("mark").getBoundingClientRect().top'],
+    ["scrollTo", scrollFarDownSmoothlyInPage, "scrollY - 3000"],
+    ["scrollIntoView", scrollToTheMarkSmoothlyInPage, 'document.getElementById("mark").getBoundingClientRect().top'],
   ] as const)
     it(`waitUntilAtRest returns only once a smooth ${how} just begun has ended`, async () => {
       const seen = await onSite(async (page, url) => {
@@ -207,7 +225,7 @@ describe.skipIf(skipped !== null)("the harness's waitUntilAtRest, on a Chrome wi
       await page.evaluate(MARK_FAR_DOWN);
       await page.evaluate('(document.getElementById("mark").scrollIntoView({ block: "start" }), "there")');
       await page.waitUntilAtRest();
-      const returned = await page.evaluate(withoutTheScrollPromise('scrollTo({ top: scrollY, behavior: "smooth" })'));
+      const returned = await page.evaluate(withoutTheScrollPromise(scrollWhereItStandsSmoothlyInPage));
       return { returned, failure: await page.waitUntilAtRest().then(() => "", (e: Error) => e.message) };
     });
     expect(seen.returned, "scrollTo still gave a promise, so nothing here plays a Chrome without one").toBe("undefined");

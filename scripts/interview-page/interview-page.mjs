@@ -8,10 +8,10 @@ import { questionCardProbes } from "./probes/question-card-probes.mjs";
  * The interview as tests and scripts drive it: `new InterviewPage(site)` takes
  * the page a walk is handed on the site, and seeds the record on the device,
  * opens the interview, answers the question on the screen, reads which screen
- * is shown, and reads or clears the stored record. The storage key, the
- * record's format and the question card's markup stay in here and in the
- * probes `question-card-probes.mjs` holds for it, so a change to any of them
- * is made there alone.
+ * is shown, and reads or clears the stored record. The storage key and the
+ * record's format stay in here, and the question card's markup in the probes
+ * `question-card-probes.mjs` holds for it, so a change to any of them is made
+ * there alone.
  *
  * @typedef {import("../browser/browser.mjs").BrowserPage} BrowserPage
  * @typedef {import("permit-rulebook-data").Profile} Profile
@@ -105,22 +105,33 @@ import { questionCardProbes } from "./probes/question-card-probes.mjs";
  * interview reads it on its first paint. */
 const OUTSIDE_THE_INTERVIEW = "/404.html";
 
-/** The name the search finds `value` of `field` by: its option's label, or the value where none is. */
-const nameOf = (field, value) => fieldOptions(rawDataset, field).find((o) => o.value === value)?.label ?? value;
+/** The storage key as a probe's source writes it. */
+const STORAGE_KEY_SOURCE = JSON.stringify(STORAGE_KEY);
 
-/** Why a pick that said `how` was refused, read from the screen `before` and `after` it; null when it moved the
- * screen on. A pick that takes moves the screen in its own task, so a screen still where it was is refused. */
-function refusalOf(how, before, after) {
-  if (how !== "opt" && how !== "row") return how;
+/** Finds the name the search finds `value` of `field` by: its option's label, or the value where none is. */
+const findSearchName = (field, value) => fieldOptions(rawDataset, field).find((o) => o.value === value)?.label ?? value;
+
+/**
+ * An answer's gesture as the page reported it: which control it answered on (`kind`, "button" or "row"), or why
+ * it answered on none (`refusal`).
+ *
+ * @typedef {{ kind: "button" | "row" | null, refusal: string | null }} Answered
+ */
+
+/** Finds why an answer `answered` reports was refused, read from it and from the screen `before` and `after` it;
+ * null when it moved the screen on. An answer that takes moves the screen in its own task, so a screen still where
+ * it was is refused. @param {Answered} answered */
+function findRefusal({ refusal }, before, after) {
+  if (refusal !== null) return refusal;
   const isStill = after.screen === before.screen && after.question === before.question;
   return isStill ? "the tap was refused: the screen did not move on" : null;
 }
 
-/** The screen the page read as `json`; throws, naming the call `by` and the page's address, where the page held no
- * interview. @returns {ScreenShown} */
-function screenOf(json, by) {
+/** Parses the screen the page read as `json`; throws, naming the `caller` and the page's address, where the page
+ * held no interview. @returns {ScreenShown} */
+function parseScreen(json, caller) {
   const { offTheInterview, ...shown } = JSON.parse(json);
-  if (offTheInterview !== undefined) throw new Error(`${by}: no interview on ${offTheInterview}`);
+  if (offTheInterview !== undefined) throw new Error(`${caller}: no interview on ${offTheInterview}`);
   return shown;
 }
 
@@ -152,8 +163,8 @@ export class InterviewPage {
    * @param {{ history?: string[], done?: boolean }} [options]
    */
   async seed(answers, { history = Object.keys(answers), done = false } = {}) {
-    await this.#page.goto(this.#addressOf(OUTSIDE_THE_INTERVIEW));
-    await this.#page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(serialize(answers, history, done))})`);
+    await this.#page.goto(this.#makeAddress(OUTSIDE_THE_INTERVIEW));
+    await this.#page.evaluate(`localStorage.setItem(${STORAGE_KEY_SOURCE}, ${JSON.stringify(serialize(answers, history, done))})`);
     this.#seeded = true;
   }
 
@@ -166,11 +177,11 @@ export class InterviewPage {
    */
   async open(path = "/") {
     if (!this.#seeded) {
-      await this.#page.goto(this.#addressOf(OUTSIDE_THE_INTERVIEW));
+      await this.#page.goto(this.#makeAddress(OUTSIDE_THE_INTERVIEW));
       await this.#page.evaluate("localStorage.clear()");
     }
     this.#seeded = false;
-    await this.#page.goto(this.#addressOf(path));
+    await this.#page.goto(this.#makeAddress(path));
   }
 
   /**
@@ -196,14 +207,10 @@ export class InterviewPage {
    */
   async answer(field, value, { by = "script" } = {}) {
     if (by !== "script" && by !== "hand") throw new Error(`precondition: an answer is made by "script" or "hand", not "${by}"`);
-    await this.#waitUntilPastTheBeat();
-    const before = await this.readScreen();
-    const how = by === "hand"
-      ? await this.#pickByHand(field, value, before)
-      : await this.#page.evaluate(questionCardProbes.pickOf(value, nameOf(field, value)));
-    const refusal = refusalOf(how, before, await this.readScreen());
-    if (refusal !== null) throw new Error(`${field} = ${value}: ${refusal}`);
-    await this.#page.waitUntilAtRest();
+    const answerOnPage = by === "hand"
+      ? (before) => this.#answerByHand(field, value, before)
+      : () => this.#page.evaluate(questionCardProbes.answer(value, findSearchName(field, value)));
+    await this.#answerOnceAndCheck(answerOnPage, () => `${field} = ${value}`);
   }
 
   /**
@@ -221,13 +228,9 @@ export class InterviewPage {
    * @returns {Promise<{ value: string, layoutAtOnce: CardLayout | null, readAtOnce: unknown }>}
    */
   async answerFirstOffered({ readAtOnce } = {}) {
-    await this.#waitUntilPastTheBeat();
-    const before = await this.readScreen();
-    const { how, value, layout, read } = JSON.parse(await this.#page.evaluate(questionCardProbes.firstPickedAndRead(readAtOnce)));
-    const refusal = refusalOf(how, before, await this.readScreen());
-    if (refusal !== null) throw new Error(`the first answer offered${value ? ` (${value})` : ""}: ${refusal}`);
-    await this.#page.waitUntilAtRest();
-    return { value, layoutAtOnce: layout, readAtOnce: read };
+    const answerOnPage = async () => JSON.parse(await this.#page.evaluate(questionCardProbes.answerFirstAndRead(readAtOnce)));
+    const answered = await this.#answerOnceAndCheck(answerOnPage, ({ value }) => `the first answer offered${value ? ` (${value})` : ""}`);
+    return { value: answered.value, layoutAtOnce: answered.layout, readAtOnce: answered.readAtOnce };
   }
 
   /**
@@ -238,30 +241,48 @@ export class InterviewPage {
    * @param {string} text
    */
   async searchFor(text) {
-    if (!(await this.#page.evaluate(questionCardProbes.searchFocused))) throw new Error(`searchFor: no search on the screen to type "${text}" into`);
+    if (!(await this.#page.evaluate(questionCardProbes.isSearchShown))) throw new Error(`searchFor: no search on the screen to type "${text}" into`);
+    await this.#page.evaluate(questionCardProbes.focusSearch);
     await this.#page.type(text);
-    await this.#page.waitUntil(questionCardProbes.searchListedFor(text), `the search listed nothing for "${text}"`);
+    await this.#page.waitUntil(questionCardProbes.isSearchListedFor(text), `the search listed nothing for "${text}"`);
   }
 
-  /** A reader's own answer of `value` to `field` on the screen `before` showed: a real tap on its button, or its
-   * name searched for and Enter pressed; says "opt" or "row" for what it answered, or why it answered nothing. */
-  async #pickByHand(field, value, { answers, search }) {
+  /**
+   * Answers once the card's beat is over, by `answerOnPage`, handed the screen
+   * before it and returning what the page reported (`Answered`, with what
+   * else the gesture read); returns that report once the screen has moved on
+   * and the page is at rest. A refused answer throws, named by `nameAnswer`
+   * from the report.
+   */
+  async #answerOnceAndCheck(answerOnPage, nameAnswer) {
+    await this.#waitUntilPastTheBeat();
+    const before = await this.readScreen();
+    const answered = await answerOnPage(before);
+    const refusal = findRefusal(answered, before, await this.readScreen());
+    if (refusal !== null) throw new Error(`${nameAnswer(answered)}: ${refusal}`);
+    await this.#page.waitUntilAtRest();
+    return answered;
+  }
+
+  /** Answers `value` to `field` on the screen `before` showed as a reader does: a real tap on its button, or its
+   * name searched for and Enter pressed. @returns {Promise<Answered>} */
+  async #answerByHand(field, value, { answers, search }) {
     if (search !== null) {
-      await this.searchFor(nameOf(field, value));
+      await this.searchFor(findSearchName(field, value));
       await this.#page.pressEnter();
       await this.#page.waitUntilAtRest();
-      return "row";
+      return { kind: "row", refusal: null };
     }
-    if (!answers.some((a) => a.value === value)) return "no option";
-    await this.#page.tapOn(questionCardProbes.buttonOf(value));
+    if (!answers.some((a) => a.value === value)) return { kind: null, refusal: "no option" };
+    await this.#page.tapOn(questionCardProbes.buildButtonSelector(value));
     await this.#page.waitUntilAtRest();
-    return "opt";
+    return { kind: "button", refusal: null };
   }
 
   /** Which screen the interview is on, and the question card as a reader sees it; throws, naming the page's
    * address, on a page that holds no interview. @returns {Promise<ScreenShown>} */
   async readScreen() {
-    return screenOf(await this.#page.evaluate(questionCardProbes.screenNow), "readScreen");
+    return parseScreen(await this.#page.evaluate(questionCardProbes.screenNow), "readScreen");
   }
 
   /**
@@ -277,7 +298,7 @@ export class InterviewPage {
    */
   async waitUntilScreenChanges(from) {
     const what = `the screen never changed from "${from.screen} ${from.question}"`;
-    return screenOf(String(await this.#page.waitUntil(questionCardProbes.screenOnceChangedFrom(from), what)), "waitUntilScreenChanges");
+    return parseScreen(String(await this.#page.waitUntil(questionCardProbes.readScreenOnceChangedFrom(from), what)), "waitUntilScreenChanges");
   }
 
   /** Where the question card sits and where the focus is; null where no card is drawn. @returns {Promise<CardLayout | null>} */
@@ -288,12 +309,12 @@ export class InterviewPage {
   /** The id of the answer on the question card under `point`, or "" where the point is on none, as the page's own
    * hit-test finds it. @param {Point} point @returns {Promise<string>} */
   async readAnswerAt(point) {
-    return this.#page.evaluate(questionCardProbes.answerAt(point));
+    return this.#page.evaluate(questionCardProbes.readAnswerAt(point));
   }
 
   /** The record the device holds, or null where it holds none. @returns {Promise<RecordOnDevice | null>} */
   async readRecord() {
-    const text = await this.#page.evaluate(`localStorage.getItem(${JSON.stringify(STORAGE_KEY)})`);
+    const text = await this.#page.evaluate(`localStorage.getItem(${STORAGE_KEY_SOURCE})`);
     if (text === null) return null;
     const { answers, history, done } = JSON.parse(text);
     return { answers, history, done: done === true };
@@ -301,7 +322,7 @@ export class InterviewPage {
 
   /** Takes the record off the device. */
   async clearRecord() {
-    await this.#page.evaluate(`localStorage.removeItem(${JSON.stringify(STORAGE_KEY)})`);
+    await this.#page.evaluate(`localStorage.removeItem(${STORAGE_KEY_SOURCE})`);
   }
 
   /**
@@ -317,8 +338,8 @@ export class InterviewPage {
     await this.#page.waitUntil(`performance.now() >= ${seenAt + beatMs}`, "the page's clock never passed the beat");
   }
 
-  /** The site's address of `path`; throws where the interview was made without the site's `url`. */
-  #addressOf(path) {
+  /** Makes the site's address of `path`; throws where the interview was made without the site's `url`. */
+  #makeAddress(path) {
     if (!this.#url) throw new Error(`precondition: an InterviewPage that opens ${path} is made with the site's url`);
     return this.#url(path);
   }

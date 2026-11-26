@@ -12,14 +12,17 @@ export const ds = rawDataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 /** The question a cold interview asks first. */
-export const first = remainingQuestions(ds, {})[0]!;
+export const firstQuestion = remainingQuestions(ds, {})[0]!;
 /** The first answer that question offers, as a record holds it: a real answer the dataset gives. */
-export const FIRST_ANSWER: Profile = { [first.field]: first.options[0]!.value };
+export const FIRST_ANSWER: Profile = { [firstQuestion.field]: firstQuestion.options[0]!.value };
 /** Answers that bring the passport question next: the search. */
 export const BEFORE_PASSPORT: Profile = { destination: "de", situation: "offer", qualification: "degree", occupation_it: "no" };
 
-/** The label of `field`'s question, as the dataset words it. */
-export const labelOf = (field: string): string => ds.fields.find((f) => f.id === field)!.label;
+/** Finds the label of `field`'s question, as the dataset words it. */
+export const findLabel = (field: string): string => ds.fields.find((f) => f.id === field)!.label;
+
+/** Catches what `run` threw: its message, or null where it threw nothing. */
+export const catchMessage = (run: Promise<unknown>): Promise<string | null> => run.then(() => null, (e: Error) => e.message);
 
 /** Walks the built site on `screen` (the desk by default), handing `run` an interview on its page, and the page
  * for a gesture or a read the interview does not make. */

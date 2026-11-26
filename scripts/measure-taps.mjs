@@ -48,6 +48,7 @@ import { PHONE, walkSite } from "./browser/browser.mjs";
 // goes stale the day the format moves, and this script would then measure a
 // screen the reader never sees.
 import { InterviewPage } from "./interview-page/interview-page.mjs";
+import { readInPage } from "./read-in-page.mjs";
 import {
   DUTCH_OFFER_ON_FOUR, FRENCH_OFFER_NO_STEPS, FRENCH_OFFER_TWO_STEPS, GERMAN_OFFER_ON_FOUR, GERMAN_OFFER_ON_ONE,
 } from "./seeded-results.mjs";
@@ -58,11 +59,11 @@ const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 /** The token's own value, asserted against the stylesheet the page ships. */
 const TAP_MIN = 44;
 
-// The six functions below run in the page, not here: `callInPage` carries their
+// The six functions below run in the page, not here: `readInPage` carries their
 // source text into it, so each reads nothing from this module but its arguments.
 
 /** An element's words on one line, cut to `cap` characters (all of them without one). */
-function textOf(el, cap) {
+function readTextInPage(el, cap) {
   return (el.textContent || el.tagName).trim().replace(/\s+/g, " ").slice(0, cap);
 }
 
@@ -76,8 +77,8 @@ function measureWidthsInPage() {
 }
 
 /** How many controls the screen shows, and each one shorter than `floor` as "<height>px \u00b7 <words>", named
- * by `textOf`. */
-function measureControls(floor, textOf) {
+ * by `readText`. */
+function measureControlsInPage(floor, readText) {
   const bad = [];
   let controls = 0;
   for (const el of document.querySelectorAll("a, button, summary, input, select, [role='button'], [role='option']")) {
@@ -86,7 +87,7 @@ function measureControls(floor, textOf) {
     controls++;
     // Half a pixel of slack: a box laid at fractional pixels a hair under the floor reaches it on screen.
     // 34 characters name the control on its failure line; the rest of a long label adds nothing.
-    if (r.height + 0.5 < floor) bad.push(Math.round(r.height) + "px \u00b7 " + textOf(el, 34));
+    if (r.height + 0.5 < floor) bad.push(Math.round(r.height) + "px \u00b7 " + readText(el, 34));
   }
   return { controls, bad };
 }
@@ -96,9 +97,9 @@ function measureControls(floor, textOf) {
  * separator. The Strip wraps between its parts. A part that starts a line
  * below the first, its left edge at the Strip's own, must not have a
  * separator drawn in front of it: a line that opens on a dot reads as a stray
- * mark. A part is named by `textOf`.
+ * mark. A part is named by `readText`.
  */
-function measureStripLines(textOf) {
+function measureStripLinesInPage(readText) {
   const stripLineCounts = [];
   const stripLinesStartingWithADot = [];
   for (const strip of document.querySelectorAll(".strip")) {
@@ -117,7 +118,7 @@ function measureStripLines(textOf) {
       const beforeContent = getComputedStyle(part, "::before").content;
       const drawsSeparatorInFront = beforeContent !== "none" && beforeContent !== "normal" && beforeContent !== '""';
       // 34 characters, as for a control: enough to name the part on its failure line.
-      if (drawsSeparatorInFront) stripLinesStartingWithADot.push(beforeContent + " " + textOf(part, 34));
+      if (drawsSeparatorInFront) stripLinesStartingWithADot.push(beforeContent + " " + readText(part, 34));
     }
     stripLineCounts.push(lineCount);
   }
@@ -126,7 +127,7 @@ function measureStripLines(textOf) {
 
 /** How many of each control a seed can require are on screen, by its name,
  * from `selectorsByName`; each a control the floor above already measures. */
-function requiredControlCountsOf(selectorsByName) {
+function countRequiredControlsInPage(selectorsByName) {
   const counts = {};
   for (const [name, selector] of Object.entries(selectorsByName)) counts[name] = document.querySelectorAll(selector).length;
   return { requiredControlCounts: counts };
@@ -144,11 +145,7 @@ function readResultBodyInPage() {
   };
 }
 
-/** The source of a call to `probe`, one of the functions above, with `args`, each given as its source text; the
- * call's result comes back as JSON. */
-const callInPage = (probe, ...args) => `JSON.stringify((${probe})(${args.join(", ")}))`;
-
-/** The selector of each control a seed can require, by its name, as `requiredControlCountsOf` is handed them. */
+/** The selector of each control a seed can require, by its name, as `countRequiredControlsInPage` is handed them. */
 const REQUIRED_SELECTORS = Object.fromEntries(REQUIRED_CONTROLS.map((c) => [c.name, c.selector]));
 
 function listBuiltPages(dir) {
@@ -194,12 +191,11 @@ const DRAWN = [
  */
 async function measureAtRest(page, name, kind) {
   await page.waitUntilAtRest();
-  const read = async (probe, ...args) => JSON.parse(await page.evaluate(callInPage(probe, ...args)));
   const measured = {
-    ...await read(measureWidthsInPage),
-    ...await read(measureControls, TAP_MIN, String(textOf)),
-    ...await read(measureStripLines, String(textOf)),
-    ...await read(requiredControlCountsOf, JSON.stringify(REQUIRED_SELECTORS)),
+    ...await readInPage(page, measureWidthsInPage),
+    ...await readInPage(page, measureControlsInPage, TAP_MIN, String(readTextInPage)),
+    ...await readInPage(page, measureStripLinesInPage, String(readTextInPage)),
+    ...await readInPage(page, countRequiredControlsInPage, JSON.stringify(REQUIRED_SELECTORS)),
   };
   // 1 px over the viewport is fractional layout rounded up, not a page that scrolls sideways.
   return { name, kind, floorPx: TAP_MIN, ...measured, isOverflowing: measured.scrollWidth > measured.innerWidth + 1 };
@@ -213,7 +209,7 @@ async function measureAtRest(page, name, kind) {
  */
 async function readDrawnScreen(page, interview) {
   const { screen, question, meta } = await interview.readScreen();
-  const { drawsNotice, drawsFeedbackLine } = JSON.parse(await page.evaluate(callInPage(readResultBodyInPage)));
+  const { drawsNotice, drawsFeedbackLine } = await readInPage(page, readResultBodyInPage);
   const isResult = screen === "results";
   return {
     isResult,

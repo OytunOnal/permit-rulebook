@@ -43,6 +43,12 @@ async function expectNavFoldedAt(width: number, folded: boolean) {
   expect(seen.navShown, `the row is ${seen.navShown ? "shown" : "hidden"} at ${width}`).toBe(!folded);
 }
 
+/** In the page: chooses the menu's first country with its navigation held back, so the page stays to be read. */
+function chooseACountryHeldInPage(): void {
+  document.addEventListener("click", (e) => e.preventDefault(), { capture: true, once: true });
+  document.querySelector<HTMLElement>(".nav a")!.click();
+}
+
 /** The menu's state at phone width: closed, opened, after Escape inside it, and after a choice. */
 async function menuStatesAtPhoneWidth() {
   return await withSite(async ({ page, url: addressOf }) => {
@@ -62,10 +68,7 @@ async function menuStatesAtPhoneWidth() {
     // itself is held back so the state can be read: a page that has already
     // left has no menu to report on, which is how this case first went
     // flaky (2026-09-08).
-    await page.evaluate(
-      'document.addEventListener("click", (e) => e.preventDefault(), { capture: true, once: true });'
-      + ' document.querySelector(".nav a").click()',
-    );
+    await page.evaluate(`(${chooseACountryHeldInPage})()`);
     const chosen = JSON.parse(await page.evaluate(STATE));
     return { closed, open, escaped, chosen };
   }, PHONE) as {

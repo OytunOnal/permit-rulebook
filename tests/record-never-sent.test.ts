@@ -47,6 +47,13 @@ async function answerOne(interview: InterviewPage): Promise<string> {
   return "TR";
 }
 
+/** In the page: the id of every route the screen links to, as JSON. */
+function readRoutesNamedInPage(): string {
+  return JSON.stringify([...document.querySelectorAll("#app a[href]")]
+    .map((a) => a.getAttribute("href")!).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+$/.test(h))
+    .map((h) => h.split("/").pop()));
+}
+
 /** The answers the record on the device holds, by value. */
 async function declaredOn(interview: InterviewPage): Promise<string[]> {
   return Object.values((await interview.readRecord())?.answers ?? {});
@@ -78,11 +85,7 @@ async function requestsOfWalkThenEdit(site: PageOnSite) {
   const declared = await declaredOn(interview);
   // Every route the verdict named: none of these may reach the counter
   // either — which of them fit is the reader's business.
-  const routes = await page.evaluate(
-    'JSON.stringify([...document.querySelectorAll("#app a[href]")]'
-    + '.map((a) => a.getAttribute("href")).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+$/.test(h))'
-    + '.map((h) => h.split("/").pop()))',
-  );
+  const routes = await page.evaluate(`(${readRoutesNamedInPage})()`);
   return {
     answered, reached, walk, afterEdit, origin: new URL(url("/")).origin,
     declared, routes: JSON.parse(routes) as string[],

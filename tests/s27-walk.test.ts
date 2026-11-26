@@ -244,6 +244,12 @@ async function expectMenuButtonSaysWhatItDoes(screen: Screen): Promise<void> {
   expect(seen.outside).toEqual({ text: MENU, expanded: "false" });
 }
 
+/** In the page: opens every country's section that is closed, and closes every one that is open. */
+function toggleEverySectionInPage(): string {
+  document.querySelectorAll<HTMLDetailsElement>(".country-sec").forEach((d) => { d.open = !d.open; });
+  return "toggled";
+}
+
 /** Checks, on the four-country result, the mark is within 0.6 em of the name, closed and open, on every section. */
 async function expectMarkBesideTheNameOnEverySection(name: string, screen: Screen): Promise<void> {
   const seen = await withSite(async (site) => {
@@ -251,7 +257,7 @@ async function expectMarkBesideTheNameOnEverySection(name: string, screen: Scree
     await walkToFour(site);
     const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALKED_TO_FOUR))));
     const asDrawn = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
-    await evaluateAtRest(page, 'document.querySelectorAll(".country-sec").forEach((d) => { d.open = !d.open; })');
+    await evaluateAtRest(page, `(${toggleEverySectionInPage})()`);
     const toggled = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
     return { painted, asDrawn, toggled };
   }, screen) as {

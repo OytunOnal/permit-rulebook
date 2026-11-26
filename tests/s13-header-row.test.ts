@@ -29,38 +29,44 @@ const { PHONE } = await import("../scripts/browser/browser.mjs");
 
 warnFeedbackDoorNotWalked();
 
-/** The row's own items: the disclosure's word and the three links beside it. */
-const ROW = 'JSON.stringify((() => {'
-  + ' const nav = document.querySelector(".site-head .nav");'
-  + ' const items = [...nav.querySelectorAll(":scope > a, :scope > details > summary")];'
-  + ' const box = (el) => { const r = el.getBoundingClientRect();'
-  + '   return { text: el.textContent.trim(), left: Math.round(r.left), right: Math.round(r.right),'
-  + '     top: Math.round(r.top), bottom: Math.round(r.bottom), width: Math.round(r.width) }; };'
-  + ' const head = document.querySelector(".site-head").getBoundingClientRect();'
-  + ' const mark = document.querySelector(".site-head .wordmark").getBoundingClientRect();'
-  + ' return { items: items.map(box), rows: new Set(items.map((el) =>'
-  + '   Math.round(el.getBoundingClientRect().top))).size,'
-  + '   have: Math.round(head.width),'
-  + '   need: Math.round(mark.width + nav.getBoundingClientRect().width) }; })())';
+/** In the page: the row's own items, the disclosure's word and the three links beside it, with how many rows they
+ * stand on, and the width the header has and the wordmark and nav need, as JSON. */
+function readRowInPage(): string {
+  const nav = document.querySelector(".site-head .nav")!;
+  const items = [...nav.querySelectorAll(":scope > a, :scope > details > summary")];
+  const readItem = (el: Element) => {
+    const r = el.getBoundingClientRect();
+    return { text: el.textContent!.trim(), left: Math.round(r.left), right: Math.round(r.right),
+      top: Math.round(r.top), bottom: Math.round(r.bottom), width: Math.round(r.width) };
+  };
+  const head = document.querySelector(".site-head")!.getBoundingClientRect();
+  const mark = document.querySelector(".site-head .wordmark")!.getBoundingClientRect();
+  return JSON.stringify({ items: items.map(readItem), rows: new Set(items.map((el) => Math.round(el.getBoundingClientRect().top))).size,
+    have: Math.round(head.width), need: Math.round(mark.width + nav.getBoundingClientRect().width) });
+}
+/** The row's own items, read in the page. */
+const ROW = `(${readRowInPage})()`;
 
-/** The opened list's box, against every other item on the row. */
-const OPEN_LIST = 'JSON.stringify((() => {'
-  + ' const nav = document.querySelector(".site-head .nav");'
-  + ' const d = nav.querySelector("details");'
-  + ' const list = d.querySelector(".list").getBoundingClientRect();'
-  + ' const box = (r) => [Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom)];'
+/** In the page: the opened list's box, against every other item on the row, as JSON. */
+function readOpenListInPage(): string {
+  const nav = document.querySelector(".site-head .nav")!;
+  const d = nav.querySelector("details")!;
+  const list = d.querySelector(".list")!.getBoundingClientRect();
+  const roundBox = (r: DOMRect) => [Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom)];
   // The separator too: the list ran 45 px under it on the shortest word
   // before the disclosure was given its margin (the human's walk, 2026-09-16).
-  + ' const hits = [...nav.querySelectorAll(":scope > a, :scope > .sep")].map((a) => {'
-  + '   const r = a.getBoundingClientRect();'
-  + '   const overlap = !(r.right <= list.left || r.left >= list.right'
-  + '     || r.bottom <= list.top || r.top >= list.bottom);'
-  + '   return { text: a.textContent.trim() || "separator", overlap, box: box(r) }; });'
-  + ' const sep = nav.querySelector(":scope > .sep").getBoundingClientRect();'
-  + ' return { open: d.open, word: d.querySelector("summary").textContent.trim(),'
-  + '   summary: box(d.querySelector("summary").getBoundingClientRect()),'
-  + '   list: box(list), clearance: Math.round(sep.left - list.right),'
-  + '   hits }; })())';
+  const hits = [...nav.querySelectorAll(":scope > a, :scope > .sep")].map((a) => {
+    const r = a.getBoundingClientRect();
+    const overlap = !(r.right <= list.left || r.left >= list.right || r.bottom <= list.top || r.top >= list.bottom);
+    return { text: a.textContent!.trim() || "separator", overlap, box: roundBox(r) };
+  });
+  const sep = nav.querySelector(":scope > .sep")!.getBoundingClientRect();
+  return JSON.stringify({ open: d.open, word: d.querySelector("summary")!.textContent!.trim(),
+    summary: roundBox(d.querySelector("summary")!.getBoundingClientRect()),
+    list: roundBox(list), clearance: Math.round(sep.left - list.right), hits });
+}
+/** The opened list's box, read in the page. */
+const OPEN_LIST = `(${readOpenListInPage})()`;
 
 /** What `OPEN_LIST` hands back. */
 interface Opened {
@@ -205,24 +211,26 @@ async function expectFoldedBehindMenuAt(width: number): Promise<void> {
   expect(seen.overflow).toBeLessThanOrEqual(0);
 }
 
+/** In the page: the opened phone menu's shown rows, its group heading, whether the disclosure's word is shown, and
+ * each shown row's height, as JSON. */
+function readPhoneMenuInPage(): string {
+  const nav = document.querySelector(".site-head .nav")!;
+  const isShown = (el: Element) => el.getBoundingClientRect().height > 0;
+  const group = nav.querySelector(".group");
+  const rows = [...nav.querySelectorAll("a")].filter(isShown);
+  return JSON.stringify({ rows: rows.map((a) => a.textContent!.trim()),
+    heading: group && isShown(group) ? group.textContent!.trim() : "",
+    summaryShown: isShown(nav.querySelector("summary")!),
+    taps: rows.map((a) => Math.round(a.getBoundingClientRect().height)) });
+}
+
 /** Checks the phone menu at 390 shows the Countries heading, the four, then the three, each tap-sized. */
 async function expectPhoneMenuAt390(): Promise<void> {
   const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
     await tab.goto(url("/france/"));
     await tab.evaluate('document.querySelector(".menu").click()');
     await tab.waitUntilAtRest();
-    return tab.evaluate(
-      'JSON.stringify((() => {'
-      + ' const nav = document.querySelector(".site-head .nav");'
-      + ' const shown = (el) => el.getBoundingClientRect().height > 0;'
-      + ' const group = nav.querySelector(".group");'
-      + ' return { rows: [...nav.querySelectorAll("a")].filter(shown)'
-      + '     .map((a) => a.textContent.trim()),'
-      + '   heading: group && shown(group) ? group.textContent.trim() : "",'
-      + '   summaryShown: shown(nav.querySelector("summary")),'
-      + '   taps: [...nav.querySelectorAll("a")].filter(shown)'
-      + '     .map((a) => Math.round(a.getBoundingClientRect().height)) }; })())',
-    );
+    return tab.evaluate(`(${readPhoneMenuInPage})()`);
   }, PHONE) as string) as
     { rows: string[]; heading: string; summaryShown: boolean; taps: number[] };
 
