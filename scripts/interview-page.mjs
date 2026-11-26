@@ -116,6 +116,14 @@ function refusalOf(how, before, after) {
   return isStill ? "the tap was refused: the screen did not move on" : null;
 }
 
+/** The screen the page read as `json`; throws, naming the call `by` and the page's address, where the page held no
+ * interview. @returns {ScreenShown} */
+function screenOf(json, by) {
+  const { offTheInterview, ...shown } = JSON.parse(json);
+  if (offTheInterview !== undefined) throw new Error(`${by}: no interview on ${offTheInterview}`);
+  return shown;
+}
+
 /** The interview on one page of the site, as tests and scripts drive it. */
 export class InterviewPage {
   #page;
@@ -191,9 +199,23 @@ export class InterviewPage {
   /** Which screen the interview is on, and the question card as a reader sees it; throws, naming the page's
    * address, on a page that holds no interview. @returns {Promise<ScreenShown>} */
   async readScreen() {
-    const { offTheInterview, ...shown } = JSON.parse(await this.#page.evaluate(questionCardProbes.screenNow));
-    if (offTheInterview !== undefined) throw new Error(`readScreen: no interview on ${offTheInterview}`);
-    return shown;
+    return screenOf(await this.#page.evaluate(questionCardProbes.screenNow), "readScreen");
+  }
+
+  /**
+   * Waits in the page until the screen is another than `from` (a screen this
+   * interview read: another screen, or another question) and its question is
+   * shown, and returns it as read in the same task the page drew it in, before
+   * the next gesture or frame. A history move draws on the browser's turn,
+   * not the gesture's, so a caller waits here after one. Throws, naming the
+   * page's address, where the interview left the page.
+   *
+   * @param {ScreenShown} from
+   * @returns {Promise<ScreenShown>}
+   */
+  async waitUntilScreenChanges(from) {
+    const what = `the screen never changed from "${from.screen} ${from.question}"`;
+    return screenOf(String(await this.#page.waitUntil(questionCardProbes.screenOnceChangedFrom(from), what)), "waitUntilScreenChanges");
   }
 
   /** Where the question card sits and where the focus is; null where no card is drawn. @returns {Promise<CardLayout | null>} */

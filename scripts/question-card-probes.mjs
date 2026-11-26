@@ -81,6 +81,24 @@ function readScreenInPage(kit) {
 // The readers `readScreenInPage` is handed in the page, each carried there as its source text.
 const SCREEN_READERS = `{ textOf: ${textOfInPage}, readCardWords: ${readCardWordsInPage}, readAnswer: ${readAnswerInPage}, readAskedFor: ${readAskedForInPage} }`;
 
+/** In the page: once the screen `readScreenNow` reads is another than `from` (its screen or its question), and is
+ * not a question card still hidden from the reader, that screen, read in the same task as the change is seen. */
+function readScreenOnceChangedInPage(from, readScreenNow) {
+  return new Promise((resolve) => {
+    const check = () => {
+      const now = JSON.parse(readScreenNow());
+      const isUnchanged = now.screen === from.screen && now.question === from.question;
+      const isQuestionHidden = now.screen === "questions" && now.question === "";
+      if (isUnchanged || isQuestionHidden) return;
+      watching.disconnect();
+      resolve(JSON.stringify(now));
+    };
+    const watching = new MutationObserver(check);
+    watching.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true });
+    check();
+  });
+}
+
 /** In the page: the asked-for line `el` against `isInsideCard`: inside the card or not, overflowing its box, and
  * how many lines it wraps to; null where there is no line. */
 function readAskedForBoxInPage(el, isInsideCard) {
@@ -146,6 +164,9 @@ export const questionCardProbes = {
   beatMsNow: `(${readBeatMsInPage})()`,
   /** The screen as a reader sees it, as JSON. */
   screenNow: `(${readScreenInPage})(${SCREEN_READERS})`,
+  /** The screen as a reader sees it once it is another than `from`, as JSON. */
+  screenOnceChangedFrom: ({ screen, question }) =>
+    `(${readScreenOnceChangedInPage})(${JSON.stringify({ screen, question })}, () => (${readScreenInPage})(${SCREEN_READERS}))`,
   /** Where the question card and its parts sit, and the focus, as JSON. */
   cardLayoutNow: `(${readCardLayoutInPage})(${readAskedForBoxInPage})`,
   /** The answer under `point`. */

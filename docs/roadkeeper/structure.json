@@ -4752,6 +4752,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/interview-page-gestures.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page-gestures.test.ts",
+   "to": "tests/interview-on-site.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/interview-page-layout.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
@@ -8887,6 +8897,11 @@
     "exported": false
    },
    {
+    "name": "screenOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "InterviewPage",
     "kind": "class",
     "exported": true
@@ -9126,6 +9141,11 @@
    {
     "name": "SCREEN_READERS",
     "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "readScreenOnceChangedInPage",
+    "kind": "fn",
     "exported": false
    },
    {
@@ -12646,5 +12666,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "66fe423301d293d1a552364a8531c076416a9f8479a5e12927b588af79b5e558"
+ "digest": "bc7ab95612b3dd9c76503445719c7f3f4bc1a27dcec507d4a423a236c74e8b16"
 }
