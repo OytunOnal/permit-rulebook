@@ -6697,6 +6697,11 @@
   },
   {
    "from": "tests/s31.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/s31.test.ts",
    "to": "scripts/interview-page/interview-page.mjs",
    "kind": "dependency"
   },
@@ -12674,5 +12679,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "1706a04a6a3ccf7bb417c213c46abc381f7873777516876a28f5287356f9c8d3"
+ "digest": "fb23f448a35aed38b4def15439fdbf0aa3a8adfe6595b009e910a12430945427"
 }

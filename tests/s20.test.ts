@@ -102,8 +102,8 @@ if (skipped)
 
 /**
  * In the page: where the reader is, read the way a reader would read it, the
- * question card aside: the masthead and the headline against the viewport,
- * the live region, what holds the focus, and the resumed line, as JSON.
+ * question card and the live region aside: the masthead and the headline
+ * against the viewport, what holds the focus, and the resumed line, as JSON.
  */
 function readWhere(): string {
   const head = document.querySelector(".masthead-with-stamps");
@@ -119,7 +119,6 @@ function readWhere(): string {
     headTop: head ? Math.round(head.getBoundingClientRect().top) : null,
     h1Bottom: h1 ? Math.round(h1.getBoundingClientRect().bottom) : null,
     headline: h1 ? (h1.textContent ?? "").trim() : "",
-    live: (document.getElementById("cstatus")!.textContent || "").trim(),
     active: active ? nameOf(active) : "",
     resumed: resumed ? (resumed.textContent ?? "").trim() : null,
     resumedRestart: resumedRestart ? !resumedRestart.hidden && getComputedStyle(resumedRestart).display !== "none" : false,
@@ -127,14 +126,16 @@ function readWhere(): string {
   });
 }
 
-/** Where the reader is, read in the page: the card's top edge against the viewport, and whether the focus is on the
- * card's first control, as the interview reads them, beside the rest. The first control is whatever the card offers
+/** Where the reader is, read in the page: the card's top edge against the viewport, whether the focus is on the
+ * card's first control, and what the live region announces, as the interview reads them, beside the rest. The first control is whatever the card offers
  * first — a button for a choice, the box for a search — and the card's heading where there is neither. */
 async function where(page: BrowserPage): Promise<Where> {
-  const stood = JSON.parse(await page.evaluate(`(${readWhere})()`)) as Omit<Where, "cardTop" | "firstShown" | "activeIsFirst" | "activeInCard">;
-  const card = await new InterviewPage({ page }).readCardLayout();
+  const stood = JSON.parse(await page.evaluate(`(${readWhere})()`)) as Omit<Where, "live" | "cardTop" | "firstShown" | "activeIsFirst" | "activeInCard">;
+  const interview = new InterviewPage({ page });
+  const card = await interview.readCardLayout();
   return {
     ...stood,
+    live: (await interview.readScreen()).announced,
     cardTop: card ? Math.round(card.top) : null,
     firstShown: card?.focus.isFirstControlShown ?? false,
     activeIsFirst: card?.focus.isOnFirstControl ?? false,

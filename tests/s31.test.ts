@@ -6,6 +6,7 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, type Dataset } from "permit-rulebook-data";
 import { RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { holdLineHtml } from "../src/lib/question.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
 import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { withSite, skipReason, tapPencil } from "./browser-walk.js";
 import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
@@ -225,11 +226,8 @@ function expectDrawnVerdictUnderTheEyebrow(d: Hold): void {
   expect(d.scrollY, "the first paint is not a gesture: nothing scrolls").toBe(0);
 }
 
-/**
- * In the page: where the focus is, and what the live region says — read after
- * the gesture, or after the arrival, the way s20 reads them — as JSON.
- */
-function readFocus(): string {
+/** In the page: where the focus is, and the headline it may be on, as JSON. */
+function readFocusInPage(): string {
   const active = document.activeElement;
   const h1 = document.getElementById("headline")!;
   const nameOf = (el: Element) => (el.id ? "#" + el.id : el.tagName.toLowerCase());
@@ -238,7 +236,6 @@ function readFocus(): string {
     active: active ? nameOf(active) : "",
     headline: (h1.textContent || "").trim(),
     tabindex: h1.getAttribute("tabindex"),
-    live: (document.getElementById("cstatus")!.textContent || "").trim(),
     scrollY: Math.round(window.scrollY),
     h1Top: Math.round(h1.getBoundingClientRect().top),
     h1Bottom: Math.round(h1.getBoundingClientRect().bottom),
@@ -246,8 +243,12 @@ function readFocus(): string {
   });
 }
 
-/** The read of the focus and the live region: the expression a case evaluates. */
-const FOCUS = `(${readFocus})()`;
+/** Reads where the focus is, and what the live region says, as the interview reads it — after the gesture, or
+ * after the arrival, the way s20 reads them. */
+async function readFocus(page: BrowserPage): Promise<Focus> {
+  const focus = JSON.parse(await page.evaluate(`(${readFocusInPage})()`)) as Omit<Focus, "live">;
+  return { ...focus, live: (await new InterviewPage({ page }).readScreen()).announced };
+}
 
 interface Focus {
   state: string;
@@ -286,7 +287,7 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
         if (record) await interview.seed(record, { done: true });
         await interview.open(path);
         await site.page.waitUntilAtRest();
-        return { at: JSON.parse(await site.page.evaluate(FOCUS)) as Focus };
+        return { at: await readFocus(site.page) };
       }, PHONE);
       expect(seen.at.active, `the arrival focused ${seen.at.active}`).toBe("body");
     }, 180000);
@@ -300,13 +301,13 @@ async function expectCorrectionFocusesTheHeadline(viewport: { width: number; hei
     await interview.seed(finished, { done: true });
     await interview.open();
     await page.waitUntilAtRest();
-    const arrived = JSON.parse(await page.evaluate(FOCUS)) as Focus;
+    const arrived = await readFocus(page);
     // s20's walk, on the verdict: the ledger opened, and the salary row scrolled to and its ✎ tapped.
     await tapPencil(page, "salary_eur_year", { scrollToRow: true });
     await page.waitUntilAtRest();
-    const onQuestion = JSON.parse(await page.evaluate(FOCUS)) as Focus;
+    const onQuestion = await readFocus(page);
     await interview.answer("salary_eur_year", ANOTHER_BAND);
-    const back = JSON.parse(await page.evaluate(FOCUS)) as Focus;
+    const back = await readFocus(page);
     return { arrived, onQuestion, back };
   }, { viewport, mobile });
   // The arrival keeps s10's rule: a reader who touched nothing has

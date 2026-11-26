@@ -201,7 +201,7 @@ function readRoutesLinkedInPage(): string {
 /** The results screen, read once it is drawn, against the verdict it should paint. */
 const readResult = async (interview: InterviewPage, page: BrowserPage, verdict: Verdict): Promise<Result> => ({
   state: (await interview.readScreen()).screen,
-  status: await page.evaluate('document.getElementById("cstatus").textContent'),
+  status: (await interview.readScreen()).announced,
   painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdict))),
   declared: Object.values((await interview.readRecord())?.answers ?? {}),
   routes: JSON.parse(await page.evaluate(`(${readRoutesLinkedInPage})()`)),

@@ -363,11 +363,10 @@ async function expectBothWalksPaintedInTheBrowser(): Promise<void> {
     const { page } = site;
     const interview = new InterviewPage(site);
     // Each screen is read once the page is at rest.
-    const read = async (answers: Profile) => ({
-      status: await page.evaluate('document.getElementById("cstatus").textContent'),
-      painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(answers)))),
-      state: (await interview.readScreen()).screen,
-    });
+    const read = async (answers: Profile) => {
+      const { screen, announced } = await interview.readScreen();
+      return { status: announced, painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(answers)))), state: screen };
+    };
     // France, by the buttons: the destination on the record, then the marked answer tapped.
     await interview.seed({ destination: "fr" });
     await interview.open();
