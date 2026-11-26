@@ -40,14 +40,12 @@ const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 // `readInPage` carries their source text into it, so each reads nothing from
 // this module.
 
-/** The interview's first screen, its question aside: how many answers a reader can reach (a button, a row, or
- * the search box), whether the declaration panel is drawn, and the masthead's stamp in plain words, "" while it
- * is hidden. */
+/** The interview's first screen, its question card aside: whether the declaration panel is drawn, and the
+ * masthead's stamp in plain words, "" while it is hidden. */
 function readFirstScreenInPage() {
   const box = document.querySelector(".stamps");
   const isStampShown = box !== null && !box.hasAttribute("hidden");
   return {
-    options: document.querySelectorAll("#main .opt, #main .copt, #main [role='combobox']").length,
     ledger: document.getElementById("decl-list") !== null,
     stamp: isStampShown
       ? box.querySelector(".stamp").innerHTML.replace(/<[^>]*>/g, " ").split(/[^!-~]+/).filter(Boolean).join(" ")
@@ -93,10 +91,12 @@ const readInPage = async (page, probe) => JSON.parse(await page.evaluate(`JSON.s
 export const CHECKS = [
   {
     path: "/",
-    /** The question on the screen, as the interview reads it, and what the first screen shows beside it. */
+    /** The question on the screen and how many answers a reader can reach (a button, a row, or the search box),
+     * as the interview reads them, and what the first screen shows beside them. */
     async read(site) {
-      const { question } = await new InterviewPage(site).readScreen();
-      return { question, ...await readInPage(site.page, readFirstScreenInPage) };
+      const { question, answers, search } = await new InterviewPage(site).readScreen();
+      const options = answers.length + (search === null ? 0 : 1);
+      return { question, options, ...await readInPage(site.page, readFirstScreenInPage) };
     },
     expect(v) {
       const failures = [];
