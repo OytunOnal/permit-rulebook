@@ -1227,17 +1227,17 @@
   },
   {
    "from": "scripts/measure-taps.mjs",
+   "to": "scripts/interview-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/measure-taps.mjs",
    "to": "scripts/required-controls.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/measure-taps.mjs",
    "to": "scripts/seeded-results.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/measure-taps.mjs",
-   "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
@@ -1272,7 +1272,7 @@
   },
   {
    "from": "scripts/shot.mjs",
-   "to": "src/lib/record.ts",
+   "to": "scripts/interview-page.mjs",
    "kind": "dependency"
   },
   {
@@ -1283,6 +1283,11 @@
   {
    "from": "scripts/smoke.mjs",
    "to": "scripts/dev-server.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/smoke.mjs",
+   "to": "scripts/interview-page.mjs",
    "kind": "dependency"
   },
   {
@@ -8809,6 +8814,11 @@
     "exported": false
    },
    {
+    "name": "measureWidthsInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "measureControls",
     "kind": "fn",
     "exported": false
@@ -8824,12 +8834,17 @@
     "exported": false
    },
    {
-    "name": "readScreenState",
+    "name": "readResultBodyInPage",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "PROBE",
+    "name": "callInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "REQUIRED_SELECTORS",
     "kind": "const",
     "exported": false
    },
@@ -8844,12 +8859,12 @@
     "exported": false
    },
    {
-    "name": "seedFor",
+    "name": "measureAtRest",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "measureAtRest",
+    "name": "readDrawnScreen",
     "kind": "fn",
     "exported": false
    },
@@ -9126,6 +9141,31 @@
    {
     "name": "dist",
     "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "readFirstScreenInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readRoutePageInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readCountryPageInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readDataPageInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readInPage",
+    "kind": "fn",
     "exported": false
    },
    {
@@ -12347,5 +12387,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a46f4d469d8ba0bfc2eb329ba2254f1f43a96384b50732edf9df39bf4fa612cd"
+ "digest": "134501f15178adf09fbb4a411f1dcb5d9f1c43bd30f6217f9ee4b7e13a8b1827"
 }
