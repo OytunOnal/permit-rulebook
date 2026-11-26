@@ -152,6 +152,7 @@ async function moveDestination(site: PageOnSite, walk: Walk, to: string) {
   return { verdict, editing, next };
 }
 
+// The width where the declared panel is a sidebar beside the screen, open, not folded.
 const DESKTOP = { viewport: { width: 1240, height: 900 }, mobile: false };
 
 /** In the page: on a phone the panel folds to its summary row: whether it is
@@ -212,7 +213,9 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
     expect(seen.next.rows, "the panel is not drawn").toBeGreaterThan(0);
     expect(seen.next.named).toEqual([]);
   }, 180_000);
+});
 
+describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
   it("changing back to France asks the set-aside question again", async () => {
     const seen = await withSite(async (site) => {
       const moved = await moveDestination(site, TO_A_QUESTION, "es");
@@ -233,7 +236,9 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
     expect(EDIT_LINE, "the copy module holds no edit line").toBeTypeOf("string");
     expect(seen.editing.meta).toBe(EDIT_LINE);
   }, 180_000);
+});
 
+describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
   it("on a phone, with the panel folded, the summary row names them, the screen after does not, and nothing shifts", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;

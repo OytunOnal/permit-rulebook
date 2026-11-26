@@ -31,7 +31,8 @@ if (skipped) warnNotWalked("THE MONEY ROWS", skipped);
 const UNKNOWN = (() => {
   const money = deriveQuestions(ds).filter((q) => ds.fields.find((f) => f.id === q.field)?.type === "money_band");
   const values = new Set(money.map((q) => q.options.find((o) => o.is_unknown)?.value));
-  if (money.length === 0 || values.size !== 1 || values.has(undefined))
+  const isOneOpenUnknown = money.length > 0 && values.size === 1 && !values.has(undefined);
+  if (!isOneOpenUnknown)
     throw new Error("every money question should offer one open unknown");
   return [...values][0]!;
 })();
@@ -118,6 +119,7 @@ function readChosen(): string {
   return chosen ? (chosen.dataset.value ?? "") : "";
 }
 
+// One walk per money question, each to a destination whose interview asks it.
 const WALKS = [
   { field: "funds_eur_month", destination: "de" },
   { field: "salary_eur_year", destination: "de" },

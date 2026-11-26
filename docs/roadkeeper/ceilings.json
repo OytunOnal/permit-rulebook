@@ -1,8 +1,5 @@
 {
   "tests/s27.test.ts": {
     "lines": 526
-  },
-  "tests/s30.test.ts": {
-    "lines": 484
   }
 }

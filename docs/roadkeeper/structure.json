@@ -5041,6 +5041,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/question-landing.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/question-landing.ts",
+   "to": "scripts/interview-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/question-landing.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/rail.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
@@ -6457,12 +6472,12 @@
   },
   {
    "from": "tests/s30.test.ts",
-   "to": "src/lib/first-paint.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s30.test.ts",
-   "to": "tests/browser-walk.ts",
+   "to": "tests/question-landing.ts",
    "kind": "dependency"
   },
   {
@@ -12347,5 +12362,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a9472dd52db91967cbfbaa0fb425789ef34d7a949dad1380c0984720e1badb1e"
+ "digest": "1e362f49f7f9f18f034da3923c346e510e1295808c3120aad242f51295bbf117"
 }

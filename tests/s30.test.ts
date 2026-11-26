@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, type Dataset, type Profile } from "permit-rulebook-data";
-import { WIDE_QUERY } from "../src/lib/first-paint.js";
 import { DESK, PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { InterviewPage } from "../scripts/interview-page.mjs";
 import { QLABEL, answerWith, evaluateAtRest, fieldOnScreen, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { TAP_FIRST_AND_READ, expectLanded, where, type Where } from "./question-landing.js";
 
 /**
  * s30 — on a phone the next question comes up to meet the reader.
@@ -33,83 +33,6 @@ const ds = rawDataset as unknown as Dataset;
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE QUESTION'S LANDING", skipped);
 
-/**
- * In the page: where the reader is, read the way a reader would, its question
- * aside: the card's top against the viewport, the header's height and the
- * breath it keeps under itself, and what holds the focus, as JSON; `wideQuery`
- * is the site's breakpoint. The page's frame — header, masthead, ledger, main
- * — is on every screen and read straight; only the screen's own parts (the
- * card, the strip) can be absent.
- */
-function readWhereInPage(wideQuery: string): string {
-  const card = document.querySelector("#main .qcard");
-  const first = card && (card.querySelector(".opt, #cfilter") || card.querySelector(".qlabel"));
-  const head = document.querySelector(".site-head")!;
-  const decl = document.getElementById("decl") as HTMLDetailsElement;
-  const declBox = decl.getBoundingClientRect();
-  const main = document.getElementById("main")!.getBoundingClientRect();
-  const masthead = document.querySelector(".masthead-with-stamps")!.getBoundingClientRect();
-  const strip = document.querySelector("#main .strip");
-  const active = document.activeElement;
-  const nameOf = (el: Element) => (el.id ? "#" + el.id : el.tagName + "." + (el.className || "").split(" ")[0]);
-  return JSON.stringify({
-    state: document.getElementById("app")!.dataset.state,
-    wide: matchMedia(wideQuery).matches,
-    scrollY: window.scrollY,
-    viewport: window.innerHeight,
-    cardTop: card ? card.getBoundingClientRect().top : null,
-    cardLeft: card ? card.getBoundingClientRect().left : null,
-    mainLeft: main.left,
-    mainTop: main.top,
-    declTop: declBox.top,
-    declBottom: declBox.bottom,
-    declLeft: declBox.left,
-    declOpen: decl.open,
-    answered: document.documentElement.dataset.answered !== undefined,
-    mastheadTop: masthead.top,
-    mastheadBottom: masthead.bottom,
-    stripTop: strip ? strip.getBoundingClientRect().top : null,
-    headline: (document.getElementById("headline")!.textContent || "").trim(),
-    headerHeight: head.getBoundingClientRect().height,
-    gap: parseFloat(getComputedStyle(head).paddingBottom),
-    activeIsFirst: !!first && active === first,
-    active: active ? nameOf(active) : "",
-  });
-}
-
-interface Where {
-  state: string;
-  wide: boolean;
-  scrollY: number;
-  viewport: number;
-  cardTop: number | null;
-  cardLeft: number | null;
-  mainLeft: number;
-  mainTop: number;
-  declTop: number;
-  declBottom: number;
-  declLeft: number;
-  declOpen: boolean;
-  answered: boolean;
-  mastheadTop: number;
-  mastheadBottom: number;
-  /** The verdict's summary strip, the first thing of the result after the
-   * notices; null on a question screen. */
-  stripTop: number | null;
-  headline: string;
-  headerHeight: number;
-  gap: number;
-  question: string;
-  activeIsFirst: boolean;
-  active: string;
-}
-
-/** Where the reader is, and which question is being asked. */
-async function where(page: BrowserPage): Promise<Where> {
-  const stood = JSON.parse(await page.evaluate(`(${readWhereInPage})(${JSON.stringify(WIDE_QUERY)})`)) as Omit<Where, "question">;
-  return { ...stood, question: (await new InterviewPage({ page }).readScreen()).question };
-}
-
 /** The first answer the question on `field` offers, other than `held` where one is held. */
 function firstOptionOf(field: string, held?: string): string {
   return deriveQuestions(ds).find((q) => q.field === field)!.options.find((o) => o.value !== held)!.value;
@@ -122,13 +45,7 @@ async function answerFirstOption(page: BrowserPage): Promise<void> {
   await new InterviewPage({ page }).answer(field, firstOptionOf(field));
 }
 
-/** In the page: the first option of the question on the screen tapped, then
- * the reader's position read by `readWhere` before the browser has had a
- * frame: what an instant landing leaves, and a smooth one does not. */
-function tapFirstAndRead(readWhere: typeof readWhereInPage, wideQuery: string): string {
-  document.querySelector<HTMLElement>("#main .qcard .opt")!.click();
-  return readWhere(wideQuery);
-}
+// The screen's Back control, tapped.
 const TAP_BACK = 'document.querySelector("#main #back").click()';
 
 /** The screen's Back: a history move, drawn on the browser's turn rather than
@@ -143,22 +60,6 @@ async function pressBack(page: BrowserPage): Promise<void> {
  * viewport, so the card's top is still on the screen and the browser has
  * something of theirs to bring back. */
 const READ_ON = 'window.scrollBy({ top: Math.round(window.innerHeight / 4), behavior: "instant" })';
-
-/** The question card's top sits one header and one gap under the viewport's
- * top — within the pixel the browser rounds a scroll to — and the ledger line
- * keeps its place above the card — its bottom at or above the card's top (amendment
- * 8: every answer had felt like arriving at *You declared*). */
-function expectLanded(step: Omit<Where, "question">, label: string): void {
-  expect(step.state, `${label}: left the interview`).toBe("questions");
-  expect(step.cardTop, `${label}: no question card`).not.toBeNull();
-  expect(step.declBottom, `${label}: the ledger (bottom ${step.declBottom}) is not above the card (${step.cardTop})`)
-    .toBeLessThanOrEqual(step.cardTop!);
-  const landing = step.headerHeight + step.gap;
-  expect(
-    Math.abs(step.cardTop! - landing),
-    `${label}: the card's top is at ${step.cardTop} px, the landing is ${landing} px (scrollY ${step.scrollY})`,
-  ).toBeLessThanOrEqual(1);
-}
 
 /** In the page: the ledger's ✎ on `field`'s row, found by its field, never by
  * its words — opened first, the way a reader reaches it. */
@@ -179,33 +80,37 @@ async function openOn(site: PageOnSite, answers: Profile | null, options?: { don
   return where(site.page);
 }
 
+/** From a cold start: two answers, Back, reading on, a third answer and Back
+ * again, and where the reader stood after each. */
+async function answerAndGoBack(site: PageOnSite) {
+  const { page } = site;
+  const cold = await openOn(site, null);
+  await answerFirstOption(page);
+  const first = await where(page);
+  await answerFirstOption(page);
+  const second = await where(page);
+  await pressBack(page);
+  const back = await where(page);
+  // The reader reads on down the page, answers, and comes back: the
+  // browser restores the scroll they LEFT the entry at, which is not
+  // where the question is (Spec review, 2026-09-18: 622, card top
+  // -177 at 390).
+  await page.evaluate(READ_ON);
+  const readOn = await where(page);
+  await answerFirstOption(page);
+  const third = await where(page);
+  await pressBack(page);
+  const backFromScrolled = await where(page);
+  return { cold, first, second, back, readOn, third, backFromScrolled };
+}
+
 describe.skipIf(skipped !== null)("on a phone every question after the first comes up under the header", () => {
   for (const [name, viewport] of [
     ["390x844", { width: 390, height: 844 }],
     ["375x667, where a long first option was cut", { width: 375, height: 667 }],
   ] as const)
     it(`at ${name}: the first answer, the next, and Back`, async () => {
-      const seen = await withSite(async (site) => {
-        const { page } = site;
-        const cold = await openOn(site, null);
-        await answerFirstOption(page);
-        const first = await where(page);
-        await answerFirstOption(page);
-        const second = await where(page);
-        await pressBack(page);
-        const back = await where(page);
-        // The reader reads on down the page, answers, and comes back: the
-        // browser restores the scroll they LEFT the entry at, which is not
-        // where the question is (Spec review, 2026-09-18: 622, card top
-        // -177 at 390).
-        await page.evaluate(READ_ON);
-        const readOn = await where(page);
-        await answerFirstOption(page);
-        const third = await where(page);
-        await pressBack(page);
-        const backFromScrolled = await where(page);
-        return { cold, first, second, back, readOn, third, backFromScrolled };
-      }, { viewport, mobile: true });
+      const seen = await withSite(answerAndGoBack, { viewport, mobile: true });
       expect(seen.cold.wide, "the breakpoint reads this width as wide").toBe(false);
       // The first paint is not a gesture: the cold load scrolls nothing, and
       // with nothing declared the question comes first (F8).
@@ -232,7 +137,9 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
       ] as const)
         expect(step.activeIsFirst, `after the ${label} the focus is on ${step.active || "nothing"}`).toBe(true);
     }, 180000);
+});
 
+describe.skipIf(skipped !== null)("on a phone every question after the first comes up under the header", () => {
   it("with reduced motion the landing is instant: final before the browser draws a frame", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
@@ -245,8 +152,7 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
       const reduced = await page.evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches");
       // Read again once the page is at rest: whatever would still move has
       // moved by then, so a landing that kept going is caught.
-      const tapped = await answerWith(page, `(${tapFirstAndRead})(${readWhereInPage}, ${JSON.stringify(WIDE_QUERY)})`);
-      const atOnce = JSON.parse(tapped) as Omit<Where, "question">;
+      const atOnce = JSON.parse(await answerWith(page, TAP_FIRST_AND_READ)) as Omit<Where, "question">;
       const later = await where(page);
       return { cold, reduced, atOnce, later };
     }, PHONE);
@@ -272,7 +178,9 @@ describe.skipIf(skipped !== null)("what does not change", () => {
     expect(seen.second.scrollY, "the second answer moved a desktop reader").toBe(0);
     expect(seen.first.activeIsFirst, `the focus is on ${seen.first.active || "nothing"}`).toBe(true);
   }, 180000);
+});
 
+describe.skipIf(skipped !== null)("what does not change", () => {
   it("at 1280x900 a ✎ correction keeps s20's rule: a card whose top is on the screen is not moved", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
@@ -360,35 +268,38 @@ describe.skipIf(skipped !== null)("a link the page does not know keeps the first
   }, 180000);
 });
 
+/** s20's finished reader: an offer in Germany, a Turkish passport, the
+ * band just under the Blue Card line — a record that says it is done. */
+const finished = {
+  destination: "de", situation: "offer", qualification: "degree", citizenship: "TR",
+  occupation_shortage: "yes", recognition_de: "recognized", experience_5y: "lt2", experience_7y: "lt3",
+  salary_eur_year: "band_4", german: "none", english: "none", funds_eur_month: "band_0",
+};
+
+/** The finished reader's verdict, ✎ on the salary row from it, and another band answered: where the reader stood
+ * after each. */
+async function verdictWalk(site: PageOnSite) {
+  const { page } = site;
+  const verdict = await openOn(site, finished, { done: true });
+  await evaluateAtRest(page, `(${openAndTapPencil})("salary_eur_year")`);
+  const corrected = await where(page);
+  await new InterviewPage(site).answer("salary_eur_year", firstOptionOf("salary_eur_year", finished.salary_eur_year));
+  const returned = await where(page);
+  return { verdict, corrected, returned };
+}
+
+/** The line under the masthead and above the strip: the way back to any
+ * answer is at the top of the verdict, not after every card. */
+function expectLedgerAboveResult(step: Where, label: string): void {
+  expect(step.state, `${label}: not a verdict`).toBe("results");
+  expect(step.stripTop, `${label}: no summary strip`).not.toBeNull();
+  expect(step.declTop, `${label}: the ledger (${step.declTop}) is not under the masthead (bottom ${step.mastheadBottom})`)
+    .toBeGreaterThanOrEqual(step.mastheadBottom);
+  expect(step.declBottom, `${label}: the ledger (bottom ${step.declBottom}) is not above the strip (${step.stripTop})`)
+    .toBeLessThanOrEqual(step.stripTop!);
+}
+
 describe.skipIf(skipped !== null)("on a phone the ledger line sits above the result too (amendment 7)", () => {
-  /** s20's finished reader: an offer in Germany, a Turkish passport, the
-   * band just under the Blue Card line — a record that says it is done. */
-  const finished = {
-    destination: "de", situation: "offer", qualification: "degree", citizenship: "TR",
-    occupation_shortage: "yes", recognition_de: "recognized", experience_5y: "lt2", experience_7y: "lt3",
-    salary_eur_year: "band_4", german: "none", english: "none", funds_eur_month: "band_0",
-  };
-  async function verdictWalk(site: PageOnSite) {
-    const { page } = site;
-    const verdict = await openOn(site, finished, { done: true });
-    await evaluateAtRest(page, `(${openAndTapPencil})("salary_eur_year")`);
-    const corrected = await where(page);
-    await new InterviewPage(site).answer("salary_eur_year", firstOptionOf("salary_eur_year", finished.salary_eur_year));
-    const returned = await where(page);
-    return { verdict, corrected, returned };
-  }
-
-  /** The line under the masthead and above the strip: the way back to any
-   * answer is at the top of the verdict, not after every card. */
-  function expectLedgerAboveResult(step: Where, label: string): void {
-    expect(step.state, `${label}: not a verdict`).toBe("results");
-    expect(step.stripTop, `${label}: no summary strip`).not.toBeNull();
-    expect(step.declTop, `${label}: the ledger (${step.declTop}) is not under the masthead (bottom ${step.mastheadBottom})`)
-      .toBeGreaterThanOrEqual(step.mastheadBottom);
-    expect(step.declBottom, `${label}: the ledger (bottom ${step.declBottom}) is not above the strip (${step.stripTop})`)
-      .toBeLessThanOrEqual(step.stripTop!);
-  }
-
   for (const [name, viewport] of [
     ["390x844", { width: 390, height: 844 }],
     ["375x667", { width: 375, height: 667 }],
