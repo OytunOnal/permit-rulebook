@@ -208,7 +208,7 @@ const REFUSED_STRINGS = [
 const RECORD_MODULE_PATH = String.raw`(^|\x2f)src\x2flib\x2frecord(\.[jt]s)?$`;
 
 /** What a refused import of the record says instead. */
-const RECORD_REFUSED = `the record is built and read ${THROUGH_INTERVIEW_PAGE}`;
+const RECORD_REFUSED = `building and reading the record ${THROUGH_INTERVIEW_PAGE}`;
 
 /** An `import()` whose path is not written out: a template with an expression, or any other value (Q445). */
 const IMPORT_OF_AN_UNWRITTEN_PATH =
