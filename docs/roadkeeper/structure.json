@@ -394,6 +394,7 @@
   "scripts/main-smoke.mjs": "main",
   "scripts/measure-taps.mjs": "infrastructure",
   "scripts/print-report.mjs": "presentation",
+  "scripts/question-card-probes.mjs": "infrastructure",
   "scripts/refresh-traffic-counter-copy.mjs": "infrastructure",
   "scripts/render-assets.mjs": "infrastructure",
   "scripts/required-controls.mjs": "domain",
@@ -1098,6 +1099,11 @@
   {
    "from": "scripts/dev-server.mjs",
    "to": "scripts/site-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/interview-page.mjs",
+   "to": "scripts/question-card-probes.mjs",
    "kind": "dependency"
   },
   {
@@ -8861,51 +8867,6 @@
     "exported": false
    },
    {
-    "name": "readBeatMsInPage",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "textOfInPage",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "readAskedForInPage",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "readAnswerInPage",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "readCardWordsInPage",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "readScreenInPage",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "SCREEN_READERS",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "SCREEN_NOW",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "pickInPage",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "nameOf",
     "kind": "fn",
     "exported": false
@@ -9118,6 +9079,53 @@
    {
     "name": "printReport",
     "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/question-card-probes.mjs": [
+   {
+    "name": "readBeatMsInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "textOfInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readAskedForInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readAnswerInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readCardWordsInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readScreenInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "SCREEN_READERS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "pickInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "questionCardProbes",
+    "kind": "const",
     "exported": true
    }
   ],
@@ -12554,6 +12562,7 @@
   "scripts/main-smoke.mjs",
   "scripts/measure-taps.mjs",
   "scripts/print-report.mjs",
+  "scripts/question-card-probes.mjs",
   "scripts/refresh-traffic-counter-copy.mjs",
   "scripts/render-assets.mjs",
   "scripts/required-controls.mjs",
@@ -12612,5 +12621,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "f4be92476392f87c3a95c83f86f2552823847ddf8ca67d22167a14e36870ca88"
+ "digest": "7545478ef702e564f4a949f19f61c76b4926ca4efe1664e852db9c0ca1a735b4"
 }
