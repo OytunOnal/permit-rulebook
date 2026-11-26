@@ -68,6 +68,10 @@ const REFUSED: readonly (readonly [string, (filePath: string) => string])[] = [
     const extension = filePath.endsWith(".ts") ? "js" : "ts";
     return `const up = "${up}";\nexport const load = () => import(\`\${up}src/lib/record.${extension}\`);`;
   }],
+  ["a dynamic import of the record module by a template with no expression", (filePath) => {
+    const up = "../".repeat(filePath.split("/").length - 1);
+    return `export const load = () => import(\`${up}src/lib/record.${filePath.endsWith(".ts") ? "js" : "ts"}\`);`;
+  }],
   ["a dynamic import by a template with an expression", () =>
     'const name = "record";\nexport const load = () => import(`src/lib/${name}.js`);'],
   ["a dynamic import by a variable", () => 'const path = "src/lib/record.js";\nexport const load = () => import(path);'],
