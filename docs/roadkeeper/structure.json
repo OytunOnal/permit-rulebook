@@ -8377,7 +8377,12 @@
     "exported": false
    },
    {
-    "name": "RECORD_MODULE_IN_A_TEMPLATE",
+    "name": "UNREAD_IMPORT_PATH",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "IMPORT_PATH_UNREAD",
     "kind": "const",
     "exported": false
    },
@@ -12635,5 +12640,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "6949a47bf5f8207581384a12ab5551f426e94ce6a1e77edcf76554b700b711ad"
+ "digest": "3a22c0aba79d27320eb6e47bc9f25e30d74eca765932debfc1841acc1018b299"
 }

@@ -200,8 +200,13 @@ const REFUSED_STRINGS = [
 /** The record module's path as an `import()` names it; a selector's pattern cannot hold a slash, so it is written `\x2f` (Q443). */
 const RECORD_MODULE = String.raw`/(^|\x2f)src\x2flib\x2frecord(\.[jt]s)?$/`;
 
-/** The record module's path in a template's text, an extension to come included (Q444). */
-const RECORD_MODULE_IN_A_TEMPLATE = String.raw`/(^|\x2f)src\x2flib\x2frecord(\.([jt]s)?)?$/`;
+/** An `import()` whose path is not written out: a template with an expression, or any other value (Q445). */
+const UNREAD_IMPORT_PATH =
+  'ImportExpression:not([source.type="Literal"]):not([source.type="TemplateLiteral"][source.expressions.length=0])';
+
+/** What a refused `import()` of an unwritten path says instead. */
+const IMPORT_PATH_UNREAD =
+  "an import() whose path is not a plain string: write the path out, so the lint can read what it imports";
 
 /** A probe written as a string: the lint cannot read inside it. */
 const STRING_PROBE =
@@ -262,10 +267,7 @@ export default [
       "no-restricted-syntax": ["error",
         ...REFUSED_STRINGS,
         { selector: `ImportExpression[source.value=${RECORD_MODULE}]`, message: `the record is built and read ${THROUGH_INTERVIEW_PAGE}` },
-        {
-          selector: `ImportExpression > TemplateLiteral > TemplateElement[value.raw=${RECORD_MODULE_IN_A_TEMPLATE}]`,
-          message: `the record is built and read ${THROUGH_INTERVIEW_PAGE}`,
-        },
+        { selector: UNREAD_IMPORT_PATH, message: IMPORT_PATH_UNREAD },
         { selector: `Literal[value=${FUNCTION_BODY_OPENING}]`, message: STRING_PROBE },
         { selector: `TemplateLiteral[quasis.0.value.raw=${FUNCTION_BODY_OPENING}]`, message: STRING_PROBE },
       ],
