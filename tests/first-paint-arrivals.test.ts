@@ -3,12 +3,12 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { WIDE_FROM_PX } from "../src/lib/first-paint.js";
-import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { walkSite, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { ABOVE_THE_BOX } from "./layout-shifts.js";
 import {
-  ARRIVALS, AT_FIRST_PAINT, HELD_MODULE, LANDS_ON, VIEWPORTS, detail, readMeasured, skipped,
+  ARRIVALS, HELD_MODULE, LANDS_ON, VIEWPORTS, detail, readAtFirstPaint, readMeasured, skipped,
   type AtFirstPaint, type Measured,
 } from "./first-paint-measure.js";
 
@@ -114,19 +114,19 @@ const STAND_IN = {
  * visit, and `verdict` for a record that says it was finished (s22). */
 const COVER = { fresh: "", record: "record", link: "link", verdict: "verdict" } as const;
 
-/** Writes the arrival's record into the site's storage the way the product writes it, or clears the storage. */
-async function seedTheStore({ page, url: addressOf }: PageOnSite, arrival: Arrival): Promise<void> {
-  // Storage belongs to the origin, so it is written from a page of
-  // this site — 404 is the cheapest one that runs no interview.
-  await page.goto(addressOf("/404.html"));
+/** Writes the arrival's record into the site's storage the way the product writes it, or takes the record off it. */
+async function seedTheStore(site: PageOnSite, arrival: Arrival): Promise<void> {
+  const interview = new InterviewPage(site);
   // Seeded the way the product writes it: a record that reached a
   // verdict carries the bit that says so (s22).
-  await page.evaluate(arrival.record
-    ? `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
-      JSON.stringify(serialize(
-        arrival.record.answers, [...arrival.record.history], arrival.shape === "verdict",
-      ))})`
-    : "localStorage.clear()");
+  if (arrival.record) {
+    await interview.seed(arrival.record.answers, { history: [...arrival.record.history], done: arrival.shape === "verdict" });
+    return;
+  }
+  // Storage belongs to the origin, so it is cleared from a page of
+  // this site — 404 is the cheapest one that runs no interview.
+  await site.page.goto(site.url("/404.html"));
+  await interview.clearRecord();
 }
 
 /** Opens the arrival with the module held, keeps what the build painted, then what the module drew. */
@@ -137,7 +137,7 @@ async function readTheArrival(page: BrowserPage, address: string, label: string)
   await page.navigate(href);
   await page.waitUntil(`location.href === ${JSON.stringify(href)} && document.readyState !== "loading"`,
     `${href} was never parsed`);
-  const built = JSON.parse(await page.evaluate(AT_FIRST_PAINT)) as AtFirstPaint;
+  const built = await readAtFirstPaint(page);
   expect(built.held, `${label}: the built page painted nothing into #main`)
     .toBe(true);
   atFirstPaint.set(label, built);

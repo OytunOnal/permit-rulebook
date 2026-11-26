@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
 import type { BrowserPage, LayoutShifts } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**
@@ -36,17 +37,27 @@ export const VIEWPORTS = [
   { name: "1280x800", viewport: { width: 1280, height: 800 }, mobile: false },
 ] as const;
 
-/** What the page reads once the module has drawn, its shifts aside. */
-const READ_BESIDE_THE_SHIFTS = `JSON.stringify({
-  sameCard: window.__built === document.querySelector("#main > *"),
-  footBox: document.querySelector("footer.site-foot").getClientRects().length > 0,
-  footMoved: window.__foot === null ? null
-    : Math.round(document.querySelector("footer.site-foot").getBoundingClientRect().top - window.__foot),
-  subline: Math.round(document.getElementById("subline").getBoundingClientRect().height),
-  ledgerOpen: document.getElementById("decl").open,
-  resumed: !!document.querySelector("#main .resumed"),
-  state: document.getElementById("app").dataset.state,
-})`;
+/** What the first paint leaves on the window for the read once the module has drawn: the node the build drew in
+ * the box, and the footer's top then, or null where it took no room. */
+type FirstPaintMarks = Window & { __built?: Element | null; __foot?: number | null };
+
+/** In the page: what it reads once the module has drawn, its shifts aside, as JSON. */
+function readBesideTheShifts(): string {
+  const marks = window as FirstPaintMarks;
+  const foot = document.querySelector("footer.site-foot")!;
+  return JSON.stringify({
+    sameCard: marks.__built === document.querySelector("#main > *"),
+    footBox: foot.getClientRects().length > 0,
+    footMoved: marks.__foot === null ? null : Math.round(foot.getBoundingClientRect().top - marks.__foot!),
+    subline: Math.round(document.getElementById("subline")!.getBoundingClientRect().height),
+    ledgerOpen: (document.getElementById("decl") as HTMLDetailsElement).open,
+    resumed: !!document.querySelector("#main .resumed"),
+    state: document.getElementById("app")!.dataset.state,
+  });
+}
+
+/** The read once the module has drawn: the expression the measure evaluates. */
+const READ_BESIDE_THE_SHIFTS = `(${readBesideTheShifts})()`;
 
 export interface Measured {
   cls: number;
@@ -109,26 +120,39 @@ export const detail = (m: Measured) =>
  * the box, because from s10's second round the built page carries question one
  * AND the two lines that stand in for it, and which of the three shows is the
  * stylesheet's answer to a cover — not something the built HTML can be read for
- * (human's walk, 2026-09-15).
+ * (human's walk, 2026-09-15). The question is read by the interview's own
+ * `readScreen`, in the same moment, the module still held.
  */
-export const AT_FIRST_PAINT = `(() => {
-  window.__built = document.querySelector("#main > *");
-  const foot = document.querySelector("footer.site-foot");
+export async function readAtFirstPaint(page: BrowserPage): Promise<AtFirstPaint> {
+  const built = JSON.parse(await page.evaluate(AT_FIRST_PAINT)) as Omit<AtFirstPaint, "question">;
+  const { question } = await new InterviewPage({ page }).readScreen();
+  return { ...built, question };
+}
+
+/** What is on the screen at the first paint, its question aside: the expression the read evaluates. */
+export const AT_FIRST_PAINT = `(${readBuiltPaint})()`;
+
+/** In the page: what is on the screen at the first paint, its question aside, as JSON, with the box's node and the
+ * footer's top left on the window for the read once the module has drawn. */
+function readBuiltPaint(): string {
+  const marks = window as FirstPaintMarks;
+  marks.__built = document.querySelector("#main > *");
+  const foot = document.querySelector("footer.site-foot")!;
   const footBox = foot.getClientRects().length > 0;
-  window.__foot = footBox ? foot.getBoundingClientRect().top : null;
-  const shown = (el) => el && getComputedStyle(el).visibility === "visible"
-    && getComputedStyle(el).display !== "none" && !!el.offsetParent;
+  marks.__foot = footBox ? foot.getBoundingClientRect().top : null;
+  // Null, not false, for an element the page does not draw: the read says so as it always has.
+  const shown = (el: Element | null) => el && getComputedStyle(el).visibility === "visible"
+    && getComputedStyle(el).display !== "none" && !!(el as HTMLElement).offsetParent;
   return JSON.stringify({
-    held: !!window.__built,
+    held: !!marks.__built,
     cover: document.documentElement.dataset.cover ?? "",
-    box: Math.round(document.getElementById("main").getBoundingClientRect().height),
-    question: shown(document.querySelector(".qlabel")) ? document.querySelector(".qlabel").textContent : "",
+    box: Math.round(document.getElementById("main")!.getBoundingClientRect().height),
     standIn: [...document.querySelectorAll(".stand-in")].filter(shown).map((el) => el.textContent),
     footBox,
     count: document.getElementById("decl-count")?.textContent ?? "",
     countShown: shown(document.getElementById("decl-count")),
   });
-})()`;
+}
 
 export interface AtFirstPaint {
   held: boolean;

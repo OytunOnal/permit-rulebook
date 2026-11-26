@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  phraseAtStartOf, phraseOf, deriveBands, evaluate, fillRouteSlots, remainingQuestions, shortLabelOf, subjectOf,
+  phraseAtStartOf, phraseOf, deriveBands, deriveQuestions, evaluate, fillRouteSlots, remainingQuestions, shortLabelOf, subjectOf,
 } from "permit-rulebook-data";
 import { arrivalOf, type ArrivalFacts } from "../src/lib/scope.js";
 import { arrivalLineHtml } from "../src/lib/arrival-line.js";
@@ -9,12 +9,14 @@ import { ABBREVIATIONS, type Glossary } from "../src/lib/gloss.js";
 import {
   comingFromRouteLine, placeAsksMoreClause, placeOnRecordLine, placeOnRecordNowLine,
 } from "../src/lib/copy/interview.js";
-import { RECORD_VERSION, serialize } from "../src/lib/record.js";
+import { restore, serialize } from "../src/lib/record.js";
 import { CAME_FROM_LINE } from "../src/lib/copy/verdict.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { everyDrawnRouteIn, verdictOn } from "./verdict-cards.js";
 import { withSite, skipReason } from "./browser-walk.js";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
+import type { PageOnSite } from "../scripts/browser/browser.mjs";
 
 const ds = dataset as unknown as Dataset;
 
@@ -80,9 +82,11 @@ describe("an arrival that names a country re-scopes the record", () => {
 
   it("the stored record keeps its version: nothing about what an answer means moved", () => {
     // The ladder is the one it always was, so a record written yesterday still
-    // names the amounts it named. Seeded from the module's own constant, so a
-    // future format change cannot leave these tests reading a dead contract.
-    expect(JSON.parse(serialize({ destination: "de" }, ["destination"])).version).toBe(RECORD_VERSION);
+    // names the amounts it named. Written by the module's own `serialize`, so
+    // a future format change cannot leave these tests reading a dead contract:
+    // the record reads back only under the version it was written with.
+    expect(restore(serialize({ destination: "de" }, ["destination"]), deriveQuestions(ds)))
+      .toEqual({ answers: { destination: "de" }, history: ["destination"] });
   });
 });
 
@@ -101,32 +105,53 @@ describe("a route arrival, from the verdict", () => {
 
 const skipped = skipReason();
 
-// The browser walks arrive with a saved German record, as the critique's reader did.
-const SEED = `localStorage.setItem("permit-rulebook.record.v1", ${
-  JSON.stringify(serialize(germanRecord, Object.keys(germanRecord)))})`;
+/** Opens `path` on the site with a saved German record, as the critique's reader arrived. */
+async function openWithTheGermanRecord(site: PageOnSite, path: string): Promise<void> {
+  await new InterviewPage(site).seed(germanRecord);
+  await site.page.goto(site.url(path));
+}
 
 /**
- * The page's own call to action, not the header's: both say "Check yours", and
- * the header's is the unscoped one.
+ * In the page: clicks the page's own call to action, not the header's: both
+ * say "Check yours", and the header's is the unscoped one. Returns its href.
  */
-const CLICK_CHECK_YOURS = '(() => { const a = [...document.querySelectorAll("a")]'
-  + '.find((x) => /[?](country|route)=/.test(x.getAttribute("href") || ""));'
-  + ' if (!a) throw new Error("no pre-scoped call to action on this page");'
-  + ' a.click(); return a.getAttribute("href"); })()';
+function clickCheckYours(): string | null {
+  const a = [...document.querySelectorAll("a")].find((x) => /[?](country|route)=/.test(x.getAttribute("href") || ""));
+  if (!a) throw new Error("no pre-scoped call to action on this page");
+  a.click();
+  return a.getAttribute("href");
+}
+
+// The pre-scoped "Check yours" clicked: the gesture both walks arrive by.
+const CLICK_CHECK_YOURS = `(${clickCheckYours})()`;
+
+/** In the page: the card marked as the one the reader came from, whether every
+ * fold around it is open, and whether it is in view, as JSON. */
+function readCameFromCard(): string {
+  const el = document.querySelector<HTMLElement>("[data-came-from]");
+  const r = el ? el.getBoundingClientRect() : null;
+  const open = el ? [...document.querySelectorAll("details")].filter((d) => d.contains(el)).every((d) => d.open) : false;
+  return JSON.stringify({ found: el ? el.dataset.cameFrom : null,
+    inView: r ? r.top > -240 && r.top < window.innerHeight : false, open });
+}
+
+/** In the page: the address's query, each verdict's country, the lines of what was recorded, and the screen's
+ * first words, as JSON. */
+function readArrivedVerdicts(): string {
+  return JSON.stringify({ url: location.search,
+    countries: [...document.querySelectorAll("#main .country")].map((c) => c.textContent!.trim()),
+    recorded: [...document.querySelectorAll(".recorded")].map((p) => p.textContent!.trim()),
+    text: (document.getElementById("main")!.textContent || "").split(/\s+/).join(" ").slice(0, 300) });
+}
 
 /** Checks a German record following France's "Check yours" lands on French verdicts and a line saying so. */
 async function expectFranceCheckYoursShowsFrance() {
-  const seen = JSON.parse(await withSite(async ({ page, url }) => {
-    await page.goto(url("/france/"));
-    await page.evaluate(SEED);
+  const seen = JSON.parse(await withSite(async (site) => {
+    const { page } = site;
+    await openWithTheGermanRecord(site, "/france/");
     await page.evaluate(CLICK_CHECK_YOURS);
     await page.waitUntilNewDocumentDrawn();
-    return page.evaluate(
-      'JSON.stringify({ url: location.search,'
-      + ' countries: [...document.querySelectorAll("#main .country")].map((c) => c.textContent.trim()),'
-      + ' recorded: [...document.querySelectorAll(".recorded")].map((p) => p.textContent.trim()),'
-      + ' text: (document.getElementById("main").textContent || "").split(/\\s+/).join(" ").slice(0, 300) })',
-    );
+    return page.evaluate(`(${readArrivedVerdicts})()`);
   }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
     { url: string; countries: string[]; recorded: string[]; text: string };
 
@@ -138,22 +163,15 @@ async function expectFranceCheckYoursShowsFrance() {
 
 /** Checks a route arrival lands on that route's card: marked, unfolded and in view. */
 async function expectRouteArrivalLandsOnItsCard() {
-  const seen = JSON.parse(await withSite(async ({ page, url }) => {
-    await page.goto(url("/germany/researcher/"));
-    await page.evaluate(SEED);
+  const seen = JSON.parse(await withSite(async (site) => {
+    const { page } = site;
+    await openWithTheGermanRecord(site, "/germany/researcher/");
     await page.evaluate(CLICK_CHECK_YOURS);
     await page.waitUntilNewDocumentDrawn();
     // The landing scrolls to the card, after the draw.
     await page.waitUntilAtRest();
-    return page.evaluate(
-      '(() => { const el = document.querySelector("[data-came-from]");'
-      + ' const r = el ? el.getBoundingClientRect() : null;'
-      + ' const open = el ? [...document.querySelectorAll("details")]'
-      + '   .filter((d) => d.contains(el)).every((d) => d.open) : false;'
-      + ' return JSON.stringify({ found: el ? el.dataset.cameFrom : null,'
-      + '   inView: r ? r.top > -240 && r.top < window.innerHeight : false, open }); })()',
-    );
-  }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
+    return page.evaluate(`(${readCameFromCard})()`);
+  },{ viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
     { found: string | null; inView: boolean; open: boolean };
 
   // Which card is marked, and what it says, is the verdict's ("a route

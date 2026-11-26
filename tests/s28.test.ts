@@ -3,13 +3,13 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, evaluate, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import { RECORD_VERSION } from "../src/lib/record.js";
 import { esc, escAttr } from "../src/lib/reason.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import { learnLinkTextOf } from "../src/lib/quote.js";
 import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
-import { PICK_TURKEY, answerWith, withSite, skipReason } from "./browser-walk.js";
+import { fieldOnScreen, withSite, skipReason } from "./browser-walk.js";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, standingOn, verdictFor,
   verdictOn,
@@ -284,17 +284,20 @@ const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S28 LINK WAS NOT READ IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-const seed = (answers: Record<string, string>) =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: RECORD_VERSION, answers, history: Object.keys(answers),
-  }))})`;
-const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
-
 /** One link read off the page: its text as drawn and where it goes. */
 interface Link { text: string; href: string }
+/** In the page: each link `selector` finds, its text as drawn and where it goes, as JSON. */
+function readLinksInPage(selector: string): string {
+  return JSON.stringify([...document.querySelectorAll(selector)].map((a) => ({ text: a.textContent!.trim(), href: a.getAttribute("href") })));
+}
 // The page script that reads a selector's links, so the help line and the route page are read alike.
-const LINKS = (selector: string) =>
-  `JSON.stringify([...document.querySelectorAll(${JSON.stringify(selector)})].map((a) => ({ text: a.textContent.trim(), href: a.getAttribute("href") })))`;
+const LINKS = (selector: string) => `(${readLinksInPage})(${JSON.stringify(selector)})`;
+
+/** In the page: the text of the "What the checker asks" block holding the link `selector` finds, or "". */
+function readAsksBlockOf(selector: string): string {
+  const a = document.querySelector(selector);
+  return a ? (a.closest(".asks")?.textContent ?? "").replace(/\s+/g, " ").trim() : "";
+}
 interface Walk {
   help: Link[]; helpText: string; state: string; painted: typeof PAINTED_AS_COMPOSED;
   asks: Link[]; asksText: string;
@@ -303,25 +306,24 @@ interface Walk {
 describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
   it("Germany → offer → degree → Türkiye → not sure on the shortage list → … : the box is the sentence as one link; the route page says the same", async () => {
     const door = ds.fields.find((f) => f.id === SHORTAGE)!.learn!;
-    const seen = await withSite(async ({ page, url }) => {
-      await page.goto(url("/"));
-      await page.evaluate(seed(WALK_START as Record<string, string>));
-      await page.goto(url("/"));
-      await answerWith(page, PICK_TURKEY);
+    const seen = await withSite(async (site) => {
+      const { page, url } = site;
+      const interview = new InterviewPage(site);
+      await interview.seed(WALK_START);
+      await interview.open();
+      await interview.answer("citizenship", "TR");
       // The shortage question is next; its help line is the door.
       const help = JSON.parse(await page.evaluate(LINKS(".qlearn a"))) as Link[];
       const helpText = await page.evaluate('document.querySelector(".qlearn") ? document.querySelector(".qlearn").textContent.trim() : ""');
-      for (const value of WALK_TAPS) await answerWith(page, tap(value));
-      const state = await page.evaluate('document.getElementById("app").dataset.state');
+      for (const value of WALK_TAPS) await interview.answer(await fieldOnScreen(page), value);
+      const state = (await interview.readScreen()).screen;
       const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(walked()))));
       await page.goto(url("/germany/eu-blue-card-shortage-occupation/"));
       // Nothing thrown on the route page is read once it is at rest.
       await page.waitUntilAtRest();
       const asks = JSON.parse(await page.evaluate(LINKS(`.asks a[href="${door.url}"]`))) as Link[];
       // The block that carries the door — the page draws one per unquoted rule.
-      const asksText = await page.evaluate(
-        `(() => { const a = document.querySelector(${JSON.stringify(`.asks a[href="${door.url}"]`)}); return a ? a.closest(".asks").textContent.replace(/\\s+/g, " ").trim() : ""; })()`,
-      );
+      const asksText = await page.evaluate(`(${readAsksBlockOf})(${JSON.stringify(`.asks a[href="${door.url}"]`)})`);
       return { help, helpText, state, painted, asks, asksText };
     }, PHONE) as Walk;
 

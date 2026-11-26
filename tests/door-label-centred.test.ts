@@ -12,15 +12,15 @@ import { CARD_DOOR, openOnAFullCard, resultsWhere } from "./reader-pages.js";
 /** How far, in px, the label's middle may sit from the box's and still read as centred. */
 const CENTRING_TOLERANCE = 2;
 
-/** Reads, in the page, the door's box and its label's lines: the box's top,
+/** Reads, in the page, the door `doorSelector` finds, its box and its label's lines: the box's top,
  * height and the tap height it is held to, and the top of the label's first
  * line and the bottom of its last, from a Range over each of its text nodes.
  * Null where the page draws no door. */
-const DOOR_LAID_OUT = `(() => {
-  const door = document.querySelector(${JSON.stringify(CARD_DOOR)});
+function readDoorLaidOutInPage(doorSelector: string): string {
+  const door = document.querySelector(doorSelector);
   if (!door) return "null";
   const box = door.getBoundingClientRect();
-  const rects = [];
+  const rects: DOMRect[] = [];
   const texts = document.createTreeWalker(door, NodeFilter.SHOW_TEXT);
   for (let text = texts.nextNode(); text; text = texts.nextNode()) {
     const range = document.createRange();
@@ -28,14 +28,14 @@ const DOOR_LAID_OUT = `(() => {
     rects.push(...[...range.getClientRects()].filter((r) => r.width > 0 && r.height > 0));
   }
   return JSON.stringify({
-    label: door.textContent.trim(),
+    label: (door.textContent ?? "").trim(),
     boxTop: box.top, boxHeight: box.height, tapMin: parseFloat(getComputedStyle(door).minHeight),
     lines: rects.length,
     textTop: Math.min(...rects.map((r) => r.top)), textBottom: Math.max(...rects.map((r) => r.bottom)),
   });
-})()`;
+}
 
-/** A door as DOOR_LAID_OUT reads it, with the results it was read on. */
+/** A door as `readDoorLaidOutInPage` reads it, with the results it was read on. */
 interface DoorLaidOut {
   where: string;
   label: string;
@@ -51,7 +51,7 @@ interface DoorLaidOut {
 async function readDoorLaidOut(site: PageOnSite): Promise<DoorLaidOut> {
   const walk = await openOnAFullCard(site, CARD_DOOR);
   await site.page.waitUntilAtRest();
-  return { where: resultsWhere(walk), ...(JSON.parse(await site.page.evaluate(DOOR_LAID_OUT)) as Omit<DoorLaidOut, "where">) };
+  return { where: resultsWhere(walk), ...(JSON.parse(await site.page.evaluate(`(${readDoorLaidOutInPage})(${JSON.stringify(CARD_DOOR)})`)) as Omit<DoorLaidOut, "where">) };
 }
 
 const notWalked = skipReason();

@@ -28,7 +28,7 @@ export interface CardLink {
  * and letter spacing, or in its ::after's where the third argument names that
  * ("::after"), laid out apart from any link. Its spaces are kept as written:
  * a space that opens it follows the link's words where it is drawn. */
-export const DETACHED_WIDTH = `((link, text, pseudo) => {
+function readDetachedWidth(link: Element, text: string, pseudo?: string): number {
   const style = getComputedStyle(link, pseudo ?? null);
   const probe = document.createElement("span");
   probe.textContent = text;
@@ -39,36 +39,42 @@ export const DETACHED_WIDTH = `((link, text, pseudo) => {
   const width = probe.getBoundingClientRect().width;
   probe.remove();
   return width;
-})`;
+}
+
+/** That read as a function expression, for a probe to call on a link. */
+export const DETACHED_WIDTH = `(${readDetachedWidth})`;
 
 /** Reads, in the page, the text a link's ::after draws: its ↗, with whatever
  * the stylesheet puts before it, or "" where it draws none. */
-const ARROW_TEXT = `((link) => {
+function readArrowText(link: Element): string {
   const content = getComputedStyle(link, "::after").content;
-  return content.startsWith('"') ? JSON.parse(content) : "";
-})`;
+  return content.startsWith('"') ? JSON.parse(content) as string : "";
+}
 
 /** Reads, in the page, the width a link has to lay out in: the content width
  * of the box it sits in, to the fraction of a pixel layout works in
  * (clientWidth rounds it to a whole pixel). */
-const ROOM = `((link) => {
-  const box = link.parentElement;
+function readRoom(link: Element): number {
+  const box = link.parentElement!;
   const style = getComputedStyle(box);
-  const edges = ["borderLeftWidth", "borderRightWidth", "paddingLeft", "paddingRight"]
+  const edges = (["borderLeftWidth", "borderRightWidth", "paddingLeft", "paddingRight"] as const)
     .reduce((sum, edge) => sum + parseFloat(style[edge]), 0);
   return box.getBoundingClientRect().width - edges;
-})`;
+}
 
 /** Reads, in the page, the width a link lays out at on one line: the link
  * itself, its label and its ↗ as the stylesheet draws them, held on one line
  * for the read, then given its own style attribute back. */
-export const ONE_LINE_WIDTH = `((link) => {
+function readOneLineWidth(link: HTMLElement): number {
   const own = link.getAttribute("style");
   link.style.whiteSpace = "nowrap";
   const width = link.getBoundingClientRect().width;
   if (own === null) link.removeAttribute("style"); else link.setAttribute("style", own);
   return width;
-})`;
+}
+
+/** That read as a function expression, for a probe to call on a link. */
+export const ONE_LINE_WIDTH = `(${readOneLineWidth})`;
 
 /** Less than one layout unit (1/64 px): what a width read back as a float may
  * be off by. */
@@ -77,7 +83,7 @@ const LAYOUT_ROUNDING_PX = 0.01;
 /** Reads, in the page, the box a link's ↗ lays out in, or null: the read names
  * the link's ::after an anchor, lays an empty box over it by anchor
  * positioning, measures that box, and takes both away. */
-const ARROW_BOX = `((link) => {
+function readArrowBox(link: Element): DOMRect | null {
   const style = document.createElement("style");
   style.textContent = ".reading-arrow::after{anchor-name:--reading-arrow}"
     + ".arrow-probe{position:absolute;position-anchor:--reading-arrow;top:anchor(top);left:anchor(left);"
@@ -92,28 +98,42 @@ const ARROW_BOX = `((link) => {
   probe.remove();
   style.remove();
   return box.width === 0 && box.height === 0 ? null : box;
-})`;
+}
 
-/** Reads, in the page, a link it is handed as a CardLink: a function
- * expression, for the walk's own read to call on each link. */
-export const CARD_LINK = `((link) => {
+/** The reads a card link's read calls, handed in so it closes over nothing, and what a width may be off by. */
+interface CardLinkReads {
+  arrowBox: typeof readArrowBox;
+  detachedWidth: typeof readDetachedWidth;
+  arrowText: typeof readArrowText;
+  oneLineWidth: typeof readOneLineWidth;
+  room: typeof readRoom;
+  roundingPx: number;
+}
+
+/** Reads, in the page, `link` as a CardLink, with the reads it calls handed in. */
+function readCardLink(reads: CardLinkReads, link: HTMLElement): CardLink {
   const text = document.createRange();
   text.selectNodeContents(link);
   const lines = [...text.getClientRects()];
   const last = lines[lines.length - 1];
-  const arrow = ${ARROW_BOX}(link);
+  const arrow = reads.arrowBox(link);
   const heading = link.closest("article")?.querySelector("h3");
   return {
-    card: heading ? heading.textContent.trim() : "",
-    label: link.textContent.trim(),
+    card: heading ? (heading.textContent ?? "").trim() : "",
+    label: (link.textContent ?? "").trim(),
     lines: new Set(lines.map((r) => Math.round(r.top))).size,
     width: link.getBoundingClientRect().width,
     textWidth: text.getBoundingClientRect().width,
-    arrowWidth: ${DETACHED_WIDTH}(link, ${ARROW_TEXT}(link)),
-    fitsItsLine: ${ONE_LINE_WIDTH}(link) <= ${ROOM}(link) + ${LAYOUT_ROUNDING_PX},
+    arrowWidth: reads.detachedWidth(link, reads.arrowText(link)),
+    fitsItsLine: reads.oneLineWidth(link) <= reads.room(link) + reads.roundingPx,
     arrowFromLastWord: arrow && last ? { right: arrow.left - last.right, down: arrow.top - last.top } : null,
   };
-})`;
+}
+
+/** Reads, in the page, a link it is handed as a CardLink: a function
+ * expression, for the walk's own read to call on each link. */
+export const CARD_LINK = `(${readCardLink}).bind(null, { arrowBox: ${readArrowBox}, detachedWidth: ${readDetachedWidth}, `
+  + `arrowText: ${readArrowText}, oneLineWidth: ${readOneLineWidth}, room: ${readRoom}, roundingPx: ${LAYOUT_ROUNDING_PX} })`;
 
 /** Whether a link's ↗ lays out on its last word's line, right after that
  * word: within a pixel of the end of its text's last line, each way. */

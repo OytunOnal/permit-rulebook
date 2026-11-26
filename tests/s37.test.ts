@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
-import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
 import { PHONE, type BrowserPage, type PageOnSite, type Screen } from "../scripts/browser/browser.mjs";
-import { answerOnce, withSite, skipReason } from "./browser-walk.js";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
+import { withSite, skipReason } from "./browser-walk.js";
 
 /**
  * s37 — Back on a restored record, and the Back gesture, in a real browser:
@@ -23,49 +23,60 @@ const asks = (field: string) => ds.fields.find((f) => f.id === field)!.label;
 
 /** Three answers, in the order they were given. */
 const RECORD = { destination: "de", citizenship: "IN", situation: "offer" };
-/** The record's three answers, stored. */
-const SEED = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(JSON.stringify({
-  version: RECORD_VERSION, answers: RECORD, history: Object.keys(RECORD),
-}))})`;
-// No record stored, so a live walk starts from a first question of its own.
-const CLEAR = `localStorage.removeItem(${JSON.stringify(STORAGE_KEY)})`;
 
-/** Answer whatever the current question offers, whichever kind it is: "opt"
- * or "row" for what it tapped, or why it tapped nothing. A search list shows
- * no rows until something is typed: one letter draws them. */
-const ANSWER = `(() => {
-  const opt = document.querySelector(".qcard .opts .opt");
-  if (opt) { opt.click(); return "opt"; }
-  const input = document.getElementById("cfilter");
-  if (input && !document.querySelector(".clist [role=option]")) {
-    input.value = "a";
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-  }
-  const row = document.querySelector(".clist [role=option]");
-  if (row) { row.click(); return "row"; }
-  return "the screen offered no answer";
-})()`;
-// The screen's own Back control, tapped, which the cases set against the browser's.
-const SCREEN_BACK = 'document.getElementById("back").click()';
-// The browser's Back, as a reader's back gesture makes it.
-const BROWSER_BACK = "history.back()";
-// The browser's Forward, which has to undo a Back exactly.
-const BROWSER_FORWARD = "history.forward()";
-// A reload, which once emptied the page's own list while the browser kept its entries.
-const RELOAD = "location.reload()";
+/** A gesture made in the page: a function its source text carries there. */
+type Gesture = () => void;
+
+/** In the page: the screen's own Back control, tapped, which the cases set against the browser's. */
+function tapScreenBackInPage(): void {
+  document.getElementById("back")!.click();
+}
+/** In the page: the browser's Back, as a reader's back gesture makes it. */
+function goBackInPage(): void {
+  history.back();
+}
+/** In the page: the browser's Forward, which has to undo a Back exactly. */
+function goForwardInPage(): void {
+  history.forward();
+}
+/** In the page: a reload, which once emptied the page's own list while the browser kept its entries. */
+function reloadInPage(): void {
+  location.reload();
+}
+
+/** In the page: runs `gesture` on the page's next task, and returns at once. */
+function runOnTheNextTaskInPage(gesture: Gesture): number {
+  setTimeout(gesture, 0);
+  return 0;
+}
+
+// The gestures by the names the cases use.
+const [SCREEN_BACK, BROWSER_BACK, BROWSER_FORWARD, RELOAD] = [tapScreenBackInPage, goBackInPage, goForwardInPage, reloadInPage];
 
 interface Where { path: string; question: string; length: number; step: number | null }
-// Where the tab stands, read in the page: what a case compares before and after each gesture.
-const WHERE ='JSON.stringify({ path: location.pathname,'
-  + ' question: ((document.querySelector(".qlabel") || {}).textContent || "").trim(),'
-  + ' length: history.length, step: (history.state || {}).step ?? null })';
+// Where the tab stands in the browser's history, read in the page: with the question, what a case compares before
+// and after each gesture.
+const IN_HISTORY = "JSON.stringify({ path: location.pathname, length: history.length, step: (history.state || {}).step ?? null })";
 
-const whereOf = async (page: BrowserPage): Promise<Where> => JSON.parse(await page.evaluate(WHERE)) as Where;
+/** Where the tab stands: its place in the browser's history, and the question on the screen, "" off the interview,
+ * which is the site's `/` alone. */
+async function readWhere(interview: InterviewPage, page: BrowserPage): Promise<Where> {
+  const inHistory = JSON.parse(await page.evaluate(IN_HISTORY)) as Omit<Where, "question">;
+  const question = inHistory.path === "/" ? (await interview.readScreen()).question : "";
+  return { ...inHistory, question };
+}
 
-/** Whether the tab stands anywhere other than `before`, a reading of WHERE. A
- * history move draws on the browser's turn, not the gesture's, so a gesture
- * that stays on the page is waited on until the screen it leaves is gone. */
-const hasMovedFrom = (before: string) => `${WHERE} !== ${JSON.stringify(before)}`;
+/** Opens `/` from `/data/`, an outside entrance, onto the three answers
+ * stored, or with no record stored, so a live walk starts from a first
+ * question of its own; returns where the tab stands. */
+async function openFromData(site: PageOnSite, record: "stored" | "none"): Promise<Where> {
+  const interview = new InterviewPage(site);
+  if (record === "stored") await interview.seed(RECORD);
+  await site.page.goto(site.url("/data/"));
+  if (record === "none") await interview.clearRecord();
+  await site.page.goto(site.url("/"));
+  return readWhere(interview, site.page);
+}
 
 /** A walk: `at()` reads where the tab stands, `act` makes a gesture that stays
  * on the page and `actAcross` one that loads a document, `answer()` answers
@@ -73,23 +84,27 @@ const hasMovedFrom = (before: string) => `${WHERE} !== ${JSON.stringify(before)}
  * answers seeded from `/data/` — an outside entrance — and `live(n)` answers
  * n questions in the tab. */
 function walker(page: BrowserPage, url: (path: string) => string) {
-  const at = () => whereOf(page);
+  const interview = new InterviewPage({ page, url });
+  const at = () => readWhere(interview, page);
   // The gesture runs on the page's next task, so the evaluation has returned
   // before a Back that leaves the site tears the document down.
-  const runOnTheNextTask = (expression: string) => page.evaluate(`setTimeout(() => { ${expression}; }, 0), 0`);
-  const act = async (expression: string) => {
-    const before = await page.evaluate(WHERE);
-    await runOnTheNextTask(expression);
-    await page.waitUntil(hasMovedFrom(before), `${expression} moved nothing`);
+  const runOnTheNextTask = (gesture: Gesture) => page.evaluate(`(${runOnTheNextTaskInPage})(${gesture})`);
+  // A history move draws on the browser's turn, not the gesture's, so a
+  // gesture that stays on the page is waited on until the screen it leaves is gone.
+  const act = async (gesture: Gesture) => {
+    const before = await interview.readScreen();
+    await runOnTheNextTask(gesture);
+    await interview.waitUntilScreenChanges(before);
     await page.waitUntilAtRest();
     return at();
   };
+  // Whatever the question on the screen offers first, tapped: how a live walk answers.
   const answer = async () => {
-    await answerOnce(page, ANSWER, "the question on the screen");
+    await interview.answerFirstOffered();
     return at();
   };
-  const actAcross = async (expression: string) => {
-    await runOnTheNextTask(expression);
+  const actAcross = async (gesture: Gesture) => {
+    await runOnTheNextTask(gesture);
     await page.waitUntilNewDocumentDrawn();
     return at();
   };
@@ -97,16 +112,11 @@ function walker(page: BrowserPage, url: (path: string) => string) {
     await page.goto(url(path));
     return at();
   };
-  const outside = async (seed: string) => {
-    await page.goto(url("/data/"));
-    await page.evaluate(seed);
-    return openOnto("/");
-  };
   return {
     at, act, actAcross, openOnto, answer,
-    openFromOutside: () => outside(SEED),
+    openFromOutside: () => openFromData({ page, url }, "stored"),
     async live(n: number) {
-      const seen = [await outside(CLEAR)];
+      const seen = [await openFromData({ page, url }, "none")];
       for (let i = 0; i < n; i++) seen.push(await answer());
       return seen;
     },
@@ -242,7 +252,7 @@ async function expectReloadThenStepsBackOneByOne(): Promise<void> {
 /** Checks, two answers in, the screen's Back and the browser's land on the same question. */
 async function expectBothBacksAgreeMidInterview(): Promise<void> {
   const seen = await walkInBrowser(PHONE, async (w) => {
-    const walk = async (goBack: string) => {
+    const walk = async (goBack: Gesture) => {
       const live = await w.live(2);
       return { live, back: await w.act(goBack) };
     };
@@ -331,7 +341,7 @@ async function expectBackTwiceForwardOnceLandOnTheirQuestions(): Promise<void> {
 /** Checks, three answers in, the screen's Back and the browser's land on the same question, one step back. */
 async function expectScreenAndBrowserBackAgree(): Promise<void> {
   const seen = await walkInBrowser(PHONE, async (w) => {
-    const walk = async (goBack: string) => {
+    const walk = async (goBack: Gesture) => {
       const live = await w.live(3);
       return { before: live.at(-1)!, after: await w.act(goBack) };
     };
@@ -348,7 +358,7 @@ async function expectScreenAndBrowserBackAgree(): Promise<void> {
 /** Checks, after a mid-interview reload, both Backs land on the same previous question and Forward returns. */
 async function expectBothBacksAgreeAfterAReload(): Promise<void> {
   const seen = await walkInBrowser(PHONE, async (w) => {
-    const walk = async (goBack: string) => {
+    const walk = async (goBack: Gesture) => {
       const live = await w.live(4);
       const reloaded = await w.actAcross(RELOAD);
       const back = await w.act(goBack);

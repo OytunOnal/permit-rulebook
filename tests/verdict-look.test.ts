@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Profile } from "permit-rulebook-data";
-import { STORAGE_KEY, serialize } from "../src/lib/record.js";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { withSite, skipReason } from "./browser-walk.js";
 
 /**
@@ -50,10 +50,6 @@ const GERMANY_JOB_OFFER: Profile = {
  * steps on its summary row. */
 const FOUR_GERMANY_JOB_OFFER: Profile = { ...GERMANY_JOB_OFFER, destination: "all", nl_recent_grad: "no", top200_grad: "no" };
 
-/** A finished record, so the page draws its verdict on arrival. */
-const seed = (answers: Profile): string =>
-  `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(serialize(answers, Object.keys(answers), true))})`;
-
 interface Box { top: number; bottom: number }
 interface CardGeometry {
   title: Box; titleLines: number; badge: Box;
@@ -77,29 +73,30 @@ interface Look {
   railTicks: { margin: number; at: number; placed: number }[];
 }
 
-// Everything a case below measures on a drawn results screen, read in the page in one evaluation.
-const READ_LOOK =`JSON.stringify((() => {
-  const box = (el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom }; };
-  const lines = (el) => {
+/** In the page: everything a case below measures on a drawn results screen, read in one evaluation, as JSON. */
+function readLook(): string {
+  const box = (el: Element) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom }; };
+  const lines = (el: Element) => {
     const range = document.createRange();
     range.selectNodeContents(el);
     return new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size;
   };
+  const app = document.getElementById("app")!;
   const probe = document.createElement("span");
   probe.style.color = "var(--color-ink)";
-  document.getElementById("app").append(probe);
+  app.append(probe);
   const ink = getComputedStyle(probe).color;
   probe.remove();
   const door = document.querySelector("#app .scoped .door");
-  return {
-    state: document.getElementById("app").dataset.state,
+  return JSON.stringify({
+    state: app.dataset.state,
     cards: [...document.querySelectorAll("#app article.route")].map((card) => {
-      const title = card.querySelector("h3");
+      const title = card.querySelector("h3")!;
       const chip = card.querySelector(".country");
-      return { title: box(title), titleLines: lines(title), badge: box(card.querySelector(".st")), chip: chip ? box(chip) : null };
+      return { title: box(title), titleLines: lines(title), badge: box(card.querySelector(".st")!), chip: chip ? box(chip) : null };
     }),
     steps: [...document.querySelectorAll("#app article.unlock h3")].map((h) => ({
-      heading: getComputedStyle(h).color, name: getComputedStyle(h.querySelector("b")).color,
+      heading: getComputedStyle(h).color, name: getComputedStyle(h.querySelector("b")!).color,
     })),
     ink, link: door ? getComputedStyle(door).color : "",
     counters: [...document.querySelectorAll("#app .strip > span")].map((s) => {
@@ -109,24 +106,25 @@ const READ_LOOK =`JSON.stringify((() => {
     tallySteps: [...document.querySelectorAll("#app .tally i")].map((i) => getComputedStyle(i).color),
     railTicks: [...document.querySelectorAll("#app article.route .bar")].flatMap((bar) => {
       const edge = bar.getBoundingClientRect();
-      return [...bar.querySelectorAll(".rail-tick")].map((tick) => ({
+      return [...bar.querySelectorAll<HTMLElement>(".rail-tick")].map((tick) => ({
         margin: parseFloat(getComputedStyle(tick).marginLeft),
         at: tick.getBoundingClientRect().left - edge.left,
         placed: (parseFloat(tick.style.left) / 100) * edge.width,
       }));
     }),
-  };
-})())`;
+  });
+}
 
-/** The results screens these answers draw, read once each is drawn. */
+/** The results screens these answers draw, each a finished record so the page draws its verdict on arrival, read
+ * once each is drawn. */
 async function looksAt(viewport: { width: number; height: number }, mobile: boolean, profiles: Profile[]): Promise<Look[]> {
-  return await withSite(async ({ page, url }) => {
+  return await withSite(async (site) => {
+    const interview = new InterviewPage(site);
     const out: Look[] = [];
     for (const answers of profiles) {
-      await page.goto(url("/"));
-      await page.evaluate(seed(answers));
-      await page.goto(url("/"));
-      out.push(JSON.parse(await page.evaluate(READ_LOOK)) as Look);
+      await interview.seed(answers, { done: true });
+      await interview.open();
+      out.push(JSON.parse(await site.page.evaluate(`(${readLook})()`)) as Look);
     }
     return out;
   }, { viewport, mobile });

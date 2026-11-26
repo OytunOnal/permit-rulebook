@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { ESLint } from "eslint";
+import { ARROW, FUNCTION } from "./code-to-lint.js";
 
 /**
  * The lint refuses a fixed wait in a test (#230, rulings 2 and 11): a sleep, a
@@ -41,9 +42,9 @@ const lines = (...code: string[]) => code.join("\n");
 describe("the lint on a fixed wait", () => {
   it("a sleep in a test file is an error", async () => {
     const refused = await lintForFixedWaits(lines(
-      "export async function read(): Promise<void> {",
-      "  await new Promise((r) => setTimeout(r, 900));",
-      "  await new Promise<void>((resolve) => { setTimeout(() => resolve(), 300); });",
+      `export async ${FUNCTION} read(): Promise<void> {`,
+      `  await new Promise((r) ${ARROW} setTimeout(r, 900));`,
+      `  await new Promise<void>((resolve) ${ARROW} { setTimeout(() ${ARROW} resolve(), 300); });`,
       "}",
     ));
     expect(refused).toHaveLength(2);
@@ -53,7 +54,7 @@ describe("the lint on a fixed wait", () => {
   it("goto(url, 900) is an error", async () => {
     const refused = await lintForFixedWaits(lines(
       "interface Page { goto(url: string, ms?: number): Promise<void> }",
-      "export async function open(page: Page, url: string): Promise<void> {",
+      `export async ${FUNCTION} open(page: Page, url: string): Promise<void> {`,
       "  await page.goto(url, 900);",
       "  await page.goto(url);",
       "}",
@@ -66,8 +67,8 @@ describe("the lint on a fixed wait", () => {
 describe("the lint on a navigation given a time", () => {
   it("a bare goto(url, 900) is an error", async () => {
     const refused = await lintForFixedWaits(lines(
-      "declare function goto(url: string, ms?: number): Promise<void>;",
-      "export async function open(url: string): Promise<void> {",
+      `declare ${FUNCTION} goto(url: string, ms?: number): Promise<void>;`,
+      `export async ${FUNCTION} open(url: string): Promise<void> {`,
       "  await goto(url, 900);",
       "  await goto(url);",
       "}",
@@ -79,7 +80,7 @@ describe("the lint on a navigation given a time", () => {
   it("navigate(url, 900) is an error", async () => {
     const refused = await lintForFixedWaits(lines(
       "interface Page { navigate(url: string, ms?: number): Promise<void> }",
-      "export async function open(page: Page, url: string): Promise<void> {",
+      `export async ${FUNCTION} open(page: Page, url: string): Promise<void> {`,
       "  await page.navigate(url, 900);",
       "  await page.navigate(url);",
       "}",
@@ -91,10 +92,10 @@ describe("the lint on a navigation given a time", () => {
 
 describe("the lint on Node's promised timers", () => {
   for (const [how, code] of [
-    ["a named import", ['import { setTimeout } from "node:timers/promises";', "export const read = () => setTimeout(900);"]],
-    ["a default import", ['import timers from "timers/promises";', "export const read = () => timers.setTimeout(900);"]],
-    ["a namespace import", ['import * as timers from "node:timers/promises";', "export const read = () => timers.setTimeout(900);"]],
-    ["a dynamic import", ['export const read = async () => (await import("node:timers/promises")).setTimeout(900);']],
+    ["a named import", ['import { setTimeout } from "node:timers/promises";', `export const read = () ${ARROW} setTimeout(900);`]],
+    ["a default import", ['import timers from "timers/promises";', `export const read = () ${ARROW} timers.setTimeout(900);`]],
+    ["a namespace import", ['import * as timers from "node:timers/promises";', `export const read = () ${ARROW} timers.setTimeout(900);`]],
+    ["a dynamic import", [`export const read = async () ${ARROW} (await import("node:timers/promises")).setTimeout(900);`]],
   ] as const)
     it(`Node's promised timers taken by ${how} are an error`, async () => {
       const refused = await lintForFixedWaits(lines(...code));
@@ -106,8 +107,8 @@ describe("the lint on Node's promised timers", () => {
 describe("the lint on a sleep by another timer or another name", () => {
   it("a setInterval that resolves a promise is an error", async () => {
     const refused = await lintForFixedWaits(lines(
-      "export async function read(): Promise<void> {",
-      "  await new Promise<void>((resolve) => { const every = setInterval(() => { clearInterval(every); resolve(); }, 300); });",
+      `export async ${FUNCTION} read(): Promise<void> {`,
+      `  await new Promise<void>((resolve) ${ARROW} { const every = setInterval(() ${ARROW} { clearInterval(every); resolve(); }, 300); });`,
       "}",
     ));
     expect(refused).toHaveLength(1);
@@ -116,11 +117,11 @@ describe("the lint on a sleep by another timer or another name", () => {
 
   it("a timer handed a promise's resolve under another name is an error", async () => {
     const refused = await lintForFixedWaits(lines(
-      "export async function read(): Promise<void> {",
-      "  await new Promise<void>((resolve) => { const done = resolve; setTimeout(done, 300); });",
-      "  let release = () => {};",
-      "  const held = new Promise<void>((resolve) => { release = resolve; });",
-      "  setTimeout(() => release(), 300);",
+      `export async ${FUNCTION} read(): Promise<void> {`,
+      `  await new Promise<void>((resolve) ${ARROW} { const done = resolve; setTimeout(done, 300); });`,
+      `  let release = () ${ARROW} {};`,
+      `  const held = new Promise<void>((resolve) ${ARROW} { release = resolve; });`,
+      `  setTimeout(() ${ARROW} release(), 300);`,
       "  await held;",
       "}",
     ));
@@ -139,9 +140,9 @@ describe("the lint on a timer that is no wait", () => {
   it("a setTimeout inside a string sent to the page is not", async () => {
     const refused = await lintForFixedWaits(lines(
       "interface Page { evaluate(expression: string): Promise<string> }",
-      "export async function tapNextTask(page: Page): Promise<void> {",
-      "  await page.evaluate('setTimeout(() => { window.__arrived = \"here\"; }, 300), 0');",
-      "  await page.evaluate(`new Promise((r) => setTimeout(r, 300))`);",
+      `export async ${FUNCTION} tapNextTask(page: Page): Promise<void> {`,
+      `  await page.evaluate('setTimeout(() ${ARROW} { window.__arrived = "here"; }, 300), 0');`,
+      `  await page.evaluate(\`new Promise((r) ${ARROW} setTimeout(r, 300))\`);`,
       "}",
     ));
     expect(refused).toEqual([]);

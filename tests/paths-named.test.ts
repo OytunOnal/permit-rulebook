@@ -7,8 +7,9 @@ import {
 import { ANY_PATH, EITHER_PATH } from "../src/lib/copy/route-page.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
-import { DESK, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { DESK, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
+import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { walkFrom } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, everyDrawnRouteIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 
@@ -22,6 +23,7 @@ import { PAINTED_AS_COMPOSED, everyDrawnRouteIn, paintedAsComposedScript, verdic
 const ds = dataset as unknown as Dataset;
 type Disjunction = Extract<Criterion, { op: "any" }>;
 
+// The shortage Blue Card, whose card carries the degree-or-IT criterion with paths.
 const SHORTAGE = "de-blue-card-shortage";
 const capitalised = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 const unescaped = (html: string): string =>
@@ -57,7 +59,10 @@ const pageOf = (routeId: string): string => {
   return routePage(ds, address).html;
 };
 
-describe("#155 a criterion with paths on its route page", () => {
+// The title these cases have always sat under; every block below repeats it, so each case keeps its id.
+const ON_ITS_ROUTE_PAGE = "#155 a criterion with paths on its route page";
+
+describe(ON_ITS_ROUTE_PAGE, () => {
   it("every such card is headed by the criterion's label, capitalised, where it names no figure", () => {
     let seen = 0;
     for (const { route } of routeAddresses(ds))
@@ -84,7 +89,9 @@ describe("#155 a criterion with paths on its route page", () => {
       for (const pc of path.criteria) expect(lines[i]).toContain(criterionPhrase(ds, pc));
     });
   });
+});
 
+describe(ON_ITS_ROUTE_PAGE, () => {
   it("a criterion with more than two paths is not introduced as 'either'", () => {
     let seen = 0;
     for (const { route } of routeAddresses(ds))
@@ -137,13 +144,13 @@ describe.skipIf(skipped !== null)("#155 a results card names a failed criterion 
     // The card and its line are the verdict's (the case above); the page
     // paints the verdict the reader's record composes.
     const reader = readerFailingEveryPath();
-    const seen = await withSite(async ({ page, url }: { page: BrowserPage; url: (p: string) => string }) => {
-      await page.goto(url("/404.html"));
-      await page.evaluate(recordSeedScript(reader));
-      await page.goto(url("/"));
+    const seen = await withSite(async (site: PageOnSite) => {
+      const interview = new InterviewPage(site);
+      await interview.seed(reader);
+      await interview.open();
       return {
-        state: await page.evaluate('document.getElementById("app").dataset.state'),
-        painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(reader)))),
+        state: (await interview.readScreen()).screen,
+        painted: JSON.parse(await site.page.evaluate(paintedAsComposedScript(verdictFor(reader)))),
       };
     }, DESK) as { state: string; painted: typeof PAINTED_AS_COMPOSED };
 

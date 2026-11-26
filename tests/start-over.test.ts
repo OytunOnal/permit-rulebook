@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Profile } from "permit-rulebook-data";
-import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { DESK, PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
   fieldOnScreen, openAtRest, skipReason, warnNotWalked, withSite,
 } from "./browser-walk.js";
@@ -21,24 +21,16 @@ const FINISHED_IN_GERMANY: Profile = {
   occupation_shortage: "yes", recognition_de: "recognized", experience_5y: "lt2", experience_7y: "lt3",
   salary_eur_year: "band_4", german: "none", english: "none", funds_eur_month: "band_0",
 };
-const SEED_FINISHED = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
-  JSON.stringify(serialize(FINISHED_IN_GERMANY, Object.keys(FINISHED_IN_GERMANY), true))})`;
-
-/** Where the reader stands: the screen, the scroll, the focus, the lines over the body, and the record. */
-const WHERE = `JSON.stringify((() => {
-  const card = document.querySelector("#main .qcard");
-  const first = card && card.querySelector(".opt, #cfilter");
-  const stored = localStorage.getItem(${JSON.stringify(STORAGE_KEY)});
-  return {
-    state: document.getElementById("app").dataset.state,
+/** In the page: where the reader stands, the record and the question card aside: the screen, the scroll and the
+ * resumed line over the body, as JSON. */
+function readWhereInPage(): string {
+  return JSON.stringify({
+    state: document.getElementById("app")!.dataset.state,
     scrollY: Math.round(window.scrollY),
-    focusOnFirst: !!first && document.activeElement === first,
     resumed: !!document.querySelector("#main .resumed"),
     resumedHoldsRestart: !!document.querySelector("#main .resumed #restart"),
-    arrivalLine: !!document.querySelector("#main .qcard p.recorded"),
-    storedAnswers: stored ? JSON.parse(stored).answers : null,
-  };
-})())`;
+  });
+}
 
 interface Where {
   state: string;
@@ -50,7 +42,21 @@ interface Where {
   storedAnswers: Profile | null;
 }
 
-const where = async (page: BrowserPage): Promise<Where> => JSON.parse(await page.evaluate(WHERE)) as Where;
+/** Where the reader stands: the screen, the scroll, the focus on the card's first control, the lines over the body
+ * and over the question, and the record. */
+async function where(page: BrowserPage): Promise<Where> {
+  const interview = new InterviewPage({ page });
+  const stood = JSON.parse(await page.evaluate(`(${readWhereInPage})()`)) as Omit<Where, "focusOnFirst" | "arrivalLine" | "storedAnswers">;
+  const card = await interview.readCardLayout();
+  const { arrival } = await interview.readScreen();
+  const record = await interview.readRecord();
+  return {
+    ...stood,
+    focusOnFirst: card?.focus.isOnFirstControl ?? false,
+    arrivalLine: arrival !== "",
+    storedAnswers: record ? record.answers : null,
+  };
+}
 
 /** The page once Start over has drawn a question and the page is at rest, its scroll smooth or not. */
 async function settledAfterStartOver(page: BrowserPage): Promise<Where> {
@@ -61,29 +67,31 @@ async function settledAfterStartOver(page: BrowserPage): Promise<Where> {
 }
 
 /** A kept finished record opened at `path`: the verdict, the first screen of a return. */
-async function openOnKeptVerdict({ page, url }: PageOnSite, path: string): Promise<Where> {
-  await page.goto(url("/404.html"));
-  await page.evaluate(SEED_FINISHED);
-  await openAtRest(page, url(path));
-  return where(page);
+async function openOnKeptVerdict(site: PageOnSite, path: string): Promise<Where> {
+  const interview = new InterviewPage(site);
+  await interview.seed(FINISHED_IN_GERMANY, { done: true });
+  await interview.open(path);
+  await site.page.waitUntilAtRest();
+  return where(site.page);
 }
 
-/** From the verdict's foot, Start over pressed with the keyboard, where it stands, without scrolling to it. */
-const PRESS_START_OVER_FROM_THE_FOOT = `(() => {
-  const restart = document.getElementById("restart");
+/** In the page: from the verdict's foot, Start over focused for the keyboard, where it stands, without scrolling to
+ * it; says whether it took the focus. */
+function focusStartOverFromTheFoot(): string {
+  const restart = document.getElementById("restart")!;
   const fold = restart.closest("details");
   if (fold) fold.open = true;
   window.scrollTo(0, document.documentElement.scrollHeight);
   restart.focus({ preventScroll: true });
   return document.activeElement === restart ? "focused" : "not focused";
-})()`;
+}
 
 describe.skipIf(skipped !== null)("Start over lands at the page's top (P8/P9)", () => {
   for (const [name, screen] of [["390", PHONE], ["1280", DESK]] as const)
     it(`at ${name}, from the foot of a verdict: scrollY is 0 and the focus is on the first control`, async () => {
       const seen = await withSite(async (site) => {
         const verdict = await openOnKeptVerdict(site, "/");
-        const focused = await site.page.evaluate(PRESS_START_OVER_FROM_THE_FOOT);
+        const focused = await site.page.evaluate(`(${focusStartOverFromTheFoot})()`);
         await site.page.waitUntilAtRest();
         const atFoot = await where(site.page);
         await site.page.pressEnter();

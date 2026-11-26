@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { DESTINATION_FIELD, SITUATION_FIELD, joinOr, type Dataset, type Profile } from "permit-rulebook-data";
-import { RECORD_VERSION } from "../src/lib/record.js";
 import { SITUATION_COUNTRY_FIELD } from "../src/lib/situations.js";
 import { routesNeed } from "../src/lib/copy/verdict.js";
 import { url } from "../src/lib/site.js";
@@ -11,7 +10,8 @@ import { verdictHtml, type Tally } from "../src/lib/verdict/verdict.js";
 import {
   PAINTED_AS_COMPOSED, answerWordsOf, countryNamed, paintedAsComposedScript, saidLineOf, verdictOn,
 } from "./verdict-cards.js";
-import { PICK_TURKEY, answerWith, withSite, skipReason } from "./browser-walk.js";
+import { withSite, skipReason } from "./browser-walk.js";
+import { InterviewPage, type ScreenShown } from "../scripts/interview-page/interview-page.mjs";
 import { countryQuestion } from "./s21-country-question.js";
 
 const ds = dataset as unknown as Dataset;
@@ -107,25 +107,18 @@ const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S21 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-const seed = (answers: Record<string, string>) =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: RECORD_VERSION, answers, history: Object.keys(answers),
-  }))})`;
-
-// The page script that reads each drawn mark back, with its id and link glyph, so the walk compares what the reader gets.
-const MARKS = 'JSON.stringify([...document.querySelectorAll(".qcard .opt-mark")].map((m) => ({'
-  + ' under: m.dataset.for, id: m.id, text: m.textContent.trim(),'
-  + ' href: m.querySelector("a") ? m.querySelector("a").getAttribute("href") : null,'
-  + ' glyph: m.querySelector("a") ? getComputedStyle(m.querySelector("a"), "::after").content : null })))';
-// The page script that reads which mark each option is described by, so the walk checks the mark is announced.
-const DESCRIBED = 'JSON.stringify([...document.querySelectorAll(".qcard .opt")].map((b) => ({'
-  + ' value: b.dataset.value, by: b.getAttribute("aria-describedby"),'
-  + ' resolves: b.getAttribute("aria-describedby") ? !!document.getElementById(b.getAttribute("aria-describedby")) : null })))';
-/** The mark the stylesheet draws after the link in each country's line that
- * carries one. */
-const LINK_GLYPHS = 'JSON.stringify([...document.querySelectorAll(".country-sec .tally a")]'
-  + '.map((a) => getComputedStyle(a, "::after").content))';
-const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
+/** Each mark drawn under an answer on the screen, with its id and link glyph, so the walk compares what the reader gets. */
+const listMarks = ({ answers }: ScreenShown) =>
+  answers.flatMap(({ value, mark }) => (mark ? [{ under: value, ...mark }] : []));
+/** Which mark each answer on the screen is described by, so the walk checks the mark is announced. */
+const listDescriptions = ({ answers }: ScreenShown) =>
+  answers.map(({ value, describedBy }) => ({ value, by: describedBy?.id ?? null, resolves: describedBy?.resolves ?? null }));
+/** In the page: the mark the stylesheet draws after the link in each country's line that carries one, as JSON. */
+function readLinkGlyphsInPage(): string {
+  return JSON.stringify([...document.querySelectorAll(".country-sec .tally a")].map((a) => getComputedStyle(a, "::after").content));
+}
+/** Those marks, read in the page. */
+const LINK_GLYPHS = `(${readLinkGlyphsInPage})()`;
 
 describe.skipIf(skipped !== null)("s21 — in the browser", () => {
   it("question 3 is never in the cold HTML; the mark is drawn from the two answers before it", () => {
@@ -153,29 +146,27 @@ type AllFourWalk = {
 
 /** Walks all four → research → France in the browser to the result, and returns what each screen read. */
 async function walkAllFourResearchThroughFrance(): Promise<AllFourWalk> {
-  return await withSite(async ({ page, url: addressOf }) => {
-    await page.goto(addressOf("/"));
-    await page.evaluate(seed({ destination: "all", situation: "research" }));
-    await page.goto(addressOf("/"));
+  return await withSite(async (site) => {
+    const { page } = site;
+    const interview = new InterviewPage(site);
+    await interview.seed({ destination: "all", situation: "research" });
+    await interview.open();
     // Nothing thrown is read once the page is at rest.
     await page.waitUntilAtRest();
-    const q3 = {
-      question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
-      marks: JSON.parse(await page.evaluate(MARKS)),
-      described: JSON.parse(await page.evaluate(DESCRIBED)),
-    };
+    const third = await interview.readScreen();
+    const q3 = { question: third.question, marks: listMarks(third), described: listDescriptions(third) };
     // France, by the button — then the quickest profile to a result that
     // contradicts nothing: no qualification, a Turkish passport, no Dutch
     // graduation, no top-200 degree. Seven answers; nothing open, as the
     // critique's walk ended, with the France line now saying why.
-    await answerWith(page, tap("fr"));
-    const q4 = await page.evaluate('document.querySelector(".qlabel").textContent.trim()');
-    await answerWith(page, tap("none"));
-    await answerWith(page, PICK_TURKEY);
-    await answerWith(page, tap("no"));
-    await answerWith(page, tap("no"));
+    await interview.answer(SITUATION_COUNTRY_FIELD, "fr");
+    const q4 = (await interview.readScreen()).question;
+    await interview.answer("qualification", "none");
+    await interview.answer("citizenship", "TR");
+    await interview.answer("nl_recent_grad", "no");
+    await interview.answer("top200_grad", "no");
     const result = {
-      state: await page.evaluate('document.getElementById("app").dataset.state'),
+      state: (await interview.readScreen()).screen,
       glyphs: JSON.parse(await page.evaluate(LINK_GLYPHS)),
       painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictOn(ds, WALKED)))),
     };

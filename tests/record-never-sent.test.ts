@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
-import { answerWith, skipReason } from "./browser-walk.js";
+import { skipReason } from "./browser-walk.js";
 import { expectNothingLeft } from "./wire.js";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
   PHONE, TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT, walkSite, type PageOnSite, type SentRequest,
 } from "../scripts/browser/browser.mjs";
@@ -37,52 +38,57 @@ if (skipped)
     "",
   ].join(String.fromCharCode(10)));
 
-/** Click through whatever the current question offers, whatever kind it is. */
-const ANSWER_ONE = `(() => {
-  const opt = document.querySelector(".qcard .opts .opt");
-  if (opt) { opt.click(); return "opt"; }
-  const row = document.querySelector(".clist [role=option]");
-  if (row) { row.click(); return "row"; }
-  const input = document.querySelector("#cfilter");
-  if (input) { input.value = "Turkey"; input.dispatchEvent(new Event("input", { bubbles: true })); return "typed"; }
-  return "none";
-})()`;
+/** Answers whatever the question on the screen offers, whatever kind it is: the passport search with Turkey, any
+ * other question with its first answer. The walk's one gesture, to the verdict and after it; returns the id
+ * answered. */
+async function answerOne(interview: InterviewPage): Promise<string> {
+  if ((await interview.readScreen()).search === null) return (await interview.answerFirstOffered()).value;
+  await interview.answer("citizenship", "TR");
+  return "TR";
+}
+
+/** In the page: the id of every route the screen links to, as JSON. */
+function readRoutesNamedInPage(): string {
+  return JSON.stringify([...document.querySelectorAll("#app a[href]")]
+    .map((a) => a.getAttribute("href")!).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+$/.test(h))
+    .map((h) => h.split("/").pop()));
+}
+
+/** The answers the record on the device holds, by value. */
+async function declaredOn(interview: InterviewPage): Promise<string[]> {
+  return Object.values((await interview.readRecord())?.answers ?? {});
+}
 
 /**
  * The requests a whole walk to the verdict sent, and those an answer changed
  * after it sent, with what was answered and the routes the verdict named.
  */
-async function requestsOfWalkThenEdit({ page, url }: PageOnSite) {
+async function requestsOfWalkThenEdit(site: PageOnSite) {
+  const { page, url } = site;
+  const interview = new InterviewPage(site);
   await page.goto(url("/"));
   const answered: string[] = [];
   for (let step = 0; step < 25; step++) {
-    const state = await page.evaluate('document.querySelector("#app").dataset.state');
-    if (state === "results") break;
-    answered.push(await answerWith(page, ANSWER_ONE));
+    if ((await interview.readScreen()).screen === "results") break;
+    answered.push(await answerOne(interview));
   }
-  const reached = await page.evaluate('document.querySelector("#app").dataset.state');
+  const reached = (await interview.readScreen()).screen;
   const walk = page.requests();
 
   // Now the gesture the promise is most easily broken by: changing an
   // answer once a verdict is on the screen.
   page.forgetRequests();
   await page.evaluate('document.querySelector("#app .done").click()');
-  await answerWith(page, ANSWER_ONE);
+  await answerOne(interview);
   const afterEdit = page.requests();
 
-  const declared = await page.evaluate(
-    'JSON.stringify(Object.values(JSON.parse(localStorage.getItem("permit-rulebook.record.v1") || "{}").answers || {}))',
-  );
+  const declared = await declaredOn(interview);
   // Every route the verdict named: none of these may reach the counter
   // either — which of them fit is the reader's business.
-  const routes = await page.evaluate(
-    'JSON.stringify([...document.querySelectorAll("#app a[href]")]'
-    + '.map((a) => a.getAttribute("href")).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+$/.test(h))'
-    + '.map((h) => h.split("/").pop()))',
-  );
+  const routes = await page.evaluate(`(${readRoutesNamedInPage})()`);
   return {
     answered, reached, walk, afterEdit, origin: new URL(url("/")).origin,
-    declared: JSON.parse(declared) as string[], routes: JSON.parse(routes) as string[],
+    declared, routes: JSON.parse(routes) as string[],
   };
 }
 
@@ -164,17 +170,16 @@ function expectReportCarriesNoAnswer(request: SentRequest, declared: string[]): 
 describe.skipIf(skipped !== null)("arriving pre-scoped sends no more than arriving cold", () => {
   it("a walk that starts at /?route=… still sends only the counter's own report", async () => {
     const walk = { site: { folder: dist }, screen: PHONE, network: true, trafficCounter: "cloudflare's copy" } as const;
-    const { returned } = await walkSite(walk, async ({ page, url }) => {
+    const { returned } = await walkSite(walk, async (site) => {
+      const { page, url } = site;
+      const interview = new InterviewPage(site);
       await page.goto(url("/"));
-      await page.evaluate('localStorage.removeItem("permit-rulebook.record.v1")');
+      await interview.clearRecord();
       await page.goto(`${url("/")}?route=de-blue-card-general`);
       for (let step = 0; step < 4; step++) {
-        await answerWith(page, ANSWER_ONE);
+        await answerOne(interview);
       }
-      const declared = await page.evaluate(
-        'JSON.stringify(Object.values(JSON.parse(localStorage.getItem("permit-rulebook.record.v1") || "{}").answers || {}))',
-      );
-      return { sent: page.requests(), declared: JSON.parse(declared) as string[], origin: new URL(url("/")).origin };
+      return { sent: page.requests(), declared: await declaredOn(interview), origin: new URL(url("/")).origin };
     });
     const seen = returned as { sent: SentRequest[]; declared: string[]; origin: string };
 

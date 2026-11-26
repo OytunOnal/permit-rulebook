@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { ESLint } from "eslint";
 import { THE_WALKS_SUITE, walksPlugin } from "../eslint.config.mjs";
+import { ARROW, FUNCTION } from "./code-to-lint.js";
 
 /**
  * The lint refuses `errorsExpected` in a test (#353, ruling 7 on #288): the
@@ -44,12 +45,12 @@ describe("the lint on errorsExpected", () => {
   it("errorsExpected in a test file, as an object's key or as a member, is an error naming the walk's own suite", async () => {
     expect(await ruleSettingFor(A_TEST), `the config runs no ${RULE} on ${A_TEST}`).toEqual([2]);
     const refused = await refusalsOf(lines(
-      "declare function walkSite(walk: object, walker: () => Promise<void>): Promise<void>;",
-      "export const quoted = () => walkSite({ \"errorsExpected\": true }, async () => {});",
+      `declare ${FUNCTION} walkSite(walk: object, walker: () ${ARROW} Promise<void>): Promise<void>;`,
+      `export const quoted = () ${ARROW} walkSite({ "errorsExpected": true }, async () ${ARROW} {});`,
       "export const walk = { screen: 390, errorsExpected: true };",
       "export const errorsExpected = false;",
       "export const shorthand = { errorsExpected };",
-      "export const set = (w: { errorsExpected?: boolean }) => { w.errorsExpected = true; };",
+      `export const set = (w: { errorsExpected?: boolean }) ${ARROW} { w.errorsExpected = true; };`,
     ), A_TEST);
     expect(refused).toHaveLength(4);
     expect(refused[0]).toContain(THE_WALKS_SUITE);

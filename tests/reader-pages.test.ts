@@ -151,25 +151,28 @@ const isLaidOutForTheDesk = (link: CardLink): boolean =>
 /** One word longer than a phone's line, as a label holding a URL would be. */
 const LONG_WORD = "Unbreakable".repeat(12);
 
-/** Reads, in the page, how results drawing a Learn link lay out once every
- * card link's label is LONG_WORD: the page's width and scroll width, how many
- * foot links, links to a route's authority's route page and Learn links took
- * it, and the furthest right edge among them. A screen with no Learn link is
- * left as it is and counts none. */
-const WITH_LONG_LABELS = `(() => {
-  for (const folded of document.querySelectorAll("#main details:not([open])")) folded.open = true;
+/** In the page: how results drawing a Learn link lay out once every card
+ * link's label is `label`: the page's width and scroll width, how many foot
+ * links, links to a route's authority's route page and Learn links took it,
+ * and the furthest right edge among them, as JSON. A screen with no Learn link
+ * is left as it is and counts none. */
+function layOutWithLongLabels(label: string): string {
+  for (const folded of document.querySelectorAll<HTMLDetailsElement>("#main details:not([open])")) folded.open = true;
   const foot = [...document.querySelectorAll("#main .foot > a.next")];
   const authority = [...document.querySelectorAll("#main a.authority-route-page")];
   const learn = [...document.querySelectorAll("#main .learn a")];
   if (learn.length === 0) return JSON.stringify({ innerWidth, scrollWidth: 0, foot: 0, authority: 0, learn: 0, furthestRight: 0 });
   const links = [...foot, ...authority, ...learn];
-  for (const link of links) link.textContent = ${JSON.stringify(LONG_WORD)};
+  for (const link of links) link.textContent = label;
   const furthestRight = Math.max(...links.map((link) => link.getBoundingClientRect().right));
   return JSON.stringify({
     innerWidth, scrollWidth: document.documentElement.scrollWidth,
     foot: foot.length, authority: authority.length, learn: learn.length, furthestRight,
   });
-})()`;
+}
+
+/** The lay-out with every card link's label LONG_WORD: the expression the case evaluates. */
+const WITH_LONG_LABELS = `(${layOutWithLongLabels})(${JSON.stringify(LONG_WORD)})`;
 
 /** How a results screen laid out with LONG_WORD for every card link's label. */
 interface LongLabelsLaidOut {

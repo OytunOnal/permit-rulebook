@@ -9,7 +9,8 @@ import { questionCardHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses, type RouteAddress } from "../src/lib/slug.js";
 import type { PageOnSite } from "../scripts/browser/browser.mjs";
-import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
+import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { builtPages } from "./reader-pages.js";
 import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 import { routeOf } from "./route-of.js";
@@ -198,19 +199,22 @@ const UNSURE: Profile = {
   age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
 };
 
-// The results screen's links as the browser draws them, read in the page so the walk sees what a reader sees.
-const RESULT_LINKS ='JSON.stringify([...document.querySelectorAll("#main a")].map((a) => ({'
-  + ' href: a.getAttribute("href"), text: a.textContent })))';
+/** In the page: the results screen's links as the browser draws them, so the walk sees what a reader sees, as JSON. */
+function readResultLinksInPage(): string {
+  return JSON.stringify([...document.querySelectorAll("#main a")].map((a) => ({ href: a.getAttribute("href"), text: a.textContent })));
+}
+// The results screen's links, read in the page.
+const RESULT_LINKS = `(${readResultLinksInPage})()`;
 
 describe.skipIf(skipped !== null)("the results screen, as drawn", () => {
   it("every link to a consolidated text carries that label, and none the authority's", async () => {
-    const seen = await withSite(async ({ page, url }: PageOnSite) => {
-      await page.goto(url("/"));
-      await page.evaluate(recordSeedScript(UNSURE));
-      await page.goto(url("/"));
+    const seen = await withSite(async (site: PageOnSite) => {
+      const interview = new InterviewPage(site);
+      await interview.seed(UNSURE);
+      await interview.open();
       return {
-        state: await page.evaluate('document.getElementById("app").dataset.state'),
-        links: (JSON.parse(await page.evaluate(RESULT_LINKS)) as Link[]).map((l) => ({ ...l, where: "results" })),
+        state: (await interview.readScreen()).screen,
+        links: (JSON.parse(await site.page.evaluate(RESULT_LINKS)) as Link[]).map((l) => ({ ...l, where: "results" })),
       };
     }, { viewport: { width: 1100, height: 1200 }, mobile: false });
 

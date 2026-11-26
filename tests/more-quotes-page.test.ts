@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { moreQuotes } from "../src/lib/copy/verdict.js";
-import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { RECOGNISED_A } from "./personas.js";
 import { routeOf } from "./route-of.js";
@@ -18,10 +18,15 @@ import { distanceBetween, inksOnGroundIn, type InkOnGround, type TextBox } from 
 
 const ds = dataset as unknown as Dataset;
 
-/** The script expression for the result's full card of the shortage Blue
- * Card, found by its title as the reader finds it; undefined where none. */
-const SHORTAGE_CARD = `[...document.querySelectorAll("#main article.route")]
-  .find((a) => (a.querySelector("h3")?.textContent ?? "").startsWith(${JSON.stringify(routeOf(ds, "de-blue-card-shortage").name)}))`;
+/** In the page: the result's full card of the route named `name`, found by its
+ * title as the reader finds it; undefined where none. */
+function findRouteCard(name: string): Element | undefined {
+  return [...document.querySelectorAll("#main article.route")]
+    .find((a) => (a.querySelector("h3")?.textContent ?? "").startsWith(name));
+}
+
+/** The shortage Blue Card's name, as the probes below are handed it. */
+const SHORTAGE_NAME = JSON.stringify(routeOf(ds, "de-blue-card-shortage").name);
 
 /** The two colour schemes a reader's device may ask for, each set explicitly.
  * The site has no dark palette, so dark draws the light page; both run so a
@@ -65,44 +70,55 @@ interface LaidOutCard {
   control: LaidOutControl | null;
 }
 
-/** Reads, in the page, the shortage card's layout (`LaidOutCard`), or null
- * where the result draws no such card. */
-const LAID_OUT_CARD = `JSON.stringify((() => {
-  const card = ${SHORTAGE_CARD};
-  if (!card) return null;
+/** In the page: the layout (`LaidOutCard`) of the card `findCard` finds by
+ * `name`, or null where the result draws no such card, as JSON. */
+function readLaidOutCard(findCard: typeof findRouteCard, name: string): string {
+  const card = findCard(name);
+  if (!card) return JSON.stringify(null);
   const summary = card.querySelector("details.more-quotes > summary");
-  const textBox = (el) => {
+  const textBox = (el: Element) => {
     const range = document.createRange();
     range.selectNodeContents(el);
     const { left, top, width, height } = range.getBoundingClientRect();
     return { left, top, width, height };
   };
   const lines = [...card.querySelectorAll(".srcs .src:not(.nosrc)")].map((line) => {
-    const quote = line.querySelector("q");
+    const quote = line.querySelector("q")!;
     // A closed fold's content keeps a box but is not rendered: Chrome hides
     // it by content-visibility, which checkVisibility reads.
     const box = quote.getBoundingClientRect();
     const drawn = quote.checkVisibility() && box.width > 0 && box.height > 0;
     return { quote: drawn ? textBox(quote) : { left: 0, top: 0, width: 0, height: 0 }, isNotTaken: line.classList.contains("unapplied") };
   });
-  if (!summary) return { lines, control: null };
+  if (!summary) return JSON.stringify({ lines, control: null });
   const control = summary.getBoundingClientRect();
   const cardBox = card.getBoundingClientRect();
   const edge = card.clientLeft;
-  return {
+  return JSON.stringify({
     lines,
     control: {
-      words: summary.textContent.trim(),
+      words: (summary.textContent ?? "").trim(),
       text: textBox(summary),
       under: { left: cardBox.left + edge + 1, top: control.bottom + 1, width: cardBox.width - 2 * edge - 2,
         height: cardBox.bottom - edge - control.bottom - 2 },
     },
-  };
-})())`;
+  });
+}
+
+/** In the page: the `i`th quote of the card `findCard` finds by `name`, scrolled to the screen's middle. */
+function scrollQuoteToMiddle(findCard: typeof findRouteCard, name: string, i: number): void {
+  findCard(name)!.querySelectorAll(".srcs .src:not(.nosrc) q")[i]!.scrollIntoView({ block: "center" });
+}
+
+/** In the page: the More quotes control of the card `findCard` finds by `name`, scrolled to the screen's middle,
+ * where there is one. */
+function scrollControlToMiddle(findCard: typeof findRouteCard, name: string): void {
+  findCard(name)?.querySelector("details.more-quotes > summary")?.scrollIntoView({ block: "center" });
+}
 
 /** The card as laid out now; throws where the page draws no such card. */
 async function laidOutCard(page: BrowserPage): Promise<LaidOutCard> {
-  const card = JSON.parse(await page.evaluate(LAID_OUT_CARD)) as LaidOutCard | null;
+  const card = JSON.parse(await page.evaluate(`(${readLaidOutCard})(${findRouteCard}, ${SHORTAGE_NAME})`)) as LaidOutCard | null;
   if (!card) throw new Error("the result draws no shortage Blue Card");
   return card;
 }
@@ -119,7 +135,7 @@ interface QuoteInk {
 async function quoteInksOf(page: BrowserPage, count: number): Promise<QuoteInk[]> {
   const read: QuoteInk[] = [];
   for (let i = 0; i < count; i++) {
-    await page.evaluate(`${SHORTAGE_CARD}.querySelectorAll(".srcs .src:not(.nosrc) q")[${i}].scrollIntoView({ block: "center" })`);
+    await page.evaluate(`(${scrollQuoteToMiddle})(${findRouteCard}, ${SHORTAGE_NAME}, ${i})`);
     await page.waitUntilAtRest();
     const line = (await laidOutCard(page)).lines[i]!;
     const [ink] = await inksOnGroundIn(page, [line.quote]);
@@ -143,15 +159,15 @@ interface SchemeSeen {
 
 /** Opens persona A's result, recognised degree, in `scheme`, reads the card
  * before a tap, taps its control at its centre, and reads it opened. */
-async function seenIn({ page, url }: PageOnSite, scheme: ColourScheme): Promise<SchemeSeen> {
+async function seenIn(site: PageOnSite, scheme: ColourScheme): Promise<SchemeSeen> {
+  const { page } = site;
   await page.emulateMedia([{ name: "prefers-color-scheme", value: scheme }]);
-  await page.goto(url("/404.html"));
-  await page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
-    JSON.stringify(serialize(RECOGNISED_A, Object.keys(RECOGNISED_A), true))})`);
-  await page.goto(url("/"));
+  const interview = new InterviewPage(site);
+  await interview.seed(RECOGNISED_A, { done: true });
+  await interview.open();
   await page.waitUntilAtRest();
   const isSet = Boolean(await page.evaluate(`matchMedia("(prefers-color-scheme: ${scheme})").matches`));
-  await page.evaluate(`${SHORTAGE_CARD}?.querySelector("details.more-quotes > summary")?.scrollIntoView({ block: "center" })`);
+  await page.evaluate(`(${scrollControlToMiddle})(${findRouteCard}, ${SHORTAGE_NAME})`);
   await page.waitUntilAtRest();
   const beforeTap = await laidOutCard(page);
   if (!beforeTap.control) return { scheme, isSet, beforeTap, beforeTapInks: [], opened: beforeTap, openedInks: [] };

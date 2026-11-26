@@ -8,6 +8,7 @@
 - `scripts/carry-assets`
 - `scripts/data-lock`
 - `scripts/data-lock-run`
+- `scripts/interview-page`
 - `src/lib/country-search`
 - `src/lib/dataset-facts`
 - `src/lib/frame`

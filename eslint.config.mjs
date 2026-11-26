@@ -171,6 +171,57 @@ const noIndexFile = {
   }),
 };
 
+/** `InterviewPage`, the one place in tests and scripts that knows the record and the question card (#475, Q437). */
+const THE_INTERVIEW_MODULE = "scripts/interview-page/**";
+
+/** The record's unit test, which reads the record's constants on purpose (Q396). */
+const THE_RECORDS_TEST = "tests/record.test.ts";
+
+/** What a refused record or card says to write instead. */
+const THROUGH_INTERVIEW_PAGE =
+  "goes through InterviewPage (scripts/interview-page/interview-page.mjs): seed, open, answer, readScreen, readRecord, clearRecord";
+
+/** The record's storage key, spelled (Q396). */
+const SPELLED_KEY = String.raw`/permit-rulebook\.record\.v1/`;
+/**
+ * The question card's selectors (Q396) and the search's own markup, its list, its rows and its live region's id
+ * (Q446), each as a whole name. Only CSS forms and the id are read: an HTML form in a markup builder's own unit
+ * test (`tests/listbox.test.ts`, `tests/s25-dataset.test.ts`) is the markup's test, which goes red when the markup
+ * changes, not drift (Q447).
+ */
+const CARD_SELECTORS =
+  String.raw`/#cfilter(?![\w-])|\.qcard(?![\w-])|\.qlabel(?![\w-])|#clist(?![\w-])|\.copt(?![\w-])|(^|[^\w-])cstatus(?![\w-])/`;
+/** An arrow or a function body anywhere in a string or in any part of a template: `=>`, or the function keyword
+ * before its parameters (Q397, Q415, #484 review). An object literal or a short expression holds neither. */
+const FUNCTION_BODY = String.raw`/=>|\bfunction\b\s*[\w$]*\s*\(/`;
+
+/** Each refused string, in a literal and in a template, with what it says. */
+const REFUSED_STRINGS = [
+  [SPELLED_KEY, `the record's storage key ${THROUGH_INTERVIEW_PAGE}`],
+  [CARD_SELECTORS, `the question card's markup ${THROUGH_INTERVIEW_PAGE}`],
+].flatMap(([pattern, message]) => [
+  { selector: `Literal[value=${pattern}]`, message },
+  { selector: `TemplateElement[value.raw=${pattern}]`, message },
+]);
+
+/** The record module's path as an import names it; a selector's pattern cannot hold a slash, so it is written `\x2f` (Q443). */
+const RECORD_MODULE_PATH = String.raw`(^|\x2f)src\x2flib\x2frecord(\.[jt]s)?$`;
+
+/** What a refused import of the record says instead. */
+const RECORD_REFUSED = `building and reading the record ${THROUGH_INTERVIEW_PAGE}`;
+
+/** An `import()` whose path is not written out: a template with an expression, or any other value (Q445). */
+const IMPORT_OF_AN_UNWRITTEN_PATH =
+  'ImportExpression:not([source.type="Literal"]):not([source.type="TemplateLiteral"][source.expressions.length=0])';
+
+/** What a refused `import()` of an unwritten path says instead. */
+const WRITE_THE_IMPORT_PATH_OUT =
+  "an import() whose path is not a plain string: write the path out, so the lint can read what it imports";
+
+/** A probe written as a string: the lint cannot read inside it. */
+const STRING_PROBE =
+  "an in-page probe written as a string: write it as a real function and serialise it into the page, `(${fn})(args)`";
+
 /** @type {import("eslint").Linter.Config[]} */
 export default [
   { ignores: IGNORED },
@@ -210,5 +261,26 @@ export default [
     files: FILES_NAMED_FOR_THEIR_EXPORT,
     plugins: { names: { rules: { "no-index-file": noIndexFile } } },
     rules: { "names/no-index-file": "error" },
+  },
+  // Tests and scripts reach the record and the question card only through InterviewPage; src/ spells its own markup.
+  {
+    files: ["tests/**", "scripts/**"],
+    ignores: [THE_INTERVIEW_MODULE, THE_RECORDS_TEST],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [{ regex: RECORD_MODULE_PATH, importNames: ["STORAGE_KEY", "RECORD_VERSION"], message: RECORD_REFUSED }],
+      }],
+      "no-restricted-syntax": ["error",
+        ...REFUSED_STRINGS,
+        { selector: `ImportExpression[source.value=/${RECORD_MODULE_PATH}/]`, message: RECORD_REFUSED },
+        {
+          selector: `ImportExpression > TemplateLiteral[expressions.length=0] > TemplateElement[value.raw=/${RECORD_MODULE_PATH}/]`,
+          message: RECORD_REFUSED,
+        },
+        { selector: IMPORT_OF_AN_UNWRITTEN_PATH, message: WRITE_THE_IMPORT_PATH_OUT },
+        { selector: `Literal[value=${FUNCTION_BODY}]`, message: STRING_PROBE },
+        { selector: `TemplateLiteral:has(> TemplateElement[value.raw=${FUNCTION_BODY}])`, message: STRING_PROBE },
+      ],
+    },
   },
 ];

@@ -8,8 +8,8 @@ import {
 } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { WidthFailure, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { CARD_LINK, type CardLink } from "./card-link.js";
 import { whyNoBuild } from "./why-no-build.js";
 
@@ -185,18 +185,18 @@ const NOTHING_DRAWN = { html: "", noticeHeadings: [], footLinks: [], authorityLi
 /** What the module drew, read from the running page: the masthead and the box
  * under it, each Notice's heading, and each card link's layout. The links are
  * read with every folded section open, as a reader opens one to reach them. */
-const DRAWN = `(() => {
-  const html = [".masthead-with-stamps", "#main"].map((s) => { const el = document.querySelector(s); return el ? el.outerHTML : ""; }).join("\\n");
-  const noticeHeadings = [...document.querySelectorAll("#main article.notice h3")].map((h) => h.textContent.trim());
-  for (const folded of document.querySelectorAll("#main details:not([open])")) folded.open = true;
-  const footLinks = [...document.querySelectorAll("#main .foot > a.next")].map(${CARD_LINK});
-  const authorityLinks = [...document.querySelectorAll("#main a.authority-route-page")].map(${CARD_LINK});
-  const learnLinks = [...document.querySelectorAll("#main .learn a")].map(${CARD_LINK});
+function readDrawnScreen(readCardLink: (link: Element) => CardLink): string {
+  const html = [".masthead-with-stamps", "#main"].map((s) => { const el = document.querySelector(s); return el ? el.outerHTML : ""; }).join("\n");
+  const noticeHeadings = [...document.querySelectorAll("#main article.notice h3")].map((h) => (h.textContent ?? "").trim());
+  for (const folded of document.querySelectorAll<HTMLDetailsElement>("#main details:not([open])")) folded.open = true;
+  const footLinks = [...document.querySelectorAll("#main .foot > a.next")].map(readCardLink);
+  const authorityLinks = [...document.querySelectorAll("#main a.authority-route-page")].map(readCardLink);
+  const learnLinks = [...document.querySelectorAll("#main .learn a")].map(readCardLink);
   return JSON.stringify({ html, noticeHeadings, footLinks, authorityLinks, learnLinks });
-})()`;
+}
 
-const seed = (walk: Walk) =>
-  `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(serialize(walk.answers, walk.order, true))})`;
+/** The read of what the module drew, with the card link's read handed in: the expression the walk evaluates. */
+const DRAWN = `(${readDrawnScreen})(${CARD_LINK})`;
 
 /** The screen the module draws at `path` for `record`. The harness's width
  * failure on opening it is kept on the screen rather than thrown, so a case
@@ -214,10 +214,10 @@ async function screenDrawnAt(site: PageOnSite, path: string, record: Walk | null
 
 /** Opens `path` on a device whose record is `record`'s answers, or that holds
  * no record. */
-export async function openWithRecord({ page, url }: PageOnSite, path: string, record: Walk | null): Promise<void> {
-  await page.goto(url("/404.html"));
-  await page.evaluate(record ? seed(record) : "localStorage.clear()");
-  await page.goto(url(path));
+export async function openWithRecord(site: PageOnSite, path: string, record: Walk | null): Promise<void> {
+  const interview = new InterviewPage(site);
+  if (record) await interview.seed(record.answers, { history: record.order, done: true });
+  await interview.open(path);
 }
 
 /** The first full card's link to its authority's route page. */

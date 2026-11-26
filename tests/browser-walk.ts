@@ -1,9 +1,9 @@
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
-import { deriveBands, fieldOptions, fillRouteSlots, type Dataset, type Profile } from "permit-rulebook-data";
+import { deriveBands, fillRouteSlots, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
-import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { chromePath, walkSite, type BrowserPage, type PageOnSite, type Screen } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { whyNoBuild } from "./why-no-build.js";
 
 /**
@@ -48,12 +48,15 @@ export async function withSite<T>(run: (site: PageOnSite) => Promise<T>, screen:
   return returned;
 }
 
-/** The beat in milliseconds, as the built stylesheet carries it, in either
- * unit (`tokens.css` says why). */
-export const BEAT_MS = `(() => {
+/** In the page: the beat in milliseconds, as the built stylesheet carries it,
+ * in either unit (`tokens.css` says why). */
+function readBeatMs(): number {
   const value = getComputedStyle(document.documentElement).getPropertyValue("--motion-beat").trim();
   return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
-})()`;
+}
+
+/** The beat in milliseconds, read in the page: the expression a case evaluates or writes into its own probe. */
+export const BEAT_MS = `(${readBeatMs})()`;
 
 /**
  * Returns once the beat of the card on the screen is over, by the page's own
@@ -84,16 +87,20 @@ export async function evaluateAtRest(page: GesturedPage, expression: string): Pr
   return value;
 }
 
-/** An answer, tapped once the card's beat is over, returned once the page is at rest. */
-export async function answerWith(page: GesturedPage, expression: string): Promise<string> {
-  await waitUntilPastTheBeat(page);
-  return evaluateAtRest(page, expression);
+/** In the page: opens the ledger and taps the ✎ of `field`'s row, found by its field, never by its words; with
+ * `scrollToRow`, scrolls the row to the middle of the viewport first. */
+function tapPencilInPage(field: string, { scrollToRow }: { scrollToRow: boolean }): void {
+  (document.getElementById("decl") as HTMLDetailsElement).open = true;
+  const row = document.querySelector<HTMLElement>(`#decl-list [data-field="${field}"]`)!;
+  if (scrollToRow) row.scrollIntoView({ block: "center" });
+  row.click();
 }
 
-/** The label of the question on the screen, or "" where none is. */
-export const QLABEL = '(() => { const h = document.querySelector("#main .qcard .qlabel"); return h ? h.textContent.trim() : ""; })()';
-/** Which screen the interview is on. */
-const STATE = 'document.getElementById("app").dataset.state';
+/** Taps the ledger's ✎ on `field`'s row, the ledger opened first, the way a reader reaches it, and returns at once;
+ * with the option `scrollToRow`, the row is scrolled to the middle of the viewport before the tap. */
+export async function tapPencil(page: Pick<BrowserPage, "evaluate">, field: string, { scrollToRow = false } = {}): Promise<void> {
+  await page.evaluate(`(${tapPencilInPage})(${JSON.stringify(field)}, ${JSON.stringify({ scrollToRow })})`);
+}
 
 /** A band in the middle of a money field's ladder, for a reader who knows. */
 export const middleBandOf = (field: string): string => {
@@ -106,78 +113,29 @@ export const topBandOf = (field: string): string => {
   return bands[bands.length - 1]!.id;
 };
 
-/** Picks `value` on the question on the screen: its button, or — on the
- * search — the row the option's own name finds. */
-const pick = (value: string, searchFor: string) => `(() => {
-  const opt = document.querySelector(${JSON.stringify(`#main .qcard .opt[data-value='${value}']`)});
-  if (opt) { opt.click(); return "opt"; }
-  const input = document.querySelector("#cfilter");
-  if (!input) return "no option";
-  input.value = ${JSON.stringify(searchFor)};
-  input.dispatchEvent(new Event("input", { bubbles: true }));
-  const row = document.querySelector(${JSON.stringify(`#clist .copt[data-value='${value}']`)});
-  if (!row) return "no row";
-  row.click();
-  return "row";
-})()`;
-
-/** The screen as a reader tells one from the next: which screen, and its question. */
-export const SCREEN_SHOWN = `${STATE} + " " + ${QLABEL}`;
-
-/**
- * Runs `pickExpression` once, which says "opt" or "row" for what it tapped or
- * why it tapped nothing: "moved" when the screen moved on, or why it did not.
- * A pick that takes moves the screen in the same task, so a screen still where
- * it was is a refused pick.
- */
-const pickOnceAndSayWhetherMoved = (pickExpression: string) => `(() => {
-  const before = ${SCREEN_SHOWN};
-  const how = ${pickExpression};
-  if (how !== "opt" && how !== "row") return how;
-  return ${SCREEN_SHOWN} !== before ? "moved" : "the tap was refused after the beat";
-})()`;
-
-/** Answers the question on the screen by `pickExpression` once its beat is
- * over, and returns once the screen has moved on and the page is at rest. A
- * refused answer throws, named by `what`. */
-export async function answerOnce(page: GesturedPage, pickExpression: string, what: string): Promise<void> {
-  await waitUntilPastTheBeat(page);
-  const how = await page.evaluate(pickOnceAndSayWhetherMoved(pickExpression));
-  if (how !== "moved") throw new Error(`${what}: ${how}`);
-  await page.waitUntilAtRest();
-}
+/** The page as an answer drives it: a gesture's page, the address it opens, and the reader's own gestures
+ * `InterviewPage` may make on it. */
+type AnsweringPage = GesturedPage & Pick<BrowserPage, "goto" | "tapOn" | "type" | "pressEnter">;
 
 /** Answers the question on the screen with `value` once its beat is over,
  * and returns once the screen has moved on and the page is at rest. */
-export async function answer(page: GesturedPage, field: string, value: string): Promise<void> {
-  const name = fieldOptions(ds, field).find((o) => o.value === value)?.label ?? value;
-  await answerOnce(page, pick(value, name), `${field} = ${value}`);
+export async function answer(page: AnsweringPage, field: string, value: string): Promise<void> {
+  await new InterviewPage({ page }).answer(field, value);
 }
-
-/** "Turkey" typed into the passport search, as its `input` event commits it, and the first row it draws picked. */
-export const PICK_TURKEY = '(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); document.querySelector(".clist [role=option]").click(); })()';
 
 /** The field of the question on the screen, from its label as the card draws
  * it: the first words on the card, glossed on the card's own memory (#156),
  * with any route it names said in full (#159). */
 export async function fieldOnScreen(page: BrowserPage): Promise<string> {
-  const label = await page.evaluate(QLABEL);
+  const label = (await new InterviewPage({ page }).readScreen()).question;
   const field = ds.fields.find((f) => glossed(fillRouteSlots(f.label, ds), new Set()) === label)?.id;
   if (!field) throw new Error(`no field for the question "${label}"`);
   return field;
 }
 
-/** The script that puts a record of `answers` on the device, asked in the
- * order `history` gives (the answers' own order by default), as the page
- * writes one. */
-export const recordSeedScript = (answers: Profile, history: string[] = Object.keys(answers)): string =>
-  `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(serialize(answers, history))})`;
-
 /** The interview's first screen, with nothing on the record. */
-export async function openCold({ page, url }: PageOnSite): Promise<void> {
-  await page.goto(url("/404.html"));
-  await page.evaluate("localStorage.clear()");
-  await page.goto(url("/"));
+export async function openCold(site: PageOnSite): Promise<void> {
+  await new InterviewPage(site).open();
 }
 
 /**
@@ -187,10 +145,11 @@ export async function openCold({ page, url }: PageOnSite): Promise<void> {
  */
 export async function walkTo(site: PageOnSite, reader: Profile, target: string): Promise<string[]> {
   const { page } = site;
-  await openCold(site);
+  const interview = new InterviewPage(site);
+  await interview.open();
   const asked: string[] = [];
   for (let i = 0; i < 30; i++) {
-    if ((await page.evaluate(STATE)) === "results") throw new Error(`the verdict came before ${target}; asked ${asked.join(", ")}`);
+    if ((await interview.readScreen()).screen === "results") throw new Error(`the verdict came before ${target}; asked ${asked.join(", ")}`);
     const field = await fieldOnScreen(page);
     if (field === target) return asked;
     const value = reader[field];

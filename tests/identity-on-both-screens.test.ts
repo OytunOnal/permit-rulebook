@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import type { Dataset } from "permit-rulebook-data";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
-import { answerWith, openAtRest, skipReason, withSite } from "./browser-walk.js";
+import type { Dataset, Profile } from "permit-rulebook-data";
+import type { PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
+import { skipReason, withSite } from "./browser-walk.js";
 import { FALLBACK_STACK } from "./fallback-stack.js";
-import { SEED_FINISHED_RECORD } from "./seed-finished-record.js";
 import { WIDE_FROM_PX } from "../src/lib/first-paint.js";
 import { RECORD_GENERATED, RULES_READ } from "../src/lib/copy/frame.js";
 import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
@@ -33,33 +33,39 @@ const RESULTS = "/";
 // A route page, whose stamp reads "Rules read".
 const ROUTE = "/germany/eu-blue-card-general/";
 
-/** What the stamp says, and where its box is. */
-const STAMP_STATE = `(() => {
-  const box = document.querySelector(".stamps");
+// A finished interview's answers, so the interview opens on the results, where the stamp reads "Record generated".
+const FINISHED: Profile = {
+  destination: "nl", citizenship: "TR", situation: "ict", salary_eur_month: "band_6",
+  nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
+};
+
+/** In the page: what the stamp says, and where its box is, as JSON. */
+function readStampStateInPage(): string {
+  const box = document.querySelector(".stamps")!;
   const b = box.getBoundingClientRect();
   return JSON.stringify({
-    text: box.querySelector(".stamp").innerHTML.replace(/<[^>]*>/g, " ").split(/[^!-~]+/).filter(Boolean).join(" "),
-    datetime: box.querySelector("time").getAttribute("datetime"),
+    text: box.querySelector(".stamp")!.innerHTML.replace(/<[^>]*>/g, " ").split(/[^!-~]+/).filter(Boolean).join(" "),
+    datetime: box.querySelector("time")!.getAttribute("datetime"),
     left: Math.round(b.left), top: Math.round(b.top),
     width: Math.round(b.width), height: Math.round(b.height),
   });
-})()`;
+}
 
-/** The tagline under the question: its own line, one step smaller. On a
+/** In the page: the tagline under the question, as JSON: its own line, one step smaller. On a
  * route page it is the H1's next element rather than its em — the heading is
  * the route's name alone since s27 — and the same three things must hold. */
-const HEADING = `(() => {
-  const h1 = document.querySelector("h1");
+function readHeadingInPage(): string {
+  const h1 = document.querySelector("h1")!;
   const next = h1.nextElementSibling;
   const tagline = h1.querySelector("em") || (next && next.classList.contains("tagline") ? next : null);
   if (!tagline) return JSON.stringify({ display: "no tagline", rects: 0, smaller: false });
-  const size = (el) => Number.parseFloat(getComputedStyle(el).fontSize);
+  const size = (el: Element) => Number.parseFloat(getComputedStyle(el).fontSize);
   return JSON.stringify({
     display: getComputedStyle(tagline).display,
     rects: tagline.getClientRects().length,
     smaller: size(tagline) < size(h1),
   });
-})()`;
+}
 
 /** The two runs every browser case in this file makes. */
 const STACKS = [
@@ -74,13 +80,14 @@ const STACKS = [
  * measures do — the results page puts its padding on the body, the route page
  * on the wrap — so what is asserted is what the rule promises: the pair is
  * CENTRED in the space that remains, and level with the middle of the text.
+ * In the page, as JSON.
  */
-const PLACEMENT = `(() => {
+function readPlacementInPage(): string {
   const head = document.querySelector('.masthead-with-stamps');
   if (!head) return JSON.stringify({ missing: true });
-  const box = head.querySelector('.stamps');
+  const box = head.querySelector('.stamps')!;
   box.removeAttribute('hidden');
-  const text = head.firstElementChild;
+  const text = head.firstElementChild!;
   const cs = getComputedStyle(head);
   const gap = Number.parseFloat(cs.columnGap) || 0;
   const h = head.getBoundingClientRect(), t = text.getBoundingClientRect(), s = box.getBoundingClientRect();
@@ -94,25 +101,25 @@ const PLACEMENT = `(() => {
     belowText: Math.round(s.top - t.bottom),
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
   });
-})()`;
+}
 
 /**
- * A corner of an element after its own transform. `getBoundingClientRect` gives
+ * In the page, as JSON: a corner of an element after its own transform. `getBoundingClientRect` gives
  * the axis-aligned box of a rotated element, which is not the corner — so the
  * transform matrix is applied to the untransformed corner by hand.
  */
-const PROBE = `(() => {
+function readPairDrawingInPage(): string {
   const box = document.querySelector(".stamps");
   if (!box) return JSON.stringify({ missing: true });
   box.removeAttribute("hidden");
-  const corner = (el, ux, uy) => {
+  const corner = (el: HTMLElement, ux: number, uy: number) => {
     const r = el.getBoundingClientRect();
     const m = new DOMMatrixReadOnly(getComputedStyle(el).transform.replace("none", ""));
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     const px = (ux - 0.5) * el.offsetWidth, py = (uy - 0.5) * el.offsetHeight;
     return { x: cx + m.a * px + m.c * py, y: cy + m.b * px + m.d * py };
   };
-  const mark = box.querySelector(".mark"), stamp = box.querySelector(".stamp");
+  const mark = box.querySelector<HTMLElement>(".mark")!, stamp = box.querySelector<HTMLElement>(".stamp")!;
   const br = corner(mark, 1, 1);
   const mid = corner(stamp, 0.5, 0);
   const b = box.getBoundingClientRect();
@@ -123,43 +130,55 @@ const PROBE = `(() => {
     markTransform: getComputedStyle(mark).transform,
     text: stamp.innerHTML.replace(/<[^>]*>/g, " ").split(/[^!-~]+/).filter(Boolean).join(" "),
   });
-})()`;
+}
 
 /** What the probe hands back. */
 type Measure = Record<string, number | string | undefined>;
 
 /** The stamp's state on question one, after one answer, on the results, and
  * with only its label swapped, the interview opened each time by `openTheInterview`. */
-async function readStampOnScreensOpenedBy(page: BrowserPage, openTheInterview: () => Promise<void>): Promise<Record<string, Measure>> {
-  const read = async () => JSON.parse(await page.evaluate(STAMP_STATE)) as Measure;
-  await openTheInterview();
+async function readStampOnScreensOpenedBy(
+  site: PageOnSite, openTheInterview: (interview: InterviewPage) => Promise<void>,
+): Promise<Record<string, Measure>> {
+  const { page } = site;
+  const interview = new InterviewPage(site);
+  const read = async () => JSON.parse(await page.evaluate(`(${readStampStateInPage})()`)) as Measure;
+  await openTheInterview(interview);
   const first = await read();
-  await answerWith(page, 'document.querySelector(".qcard .opt").click()');
+  // Question one's first option.
+  await interview.answer("destination", "de");
   const answered = await read();
-  await page.evaluate(SEED_FINISHED_RECORD);
-  await openTheInterview();
+  await interview.seed(FINISHED);
+  await openTheInterview(interview);
   const results = await read();
   // The words alone, with the masthead's own copy untouched.
   await page.evaluate(`document.getElementById("stamp-label").textContent = ${JSON.stringify(RULES_READ)}`);
   return { first, answered, results, swapped: await read() };
 }
 
+/** `interview` opened on `page`, on the record seeded since it was last opened or cold, and at rest. */
+async function openAtRest(interview: InterviewPage, page: PageOnSite["page"]): Promise<void> {
+  await interview.open();
+  await page.waitUntilAtRest();
+}
+
 /** The stamp's state on every screen, in our fonts. */
-const readStampOnEveryScreen = (page: BrowserPage, url: (path: string) => string) =>
-  readStampOnScreensOpenedBy(page, () => openAtRest(page, url("/")));
+const readStampOnEveryScreen = (site: PageOnSite) =>
+  readStampOnScreensOpenedBy(site, (interview) => openAtRest(interview, site.page));
 
 /** The stamp's state on every screen, in the fonts the machine falls back to. */
-const readStampOnEveryScreenInTheFallbackStack = (page: BrowserPage, url: (path: string) => string) =>
-  readStampOnScreensOpenedBy(page, async () => {
-    await openAtRest(page, url("/"));
-    await page.evaluate(FALLBACK_STACK);
+const readStampOnEveryScreenInTheFallbackStack = (site: PageOnSite) =>
+  readStampOnScreensOpenedBy(site, async (interview) => {
+    await openAtRest(interview, site.page);
+    await site.page.evaluate(FALLBACK_STACK);
   });
 
-/** What `probe` reads on the results page and on a route page, on a screen of `viewport`'s size, in `fonts`. */
+/** What `probe` reads in the page on the results page and on a route page, on a screen of `viewport`'s size, in `fonts`. */
 async function measureBothScreens(
-  probe: string, viewport: { width: number; height: number }, fonts: (typeof STACKS)[number],
+  probe: () => string, viewport: { width: number; height: number }, fonts: (typeof STACKS)[number],
 ): Promise<Record<string, Measure>> {
-  return await withSite(async ({ page, url }) => {
+  return await withSite(async (site) => {
+    const { page, url } = site;
     const out: Record<string, Measure> = {};
     for (const path of [RESULTS, ROUTE]) {
       await page.goto(url(path));
@@ -168,11 +187,12 @@ async function measureBothScreens(
         // The results screen, which is where this page carries the
         // "Record generated" stamp; unseeded, `/` is question one and
         // states the rules-read date instead (human, 2026-09-08).
-        await page.evaluate(SEED_FINISHED_RECORD);
-        await openAtRest(page, url(path));
+        const interview = new InterviewPage(site);
+        await interview.seed(FINISHED);
+        await openAtRest(interview, page);
         if (fonts.force) await page.evaluate(FALLBACK_STACK);
       }
-      out[path] = JSON.parse(await page.evaluate(probe)) as Measure;
+      out[path] = JSON.parse(await page.evaluate(`(${probe})()`)) as Measure;
     }
     return out;
   }, { viewport, mobile: viewport.width < 800 }) as Record<string, Measure>;
@@ -201,7 +221,7 @@ describe.skipIf(skipped !== null)(LANDS_IDENTICALLY, () => {
   for (const fonts of STACKS)
   for (const [width, label] of [[1100, "desktop"], [390, "390 px"]] as const) {
     it(`is the same drawing on the results page and a route page at ${label}, in ${fonts.name}`, async () => {
-      const seen = await measureBothScreens(PROBE, { width, height: 900 }, fonts);
+      const seen = await measureBothScreens(readPairDrawingInPage, { width, height: 900 }, fonts);
       const results = seen[RESULTS];
       const route = seen[ROUTE];
       expect(results.missing, "the results page has no pair").toBeUndefined();
@@ -229,7 +249,7 @@ describe.skipIf(skipped !== null)(LANDS_IDENTICALLY, () => {
   for (const fonts of STACKS)
   for (const [width, label] of [[1100, "desktop"], [390, "390 px"]] as const) {
     it(`sits in the same place on both screens at ${label}, in ${fonts.name}`, async () => {
-      const seen = await measureBothScreens(PLACEMENT, { width, height: 1000 }, fonts);
+      const seen = await measureBothScreens(readPlacementInPage, { width, height: 1000 }, fonts);
       const results = seen[RESULTS];
       const route = seen[ROUTE];
       expect(results.missing, "the results masthead does not carry the pair").toBeUndefined();
@@ -269,7 +289,7 @@ describe.skipIf(skipped !== null)(LANDS_IDENTICALLY, () => {
   ] as const)
   it(`states the rules-read date on the questions and the record's date on the results, in ${stack}`, async () => {
     const seen = await withSite(
-      ({ page, url }) => readStamp(page, url),
+      (site) => readStamp(site),
       { viewport: { width: 1100, height: 1000 }, mobile: false },
     ) as Record<string, Measure>;
 
@@ -300,7 +320,7 @@ describe.skipIf(skipped !== null)(LANDS_IDENTICALLY, () => {
       for (const [label, path] of [["interview", "/"], ["route", ROUTE]] as const) {
         await page.goto(url(path));
         if (force) await page.evaluate(FALLBACK_STACK);
-        out[label] = JSON.parse(await page.evaluate(HEADING)) as Measure;
+        out[label] = JSON.parse(await page.evaluate(`(${readHeadingInPage})()`)) as Measure;
       }
       return out;
     }, { viewport: { width: 320, height: 900 }, mobile: true }) as Record<string, Measure>;

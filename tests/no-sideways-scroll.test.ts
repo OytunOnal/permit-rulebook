@@ -1,31 +1,49 @@
 import { describe, expect, it } from "vitest";
+import type { Profile } from "permit-rulebook-data";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { skipReason, withSite } from "./browser-walk.js";
 import { FALLBACK_STACK } from "./fallback-stack.js";
-import { SEED_FINISHED_RECORD } from "./seed-finished-record.js";
 
 const notMeasured = skipReason();
 
 // The title these cases have always sat under; every block below repeats it, so each case keeps its id.
 const NO_SIDEWAYS_SCROLL = "no page scrolls sideways at 390 px, whatever the fonts";
 
+// A finished interview's answers, so the interview opens on the results, where the stamp reads "Record generated".
+const FINISHED: Profile = {
+  destination: "nl", citizenship: "TR", situation: "ict", salary_eur_month: "band_6",
+  nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
+};
+
 /**
- * What sticks out, if anything, named well enough to find: its class if it
+ * In the page, as JSON: what sticks out, if anything, named well enough to find: its class if it
  * has one, otherwise the words it holds. The element that pushed CI sideways
  * was a `span` with no class, which a tag name alone does not locate.
  */
-const OVERFLOW = 'JSON.stringify((() => {'
-  + ' const w = document.documentElement.clientWidth;'
-  + ' const worst = [];'
-  + ' for (const el of document.querySelectorAll("body *")) {'
-  + '   const r = el.getBoundingClientRect();'
-  + '   if (r.width === 0 || r.right <= w + 0.5) continue;'
-  + '   const cls = (el.className || "").toString().trim();'
-  + '   const said = (el.textContent || "").split(/\\s+/).join(" ").trim().slice(0, 40);'
-  + '   worst.push(`${el.tagName.toLowerCase()}${cls ? "." + cls.slice(0, 24) : ` "${said}"`}`'
-  + '     + ` ${Math.round(r.width)} px wide, right edge ${Math.round(r.right)} of ${w}`);'
-  + ' }'
-  + ' return { overflow: document.documentElement.scrollWidth - w, worst: worst.slice(0, 4) };'
-  + '})())';
+function readOverflowInPage(): string {
+  const w = document.documentElement.clientWidth;
+  const worst = [];
+  for (const el of document.querySelectorAll("body *")) {
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 || r.right <= w + 0.5) continue;
+    const cls = (el.className || "").toString().trim();
+    const said = (el.textContent || "").split(/\s+/).join(" ").trim().slice(0, 40);
+    worst.push(`${el.tagName.toLowerCase()}${cls ? "." + cls.slice(0, 24) : ` "${said}"`}`
+      + ` ${Math.round(r.width)} px wide, right edge ${Math.round(r.right)} of ${w}`);
+  }
+  return JSON.stringify({ overflow: document.documentElement.scrollWidth - w, worst: worst.slice(0, 4) });
+}
+
+/** What sticks out, if anything: the expression a case evaluates. */
+const OVERFLOW = `(${readOverflowInPage})()`;
+
+/** In the page: a style sheet of `css` added to the page. */
+function addStyleInPage(css: string): number {
+  const s = document.createElement("style");
+  s.textContent = css;
+  document.head.appendChild(s);
+  return 1;
+}
 
 /**
  * A font drawn wider than any installed here, standing in as extra tracking
@@ -33,9 +51,7 @@ const OVERFLOW = 'JSON.stringify((() => {'
  * wider than this machine's emulated fallback, so the widened measurement is
  * the truth and the plain one is the optimistic case.
  */
-const WIDER = (extra: string): string => '(() => { const s = document.createElement("style");'
-  + ` s.textContent = "body{letter-spacing:${extra}em}";`
-  + ' document.head.appendChild(s); return 1; })()';
+const WIDER = (extra: string): string => `(${addStyleInPage})(${JSON.stringify(`body{letter-spacing:${extra}em}`)})`;
 
 // The page's sideways scroll, and the stamp's height, width and bound on its width.
 const STAMP_BOX = 'JSON.stringify({ overflow: document.documentElement.scrollWidth'
@@ -46,9 +62,8 @@ const STAMP_BOX = 'JSON.stringify({ overflow: document.documentElement.scrollWid
   + '   document.querySelector(".stamps .stamp")).maxWidth)) })';
 
 /** The stamp's label tracked `extra` em wider, standing in for a family drawn wider than any here. */
-const WIDER_STAMP = (extra: string): string => '(() => { const s = document.createElement("style");'
-  + ` s.textContent = ".stamps .stamp{letter-spacing:calc(var(--stamp-tracking) + ${extra}em)}";`
-  + ' document.head.appendChild(s); return 1; })()';
+const WIDER_STAMP = (extra: string): string =>
+  `(${addStyleInPage})(${JSON.stringify(`.stamps .stamp{letter-spacing:calc(var(--stamp-tracking) + ${extra}em)}`)})`;
 
 /**
  * And nothing anywhere pushes a phone sideways.
@@ -61,7 +76,8 @@ const WIDER_STAMP = (extra: string): string => '(() => { const s = document.crea
  */
 describe.skipIf(notMeasured !== null)(NO_SIDEWAYS_SCROLL, () => {
   it("the interview, the results, a route page, a country page and the data page", async () => {
-    const seen = await withSite(async ({ page, url }) => {
+    const seen = await withSite(async (site) => {
+      const { page, url } = site;
       const at: Record<string, unknown> = {};
       for (const [name, path] of [
         ["interview", "/"], ["results", "/"], ["route", "/germany/eu-blue-card-general/"],
@@ -71,8 +87,9 @@ describe.skipIf(notMeasured !== null)(NO_SIDEWAYS_SCROLL, () => {
         if (name === "results") {
           // The screen the stamp is widest on: "Record generated" is longer
           // than "Rules read".
-          await page.evaluate(SEED_FINISHED_RECORD);
-          await page.goto(url(path));
+          const interview = new InterviewPage(site);
+          await interview.seed(FINISHED);
+          await interview.open(path);
         }
         await page.evaluate(FALLBACK_STACK);
         await page.waitUntilAtRest();
@@ -105,10 +122,11 @@ describe.skipIf(notMeasured !== null)(NO_SIDEWAYS_SCROLL, () => {
  */
 describe.skipIf(notMeasured !== null)(NO_SIDEWAYS_SCROLL, () => {
   it("keeps its longest label on one line under a font wider than the runner's", async () => {
-    const seen = await withSite(async ({ page, url }) => {
-      await page.goto(url("/"));
-      await page.evaluate(SEED_FINISHED_RECORD);
-      await page.goto(url("/"));
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      const interview = new InterviewPage(site);
+      await interview.seed(FINISHED);
+      await interview.open();
       await page.evaluate(FALLBACK_STACK);
       await page.waitUntilAtRest();
       const at: Record<string, unknown> = { own: JSON.parse(await page.evaluate(STAMP_BOX)) };

@@ -11,14 +11,18 @@
  * that opens a tab may never do (#453).
  */
 
-/** The expression that scrolls the element `selector` finds into view and gives its centre in the viewport as JSON, or "null" when none. */
-const centreScrolledIntoView = (selector) => `JSON.stringify((() => {
-  const el = document.querySelector(${JSON.stringify(selector)});
+/** In the page: scrolls the element `selector` finds into view and returns its centre in the viewport, or null
+ * when none. */
+function scrollIntoViewAndReadCentreInPage(selector) {
+  const el = document.querySelector(selector);
   if (!el) return null;
   el.scrollIntoView({ block: "center" });
   const r = el.getBoundingClientRect();
   return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
-})())`;
+}
+
+/** Builds the expression that scrolls the element `selector` finds into view and gives its centre in the viewport as JSON, or "null" when none. */
+const buildScrollAndReadCentre = (selector) => `JSON.stringify((${scrollIntoViewAndReadCentreInPage})(${JSON.stringify(selector)}))`;
 
 export class TabGestures {
   #sendToTab;
@@ -54,7 +58,7 @@ export class TabGestures {
   /** A real tap at the centre of the element `selector` finds, scrolled into
    * view first: the platform's own input, which CLS does not count a shift after. */
   tapOn = async (selector) => {
-    const { result } = await this.#sendToTab("Runtime.evaluate", { expression: centreScrolledIntoView(selector), returnByValue: true });
+    const { result } = await this.#sendToTab("Runtime.evaluate", { expression: buildScrollAndReadCentre(selector), returnByValue: true });
     const centre = JSON.parse(result.value);
     if (!centre) throw new Error(`nothing on the page matches ${selector}`);
     await this.clickAt(centre.x, centre.y);

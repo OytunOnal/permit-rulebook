@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { RECORD_VERSION } from "../src/lib/record.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset, Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
@@ -7,6 +6,7 @@ import { replayRecord } from "../src/lib/scope.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, everyDrawnRouteIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { withSite, skipReason } from "./browser-walk.js";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 
 /**
  * Two things the interview did not do, walked in a browser.
@@ -60,30 +60,25 @@ if (skipped)
     "",
   ].join("\n"));
 
-const seed = (answers: Record<string, string>) =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: RECORD_VERSION, answers, history: Object.keys(answers),
-  }))})`;
-
 /** Checks the German recognition question carries its Anabin lookup at the question itself. */
 async function expectLookupAtTheRecognitionQuestion() {
-  const seen = JSON.parse(await withSite(async ({ page, url }) => {
-    await page.goto(url("/"));
+  const seen = await withSite(async (site) => {
+    const interview = new InterviewPage(site);
     // Answered up to the German recognition question, and no further — with
     // a real passport, since the record keeps only answers a question
     // offers (s25) and the class the rules reason with was never one.
-    await page.evaluate(seed({
+    await interview.seed({
       destination: "de", citizenship: "IN", situation: "offer",
       qualification: "degree", occupation_shortage: "yes",
-    }));
-    await page.goto(url("/"));
-    return page.evaluate(
+    });
+    await interview.open();
+    const { question } = await interview.readScreen();
+    return { question, ...JSON.parse(await site.page.evaluate(
       'JSON.stringify({'
-      + ' question: document.querySelector(".qlabel").textContent.trim(),'
       + ' help: document.querySelector(".qlearn") ? document.querySelector(".qlearn").textContent.trim() : null,'
       + ' href: document.querySelector(".qlearn a") ? document.querySelector(".qlearn a").href : null })',
-    );
-  }, { viewport: { width: 1100, height: 900 }, mobile: false }) as string) as
+    )) };
+  }, { viewport: { width: 1100, height: 900 }, mobile: false }) as
     { question: string; help: string | null; href: string | null };
 
   expect(seen.question).toContain("recognition");
@@ -99,13 +94,14 @@ async function expectClashPaintedAsComposed() {
   // the page paints it, over the record as it restores it.
   const painted = (answers: Profile) =>
     paintedAsComposedScript(verdictFor(replayRecord(ds, answers, Object.keys(answers)).answers));
-  const seen = await withSite(async ({ page, url }) => {
-    await page.goto(url("/"));
-    await page.evaluate(seed(CONTRADICTED as Record<string, string>));
-    await page.goto(url("/"));
+  const seen = await withSite(async (site) => {
+    const { page } = site;
+    const interview = new InterviewPage(site);
+    await interview.seed(CONTRADICTED);
+    await interview.open();
     const contradicted = JSON.parse(await page.evaluate(painted(CONTRADICTED)));
-    await page.evaluate(seed(CONSISTENT as Record<string, string>));
-    await page.goto(url("/"));
+    await interview.seed(CONSISTENT);
+    await interview.open();
     const consistent = JSON.parse(await page.evaluate(painted(CONSISTENT)));
     return { contradicted, consistent };
   }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, typeof PAINTED_AS_COMPOSED>;
@@ -125,22 +121,22 @@ async function expectClashPaintedAsComposed() {
  * (#151, ruling 8).
  */
 async function expectShortageHelpInTheDatasetsWords() {
-  const seen = JSON.parse(await withSite(async ({ page, url }) => {
-    await page.goto(url("/"));
+  const seen = await withSite(async (site) => {
+    const interview = new InterviewPage(site);
     // `occupation_it` on the record: Germany asks it before the shortage
     // question since the shortage Blue Card's IT path reads it (#134), and
     // a reader out of IT is asked the shortage question next.
-    await page.evaluate(seed({
+    await interview.seed({
       destination: "de", citizenship: "IN", situation: "offer",
       qualification: "degree", recognition_de: "recognized", occupation_it: "no",
-    }));
-    await page.goto(url("/"));
-    return page.evaluate(
+    });
+    await interview.open();
+    const { question } = await interview.readScreen();
+    return { question, ...JSON.parse(await site.page.evaluate(
       'JSON.stringify({'
-      + ' question: document.querySelector(".qlabel").textContent.trim(),'
       + ' help: document.querySelector(".qlearn") ? document.querySelector(".qlearn").textContent.trim() : null })',
-    );
-  }, { viewport: { width: 1100, height: 900 }, mobile: false }) as string) as
+    )) };
+  }, { viewport: { width: 1100, height: 900 }, mobile: false }) as
     { question: string; help: string | null };
 
   expect(seen.question.toLowerCase()).toContain("shortage");
