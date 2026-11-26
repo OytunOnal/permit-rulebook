@@ -382,7 +382,7 @@
       "count": 1
     }
   },
-  "tests/s27.test.ts": {
+  "tests/s27-walk.test.ts": {
     "max-lines-per-function": {
       "count": 1
     },
