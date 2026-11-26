@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, shortLabelOf, type Dataset, type Profile } from "permit-rulebook-data";
 import { DESK, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
+import { InterviewPage, type ScreenShown } from "../scripts/interview-page/interview-page.mjs";
 import {
-  QLABEL, answer, middleBandOf, skipReason, walkTo, warnNotWalked, withSite,
+  answer, middleBandOf, skipReason, walkTo, warnNotWalked, withSite,
 } from "./browser-walk.js";
 
 /**
@@ -104,19 +104,13 @@ function expectAnsweredWithItsPencil(row: Row | null, field: string): asserts ro
   expect(row!.editable).toBe(true);
 }
 
-/** The question on the screen once the pencil has drawn one other than
- * `before`, read when it is there and the page is at rest. */
-async function questionAfter(page: BrowserPage, before: string): Promise<string> {
-  await page.waitUntil(`${QLABEL} !== "" && ${QLABEL} !== ${JSON.stringify(before)}`,
-    `the pencil drew no question other than "${before}"`);
-  await page.waitUntilAtRest();
-  return (await new InterviewPage({ page }).readScreen()).question;
-}
-
-/** In the page: the answer the question on the screen holds as chosen, or "" where it holds none. */
-function readChosen(): string {
-  const chosen = document.querySelector<HTMLElement>("#main .qcard .opt.sel");
-  return chosen ? (chosen.dataset.value ?? "") : "";
+/** The question on the screen once the pencil has drawn one other than the
+ * screen `before`, read when it is there and the page is at rest. */
+async function questionAfter(site: PageOnSite, before: ScreenShown): Promise<string> {
+  const interview = new InterviewPage(site);
+  await interview.waitUntilScreenChanges(before);
+  await site.page.waitUntilAtRest();
+  return (await interview.readScreen()).question;
 }
 
 // One walk per money question, each to a destination whose interview asks it.
@@ -148,10 +142,10 @@ describe.skipIf(skipped !== null)("a money row answered with its open unknown is
         // state rather than on a click that reopens nothing.
         if (!before?.pencil) return { before, reopened: "", chosen: "", recorded: "", after: null };
         const interview = new InterviewPage(site);
-        const { question: next } = await interview.readScreen();
+        const next = await interview.readScreen();
         await page.clickAt(before.at.x, before.at.y);
-        const reopened = await questionAfter(page, next);
-        const chosen = await page.evaluate(`(${readChosen})()`);
+        const reopened = await questionAfter(site, next);
+        const { chosen } = await interview.readScreen();
         await interview.answer(field, band);
         return {
           before, reopened, chosen,

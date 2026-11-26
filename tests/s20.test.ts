@@ -8,7 +8,7 @@ import { questionCardHtml } from "../src/lib/question.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
-import { evaluateAtRest, fieldOnScreen, openAtRest, withSite, skipReason } from "./browser-walk.js";
+import { evaluateAtRest, openAtRest, withSite, skipReason } from "./browser-walk.js";
 import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
@@ -101,14 +101,11 @@ if (skipped)
   ].join(String.fromCharCode(10)));
 
 /**
- * In the page: where the reader is, read the way a reader would read it: the
- * card's top edge against the viewport, and what holds the focus, as JSON. The
- * first control is whatever the card offers first — a button for a choice,
- * the box for a search — and the card's heading where there is neither.
+ * In the page: where the reader is, read the way a reader would read it, the
+ * question card aside: the masthead and the headline against the viewport,
+ * the live region, what holds the focus, and the resumed line, as JSON.
  */
 function readWhere(): string {
-  const card = document.querySelector("#main .qcard");
-  const first = card && (card.querySelector(".opt, #cfilter") || card.querySelector(".qlabel"));
   const head = document.querySelector(".masthead-with-stamps");
   const h1 = document.getElementById("headline");
   const active = document.activeElement;
@@ -119,23 +116,31 @@ function readWhere(): string {
     state: document.getElementById("app")!.dataset.state,
     scrollY: Math.round(window.scrollY),
     viewport: window.innerHeight,
-    cardTop: card ? Math.round(card.getBoundingClientRect().top) : null,
     headTop: head ? Math.round(head.getBoundingClientRect().top) : null,
     h1Bottom: h1 ? Math.round(h1.getBoundingClientRect().bottom) : null,
     headline: h1 ? (h1.textContent ?? "").trim() : "",
     live: (document.getElementById("cstatus")!.textContent || "").trim(),
     active: active ? nameOf(active) : "",
-    firstShown: !!first && getComputedStyle(first).visibility === "visible",
-    activeIsFirst: !!first && active === first,
-    activeInCard: !!card && !!active && card.contains(active),
     resumed: resumed ? (resumed.textContent ?? "").trim() : null,
     resumedRestart: resumedRestart ? !resumedRestart.hidden && getComputedStyle(resumedRestart).display !== "none" : false,
     restartsOnPage: document.querySelectorAll("#restart").length,
   });
 }
 
-/** Where the reader is, read in the page. */
-const where = async (page: BrowserPage): Promise<Where> => JSON.parse(await page.evaluate(`(${readWhere})()`)) as Where;
+/** Where the reader is, read in the page: the card's top edge against the viewport, and whether the focus is on the
+ * card's first control, as the interview reads them, beside the rest. The first control is whatever the card offers
+ * first — a button for a choice, the box for a search — and the card's heading where there is neither. */
+async function where(page: BrowserPage): Promise<Where> {
+  const stood = JSON.parse(await page.evaluate(`(${readWhere})()`)) as Omit<Where, "cardTop" | "firstShown" | "activeIsFirst" | "activeInCard">;
+  const card = await new InterviewPage({ page }).readCardLayout();
+  return {
+    ...stood,
+    cardTop: card ? Math.round(card.top) : null,
+    firstShown: card?.focus.isFirstControlShown ?? false,
+    activeIsFirst: card?.focus.isOnFirstControl ?? false,
+    activeInCard: card?.focus.isInCard ?? false,
+  };
+}
 
 interface Where {
   state: string;
@@ -171,18 +176,8 @@ function tapSalary(): string {
 }
 /** The walk's last step: the first band the salary question offers other than the one held, so the verdict it
  * returns to must change. */
-const ANOTHER_BAND = firstOptionOf("salary_eur_year", finished.salary_eur_year);
-
-/** The first answer the question on `field` offers, other than `held` where one is held. */
-function firstOptionOf(field: string, held?: string): string {
-  return deriveQuestions(ds).find((q) => q.field === field)!.options.find((o) => o.value !== held)!.value;
-}
-
-/** Answers the question on the screen with the first answer it offers: a choice, never the country search. */
-async function answerFirstOption(interview: InterviewPage, page: BrowserPage): Promise<void> {
-  const field = await fieldOnScreen(page);
-  await interview.answer(field, firstOptionOf(field));
-}
+const ANOTHER_BAND = deriveQuestions(ds).find((q) => q.field === "salary_eur_year")!
+  .options.find((o) => o.value !== finished.salary_eur_year)!.value;
 
 /** The critique's walk: on a result, the salary row's ✎ tapped, and a different band answered. */
 async function correction(site: PageOnSite) {
@@ -244,7 +239,7 @@ describe.skipIf(skipped !== null)("every answer moves the focus to the next ques
         // A choice: its first button. The country search does not come this
         // early on any path, and the focus rule for it is v0.7's (the caret in
         // the box, its text selected).
-        await answerFirstOption(interview, page);
+        await interview.answerFirstOffered();
         steps.push(await where(page));
       }
       return { steps };
@@ -289,7 +284,7 @@ async function expectHalfDoneRecordSaysResumed(): Promise<void> {
     const interview = await openOnRecord(site, halfDone);
     const resumed = await where(page);
     // One answer on: the line was for the arrival, not for the screen after it.
-    await answerFirstOption(interview, page);
+    await interview.answerFirstOffered();
     const next = await where(page);
     // Start over from the resumed line: the same control the panel carries.
     await openAtRest(page, url("/"));
