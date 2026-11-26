@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { RECORD_VERSION } from "../src/lib/record.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset, Profile } from "permit-rulebook-data";
 import { type Glossary, glossSection, glossed } from "../src/lib/gloss.js";
@@ -9,6 +8,7 @@ import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { withSite, skipReason } from "./browser-walk.js";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 
 const ds = dataset as unknown as Dataset;
 
@@ -133,13 +133,11 @@ describe.skipIf(skipped !== null)("the results card carries the sign without an 
   it("prints the § names bare — no explainer, no number restated (amendment 6)", async () => {
     // What the card says is the verdict's (the case above); the page paints
     // the verdict the record, as it restores, composes.
-    const painted = await withSite(async ({ page, url }) => {
-      await page.goto(url("/"));
-      await page.evaluate(`localStorage.setItem("permit-rulebook.record.v1", ${
-        JSON.stringify(JSON.stringify({
-          version: RECORD_VERSION, answers: GERMAN, history: Object.keys(GERMAN),
-        }))})`);
-      await page.goto(url("/"));
+    const painted = await withSite(async (site) => {
+      const { page } = site;
+      const interview = new InterviewPage(site);
+      await interview.seed(GERMAN);
+      await interview.open();
       const restored = replayRecord(ds, GERMAN, Object.keys(GERMAN)).answers;
       return JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(restored))));
     }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as typeof PAINTED_AS_COMPOSED;

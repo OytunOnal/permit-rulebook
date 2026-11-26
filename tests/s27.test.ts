@@ -10,7 +10,6 @@ import { ROUTE_DOOR } from "../src/lib/copy/verdict.js";
 import { ROUTE_TAGLINE } from "../src/lib/copy/route-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { declarationHtml } from "../src/lib/question.js";
-import { RECORD_VERSION } from "../src/lib/record.js";
 import { glossSection } from "../src/lib/gloss.js";
 import { esc } from "../src/lib/reason.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
@@ -20,8 +19,9 @@ import { frameAlone, headerIn, interviewFrameAlone } from "./frame-alone.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, countryNamed, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, verdictFor,
 } from "./verdict-cards.js";
-import { DESK, PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { DESK, PHONE, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
+import { evaluateAtRest, openAtRest, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -199,13 +199,13 @@ if (skipped) warnNotWalked("THE S27 SLIPS", skipped);
 
 const SCREENS = [["390x844", PHONE], ["1280x900", DESK]] as const;
 
-const seed = (answers: Record<string, string>) =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: RECORD_VERSION, answers, history: Object.keys(answers),
-  }))})`;
-const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
+/** In the page: the menu button's words and whether it says it is expanded, as JSON. */
+function readMenuButton(): string {
+  const b = document.querySelector(".menu")!;
+  return JSON.stringify({ text: (b.textContent ?? "").trim(), expanded: b.getAttribute("aria-expanded") });
+}
 
-const BUTTON = '(() => { const b = document.querySelector(".menu"); return JSON.stringify({ text: b.textContent.trim(), expanded: b.getAttribute("aria-expanded") }); })()';
+const BUTTON = `(${readMenuButton})()`;
 /** The menu button read by `BUTTON` at each step of its walk. */
 type MenuButtonSeen = Record<"closed" | "open" | "escaped" | "reopened" | "outside", { text: string; expanded: string }>;
 
@@ -214,28 +214,33 @@ type MenuButtonSeen = Record<"closed" | "open" | "escaped" | "reopened" | "outsi
  * the name's left edge, and where the name and the tally sit. The mark is the
  * name element's own `::before`, laid as an inline block so its width can be
  * read back; the name's text starts where the range over its text node
- * starts.
+ * starts. In the page, as JSON.
  */
-const SECTIONS = `JSON.stringify([...document.querySelectorAll(".country-sec")].map((d) => {
-  const summary = d.querySelector("summary");
-  const name = summary.querySelector(".cname");
-  const tally = summary.querySelector(".tally");
-  const nameBox = name.getBoundingClientRect();
-  const range = document.createRange();
-  range.selectNodeContents(name);
-  const text = [...range.getClientRects()].sort((a, b) => a.left - b.left)[0];
-  const mark = getComputedStyle(name, "::before");
-  const tallyBox = tally.getBoundingClientRect();
-  const sum = summary.getBoundingClientRect();
-  return {
-    name: name.textContent.trim(), open: d.open, said: summary.classList.contains("said"),
-    fontSize: parseFloat(getComputedStyle(summary).fontSize),
-    markWidth: parseFloat(mark.width), markContent: mark.content,
-    gap: text.left - (nameBox.left + parseFloat(mark.width)),
-    nameLeft: nameBox.left - sum.left, nameTop: nameBox.top, nameBottom: nameBox.bottom,
-    tallyLeft: tallyBox.left - sum.left, tallyRight: sum.right - tallyBox.right, tallyTop: tallyBox.top,
-  };
-}))`;
+function readSections(): string {
+  return JSON.stringify([...document.querySelectorAll<HTMLDetailsElement>(".country-sec")].map((d) => {
+    const summary = d.querySelector("summary")!;
+    const name = summary.querySelector(".cname")!;
+    const tally = summary.querySelector(".tally")!;
+    const nameBox = name.getBoundingClientRect();
+    const range = document.createRange();
+    range.selectNodeContents(name);
+    const text = [...range.getClientRects()].sort((a, b) => a.left - b.left)[0]!;
+    const mark = getComputedStyle(name, "::before");
+    const tallyBox = tally.getBoundingClientRect();
+    const sum = summary.getBoundingClientRect();
+    return {
+      name: (name.textContent ?? "").trim(), open: d.open, said: summary.classList.contains("said"),
+      fontSize: parseFloat(getComputedStyle(summary).fontSize),
+      markWidth: parseFloat(mark.width), markContent: mark.content,
+      gap: text.left - (nameBox.left + parseFloat(mark.width)),
+      nameLeft: nameBox.left - sum.left, nameTop: nameBox.top, nameBottom: nameBox.bottom,
+      tallyLeft: tallyBox.left - sum.left, tallyRight: sum.right - tallyBox.right, tallyTop: tallyBox.top,
+    };
+  }));
+}
+
+// Every country section's summary, measured as `readSections` says.
+const SECTIONS = `(${readSections})()`;
 
 interface Section {
   name: string; open: boolean; said: boolean; fontSize: number; markWidth: number; markContent: string; gap: number;
@@ -249,16 +254,16 @@ function tallyPlaceOf(s: Section): string {
 }
 
 /** The four-country walk s26 seeds, to the result where every section is drawn: France leads, the other three closed. */
-const walkToFour = async (page: BrowserPage, base: string): Promise<void> => {
-  await page.goto(base);
-  await page.evaluate(seed({ destination: "all", situation: "research" }));
-  await openAtRest(page, base);
-  await answerWith(page, tap("fr"));
-  await answerWith(page, tap("none"));
-  await evaluateAtRest(page, '(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); })()');
-  await answerWith(page, 'document.querySelector(".clist [role=option]").click()');
-  await answerWith(page, tap("no"));
-  await answerWith(page, tap("no"));
+const walkToFour = async (site: PageOnSite): Promise<void> => {
+  const interview = new InterviewPage(site);
+  await interview.seed({ destination: "all", situation: "research" });
+  await interview.open();
+  await site.page.waitUntilAtRest();
+  await interview.answer("situation_country", "fr");
+  await interview.answer("qualification", "none");
+  await interview.answer("citizenship", "TR");
+  await interview.answer("nl_recent_grad", "no");
+  await interview.answer("top200_grad", "no");
 };
 
 /**
@@ -277,34 +282,72 @@ const ledgerRows = (): string => {
   return rows.join("");
 };
 
-const PENS = `JSON.stringify([...document.querySelectorAll("#decl-list .done")].map((row) => {
-  const dd = row.querySelector("dd");
-  const pen = dd.querySelector(".pen");
-  const range = document.createRange();
-  range.setStart(dd, 0);
-  range.setEndBefore(pen);
-  const lines = [...range.getClientRects()].filter((r) => r.width > 0);
-  const last = lines.reduce((a, b) => (b.top > a.top ? b : a));
-  const box = pen.getBoundingClientRect();
-  return {
-    field: row.dataset.field, text: dd.textContent.trim(), lines: new Set(lines.map((l) => Math.round(l.top))).size,
-    penTop: box.top, penLeft: box.left, lastTop: last.top, lastLeft: last.left,
-    width: row.getBoundingClientRect().width,
-  };
-}))`;
+/** In the page: each ledger row's pen against the last line of its answer, as JSON. */
+function readPens(): string {
+  return JSON.stringify([...document.querySelectorAll<HTMLElement>("#decl-list .done")].map((row) => {
+    const dd = row.querySelector("dd")!;
+    const pen = dd.querySelector(".pen")!;
+    const range = document.createRange();
+    range.setStart(dd, 0);
+    range.setEndBefore(pen);
+    const lines = [...range.getClientRects()].filter((r) => r.width > 0);
+    const last = lines.reduce((a, b) => (b.top > a.top ? b : a));
+    const box = pen.getBoundingClientRect();
+    return {
+      field: row.dataset.field, text: (dd.textContent ?? "").trim(), lines: new Set(lines.map((l) => Math.round(l.top))).size,
+      penTop: box.top, penLeft: box.left, lastTop: last.top, lastLeft: last.left,
+      width: row.getBoundingClientRect().width,
+    };
+  }));
+}
+
+const PENS = `(${readPens})()`;
 
 interface Pen {
   field: string; text: string; lines: number; penTop: number; penLeft: number;
   lastTop: number; lastBottom: number; lastLeft: number; width: number;
 }
 
-const HEADER = `JSON.stringify((() => {
-  const h1 = document.querySelector(".masthead-with-stamps h1");
-  const next = h1.nextElementSibling;
-  const style = (el) => { const s = getComputedStyle(el); return { font: s.font, color: s.color, display: s.display }; };
-  return { h1: h1.textContent.trim(), nextTag: next.tagName, nextClass: next.className, nextText: next.textContent.trim(),
-    tagline: style(next), em: h1.querySelector("em") ? style(h1.querySelector("em")) : null };
-})())`;
+/** In the page: the masthead's H1, the element after it, and the type of that element and of the H1's em, as JSON. */
+function readHeader(): string {
+  const h1 = document.querySelector(".masthead-with-stamps h1")!;
+  const next = h1.nextElementSibling!;
+  const style = (el: Element) => { const s = getComputedStyle(el); return { font: s.font, color: s.color, display: s.display }; };
+  const em = h1.querySelector("em");
+  return JSON.stringify({ h1: (h1.textContent ?? "").trim(), nextTag: next.tagName, nextClass: next.className,
+    nextText: (next.textContent ?? "").trim(), tagline: style(next), em: em ? style(em) : null });
+}
+
+const HEADER = `(${readHeader})()`;
+
+/** In the page: the 404's call-to-action heading, and every element whose own text carries `sentence`, as JSON. */
+function readNotFoundHeading(sentence: string): string {
+  const section = document.querySelector("section.cta")!;
+  const label = document.getElementById(section.getAttribute("aria-labelledby")!)!;
+  const box = label.getBoundingClientRect();
+  const carriers = [...document.querySelectorAll("body *")].filter((el) =>
+    [...el.childNodes].some((n) => n.nodeType === 3 && (n.textContent ?? "").toLowerCase().includes(sentence)));
+  const isVisible = box.width > 10 && box.height > 10 && getComputedStyle(label).position !== "absolute";
+  return JSON.stringify({ tag: label.tagName, text: (label.textContent ?? "").trim(), visible: isVisible,
+    carriers: carriers.length, carrierIsLabel: carriers.length === 1 && carriers[0] === label });
+}
+
+/** In the page: how the open card's door is drawn under its scope line, as JSON. */
+function readDoor(): string {
+  const scoped = document.querySelector(".route .scoped")!;
+  const door = scoped.querySelector(".door")!;
+  const s = getComputedStyle(door);
+  const range = document.createRange();
+  range.setStart(scoped, 0);
+  range.setEndBefore(door);
+  const line = [...range.getClientRects()].filter((r) => r.width > 0).pop();
+  const box = door.getBoundingClientRect();
+  const root = getComputedStyle(document.documentElement);
+  return JSON.stringify({ decoration: s.textDecorationLine, color: s.color,
+    band: root.getPropertyValue("--color-band").trim(),
+    beneath: line && box.top >= line.bottom - 1, left: Math.round(box.left - scoped.getBoundingClientRect().left),
+    height: box.height, tapMin: parseFloat(root.getPropertyValue("--tap-min")) });
+}
 
 /** The route the critique quoted: a name that ends in a bracket. */
 const EXPERIENCED = (() => {
@@ -342,8 +385,9 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
     }, 180_000);
 
     it(`${name}: on the four-country result the mark is within 0.6 em of the name, closed and open, on every section`, async () => {
-      const seen = await withSite(async ({ page, url: addressOf }) => {
-        await walkToFour(page, addressOf("/"));
+      const seen = await withSite(async (site) => {
+        const { page } = site;
+        await walkToFour(site);
         const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALKED_TO_FOUR))));
         const asDrawn = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
         await evaluateAtRest(page, 'document.querySelectorAll(".country-sec").forEach((d) => { d.open = !d.open; })');
@@ -383,16 +427,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
     it(`${name}: the 404 carries the sentence once, as the visible heading its section is labelled by`, async () => {
       const seen = JSON.parse(await withSite(async ({ page, url: addressOf }) => {
         await page.goto(addressOf("/404.html"));
-        return page.evaluate(`JSON.stringify((() => {
-          const section = document.querySelector("section.cta");
-          const label = document.getElementById(section.getAttribute("aria-labelledby"));
-          const box = label.getBoundingClientRect();
-          const carriers = [...document.querySelectorAll("body *")].filter((el) =>
-            [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.toLowerCase().includes(${JSON.stringify(SENTENCE)})));
-          return { tag: label.tagName, text: label.textContent.trim(), visible: box.width > 10 && box.height > 10
-            && getComputedStyle(label).position !== "absolute", carriers: carriers.length,
-            carrierIsLabel: carriers.length === 1 && carriers[0] === label };
-        })())`);
+        return page.evaluate(`(${readNotFoundHeading})(${JSON.stringify(SENTENCE)})`);
       }, screen) as string) as { tag: string; text: string; visible: boolean; carriers: number; carrierIsLabel: boolean };
       expect(seen.tag).toBe("H2");
       expect(seen.text).toBe(NOT_FOUND_START);
@@ -447,24 +482,12 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
 
   for (const [name, screen] of SCREENS) {
     it(`${name}: under the open card the door is underlined, in the prose-link colour, on a line of its own beneath the scope line, at the tap size`, async () => {
-      const seen = await withSite(async ({ page, url: addressOf }) => {
-        await page.goto(addressOf("/"));
-        await page.evaluate(seed(OPENED as Record<string, string>));
-        await openAtRest(page, addressOf("/"));
-        const door = JSON.parse(await page.evaluate(`JSON.stringify((() => {
-          const scoped = document.querySelector(".route .scoped");
-          const door = scoped.querySelector(".door");
-          const s = getComputedStyle(door);
-          const range = document.createRange();
-          range.setStart(scoped, 0);
-          range.setEndBefore(door);
-          const line = [...range.getClientRects()].filter((r) => r.width > 0).pop();
-          const box = door.getBoundingClientRect();
-          return { decoration: s.textDecorationLine, color: s.color,
-            band: getComputedStyle(document.documentElement).getPropertyValue("--color-band").trim(),
-            beneath: line && box.top >= line.bottom - 1, left: Math.round(box.left - scoped.getBoundingClientRect().left),
-            height: box.height, tapMin: parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tap-min")) };
-        })())`)) as {
+      const seen = await withSite(async (site) => {
+        const interview = new InterviewPage(site);
+        await interview.seed(OPENED);
+        await interview.open();
+        await site.page.waitUntilAtRest();
+        const door = JSON.parse(await site.page.evaluate(`(${readDoor})()`)) as {
           decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number;
         };
         return { door };

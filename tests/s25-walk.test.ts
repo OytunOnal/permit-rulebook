@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { fillRouteSlots, type Profile } from "permit-rulebook-data";
-import { RECORD_VERSION } from "../src/lib/record.js";
 import { STATUS_LABEL } from "../src/lib/copy/verdict.js";
 import { resumedLine } from "../src/lib/copy/interview.js";
 import { glossed } from "../src/lib/gloss.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
-import { type BrowserPage } from "../scripts/browser/browser.mjs";
-import { answerWith, openAtRest, withSite, skipReason } from "./browser-walk.js";
+import { type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
+import { withSite, skipReason } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, paintedAsComposedScript, placed, verdictFor,
 } from "./verdict-cards.js";
@@ -83,49 +83,46 @@ const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S25 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-const seed = (answers: Record<string, string>) =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: RECORD_VERSION, answers, history: Object.keys(answers),
-  }))})`;
-// The page script that reads which question the card asks: the walk maps it back to a field.
-const QLABEL = '(() => { const h = document.querySelector(".qcard .qlabel"); return h ? h.textContent.trim() : ""; })()';
-// The page script that reads the app's screen: the walk stops once it is the results.
-const STATE = 'document.getElementById("app").dataset.state';
-// Quoted: a rung like 2plus is not a bare CSS identifier.
-const tap = (value: string) => `document.querySelector(".qcard .opt[data-value='${value}']").click()`;
+/** In the page: the resumed line, or "" where none is drawn. */
+function readResumedLine(): string {
+  const p = document.querySelector("#main .resumed");
+  return p ? (p.textContent ?? "").trim() : "";
+}
+
 // The page script that reads the resumed line: the cases check it counts the kept answers.
-const RESUMED = '(() => { const p = document.querySelector("#main .resumed"); return p ? p.textContent.trim() : ""; })()';
+const RESUMED = `(${readResumedLine})()`;
 
 /** Answer whatever question is on the screen from the profile, until the
  * verdict; then whether the page painted the verdict `painted` reads. */
-async function walk(page: BrowserPage, profile: Profile, painted: string): Promise<{ asked: string[]; painted: typeof PAINTED_AS_COMPOSED }> {
+async function walk(site: PageOnSite, profile: Profile, painted: string): Promise<{ asked: string[]; painted: typeof PAINTED_AS_COMPOSED }> {
+  const interview = new InterviewPage(site);
   // Each label as its card draws it: the first words on the card, glossed
   // (#156), with any route it names said in full (#159).
   const byLabel = new Map(ds.fields.map((f) => [glossed(fillRouteSlots(f.label, ds), new Set()), f.id]));
   const asked: string[] = [];
   for (let i = 0; i < 24; i++) {
-    if ((await page.evaluate(STATE)) === "results") break;
-    const label = await page.evaluate(QLABEL);
-    const field = byLabel.get(label);
-    if (!field) throw new Error(`no field for the question "${label}"`);
+    const { screen, question } = await interview.readScreen();
+    if (screen === "results") break;
+    const field = byLabel.get(question);
+    if (!field) throw new Error(`no field for the question "${question}"`);
     asked.push(field);
     // A tap commits once the card's beat is over, and draws the next screen
     // in the task that handles it; the page is read once it is at rest.
-    await answerWith(page, tap(profile[field]!));
+    await interview.answer(field, profile[field]!);
   }
-  return { asked, painted: JSON.parse(await page.evaluate(painted)) };
+  return { asked, painted: JSON.parse(await site.page.evaluate(painted)) };
 }
 
 describe.skipIf(skipped !== null)("s25 — in the browser", () => {
   for (const [five, seven, expected] of WAYS)
     it(`${five} / ${seven}: the experienced worker reads ${expected.worker}, the card's tally ${expected.tally ?? "names no experience"}`, async () => {
-      const seen = await withSite(async ({ page, url }) => {
-        await page.goto(url("/"));
-        await page.evaluate(seed(SEEDED as Record<string, string>));
-        await page.goto(url("/"));
-        const resumed = await page.evaluate(RESUMED);
-        const first = await page.evaluate(QLABEL);
-        const walked = await walk(page, withExperience(five, seven), paintedAsComposedScript(verdictFor(walkedTo(five, seven))));
+      const seen = await withSite(async (site) => {
+        const interview = new InterviewPage(site);
+        await interview.seed(SEEDED);
+        await interview.open();
+        const resumed = await site.page.evaluate(RESUMED);
+        const first = (await interview.readScreen()).question;
+        const walked = await walk(site, withExperience(five, seven), paintedAsComposedScript(verdictFor(walkedTo(five, seven))));
         return { resumed, first, ...walked };
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
         { resumed: string; first: string; asked: string[]; painted: typeof PAINTED_AS_COMPOSED };
@@ -140,12 +137,13 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
 
   it("an old record with y3in7 restores without it and says how many answers were kept", async () => {
     const seen = await withSite(async ({ page, url }) => {
-      await page.goto(url("/"));
-      await page.evaluate(seed({ ...SEEDED as Record<string, string>, experience: "y3in7", experience_7y: "yes" }));
-      await openAtRest(page, url("/"));
+      const interview = new InterviewPage({ page, url });
+      await interview.seed({ ...SEEDED, experience: "y3in7", experience_7y: "yes" });
+      await interview.open();
+      await page.waitUntilAtRest();
       return {
         resumed: await page.evaluate(RESUMED),
-        first: await page.evaluate(QLABEL),
+        first: (await interview.readScreen()).question,
         rows: await page.evaluate('[...document.querySelectorAll("#decl-list [data-field]")].map((r) => r.dataset.field).join(",")'),
       };
     }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as

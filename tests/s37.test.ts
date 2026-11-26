@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
-import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
 import { PHONE, type BrowserPage, type PageOnSite, type Screen } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 import { answerOnce, withSite, skipReason } from "./browser-walk.js";
 
 /**
@@ -23,28 +23,25 @@ const asks = (field: string) => ds.fields.find((f) => f.id === field)!.label;
 
 /** Three answers, in the order they were given. */
 const RECORD = { destination: "de", citizenship: "IN", situation: "offer" };
-/** The record's three answers, stored. */
-const SEED = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(JSON.stringify({
-  version: RECORD_VERSION, answers: RECORD, history: Object.keys(RECORD),
-}))})`;
-// No record stored, so a live walk starts from a first question of its own.
-const CLEAR = `localStorage.removeItem(${JSON.stringify(STORAGE_KEY)})`;
 
-/** Answer whatever the current question offers, whichever kind it is: "opt"
- * or "row" for what it tapped, or why it tapped nothing. A search list shows
- * no rows until something is typed: one letter draws them. */
-const ANSWER = `(() => {
-  const opt = document.querySelector(".qcard .opts .opt");
+/** In the page: answers whatever the current question offers, whichever kind
+ * it is: "opt" or "row" for what it tapped, or why it tapped nothing. A search
+ * list shows no rows until something is typed: one letter draws them. */
+function answerAny(): string {
+  const opt = document.querySelector<HTMLElement>(".qcard .opts .opt");
   if (opt) { opt.click(); return "opt"; }
-  const input = document.getElementById("cfilter");
+  const input = document.getElementById("cfilter") as HTMLInputElement | null;
   if (input && !document.querySelector(".clist [role=option]")) {
     input.value = "a";
     input.dispatchEvent(new Event("input", { bubbles: true }));
   }
-  const row = document.querySelector(".clist [role=option]");
+  const row = document.querySelector<HTMLElement>(".clist [role=option]");
   if (row) { row.click(); return "row"; }
   return "the screen offered no answer";
-})()`;
+}
+
+// Whatever the current question offers, tapped: how a live walk answers.
+const ANSWER = `(${answerAny})()`;
 // The screen's own Back control, tapped, which the cases set against the browser's.
 const SCREEN_BACK = 'document.getElementById("back").click()';
 // The browser's Back, as a reader's back gesture makes it.
@@ -66,6 +63,18 @@ const whereOf = async (page: BrowserPage): Promise<Where> => JSON.parse(await pa
  * history move draws on the browser's turn, not the gesture's, so a gesture
  * that stays on the page is waited on until the screen it leaves is gone. */
 const hasMovedFrom = (before: string) => `${WHERE} !== ${JSON.stringify(before)}`;
+
+/** Opens `/` from `/data/`, an outside entrance, onto the three answers
+ * stored, or with no record stored, so a live walk starts from a first
+ * question of its own; returns where the tab stands. */
+async function openFromData(site: PageOnSite, record: "stored" | "none"): Promise<Where> {
+  const interview = new InterviewPage(site);
+  if (record === "stored") await interview.seed(RECORD);
+  await site.page.goto(site.url("/data/"));
+  if (record === "none") await interview.clearRecord();
+  await site.page.goto(site.url("/"));
+  return whereOf(site.page);
+}
 
 /** A walk: `at()` reads where the tab stands, `act` makes a gesture that stays
  * on the page and `actAcross` one that loads a document, `answer()` answers
@@ -97,16 +106,11 @@ function walker(page: BrowserPage, url: (path: string) => string) {
     await page.goto(url(path));
     return at();
   };
-  const outside = async (seed: string) => {
-    await page.goto(url("/data/"));
-    await page.evaluate(seed);
-    return openOnto("/");
-  };
   return {
     at, act, actAcross, openOnto, answer,
-    openFromOutside: () => outside(SEED),
+    openFromOutside: () => openFromData({ page, url }, "stored"),
     async live(n: number) {
-      const seen = [await outside(CLEAR)];
+      const seen = [await openFromData({ page, url }, "none")];
       for (let i = 0; i < n; i++) seen.push(await answer());
       return seen;
     },

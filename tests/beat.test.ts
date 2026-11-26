@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { STORAGE_KEY } from "../src/lib/record.js";
 import { DESK, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 import {
   BEAT_MS, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
 } from "./browser-walk.js";
@@ -32,35 +32,42 @@ if (skipped) warnNotWalked("THE BEAT BETWEEN QUESTIONS", skipped);
 /** Where the reader is: how many answers the record holds, the question on
  * the screen, whether it is the search, whether the focus is on its first
  * option, and how many animations the question card is running. */
-const WHERE = `JSON.stringify((() => {
-  const raw = localStorage.getItem(${JSON.stringify(STORAGE_KEY)});
+interface Where { answers: number; question: string; search: boolean; focusOnFirst: boolean; cardAnimations: number }
+
+/** In the page: where the reader is on the question card, the record aside, as JSON. */
+function readCard(): string {
   const card = document.querySelector("#main .qcard");
   const first = card && card.querySelector(".opt");
-  return {
-    answers: raw ? Object.keys(JSON.parse(raw).answers).length : 0,
+  return JSON.stringify({
     question: card ? (card.querySelector(".qlabel")?.textContent || "").trim() : "",
     search: !!card && !!card.querySelector("#cfilter"),
     focusOnFirst: !!first && document.activeElement === first,
     cardAnimations: card ? card.getAnimations({ subtree: true }).length : 0,
-  };
-})())`;
+  });
+}
 
-interface Where { answers: number; question: string; search: boolean; focusOnFirst: boolean; cardAnimations: number }
+/** Where the reader is, from the card as `card` read it and the record read now. */
+const withAnswersOnRecord = async (page: BrowserPage, card: string): Promise<Where> =>
+  ({ answers: Object.keys((await new InterviewPage({ page }).readRecord())?.answers ?? {}).length, ...JSON.parse(card) });
 
-const where = async (page: BrowserPage): Promise<Where> => JSON.parse(await page.evaluate(WHERE)) as Where;
+const where = async (page: BrowserPage): Promise<Where> => withAnswersOnRecord(page, await page.evaluate(`(${readCard})()`));
 
 type Point = { x: number; y: number };
 
-/** The centre of the first element a selector finds, in viewport pixels. */
-const centreOf = (selector: string) => `JSON.stringify((() => {
-  const r = document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();
-  return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
-})())`;
+/** In the page: the centre of every element `selector` finds, in order, in viewport pixels, as JSON. */
+function readCentresOf(selector: string): string {
+  return JSON.stringify([...document.querySelectorAll(selector)].map((el) => {
+    const r = el.getBoundingClientRect();
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+  }));
+}
+
+const centresOf = async (page: BrowserPage, selector: string): Promise<Point[]> => JSON.parse(await page.evaluate(`(${readCentresOf})(${JSON.stringify(selector)})`)) as Point[];
 
 const FIRST_OPTION = "#main .qcard .opt";
 
-const pointOf = async (page: BrowserPage, selector: string): Promise<Point> =>
-  JSON.parse(await page.evaluate(centreOf(selector))) as Point;
+/** The centre of the first element a selector finds, in viewport pixels. */
+const pointOf = async (page: BrowserPage, selector: string): Promise<Point> => (await centresOf(page, selector))[0]!;
 
 async function clickOn(page: BrowserPage, selector: string): Promise<void> {
   const at = await pointOf(page, selector);
@@ -72,19 +79,24 @@ async function clickOn(page: BrowserPage, selector: string): Promise<void> {
  * task that draws the card, and a history move draws on the browser's turn,
  * not the gesture's. */
 async function waitUntilAnotherQuestionDrawn(page: BrowserPage, before: string): Promise<Where> {
-  const drawn = `new Promise((resolve) => {
+  const drawn = `(${readCardOnceAnotherQuestionIsDrawn})(${JSON.stringify(before)}, ${readCard})`;
+  return withAnswersOnRecord(page, String(await page.waitUntil(drawn, `no question replaced "${before}"`)));
+}
+
+/** In the page: once the card shows a question other than `before`, the card as `readCardNow` reads it then. */
+function readCardOnceAnotherQuestionIsDrawn(before: string, readCardNow: () => string): Promise<string> {
+  return new Promise((resolve) => {
     const check = () => {
       const label = document.querySelector("#main .qcard .qlabel");
       const question = label ? (label.textContent || "").trim() : "";
-      if (!question || question === ${JSON.stringify(before)}) return;
+      if (!question || question === before) return;
       watching.disconnect();
-      resolve(${WHERE});
+      resolve(readCardNow());
     };
     const watching = new MutationObserver(check);
     watching.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
     check();
-  })`;
-  return JSON.parse(String(await page.waitUntil(drawn, `no question replaced "${before}"`))) as Where;
+  });
 }
 
 /** The first screen with nothing on the record, and its first option's centre. */
@@ -113,24 +125,31 @@ const WALKS_FOR_A_PRESS_INSIDE = 3;
 /** Starts the page's clock on the reader's gestures: when each reaches the
  * page, by its own time stamp, before a handler of the page's can begin a
  * beat, and when each is done, after the page's handlers have judged it. */
-const CLOCK_THE_GESTURES = `(() => {
-  const clock = window.__gestures = { reached: [], done: [] };
+function startClockingGestures(): string {
+  const clock = { reached: [] as number[], done: [] as number[] };
+  Object.assign(window, { __gestures: clock });
   for (const type of ["click", "keydown", "popstate"]) {
     addEventListener(type, (e) => clock.reached.push(e.timeStamp), true);
     addEventListener(type, () => clock.done.push(performance.now()));
   }
   return "clocking";
-})()`;
+}
+
+// The clock started on the page: each walk starts it before the gesture it times.
+const CLOCK_THE_GESTURES = `(${startClockingGestures})()`;
 
 interface SpanAndBeat { spanMs: number; beatMs: number }
+
+/** In the page: from the first gesture clocked reaching the page to the last done, beside `beatMs`, as JSON. */
+function readSpanBeside(beatMs: number): string {
+  const { reached, done } = (window as unknown as { __gestures: { reached: number[]; done: number[] } }).__gestures;
+  return JSON.stringify({ spanMs: done[done.length - 1]! - reached[0]!, beatMs });
+}
 
 /** On the page's clock, from the first gesture clocked reaching the page to the
  * last done, beside the beat the page declares: a span shorter than the beat
  * puts the last press inside it. */
-const readSpanAndBeat = async (page: BrowserPage): Promise<SpanAndBeat> => JSON.parse(await page.evaluate(`JSON.stringify((() => {
-  const { reached, done } = window.__gestures;
-  return { spanMs: done[done.length - 1] - reached[0], beatMs: ${BEAT_MS} };
-})())`)) as SpanAndBeat;
+const readSpanAndBeat = async (page: BrowserPage): Promise<SpanAndBeat> => JSON.parse(await page.evaluate(`(${readSpanBeside})(${BEAT_MS})`)) as SpanAndBeat;
 
 const pressFirstOption = (page: BrowserPage) => clickOn(page, FIRST_OPTION);
 
@@ -174,19 +193,13 @@ function expectTheBeatHeld(seen: AroundTheBeat<unknown>): void {
   expect(seen.after.question, "the guard did not lift after the beat").not.toBe(seen.drawn.question);
 }
 
-/** The centre of every option on the question card, in order. */
-const OPTION_CENTRES = `JSON.stringify([...document.querySelectorAll(${JSON.stringify(FIRST_OPTION)})].map((o) => {
-  const r = o.getBoundingClientRect();
-  return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
-}))`;
+/** In the page: the value of the card's option (what `selector` finds) under a point, or "" where there is none. */
+function readOptionUnder({ x, y }: Point, selector: string): string {
+  const opt = document.elementFromPoint(x, y)?.closest<HTMLElement>(selector);
+  return opt?.dataset.value ?? "";
+}
 
-/** The value of the question card's option under a point, or "" where the
- * point lands on none. */
-const optionUnder = (at: Point) => `(() => {
-  const el = document.elementFromPoint(${at.x}, ${at.y});
-  const opt = el && el.closest(${JSON.stringify(FIRST_OPTION)});
-  return opt ? opt.dataset.value : "";
-})()`;
+const optionUnder = (at: Point) => `(${readOptionUnder})(${JSON.stringify(at)}, ${JSON.stringify(FIRST_OPTION)})`;
 
 interface DoubleClick extends SpanAndBeat { cold: Where; drawn: Where; under: string; after: Where }
 
@@ -203,7 +216,7 @@ async function doubleClickOnAnOption(site: PageOnSite): Promise<DoubleClick | nu
   for (let i = 0; ; i++)
     for (let walk = 1; ; walk++) {
       await coldStart(site);
-      const at = (JSON.parse(await page.evaluate(OPTION_CENTRES)) as Point[])[i];
+      const at = (await centresOf(page, FIRST_OPTION))[i];
       if (!at) return null;
       const cold = await where(page);
       await page.evaluate(CLOCK_THE_GESTURES);

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { RECORD_VERSION } from "../src/lib/record.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { optionMeans, type Dataset, type Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, stepsIn, verdictFor } from "./verdict-cards.js";
 import { withSite, skipReason } from "./browser-walk.js";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 
 /**
  * The human's walk, 2026-09-08.
@@ -118,19 +118,15 @@ if (skipped)
     "",
   ].join("\n"));
 
-const seed = (answers: Record<string, string>) =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: RECORD_VERSION, answers, history: Object.keys(answers),
-  }))})`;
-
 /** The situation question and its answers' sentences, and the walk's results as painted, read in the browser. */
 async function whatThePageShowsWhereTheReaderStood() {
-  return await withSite(async ({ page, url }) => {
+  return await withSite(async (site) => {
+    const { page } = site;
+    const interview = new InterviewPage(site);
     // 1. The situation question, with the destination already declared.
-    await page.goto(url("/"));
-    await page.evaluate(seed({ destination: "nl" }));
-    await page.goto(url("/"));
-    const question = await page.evaluate('document.querySelector(".qlabel").textContent.trim()');
+    await interview.seed({ destination: "nl" });
+    await interview.open();
+    const { question } = await interview.readScreen();
     const options = JSON.parse(await page.evaluate(
       'JSON.stringify([...document.querySelectorAll(".qcard .opt")].map((b) => ({'
       + ' label: b.querySelector(".opt-label").textContent.trim(),'
@@ -139,8 +135,8 @@ async function whatThePageShowsWhereTheReaderStood() {
 
     // 2. The results the walk reached: the verdict whose step the case
     // above reads, as painted.
-    await page.evaluate(seed(WALK));
-    await page.goto(url("/"));
+    await interview.seed(WALK);
+    await interview.open();
     const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALK))));
     return { question, options, painted };
   }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as {
