@@ -16,7 +16,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { walkSite } from "./browser/browser.mjs";
-import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.ts";
+import { InterviewPage } from "./interview-page.mjs";
 
 const root = dirname(fileURLToPath(new URL("../package.json", import.meta.url)));
 
@@ -44,19 +44,17 @@ const README_SCREEN = { viewport: { width: 1100, height: 1400 }, mobile: false }
 
 /**
  * Serves `dist/`, opens the results screen for `PROFILE` in Chrome, its record
- * written and the page reloaded, and returns its screenshot. The walk fails
- * on an error on any page it opened, listing each with its address, so a
- * broken page never reaches the picture.
+ * seeded and the interview opened on it, and returns its screenshot. The walk
+ * fails on an error on any page it opened, listing each with its address, so
+ * a broken page never reaches the picture.
  */
 async function screenshotResultsInChrome() {
   const walk = { site: { folder: join(root, "dist") }, screen: README_SCREEN };
-  const { returned } = await walkSite(walk, async ({ page, url }) => {
-    await page.goto(url("/"));
-    await page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
-      JSON.stringify(JSON.stringify({
-        version: RECORD_VERSION, answers: PROFILE, history: Object.keys(PROFILE),
-      }))})`);
-    await page.goto(url("/"));
+  const { returned } = await walkSite(walk, async (site) => {
+    const { page } = site;
+    const interview = new InterviewPage(site);
+    await interview.seed(PROFILE);
+    await interview.open();
     await page.waitUntilAtRest();
     return page.screenshot();
   });

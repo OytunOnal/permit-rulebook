@@ -30,26 +30,74 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PHONE, walkSite } from "./browser/browser.mjs";
 import { startDev } from "./dev-server.mjs";
+import { InterviewPage } from "./interview-page.mjs";
 import { siteBase } from "./site-base.mjs";
 import { PAGE_LOAD_KINDS, SMOKE_REASONS, SmokeRefusal } from "./smoke-reasons.mjs";
 
 const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 
+// The functions below, up to `readInPage`, run in the page, not here:
+// `readInPage` carries their source text into it, so each reads nothing from
+// this module.
+
+/** The interview's first screen, its question aside: how many answers a reader can reach (a button, a row, or
+ * the search box), whether the declaration panel is drawn, and the masthead's stamp in plain words, "" while it
+ * is hidden. */
+function readFirstScreenInPage() {
+  const box = document.querySelector(".stamps");
+  const isStampShown = box !== null && !box.hasAttribute("hidden");
+  return {
+    options: document.querySelectorAll("#main .opt, #main .copt, #main [role='combobox']").length,
+    ledger: document.getElementById("decl-list") !== null,
+    stamp: isStampShown
+      ? box.querySelector(".stamp").innerHTML.replace(/<[^>]*>/g, " ").split(/[^!-~]+/).filter(Boolean).join(" ")
+      : "",
+  };
+}
+
+/** A route page: its stamp's date, how many rule cards it draws, and where its call to action leads. */
+function readRoutePageInPage() {
+  return {
+    stamp: document.querySelector(".stamp time")?.getAttribute("datetime") ?? "",
+    rules: document.querySelectorAll("article.rule").length,
+    cta: document.querySelector(".cta a.btn")?.getAttribute("href") ?? "",
+  };
+}
+
+/** A country page: the header's words and the one it marks, how many route cards it draws, the first route's
+ * name, and its stamp's date. */
+function readCountryPageInPage() {
+  return {
+    nav: [...document.querySelectorAll(".site-head .nav a")].map((a) => a.textContent.trim()),
+    here: document.querySelector('.site-head .nav a[aria-current="page"]')?.textContent?.trim() ?? "",
+    cards: document.querySelectorAll(".routes a.card").length,
+    first: document.querySelector(".routes .name")?.textContent?.trim() ?? "",
+    stamp: document.querySelector(".stamp time")?.getAttribute("datetime") ?? "",
+  };
+}
+
+/** The data page: its heading, how many facts it lists, where its downloads lead, and the header's marked words. */
+function readDataPageInPage() {
+  return {
+    heading: document.querySelector("h1")?.textContent?.trim() ?? "",
+    facts: document.querySelectorAll(".facts div").length,
+    downloads: [...document.querySelectorAll("nav[aria-label='Downloads'] a")].map((a) => a.getAttribute("href")),
+    marked: [...document.querySelectorAll('.site-head .nav a[aria-current]')].map((a) => a.textContent.trim()),
+  };
+}
+
+/** What `probe`, one of the functions above, reads on `page`, carried back as JSON. */
+const readInPage = async (page, probe) => JSON.parse(await page.evaluate(`JSON.stringify((${probe})())`));
+
 /** What each page must be true of. Every assertion is something a reader sees. */
 export const CHECKS = [
   {
     path: "/",
-    probe: `JSON.stringify({
-      question: document.querySelector(".qlabel")?.textContent?.trim() ?? "",
-      options: document.querySelectorAll(".qcard .opt, .qcard .copt, .qcard #cfilter").length,
-      ledger: document.getElementById("decl-list") !== null,
-      stamp: (() => {
-        const box = document.querySelector(".stamps");
-        if (!box || box.hasAttribute("hidden")) return "";
-        return box.querySelector(".stamp").innerHTML
-          .replace(/<[^>]*>/g, " ").split(/[^!-~]+/).filter(Boolean).join(" ");
-      })(),
-    })`,
+    /** The question on the screen, as the interview reads it, and what the first screen shows beside it. */
+    async read(site) {
+      const { question } = await new InterviewPage(site).readScreen();
+      return { question, ...await readInPage(site.page, readFirstScreenInPage) };
+    },
     expect(v) {
       const failures = [];
       if (!v.question) failures.push({ reason: SMOKE_REASONS.noQuestion });
@@ -65,11 +113,7 @@ export const CHECKS = [
   },
   {
     path: "/germany/eu-blue-card-general/",
-    probe: `JSON.stringify({
-      stamp: document.querySelector(".stamp time")?.getAttribute("datetime") ?? "",
-      rules: document.querySelectorAll("article.rule").length,
-      cta: document.querySelector(".cta a.btn")?.getAttribute("href") ?? "",
-    })`,
+    read: ({ page }) => readInPage(page, readRoutePageInPage),
     expect(v) {
       const failures = [];
       if (!/^\d{4}-\d{2}-\d{2}$/.test(v.stamp)) failures.push({ reason: SMOKE_REASONS.stampNotADate, stamp: v.stamp });
@@ -84,13 +128,7 @@ export const CHECKS = [
   },
   {
     path: "/germany/",
-    probe: `JSON.stringify({
-      nav: [...document.querySelectorAll(".site-head .nav a")].map((a) => a.textContent.trim()),
-      here: document.querySelector('.site-head .nav a[aria-current="page"]')?.textContent?.trim() ?? "",
-      cards: document.querySelectorAll(".routes a.card").length,
-      first: document.querySelector(".routes .name")?.textContent?.trim() ?? "",
-      stamp: document.querySelector(".stamp time")?.getAttribute("datetime") ?? "",
-    })`,
+    read: ({ page }) => readInPage(page, readCountryPageInPage),
     expect(v) {
       const failures = [];
       // The header is the site's own orientation: four countries, the checker
@@ -106,12 +144,7 @@ export const CHECKS = [
   },
   {
     path: "/data/",
-    probe: `JSON.stringify({
-      heading: document.querySelector("h1")?.textContent?.trim() ?? "",
-      facts: document.querySelectorAll(".facts div").length,
-      downloads: [...document.querySelectorAll("nav[aria-label='Downloads'] a")].map((a) => a.getAttribute("href")),
-      marked: [...document.querySelectorAll('.site-head .nav a[aria-current]')].map((a) => a.textContent.trim()),
-    })`,
+    read: ({ page }) => readInPage(page, readDataPageInPage),
     expect(v) {
       const failures = [];
       if (!v.heading.startsWith("The data")) failures.push({ reason: SMOKE_REASONS.headingNotTheData, heading: v.heading });
@@ -147,23 +180,24 @@ export const CHECKS = [
 /** The failure of `message`, an error the page threw or logged. */
 const threwFailureOf = (message) => ({ reason: SMOKE_REASONS.pageThrew, message });
 
-/** What `check`'s probe read on the page `page` shows, or why the page could not be read. */
-async function probeRead(page, check) {
+/** What `check` read on the page the walk's `site` shows, or why the page could not be read. */
+async function probeRead(site, check) {
   try {
-    return { value: JSON.parse(await page.evaluate(check.probe)), unreadable: [] };
+    return { value: await check.read(site), unreadable: [] };
   } catch (e) {
     return { value: {}, unreadable: [{ reason: SMOKE_REASONS.pageUnreadable, message: e.message }] };
   }
 }
 
-/** Each check's address and what its probe read there, opened on the walk's page in the order of `CHECKS`. */
-async function probeEveryCheck({ page, url }) {
+/** Each check's address and what it read there, opened on the walk's page in the order of `CHECKS`. */
+async function probeEveryCheck(site) {
+  const { page, url } = site;
   const reads = [];
   for (const check of CHECKS) {
     const address = new URL(url(check.path)).href;
     await page.goto(address);
     await page.waitUntilAtRest();
-    reads.push({ check, address, ...await probeRead(page, check) });
+    reads.push({ check, address, ...await probeRead(site, check) });
   }
   return reads;
 }
