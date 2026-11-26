@@ -49,6 +49,23 @@ const catchScreenReadOffTheInterview = () => withInterview(async (interview) => 
   return catchMessage(interview.readScreen());
 });
 
+/** Answers France's last question to its verdict, reading the screen the answer draws and the headline it shows. */
+const readVerdictAnswered = () => withInterview(async (interview, page) => {
+  await interview.seed({ destination: "fr" });
+  await interview.open();
+  await interview.answer("situation", "research");
+  return { screen: await interview.readScreen(), headline: (await page.evaluate('document.getElementById("headline").textContent')).trim() };
+});
+
+describe.skipIf(skipped !== null)("readScreen() reads what the live region announces", () => {
+  it("an answer that draws the verdict: the verdict's headline, on the results screen", async () => {
+    const { screen, headline } = await readVerdictAnswered();
+    expect(screen.screen, "precondition: the answer drew the verdict").toBe("results");
+    expect(headline, "precondition: the verdict has a headline").not.toBe("");
+    expect(screen.announced).toBe(headline);
+  }, 120000);
+});
+
 describe.skipIf(skipped !== null)("InterviewPage drives the interview on the built site", () => {
   it("a seeded record opens on its screen: the one answering it from a cold start reaches", async () => {
     const { answered, seeded } = await readAnsweredAndSeededScreens();

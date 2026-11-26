@@ -27,10 +27,12 @@ import { questionCardProbes } from "./probes/question-card-probes.mjs";
 
 /**
  * The screen as a reader sees it: which screen the interview is on
- * (`questions` or `results`), and the question card's words where a question
- * is shown. Off a shown question every word is "", every list empty and
- * every part null.
+ * (`questions` or `results`), what its live region announces, and the
+ * question card's words where a question is shown. Off a shown question
+ * every word of the card is "", every list empty and every part null.
  *
+ * - `announced`: what the page's live region says now, on either screen: the
+ *   search's line, a verdict's headline; "" where it says nothing.
  * - `question`: the question's label; "" where none is shown, absent or
  *   hidden from the reader.
  * - `meta`: the line over the question, "Question N of about M", or the edit
@@ -44,7 +46,7 @@ import { questionCardProbes } from "./probes/question-card-probes.mjs";
  *   search the rows it lists now (none until something is typed).
  * - `search`: the search, where the question is one.
  *
- * @typedef {{ screen: string, question: string, meta: string, arrival: string, chosen: string, askedFor: AskedFor | null, answers: AnswerOffered[], search: SearchShown | null }} ScreenShown
+ * @typedef {{ screen: string, question: string, announced: string, meta: string, arrival: string, chosen: string, askedFor: AskedFor | null, answers: AnswerOffered[], search: SearchShown | null }} ScreenShown
  */
 
 /**
@@ -73,10 +75,11 @@ import { questionCardProbes } from "./probes/question-card-probes.mjs";
  */
 
 /**
- * The search as a reader sees it: what is typed in its box, the line its list
- * shows where it lists no row (else ""), and what its live region says.
+ * The search as a reader sees it: what is typed in its box, and the line its
+ * list shows where it lists no row (else ""); what it announces is the
+ * screen's `announced`.
  *
- * @typedef {{ query: string, line: string, status: string }} SearchShown
+ * @typedef {{ query: string, line: string }} SearchShown
  */
 
 /**

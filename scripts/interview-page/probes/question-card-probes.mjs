@@ -84,12 +84,12 @@ function readCardWordsInPage(card, { markup, readText, readAnswer, readAskedFor 
     chosen: card.querySelector(markup.chosen)?.dataset.value ?? "",
     askedFor: readAskedFor(card.querySelector(markup.askedFor)),
     answers: [...card.querySelectorAll(markup.answers)].map((el) => readAnswer(el, card, readText)),
-    search: box && { query: box.value, line: readText(card.querySelector(markup.noRow)), status: readText(document.getElementById(markup.statusId)) },
+    search: box && { query: box.value, line: readText(card.querySelector(markup.noRow)) },
   };
 }
 
-/** In the page: which screen the interview is on, and the question card shown to the reader as `readers` read it,
- * as JSON; `{ offTheInterview }`, naming the page's address, on a page with no interview. */
+/** In the page: which screen the interview is on, what its live region announces, and the question card shown to
+ * the reader as `readers` read it, as JSON; `{ offTheInterview }`, naming the page's address, on a page with no interview. */
 function readScreenInPage(readers) {
   const app = document.getElementById("app");
   if (app === null) return JSON.stringify({ offTheInterview: location.href });
@@ -100,7 +100,8 @@ function readScreenInPage(readers) {
   const words = isShown
     ? readers.readCardWords(card, readers)
     : { meta: "", arrival: "", chosen: "", askedFor: null, answers: [], search: null };
-  return JSON.stringify({ screen: app.dataset.state, question: isShown ? readers.readText(label) : "", ...words });
+  const announced = readers.readText(document.getElementById(readers.markup.statusId));
+  return JSON.stringify({ screen: app.dataset.state, question: isShown ? readers.readText(label) : "", announced, ...words });
 }
 
 // The markup and the readers `readScreenInPage` is handed in the page, each reader carried there as its source text.

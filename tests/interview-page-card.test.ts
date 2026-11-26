@@ -104,7 +104,8 @@ describe.skipIf(skipped !== null)("readScreen() reads the question card as a rea
   it("the search: what is typed in it, its line and the live region, and the rows it lists as the answers", async () => {
     const card = await readSeededCard(BEFORE_PASSPORT);
     expect(card.question, "precondition: the passport question is on the screen").toBe(findLabel("citizenship"));
-    expect(card.search).toEqual({ query: "", line: countriesToSearchLine(fieldOptions(ds, "citizenship").length), status: "" });
+    expect(card.search).toEqual({ query: "", line: countriesToSearchLine(fieldOptions(ds, "citizenship").length) });
+    expect(card.announced, "an untouched search announces nothing").toBe("");
     expect(card.answers, "an untouched search lists no rows").toEqual([]);
   }, 120000);
 });

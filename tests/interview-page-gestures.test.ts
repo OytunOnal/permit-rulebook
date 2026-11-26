@@ -78,10 +78,10 @@ describe.skipIf(skipped !== null)("answer(field, value, { by: \"hand\" }) and se
 
   it("searchFor types into the search: a territory's line with no row, then a country's rows, the box holding only what was typed", async () => {
     const seen = await searchTwice();
-    const { query, line, status } = seen.territory.search!;
+    const { query, line } = seen.territory.search!;
     expect(query).toBe("Puerto Rico");
     expect(line).toBe(PUERTO_RICO_LINE);
-    expect(status, "the live region does not say the list's line").toBe(line);
+    expect(seen.territory.announced, "the live region does not say the list's line").toBe(line);
     expect(seen.territory.answers).toEqual([]);
     expect(seen.country.search!.query).toBe("Turkey");
     expect(seen.country.answers.map((a) => a.value)).toContain("TR");

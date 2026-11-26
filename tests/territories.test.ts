@@ -98,9 +98,9 @@ describe.skipIf(skipped !== null)("#160 — in the browser at 390×844", () => {
       await interview.seed(BEFORE_PASSPORT);
       await interview.open();
       await interview.searchFor("Puerto Rico");
-      const { answers, search } = await interview.readScreen();
+      const { answers, search, announced } = await interview.readScreen();
       if (search === null) throw new Error("the passport search is not on the screen");
-      return { rows: answers.length, line: search.line, status: search.status };
+      return { rows: answers.length, line: search.line, status: announced };
     }, PHONE);
 
     expect(seen.rows).toBe(0);
