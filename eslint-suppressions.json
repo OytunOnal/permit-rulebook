@@ -455,11 +455,6 @@
       "count": 1
     }
   },
-  "tests/territories.test.ts": {
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
   "tests/verdict-gap.test.ts": {
     "max-lines-per-function": {
       "count": 2

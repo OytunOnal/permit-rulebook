@@ -6,7 +6,8 @@ import { ABBREVIATIONS } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import type { PageOnSite } from "../scripts/browser/browser.mjs";
-import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { InterviewPage } from "../scripts/interview-page.mjs";
+import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { watchStateAt } from "./watch-state-at.js";
 
 /**
@@ -143,24 +144,24 @@ const READERS: Record<string, Profile> = {
   },
 };
 
-/** The results screen's text, every block apart and the quotes taken out. */
-const READ_RESULTS = `(() => {
-  const root = document.getElementById("main").cloneNode(true);
+/** In the page: the results screen's text, every block apart and the quotes taken out, as JSON. */
+function readResultsInPage(): string {
+  const root = document.getElementById("main")!.cloneNode(true) as HTMLElement;
   const quotes = [...root.querySelectorAll(".src i, q")].map((e) => { const t = e.textContent; e.remove(); return t; });
   root.querySelectorAll("*").forEach((e) => e.append(" "));
-  return JSON.stringify({ state: document.getElementById("app").dataset.state, prose: root.textContent, quotes });
-})()`;
+  return JSON.stringify({ state: document.getElementById("app")!.dataset.state, prose: root.textContent, quotes });
+}
 
 describe.skipIf(skipped !== null)("the results screen explains its shorthand the same way (#156)", () => {
   it("each reader's results explain each token on the list at first use, a citation as the route page does; no quote is glossed", async () => {
-    const read = await withSite(async ({ page, url }: PageOnSite) => {
+    const read = await withSite(async (site: PageOnSite) => {
+      const interview = new InterviewPage(site);
       const out: Record<string, { state: string; prose: string; quotes: string[] }> = {};
       for (const [name, answers] of Object.entries(READERS)) {
-        await page.goto(url("/"));
-        await page.evaluate(recordSeedScript(answers));
-        await page.goto(url("/"));
-        out[name] = JSON.parse(await page.evaluate(READ_RESULTS));
-        await page.evaluate("localStorage.clear()");
+        await interview.seed(answers);
+        await interview.open();
+        out[name] = JSON.parse(await site.page.evaluate(`(${readResultsInPage})()`));
+        await interview.clearRecord();
       }
       return out;
     }, { viewport: { width: 1100, height: 1200 }, mobile: false });

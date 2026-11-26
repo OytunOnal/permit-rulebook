@@ -125,6 +125,17 @@ const moveToAnotherOrigin = (inSite: string): string => {
   return address.href;
 };
 
+/** In the page: whether the tab it opened, `window.__opened`, has left its blank page: its page is readable from
+ * here until another origin's, or the error page of a refused load, stands in it. */
+function hasTheOpenedTabLeftItsBlankPageInPage(): boolean {
+  try {
+    void (window as unknown as { __opened: Window }).__opened.location.href;
+    return false;
+  } catch {
+    return true;
+  }
+}
+
 /** A walker that opens the page logging many errors and returns once it has logged them all. */
 const openingTheManyErrors: Parameters<typeof walkSite>[1] = async ({ page, url }) => {
   await page.goto(url("/logs-many.html"));
@@ -256,8 +267,7 @@ describe.skipIf(skipped !== null)("the browser walk's outside requests", () => {
       await page.tapOn("#open");
       // The new tab's page is readable from here until another origin's, or
       // the error page of a refused load, stands in it.
-      await page.waitUntil("(() => { try { window.__opened.location.href; return false; } catch { return true; } })()",
-        "the new tab never left its blank page");
+      await page.waitUntil(`(${hasTheOpenedTabLeftItsBlankPageInPage})()`, "the new tab never left its blank page");
     });
     expect(errorsByAddress(walked.errors).get(outside), JSON.stringify(walked.errors)).toBe(1);
   });

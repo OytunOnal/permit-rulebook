@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
 import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 import {
-  SCREEN_SHOWN, fieldOnScreen, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
+  fieldOnScreen, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
 } from "./browser-walk.js";
 
 /**
@@ -61,8 +62,9 @@ async function walkToTheVerdict(site: PageOnSite, reader: Profile): Promise<stri
   const { page } = site;
   await openCold(site);
   const asked: string[] = [];
+  const interview = new InterviewPage(site);
   for (let i = 0; i < 30; i++) {
-    if ((await page.evaluate(STATE)) === "results") return asked;
+    if ((await interview.readScreen()).screen === "results") return asked;
     const field = await fieldOnScreen(page);
     const value = reader[field];
     if (value === undefined) throw new Error(`the reader has no answer for ${field}`);
@@ -79,13 +81,16 @@ interface AroundTheVerdict {
 }
 
 /** The screen a history move draws: once the browser has taken its turn and
- * the screen is another, at rest. */
+ * the interview is on another screen, at rest. Each move here crosses the
+ * verdict, so the screen it leaves is never the one it draws. */
 async function screenAfterMove(page: BrowserPage, move: () => Promise<void>): Promise<{ state: string; field: string }> {
-  const before = await page.evaluate(SCREEN_SHOWN);
+  const interview = new InterviewPage({ page });
+  const before = await interview.readScreen();
   await move();
-  await page.waitUntil(`${SCREEN_SHOWN} !== ${JSON.stringify(before)}`, `the history move left "${before}" on the screen`);
+  await page.waitUntil(`${STATE} !== ${JSON.stringify(before.screen)}`,
+    `the history move left "${before.screen} ${before.question}" on the screen`);
   await page.waitUntilAtRest();
-  const state = await page.evaluate(STATE);
+  const { screen: state } = await interview.readScreen();
   return { state, field: state === "questions" ? await fieldOnScreen(page) : "" };
 }
 

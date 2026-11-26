@@ -214,20 +214,25 @@ describe("one footer, every page", () => {
 /** And how it lays out, measured at the widths the critique named. */
 const skipped = skipReason();
 
-// Columns, tap heights and underlines exist only once the page is laid out, so the browser measures them.
-const LAYOUT = 'JSON.stringify((() => {'
-  + ' const foot = document.querySelector(".site-foot");'
-  + ' const cols = [...foot.querySelectorAll(".col")].map((c) => Math.round(c.getBoundingClientRect().left));'
-  + ' const links = [...foot.querySelectorAll("a")].map((a) => ({'
-  + '   text: a.textContent.trim(), height: Math.round(a.getBoundingClientRect().height),'
-  + '   underline: getComputedStyle(a).textDecorationLine }));'
-  + ' const lines = [...foot.querySelectorAll(".line > span")].map((s) => Math.round(s.getBoundingClientRect().height));'
-  + ' return { rows: new Set(cols).size, cols, links, lines }; })())';
+/** In the page, as JSON: the footer's columns, tap heights and underlines, which exist only once the page is laid
+ * out, so the browser measures them. */
+function readLayoutInPage(): string {
+  const foot = document.querySelector(".site-foot")!;
+  const cols = [...foot.querySelectorAll(".col")].map((c) => Math.round(c.getBoundingClientRect().left));
+  const links = [...foot.querySelectorAll("a")].map((a) => ({
+    text: (a.textContent ?? "").trim(), height: Math.round(a.getBoundingClientRect().height),
+    underline: getComputedStyle(a).textDecorationLine }));
+  const lines = [...foot.querySelectorAll(".line > span")].map((s) => Math.round(s.getBoundingClientRect().height));
+  return JSON.stringify({ rows: new Set(cols).size, cols, links, lines });
+}
 
-/** The page's text tracked 0.11em wider, standing in for a family drawn wider than the fallback stack. */
-const WIDER_TRACKING = '(() => { const s = document.createElement("style");'
-  + ' s.textContent = "body{letter-spacing:0.11em}";'
-  + ' document.head.appendChild(s); return 1; })()';
+/** In the page: the page's text tracked 0.11em wider, standing in for a family drawn wider than the fallback stack. */
+function trackWiderInPage(): number {
+  const s = document.createElement("style");
+  s.textContent = "body{letter-spacing:0.11em}";
+  document.head.appendChild(s);
+  return 1;
+}
 
 /** Whether the page has loaded with its fonts, which the layout is drawn in. */
 const LOADED_WITH_FONTS = 'document.readyState === "complete" && document.fonts.status === "loaded"';
@@ -240,7 +245,7 @@ async function settledLayoutAt(page: BrowserPage, url: string, path: string): Pr
   await page.goto(url);
   await page.waitUntil(LOADED_WITH_FONTS, `the page at ${path} never loaded with its fonts`);
   await page.waitUntilAtRest();
-  return JSON.parse(await page.evaluate(LAYOUT));
+  return JSON.parse(await page.evaluate(`(${readLayoutInPage})()`));
 }
 
 /** Checks the footer has `columns` columns at `width` on every kind of page, its links tap targets that look like links. */
@@ -283,7 +288,7 @@ async function heldTokensAtPhoneWidth() {
     // The runner's fonts are wider than this machine's, and a family wider
     // still is only a matter of time: measure the widened case.
     await page.evaluate(FALLBACK_STACK);
-    await page.evaluate(WIDER_TRACKING);
+    await page.evaluate(`(${trackWiderInPage})()`);
     await page.waitUntilAtRest();
     return page.evaluate(
       // An inline element that wraps sits on more than one line: its

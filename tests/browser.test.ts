@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
 import { PHONE, walkSite, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**
@@ -18,13 +19,12 @@ if (skipped) warnNotWalked("THE HARNESS'S WAITS", skipped);
 /** Long enough that a read made before the interview's script ran finds the build's paint. */
 const HELD_JS_MS = 2000;
 
-/** What the interview's page shows: the build's stand-in lines, the cover on `<html>`, question one's label. */
+/** What the interview's page shows: the build's stand-in lines and the cover on `<html>`. */
 const SCREEN = `JSON.stringify({
   standIns: document.querySelectorAll(".stand-in").length,
   cover: document.documentElement.dataset.cover ?? "",
-  question: (document.querySelector("#main .qcard .qlabel")?.textContent ?? "").trim(),
 })`;
-interface Screen { standIns: number; cover: string; question: string }
+interface Screen { standIns: number; cover: string }
 
 /** `run` on a page over the built site, its scripts held back `delayJsMs` when asked. */
 async function onSite<T>(run: (page: BrowserPage, url: (path: string) => string) => Promise<T>, delayJsMs = 0): Promise<T> {
@@ -44,7 +44,8 @@ describe.skipIf(skipped !== null)("the harness's two ways onto a page", () => {
   it("with the scripts held back, goto returns only once the stand-ins are gone", async () => {
     const screen = await onSite(async (page, url) => {
       await page.goto(url("/?country=fr"));
-      return JSON.parse(await page.evaluate(SCREEN)) as Screen;
+      const { question } = await new InterviewPage({ page }).readScreen();
+      return { ...(JSON.parse(await page.evaluate(SCREEN)) as Screen), question };
     }, HELD_JS_MS);
     expect(screen.standIns, "goto returned on the build's paint").toBe(0);
     expect(screen.question, "goto returned before the interview drew its question").not.toBe("");
@@ -93,19 +94,22 @@ describe.skipIf(skipped !== null)("the harness's waitUntil", () => {
   }, 60000);
 });
 
+/** In the page: a box whose opacity runs a one-second transition, which notes its end in `window.__ended`. */
+function startATransitionInPage(): string {
+  const box = document.createElement("div");
+  box.style.cssText = "width:40px;height:40px;background:#888;transition:opacity 1s linear;opacity:1";
+  document.body.append(box);
+  box.getBoundingClientRect();
+  box.addEventListener("transitionend", () => { (window as unknown as { __ended: string }).__ended = "ended"; });
+  box.style.opacity = "0";
+  return "started";
+}
+
 describe.skipIf(skipped !== null)("the harness's waitUntilAtRest", () => {
   it("waitUntilAtRest waits through a running transition", async () => {
     const ended = await onSite(async (page, url) => {
       await page.goto(url("/404.html"));
-      await page.evaluate(`(() => {
-        const box = document.createElement("div");
-        box.style.cssText = "width:40px;height:40px;background:#888;transition:opacity 1s linear;opacity:1";
-        document.body.append(box);
-        box.getBoundingClientRect();
-        box.addEventListener("transitionend", () => { window.__ended = "ended"; });
-        box.style.opacity = "0";
-        return "started";
-      })()`);
+      await page.evaluate(`(${startATransitionInPage})()`);
       await page.waitUntilAtRest();
       return page.evaluate('window.__ended ?? "still running"');
     });
@@ -113,14 +117,16 @@ describe.skipIf(skipped !== null)("the harness's waitUntilAtRest", () => {
   }, 60000);
 });
 
-/** A paragraph 3000 px down a tall page, and a note of the scroll's own end, `scrollend`. */
-const MARK_FAR_DOWN = `(() => {
+/** In the page: a paragraph 3000 px down a tall page, and a note of the scroll's own end, `scrollend`. */
+function markFarDownInPage(): string {
   const mark = Object.assign(document.createElement("p"), { id: "mark", textContent: "where the scroll ends" });
   mark.style.cssText = "margin:3000px 0 6000px";
   document.body.append(mark);
-  addEventListener("scrollend", () => { window.__scrollEnded = true; });
+  addEventListener("scrollend", () => { (window as unknown as { __scrollEnded: boolean }).__scrollEnded = true; });
   return "marked";
-})()`;
+}
+/** A paragraph 3000 px down a tall page, and a note of the scroll's own end: the expression a case evaluates. */
+const MARK_FAR_DOWN = `(${markFarDownInPage})()`;
 /** Where the page stands once at rest: whether the scroll said it ended, and how far it stands from its end. */
 const reportWhereTheScrollStands = (offEnd: string) => `JSON.stringify({ ended: window.__scrollEnded === true, scrollY, offEnd: ${offEnd} })`;
 interface AfterScroll { ended: boolean; scrollY: number; offEnd: number }
@@ -130,12 +136,14 @@ interface AfterScroll { ended: boolean; scrollY: number; offEnd: number }
  * back, sharing one timestamp, before the scroll has moved: two frames that
  * read the same scroll.
  */
-const askThenWorkOn = (scroll: string) => `(() => {
-  ${scroll};
+function askThenWorkOnInPage(scroll: () => unknown): string {
+  scroll();
   const done = performance.now() + 100;
   while (performance.now() < done);
   return "asked for";
-})()`;
+}
+/** `askThenWorkOnInPage` on `scroll`, an expression: the expression a case evaluates. */
+const askThenWorkOn = (scroll: string) => `(${askThenWorkOnInPage})(() => ${scroll})`;
 /**
  * `scroll`, a scroll asked for on a Chrome without scroll promises, played on
  * this one: while it runs, the native `scrollTo`, as the harness's watch of
@@ -143,14 +151,16 @@ const askThenWorkOn = (scroll: string) => `(() => {
  * window itself, where the watch has put its own), scrolls and gives back
  * nothing. What the call returned, by `typeof`.
  */
-const withoutTheScrollPromise = (scroll: string) => `(() => {
+function typeReturnedWithoutTheScrollPromiseInPage(scroll: () => unknown): string {
   const apply = Function.prototype.apply;
-  Function.prototype.apply = function (self, args) {
+  Function.prototype.apply = function (this: (...args: unknown[]) => unknown, self: unknown, args?: unknown[]) {
     const returned = Reflect.apply(apply, this, [self, args]);
     return this.name === "scrollTo" ? undefined : returned;
   };
-  try { return typeof ${scroll}; } finally { Function.prototype.apply = apply; }
-})()`;
+  try { return typeof scroll(); } finally { Function.prototype.apply = apply; }
+}
+/** `typeReturnedWithoutTheScrollPromiseInPage` on `scroll`, an expression: the expression a case evaluates. */
+const withoutTheScrollPromise = (scroll: string) => `(${typeReturnedWithoutTheScrollPromiseInPage})(() => ${scroll})`;
 
 describe.skipIf(skipped !== null)("the harness's waitUntilAtRest, after a smooth scroll", () => {
   // Two frames reading the same scroll is not a smooth scroll's end: its
@@ -208,14 +218,16 @@ describe.skipIf(skipped !== null)("the harness's waitUntilAtRest, on a Chrome wi
 /** How many first-input entries the page's own timeline holds: one once Chrome has reported a gesture to it. */
 const FIRST_INPUTS_REPORTED = 'performance.getEntriesByType("first-input").length';
 
-/** A link over the whole viewport, so a click anywhere loads `/data/`. */
-const LINK_OVER_THE_PAGE = `(() => {
+/** In the page: a link over the whole viewport, so a click anywhere loads `/data/`. */
+function placeALinkOverThePageInPage(): string {
   const a = document.createElement("a");
   a.href = "/data/";
   a.style.cssText = "position:fixed;inset:0;display:block;z-index:9";
   document.body.append(a);
   return "placed";
-})()`;
+}
+/** A link over the whole viewport: the expression a case evaluates. */
+const LINK_OVER_THE_PAGE = `(${placeALinkOverThePageInPage})()`;
 
 /** What each of five documents in one tab has reported right after `gesture` returned on it. */
 const reportedAfterEach = (gesture: (page: BrowserPage) => Promise<void>) => onSite(async (page, url) => {

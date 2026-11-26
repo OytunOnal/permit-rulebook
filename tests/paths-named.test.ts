@@ -7,8 +7,9 @@ import {
 import { ANY_PATH, EITHER_PATH } from "../src/lib/copy/route-page.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
-import { DESK, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { DESK, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
+import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { walkFrom } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, everyDrawnRouteIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 
@@ -137,13 +138,13 @@ describe.skipIf(skipped !== null)("#155 a results card names a failed criterion 
     // The card and its line are the verdict's (the case above); the page
     // paints the verdict the reader's record composes.
     const reader = readerFailingEveryPath();
-    const seen = await withSite(async ({ page, url }: { page: BrowserPage; url: (p: string) => string }) => {
-      await page.goto(url("/404.html"));
-      await page.evaluate(recordSeedScript(reader));
-      await page.goto(url("/"));
+    const seen = await withSite(async (site: PageOnSite) => {
+      const interview = new InterviewPage(site);
+      await interview.seed(reader);
+      await interview.open();
       return {
-        state: await page.evaluate('document.getElementById("app").dataset.state'),
-        painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(reader)))),
+        state: (await interview.readScreen()).screen,
+        painted: JSON.parse(await site.page.evaluate(paintedAsComposedScript(verdictFor(reader)))),
       };
     }, DESK) as { state: string; painted: typeof PAINTED_AS_COMPOSED };
 

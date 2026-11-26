@@ -6,7 +6,8 @@ import {
   stepsThatWouldUnlockMore,
 } from "../src/lib/copy/verdict.js";
 import type { Verdict } from "../src/lib/verdict/verdict.js";
-import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { InterviewPage } from "../scripts/interview-page.mjs";
+import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import {
   DUTCH_OFFER_ON_FOUR, FRENCH_OFFER_NO_STEPS, FRENCH_OFFER_TWO_STEPS, GERMAN_OFFER_ON_FOUR,
 } from "../scripts/seeded-results.mjs";
@@ -156,27 +157,27 @@ describe("the Choice line", () => {
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE STEPS LINE'S PLACE", skipped);
 
-/** Where the page drew the Steps line and what stands around it, each box's
- * top and bottom in the document, and whether the page painted the verdict as
- * composed. */
-const PLACES = `JSON.stringify((() => {
-  const box = (el) => { const r = el.getBoundingClientRect(); return { top: r.top + scrollY, bottom: r.bottom + scrollY }; };
-  return {
+/** In the page: where the page drew the Steps line and what stands around it, each box's top and bottom in the
+ * document, as JSON. */
+function readPlacesInPage(): string {
+  const box = (el: Element | null) => { const r = el!.getBoundingClientRect(); return { top: r.top + scrollY, bottom: r.bottom + scrollY }; };
+  return JSON.stringify({
     masthead: box(document.querySelector(".masthead-with-stamps")),
     stepsLine: box(document.querySelector(".steps-line")),
     declared: box(document.getElementById("decl")),
     notice: box(document.querySelector("#main article.notice")),
-  };
-})())`;
+  });
+}
 
 describe.skipIf(skipped !== null)("the Steps line on a phone", () => {
   it("stands under the masthead, before \"You declared\" and the Notice, on the first screen", async () => {
-    const seen = await withSite(async ({ page, url }) => {
-      await page.goto(url("/"));
-      await page.evaluate(recordSeedScript(DUTCH_OFFER_ON_FOUR));
-      await page.goto(url("/"));
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      const interview = new InterviewPage(site);
+      await interview.seed(DUTCH_OFFER_ON_FOUR);
+      await interview.open();
       return {
-        places: JSON.parse(await page.evaluate(PLACES)),
+        places: JSON.parse(await page.evaluate(`(${readPlacesInPage})()`)),
         painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(DUTCH_OFFER_ON_FOUR)))),
       };
     }, PHONE) as { places: Record<"masthead" | "stepsLine" | "declared" | "notice", { top: number; bottom: number }>;

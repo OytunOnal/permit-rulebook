@@ -8,8 +8,9 @@ import {
 } from "../src/lib/interview/start-interview.js";
 import { openInterviewHistory, type InterviewHistory } from "../src/lib/interview-history/interview-history.js";
 import { DESK, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 import {
-  fieldOnScreen, recordSeedScript, skipReason, warnNotWalked, withSite,
+  fieldOnScreen, skipReason, warnNotWalked, withSite,
 } from "./browser-walk.js";
 import { FakeTab, stepOf } from "./fake-browser-history.js";
 
@@ -204,8 +205,8 @@ const keepNames = (words: string | null): string | null =>
 
 /** The screen the interview shows: a question's field, or the result. */
 async function screenOf(page: BrowserPage): Promise<string> {
-  const state = await page.evaluate('document.getElementById("app").dataset.state');
-  return state === "results" ? RESULT : fieldOnScreen(page);
+  const { screen } = await new InterviewPage({ page }).readScreen();
+  return screen === "results" ? RESULT : fieldOnScreen(page);
 }
 
 /** A real click on `selector`, then the page at rest. */
@@ -215,12 +216,12 @@ async function tapAndWait(page: BrowserPage, selector: string): Promise<void> {
 }
 
 /** `/` opened onto a stored record of `answers`, asked in their own order, and the ✎ of `field` tapped. */
-async function editingOnRecord({ page, url }: PageOnSite, answers: Profile, field: string): Promise<Exits> {
-  await page.goto(url("/404.html"));
-  await page.evaluate(recordSeedScript(answers));
-  await page.goto(url("/"));
-  await tapAndWait(page, `#decl-list [data-field="${field}"]`);
-  return exitsOf(page);
+async function editingOnRecord(site: PageOnSite, answers: Profile, field: string): Promise<Exits> {
+  const interview = new InterviewPage(site);
+  await interview.seed(answers);
+  await interview.open();
+  await tapAndWait(site.page, `#decl-list [data-field="${field}"]`);
+  return exitsOf(site.page);
 }
 
 describe.skipIf(skipped !== null)("Back and Keep this answer go where their labels say, at 1280", () => {

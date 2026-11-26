@@ -7,8 +7,9 @@ import {
 import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "../src/lib/copy/interview.js";
 import { countrySearchOf } from "../src/lib/country-search/country-search.js";
 import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 import {
-  recordSeedScript, skipReason, warnNotWalked, withSite,
+  skipReason, warnNotWalked, withSite,
 } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
@@ -89,29 +90,33 @@ if (skipped) warnNotWalked("the territory line in a browser", skipped);
 
 /** Answers that bring the passport question next. */
 const BEFORE_PASSPORT = { destination: "de", situation: "offer", qualification: "degree", occupation_it: "no" };
-const LIST = `JSON.stringify({
-  query: document.getElementById("cfilter")?.value ?? "",
-  rows: document.querySelectorAll("#clist [role=option]").length,
-  line: (document.querySelector("#clist .cnone")?.textContent || "").trim(),
-  status: (document.getElementById("cstatus")?.textContent || "").trim(),
-})`;
 interface Listed { query: string; rows: number; line: string; status: string }
+
+/** In the page: what the passport search shows, its query, its rows, its line and its live region, as JSON once its
+ * line for `typed` is drawn; false until then. */
+function readListOnceDrawnForInPage(typed: string): string | false {
+  const listed: Listed = {
+    query: (document.getElementById("cfilter") as HTMLInputElement | null)?.value ?? "",
+    rows: document.querySelectorAll("#clist [role=option]").length,
+    line: (document.querySelector("#clist .cnone")?.textContent || "").trim(),
+    status: (document.getElementById("cstatus")?.textContent || "").trim(),
+  };
+  return listed.query === typed && listed.line ? JSON.stringify(listed) : false;
+}
 
 /** The list once the search has drawn its line for `typed`. */
 async function listFor(page: BrowserPage, typed: string): Promise<Listed> {
-  const drawn = `(() => {
-    const listed = JSON.parse(${LIST});
-    return listed.query === ${JSON.stringify(typed)} && listed.line ? JSON.stringify(listed) : false;
-  })()`;
+  const drawn = `(${readListOnceDrawnForInPage})(${JSON.stringify(typed)})`;
   return JSON.parse(String(await page.waitUntil(drawn, `the search drew no line for "${typed}"`))) as Listed;
 }
 
 describe.skipIf(skipped !== null)("#160 — in the browser at 390×844", () => {
   it("typing \"Puerto Rico\" into the passport search shows the territory line and no row", async () => {
-    const seen = await withSite(async ({ page, url }: PageOnSite) => {
-      await page.goto(url("/"));
-      await page.evaluate(recordSeedScript(BEFORE_PASSPORT));
-      await page.goto(url("/"));
+    const seen = await withSite(async (site: PageOnSite) => {
+      const { page } = site;
+      const interview = new InterviewPage(site);
+      await interview.seed(BEFORE_PASSPORT);
+      await interview.open();
       await page.evaluate('document.getElementById("cfilter").focus()');
       await page.type("Puerto Rico");
       return listFor(page, "Puerto Rico");
