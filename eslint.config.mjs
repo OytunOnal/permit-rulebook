@@ -197,6 +197,9 @@ const REFUSED_STRINGS = [
   { selector: `TemplateElement[value.raw=${pattern}]`, message },
 ]);
 
+/** The record module's path as an `import()` names it; a selector's pattern cannot hold a slash, so it is written `\x2f` (Q443). */
+const RECORD_MODULE = String.raw`/(^|\x2f)src\x2flib\x2frecord(\.[jt]s)?$/`;
+
 /** A probe written as a string: the lint cannot read inside it. */
 const STRING_PROBE =
   "an in-page probe written as a string: write it as a real function and serialise it into the page, `(${fn})(args)`";
@@ -255,6 +258,7 @@ export default [
       }],
       "no-restricted-syntax": ["error",
         ...REFUSED_STRINGS,
+        { selector: `ImportExpression[source.value=${RECORD_MODULE}]`, message: `the record is built and read ${THROUGH_INTERVIEW_PAGE}` },
         { selector: `Literal[value=${FUNCTION_BODY_OPENING}]`, message: STRING_PROBE },
         { selector: `TemplateLiteral[quasis.0.value.raw=${FUNCTION_BODY_OPENING}]`, message: STRING_PROBE },
       ],
