@@ -22,7 +22,7 @@ import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
 } from "./verdict-cards.js";
 import { withSite, skipReason } from "./browser-walk.js";
-import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
+import { InterviewPage, type ScreenShown } from "../scripts/interview-page/interview-page.mjs";
 import { marksOn, situationScreen, unscoredOf } from "./situation-marks.js";
 import { watchStateAt } from "./watch-state-at.js";
 
@@ -310,9 +310,9 @@ const skipped = skipReason();
 if (skipped)
   process.stderr.write(`\n  !! THE S19 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-// The page script that reads each drawn mark back, so the browser cases compare the marks the reader sees.
-const MARKS = 'JSON.stringify([...document.querySelectorAll(".qcard .opt-mark")].map((m) => ({'
-  + ' under: m.dataset.for, text: m.textContent.trim(), href: m.querySelector("a") ? m.querySelector("a").getAttribute("href") : null })))';
+/** Each mark drawn under an answer on the screen, so the browser cases compare the marks the reader sees. */
+const marksOf = ({ answers }: ScreenShown) =>
+  answers.flatMap(({ value, mark }) => (mark ? [{ under: value, text: mark.text, href: mark.href }] : []));
 
 describe.skipIf(skipped !== null)("s19 — in the browser", () => {
   it("question 2 is never in the cold HTML; the mark is drawn after the destination answer", () => {
@@ -340,10 +340,8 @@ async function expectOnlyFranceMarkedInTheBrowser(): Promise<void> {
       await interview.seed({ destination });
       await interview.open();
       await page.waitUntilAtRest();
-      out[destination] = {
-        question: (await interview.readScreen()).question,
-        marks: JSON.parse(await page.evaluate(MARKS)),
-      };
+      const screen = await interview.readScreen();
+      out[destination] = { question: screen.question, marks: marksOf(screen) };
     }
     return out;
   }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string,

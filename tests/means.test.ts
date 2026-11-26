@@ -126,12 +126,8 @@ async function whatThePageShowsWhereTheReaderStood() {
     // 1. The situation question, with the destination already declared.
     await interview.seed({ destination: "nl" });
     await interview.open();
-    const { question } = await interview.readScreen();
-    const options = JSON.parse(await page.evaluate(
-      'JSON.stringify([...document.querySelectorAll(".qcard .opt")].map((b) => ({'
-      + ' label: b.querySelector(".opt-label").textContent.trim(),'
-      + ' means: b.querySelector(".opt-means") ? b.querySelector(".opt-means").textContent.trim() : null })))',
-    ));
+    const { question, answers } = await interview.readScreen();
+    const options = answers.map(({ label, means }) => ({ label, means }));
 
     // 2. The results the walk reached: the verdict whose step the case
     // above reads, as painted.
