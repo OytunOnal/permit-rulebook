@@ -23,6 +23,7 @@ import { PAINTED_AS_COMPOSED, everyDrawnRouteIn, paintedAsComposedScript, verdic
 const ds = dataset as unknown as Dataset;
 type Disjunction = Extract<Criterion, { op: "any" }>;
 
+// The shortage Blue Card, whose card carries the degree-or-IT criterion with paths.
 const SHORTAGE = "de-blue-card-shortage";
 const capitalised = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 const unescaped = (html: string): string =>
@@ -58,7 +59,10 @@ const pageOf = (routeId: string): string => {
   return routePage(ds, address).html;
 };
 
-describe("#155 a criterion with paths on its route page", () => {
+// The title these cases have always sat under; every block below repeats it, so each case keeps its id.
+const ON_ITS_ROUTE_PAGE = "#155 a criterion with paths on its route page";
+
+describe(ON_ITS_ROUTE_PAGE, () => {
   it("every such card is headed by the criterion's label, capitalised, where it names no figure", () => {
     let seen = 0;
     for (const { route } of routeAddresses(ds))
@@ -85,7 +89,9 @@ describe("#155 a criterion with paths on its route page", () => {
       for (const pc of path.criteria) expect(lines[i]).toContain(criterionPhrase(ds, pc));
     });
   });
+});
 
+describe(ON_ITS_ROUTE_PAGE, () => {
   it("a criterion with more than two paths is not introduced as 'either'", () => {
     let seen = 0;
     for (const { route } of routeAddresses(ds))

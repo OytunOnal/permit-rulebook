@@ -32,7 +32,10 @@ function freshTab(): FakeTab {
 /** Three stored answers, which open on the qualification. */
 const ASKED = ["destination", "citizenship", "situation"];
 
-describe("Back's target, through the interview's history", () => {
+// The title these cases have always sat under; every block below repeats it, so each case keeps its id.
+const BACKS_TARGET = "Back's target, through the interview's history";
+
+describe(BACKS_TARGET, () => {
   it("Back on a plain question: the question answered before it", () => {
     const history = openInterviewHistory(freshTab(), { asked: [], showing: "destination" });
     history.pushScreen("citizenship");
@@ -57,7 +60,9 @@ describe("Back's target, through the interview's history", () => {
     expect(history.backTarget({ asked: ASKED, editing: "citizenship" })).toBe("destination");
     expect(history.back({ asked: ASKED, editing: "citizenship" })).toEqual({ kind: "in-place", field: "destination" });
   });
+});
 
+describe(BACKS_TARGET, () => {
   /** Two entries in a row can show one question: a ✎ on the result redraws the result's entry as
    * the question the reader had kept from (#216, ruling 1). Back never names the screen it is on. */
   it("Back past entries that show the question on screen: the question before them, and the browser goes there", () => {
@@ -138,12 +143,19 @@ class WiredInterview {
 
 /** A reader's gesture on the interview as it stands. */
 type Move = (walk: WiredInterview) => void;
+// The question on screen answered with its first option.
 const ANSWER: Move = (w) => { if (w.showing) w.apply({ kind: "answered", value: firstOptionOf(w.showing) }); };
+// The ✎ of the first answer asked.
 const EDIT_FIRST: Move = (w) => w.apply({ kind: "editedRow", field: w.state.asked[0]! });
+// The ✎ of the second answer asked.
 const EDIT_SECOND: Move = (w) => w.apply({ kind: "editedRow", field: w.state.asked[1]! });
+// The screen's own Back pressed.
 const BACK: Move = (w) => w.pressBack();
+// Keep this answer, on an edit screen.
 const KEEP: Move = (w) => { if (w.state.editing) w.apply({ kind: "kept" }); };
+// The browser's Back.
 const BROWSER_BACK: Move = (w) => w.tab.back();
+// The browser's Forward.
 const BROWSER_FORWARD: Move = (w) => w.tab.forward();
 
 /** Answers, edits, both Backs, Keep and Forward, in an order that crosses the first held step both ways. */
@@ -224,7 +236,10 @@ async function editingOnRecord(site: PageOnSite, answers: Profile, field: string
   return exitsOf(site.page);
 }
 
-describe.skipIf(skipped !== null)("Back and Keep this answer go where their labels say, at 1280", () => {
+// The title these cases have always sat under; every block below repeats it, so each case keeps its id.
+const GO_WHERE_LABELS_SAY = "Back and Keep this answer go where their labels say, at 1280";
+
+describe.skipIf(skipped !== null)(GO_WHERE_LABELS_SAY, () => {
   it("on an edit screen, Back lands on the question its label names, and Keep on the next question its label names", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
@@ -249,7 +264,9 @@ describe.skipIf(skipped !== null)("Back and Keep this answer go where their labe
     }, DESK);
     expect([keepNames(seen.editing.keep), seen.kept]).toEqual([RESULT, RESULT]);
   }, 180_000);
+});
 
+describe.skipIf(skipped !== null)(GO_WHERE_LABELS_SAY, () => {
   /** The Spec axis's repro (#216, ruling 1): Keep to the result, then the same row's ✎ again. */
   it("✎, Keep to the result, ✎ on the same row: Back names the question before, and lands there", async () => {
     const seen = await withSite(async (site) => {

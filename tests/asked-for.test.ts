@@ -127,7 +127,10 @@ function readDeclaredRowCentreInPage(field: string): string {
   return JSON.stringify({ x: Math.round(box.left + box.width / 2), y: Math.round(box.top + box.height / 2) });
 }
 
-describe.skipIf(skipped !== null)("a question says which routes ask it: the asked-for line (#139)", () => {
+// The title these cases have always sat under; every block below repeats it, so each case keeps its id.
+const THE_ASKED_FOR_LINE = "a question says which routes ask it: the asked-for line (#139)";
+
+describe.skipIf(skipped !== null)(THE_ASKED_FOR_LINE, () => {
   for (const field of ["funds_eur_month", "age_band"])
     it(`on a Germany-offer walk, ${field} names the Opportunity Card in Germany`, async () => {
       const seen = await withSite(async (site) => {
@@ -155,7 +158,9 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     // making, not because the page draws none.
     expectTheCardWithALine(seen.next, "recognition_de");
   }, 120_000);
+});
 
+describe.skipIf(skipped !== null)(THE_ASKED_FOR_LINE, () => {
   it("on the any-of-four path with the offer in Spain, each Dutch question names its Dutch route", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
@@ -186,7 +191,9 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     ]);
     expect(seen.line.named).toEqual([]);
   }, 120_000);
+});
 
+describe.skipIf(skipped !== null)(THE_ASKED_FOR_LINE, () => {
   it("a route name in the line reads as its card names it, through the screen's one-time § expansion", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
@@ -220,7 +227,9 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     // no route; without it, the experienced worker and the Opportunity Card.
     expect(namedRoutes(seen.line)).toEqual([["de-experienced-worker", "DE"], ["de-chancenkarte", "DE"]]);
   }, 120_000);
+});
 
+describe.skipIf(skipped !== null)(THE_ASKED_FOR_LINE, () => {
   it("on Germany, the seven-year question names the Blue Card and the Opportunity Card for an IT reader with no degree", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;

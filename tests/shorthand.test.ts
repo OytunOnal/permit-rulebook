@@ -29,6 +29,7 @@ const ds = dataset as unknown as Dataset;
 /** One page as a reader reads it: our prose, and the quotes it shows. */
 interface Page { name: string; prose: string; quotes: string[] }
 
+// The named entities the pages write, each with the character it stands for.
 const ENTITIES: Readonly<Record<string, string>> = {
   "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": "\"", "&#39;": "'", "&nbsp;": " ",
 };

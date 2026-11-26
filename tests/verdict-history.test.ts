@@ -38,8 +38,10 @@ const answeredOutright: Profile = {
   destination: "de", situation: "offer", qualification: "degree", citizenship: "IT",
 };
 
+// Which screen the interview is on, read in the page, so a wait can poll it.
 const STATE = 'document.getElementById("app").dataset.state';
-const ON_SEARCH = '!!document.querySelector("#main .qcard #cfilter")';
+// Whether the question on the screen is drawn as the search rather than as buttons.
+const ON_SEARCH ='!!document.querySelector("#main .qcard #cfilter")';
 
 /** Answers the question on the screen as a reader does: a tap on the option,
  * or the option's name typed into the search and Enter. */
