@@ -3,8 +3,8 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, type Dataset, type Profile } from "permit-rulebook-data";
 import { DESK, PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
-import { QLABEL, answerWith, evaluateAtRest, fieldOnScreen, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
-import { TAP_FIRST_AND_READ, expectLanded, where, type Where } from "./question-landing.js";
+import { evaluateAtRest, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { answerFirstAndReadAtOnce, expectLanded, where, type Where } from "./question-landing.js";
 
 /**
  * s30 — on a phone the next question comes up to meet the reader.
@@ -33,27 +33,16 @@ const ds = rawDataset as unknown as Dataset;
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE QUESTION'S LANDING", skipped);
 
-/** The first answer the question on `field` offers, other than `held` where one is held. */
-function firstOptionOf(field: string, held?: string): string {
-  return deriveQuestions(ds).find((q) => q.field === field)!.options.find((o) => o.value !== held)!.value;
-}
-
-/** Answers the question on the screen with its first option — a choice,
- * never the country search, which no path reaches this early. */
-async function answerFirstOption(page: BrowserPage): Promise<void> {
-  const field = await fieldOnScreen(page);
-  await new InterviewPage({ page }).answer(field, firstOptionOf(field));
-}
-
 // The screen's Back control, tapped.
 const TAP_BACK = 'document.querySelector("#main #back").click()';
 
 /** The screen's Back: a history move, drawn on the browser's turn rather than
  * the tap's, so waited on until the question it leaves is gone, then at rest. */
 async function pressBack(page: BrowserPage): Promise<void> {
-  const { question: left } = await new InterviewPage({ page }).readScreen();
+  const interview = new InterviewPage({ page });
+  const left = await interview.readScreen();
   await page.evaluate(TAP_BACK);
-  await page.waitUntil(`${QLABEL} !== ${JSON.stringify(left)}`, "Back never left the question");
+  await interview.waitUntilScreenChanges(left);
   await page.waitUntilAtRest();
 }
 /** The reader reads on down the page before answering — a quarter of the
@@ -84,10 +73,11 @@ async function openOn(site: PageOnSite, answers: Profile | null, options?: { don
  * again, and where the reader stood after each. */
 async function answerAndGoBack(site: PageOnSite) {
   const { page } = site;
+  const interview = new InterviewPage(site);
   const cold = await openOn(site, null);
-  await answerFirstOption(page);
+  await interview.answerFirstOffered();
   const first = await where(page);
-  await answerFirstOption(page);
+  await interview.answerFirstOffered();
   const second = await where(page);
   await pressBack(page);
   const back = await where(page);
@@ -97,7 +87,7 @@ async function answerAndGoBack(site: PageOnSite) {
   // -177 at 390).
   await page.evaluate(READ_ON);
   const readOn = await where(page);
-  await answerFirstOption(page);
+  await interview.answerFirstOffered();
   const third = await where(page);
   await pressBack(page);
   const backFromScrolled = await where(page);
@@ -152,7 +142,7 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
       const reduced = await page.evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches");
       // Read again once the page is at rest: whatever would still move has
       // moved by then, so a landing that kept going is caught.
-      const atOnce = JSON.parse(await answerWith(page, TAP_FIRST_AND_READ)) as Omit<Where, "question">;
+      const atOnce = await answerFirstAndReadAtOnce(page);
       const later = await where(page);
       return { cold, reduced, atOnce, later };
     }, PHONE);
@@ -165,10 +155,11 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
 describe.skipIf(skipped !== null)("what does not change", () => {
   it("at 1280x900 an answer scrolls nothing: the card sits beside the ledger with room above it", async () => {
     const seen = await withSite(async (site) => {
+      const interview = new InterviewPage(site);
       const cold = await openOn(site, null);
-      await answerFirstOption(site.page);
+      await interview.answerFirstOffered();
       const first = await where(site.page);
-      await answerFirstOption(site.page);
+      await interview.answerFirstOffered();
       const second = await where(site.page);
       return { cold, first, second };
     }, DESK);
@@ -185,7 +176,7 @@ describe.skipIf(skipped !== null)("what does not change", () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
       const cold = await openOn(site, null);
-      await answerFirstOption(page);
+      await new InterviewPage(site).answerFirstOffered();
       const answered = await where(page);
       // The reader reads a little way down — the card's top is still on the
       // screen — then reopens the first row from the ledger beside it.
@@ -275,6 +266,9 @@ const finished = {
   occupation_shortage: "yes", recognition_de: "recognized", experience_5y: "lt2", experience_7y: "lt3",
   salary_eur_year: "band_4", german: "none", english: "none", funds_eur_month: "band_0",
 };
+/** The first band the salary question offers other than the one the finished reader holds. */
+const ANOTHER_BAND = deriveQuestions(ds).find((q) => q.field === "salary_eur_year")!
+  .options.find((o) => o.value !== finished.salary_eur_year)!.value;
 
 /** The finished reader's verdict, ✎ on the salary row from it, and another band answered: where the reader stood
  * after each. */
@@ -283,7 +277,7 @@ async function verdictWalk(site: PageOnSite) {
   const verdict = await openOn(site, finished, { done: true });
   await evaluateAtRest(page, `(${openAndTapPencil})("salary_eur_year")`);
   const corrected = await where(page);
-  await new InterviewPage(site).answer("salary_eur_year", firstOptionOf("salary_eur_year", finished.salary_eur_year));
+  await new InterviewPage(site).answer("salary_eur_year", ANOTHER_BAND);
   const returned = await where(page);
   return { verdict, corrected, returned };
 }
@@ -344,7 +338,7 @@ describe.skipIf(skipped !== null)("on a phone a correction lands too (amendment 
       const seen = await withSite(async (site) => {
         const { page } = site;
         await openOn(site, null);
-        await answerFirstOption(page);
+        await new InterviewPage(site).answerFirstOffered();
         const answered = await where(page);
         await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
         const corrected = await where(page);

@@ -75,13 +75,10 @@ if (skipped) warnNotWalked("THE SET-ASIDE LINE", skipped);
 
 const fieldByLabel = new Map(ds.fields.map((f) => [f.label, f.id]));
 
-/** In the page: what a screen shows beside its question: the card's counter
- * line, the panel, and each answer the set-aside line shows, with the name it
- * shows, as JSON. */
+/** In the page: what a screen shows beside its question card: the panel, and
+ * each answer the set-aside line shows, with the name it shows, as JSON. */
 function readScreenBesideTheQuestion(): string {
-  const meta = document.querySelector("#main .qcard .qmeta");
   return JSON.stringify({
-    meta: meta ? (meta.textContent ?? "").trim() : null,
     rows: document.querySelectorAll("#decl-list [data-field]").length,
     named: [...document.querySelectorAll<HTMLElement>("#decl [data-set-aside]")]
       .filter((el) => el.checkVisibility({ visibilityProperty: true, opacityProperty: true }))
@@ -92,7 +89,8 @@ function readScreenBesideTheQuestion(): string {
 interface Screen {
   state: string;
   question: string;
-  meta: string | null;
+  /** The card's counter line, or the edit line on a reopened question; "" off a question. */
+  meta: string;
   rows: number;
   named: { field: string; name: string }[];
 }
@@ -100,9 +98,9 @@ interface Screen {
 /** What a screen shows, read from the page: the card or the verdict, the
  * panel, and each answer the set-aside line shows, with the name it shows. */
 const screenOf = async (page: BrowserPage) => {
-  const { screen: state, question } = await new InterviewPage({ page }).readScreen();
-  const beside = JSON.parse(await page.evaluate(`(${readScreenBesideTheQuestion})()`)) as Omit<Screen, "state" | "question">;
-  return { state, question, ...beside, field: fieldByLabel.get(question) ?? null };
+  const { screen: state, question, meta } = await new InterviewPage({ page }).readScreen();
+  const beside = JSON.parse(await page.evaluate(`(${readScreenBesideTheQuestion})()`)) as Omit<Screen, "state" | "question" | "meta">;
+  return { state, question, meta, ...beside, field: fieldByLabel.get(question) ?? null };
 };
 type Seen = Awaited<ReturnType<typeof screenOf>>;
 
@@ -131,6 +129,11 @@ const pencil = (page: BrowserPage, field: string): Promise<Seen> =>
 /** `field` answered with `value`, and the screen it draws, at rest. */
 async function answerAndRead(site: PageOnSite, field: string, value: string): Promise<Seen> {
   await new InterviewPage(site).answer(field, value);
+  return screenOf(site.page);
+}
+/** `field` answered with `value` by a real tap, as a reader's finger does, and the screen it draws, at rest. */
+async function tapAnswerAndRead(site: PageOnSite, field: string, value: string): Promise<Seen> {
+  await new InterviewPage(site).answer(field, value, { by: "hand" });
   return screenOf(site.page);
 }
 const named = (fields: string[]) => fields.map((field) => ({ field, name: shortLabelOf(ds, field) }));
@@ -246,9 +249,9 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
       await page.tapOn("#decl > summary");
       await page.waitUntilAtRest();
       const editing = await tapToNext(page, '#decl-list [data-field="destination"]');
-      const next = await tapToNext(page, "#main .qcard .opt[data-value='es']");
+      const next = await tapAnswerAndRead(site, "destination", "es");
       const nextRow = JSON.parse(await page.evaluate(SUMMARY)) as Summary;
-      const after = await tapToNext(page, "#main .qcard .opt[data-value='yes']");
+      const after = await tapAnswerAndRead(site, "qualification_recent", "yes");
       const afterRow = JSON.parse(await page.evaluate(SUMMARY)) as Summary;
       const cls = await shiftScoreSince(page);
       return { verdict, editing, next, nextRow, after, afterRow, cls };

@@ -1,7 +1,7 @@
 import { expect } from "vitest";
 import { WIDE_QUERY } from "../src/lib/first-paint.js";
 import type { BrowserPage } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
+import { InterviewPage, type CardLayout } from "../scripts/interview-page/interview-page.mjs";
 
 /**
  * Where the reader stands as s30 reads it — the card's top against the
@@ -11,13 +11,11 @@ import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 
 /**
  * In the page: where the reader is, read the way a reader would, its question
- * aside, as JSON; `wideQuery` is the site's breakpoint. The page's frame —
+ * card aside, as JSON; `wideQuery` is the site's breakpoint. The page's frame —
  * header, masthead, ledger, main — is on every screen and read straight; only
- * the screen's own parts (the card, the strip) can be absent.
+ * the screen's own part, the strip, can be absent.
  */
 function readWhereInPage(wideQuery: string): string {
-  const card = document.querySelector("#main .qcard");
-  const first = card && (card.querySelector(".opt, #cfilter") || card.querySelector(".qlabel"));
   const head = document.querySelector(".site-head")!;
   const decl = document.getElementById("decl") as HTMLDetailsElement;
   const declBox = decl.getBoundingClientRect();
@@ -31,8 +29,6 @@ function readWhereInPage(wideQuery: string): string {
     wide: matchMedia(wideQuery).matches,
     scrollY: window.scrollY,
     viewport: window.innerHeight,
-    cardTop: card ? card.getBoundingClientRect().top : null,
-    cardLeft: card ? card.getBoundingClientRect().left : null,
     mainLeft: main.left,
     mainTop: main.top,
     declTop: declBox.top,
@@ -46,7 +42,6 @@ function readWhereInPage(wideQuery: string): string {
     headline: (document.getElementById("headline")!.textContent || "").trim(),
     headerHeight: head.getBoundingClientRect().height,
     gap: parseFloat(getComputedStyle(head).paddingBottom),
-    activeIsFirst: !!first && active === first,
     active: active ? nameOf(active) : "",
   });
 }
@@ -78,22 +73,35 @@ export interface Where {
   active: string;
 }
 
+/** What `readWhereInPage` reads: where the reader stands, the card and the question aside. */
+type Stood = Omit<Where, "question" | "cardTop" | "cardLeft" | "activeIsFirst">;
+
+/** Where the reader stands, of what the page read as `stood` and the card's layout `card` as the interview reads it:
+ * the card's top and left, and whether the focus is on its first control (a button for a choice, the box for a
+ * search, the card's heading where there is neither). */
+function standingOf(stood: string, card: CardLayout | null): Omit<Where, "question"> {
+  return {
+    ...(JSON.parse(stood) as Stood),
+    cardTop: card ? card.top : null,
+    cardLeft: card ? card.left : null,
+    activeIsFirst: card?.focus.isOnFirstControl ?? false,
+  };
+}
+
 /** Where the reader is, and which question is being asked. */
 export async function where(page: BrowserPage): Promise<Where> {
-  const stood = JSON.parse(await page.evaluate(`(${readWhereInPage})(${JSON.stringify(WIDE_QUERY)})`)) as Omit<Where, "question">;
-  return { ...stood, question: (await new InterviewPage({ page }).readScreen()).question };
+  const interview = new InterviewPage({ page });
+  const stood = await page.evaluate(`(${readWhereInPage})(${JSON.stringify(WIDE_QUERY)})`);
+  return { ...standingOf(stood, await interview.readCardLayout()), question: (await interview.readScreen()).question };
 }
 
-/** In the page: the first option of the question on the screen tapped, then
- * the reader's position read by `readWhere` before the browser has had a
- * frame: what an instant landing leaves, and a smooth one does not. */
-function tapFirstAndRead(readWhere: typeof readWhereInPage, wideQuery: string): string {
-  document.querySelector<HTMLElement>("#main .qcard .opt")!.click();
-  return readWhere(wideQuery);
+/** The first answer the question on the screen offers tapped, and the reader's position read in the same task,
+ * before the browser has had a frame: what an instant landing leaves, and a smooth one does not. */
+export async function answerFirstAndReadAtOnce(page: BrowserPage): Promise<Omit<Where, "question">> {
+  const { layoutAtOnce, readAtOnce } = await new InterviewPage({ page })
+    .answerFirstOffered({ readAtOnce: { probe: readWhereInPage, args: [WIDE_QUERY] } });
+  return standingOf(String(readAtOnce), layoutAtOnce);
 }
-
-/** The first option tapped and the reader's position read in the same task: the gesture a case answers with. */
-export const TAP_FIRST_AND_READ = `(${tapFirstAndRead})(${readWhereInPage}, ${JSON.stringify(WIDE_QUERY)})`;
 
 /** The question card's top sits one header and one gap under the viewport's
  * top — within the pixel the browser rounds a scroll to — and the ledger line

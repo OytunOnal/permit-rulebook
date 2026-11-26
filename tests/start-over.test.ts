@@ -21,18 +21,14 @@ const FINISHED_IN_GERMANY: Profile = {
   occupation_shortage: "yes", recognition_de: "recognized", experience_5y: "lt2", experience_7y: "lt3",
   salary_eur_year: "band_4", german: "none", english: "none", funds_eur_month: "band_0",
 };
-/** In the page: where the reader stands, the record aside: the screen, the scroll, the focus and the lines over the
- * body, as JSON. */
+/** In the page: where the reader stands, the record and the question card aside: the screen, the scroll and the
+ * resumed line over the body, as JSON. */
 function readWhereInPage(): string {
-  const card = document.querySelector("#main .qcard");
-  const first = card && card.querySelector(".opt, #cfilter");
   return JSON.stringify({
     state: document.getElementById("app")!.dataset.state,
     scrollY: Math.round(window.scrollY),
-    focusOnFirst: !!first && document.activeElement === first,
     resumed: !!document.querySelector("#main .resumed"),
     resumedHoldsRestart: !!document.querySelector("#main .resumed #restart"),
-    arrivalLine: !!document.querySelector("#main .qcard p.recorded"),
   });
 }
 
@@ -46,11 +42,20 @@ interface Where {
   storedAnswers: Profile | null;
 }
 
-/** Where the reader stands: the screen, the scroll, the focus, the lines over the body, and the record. */
+/** Where the reader stands: the screen, the scroll, the focus on the card's first control, the lines over the body
+ * and over the question, and the record. */
 async function where(page: BrowserPage): Promise<Where> {
-  const stood = JSON.parse(await page.evaluate(`(${readWhereInPage})()`)) as Omit<Where, "storedAnswers">;
-  const record = await new InterviewPage({ page }).readRecord();
-  return { ...stood, storedAnswers: record ? record.answers : null };
+  const interview = new InterviewPage({ page });
+  const stood = JSON.parse(await page.evaluate(`(${readWhereInPage})()`)) as Omit<Where, "focusOnFirst" | "arrivalLine" | "storedAnswers">;
+  const card = await interview.readCardLayout();
+  const { arrival } = await interview.readScreen();
+  const record = await interview.readRecord();
+  return {
+    ...stood,
+    focusOnFirst: card?.focus.isOnFirstControl ?? false,
+    arrivalLine: arrival !== "",
+    storedAnswers: record ? record.answers : null,
+  };
 }
 
 /** The page once Start over has drawn a question and the page is at rest, its scroll smooth or not. */
