@@ -3646,11 +3646,6 @@
   },
   {
    "from": "tests/browser-walk.ts",
-   "to": "src/lib/record.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/browser-walk.ts",
    "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
@@ -6973,11 +6968,6 @@
    "from": "tests/screenshot-ink.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "type-only"
-  },
-  {
-   "from": "tests/seed-finished-record.ts",
-   "to": "tests/browser-walk.ts",
-   "kind": "dependency"
   },
   {
    "from": "tests/served-folder.ts",
@@ -12595,5 +12585,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "1ab635e8333662cc444ce279d10c298d207fd898918d96b6136b51270cd97504"
+ "digest": "c25d7fd46c60cf4a1964a15869c06e314ecb44584aa983bfd746518e8f03fb82"
 }
