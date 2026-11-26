@@ -8377,6 +8377,11 @@
     "exported": false
    },
    {
+    "name": "RECORD_MODULE_IN_A_TEMPLATE",
+    "kind": "const",
+    "exported": false
+   },
+   {
     "name": "STRING_PROBE",
     "kind": "const",
     "exported": false
@@ -12630,5 +12635,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a330efb0caec5f8968945f654cfab9e0ab981d486d4b2fe1135651ab4a70f067"
+ "digest": "88450eb765ada2df310427bddc52126ef500f2a36c9cdb57914113d11f846b46"
 }
