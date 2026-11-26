@@ -268,6 +268,20 @@ click on the tracker link. Answers never leave the device.
   not import each other (#468). A message about a missing build opens with
   the command that builds it, and every test that skips on one takes its
   reason from `tests/why-no-build.ts` and says it on stderr (#472).
+  Tests and scripts reach the interview through one deep module,
+  `scripts/interview-page/` (`infrastructure`), entered only through
+  `interview-page.mjs`: the class `InterviewPage` seeds and opens the
+  interview, answers (by script, or by hand: a real tap, or typing with
+  Enter), reads the screen as a reader sees it (`readScreen`, `readCardLayout`,
+  `readAnswerAt`), waits for the screen to change, and reads or clears the
+  stored record. The record's text comes only from `serialize`. The question
+  card's selectors and its in-page probes sit inside it, in `probes/`, and the
+  lint refuses them anywhere else in `tests/` and `scripts/`: the record's
+  constants and key, the card's and the search's markup, an `import()` of the
+  record or with a computed path, and any arrow or function body written in a
+  string. A probe a test sends into a page is a real function, passed its
+  inputs, so the lint reads it too (#475). `tests/browser-walk.ts` keeps the
+  walk's own helpers on top of it.
   The data clone is found in one place, `dataClonePath()` in the
   `scripts/data-lock` module, which holds the lock's rules:
   beside the site's main checkout, which git names from any worktree, so a
