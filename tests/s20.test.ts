@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
-import { remainingQuestions, type Dataset, type Profile } from "permit-rulebook-data";
+import { deriveQuestions, remainingQuestions, type Dataset, type Profile } from "permit-rulebook-data";
 import { START_OVER, resumedLine } from "../src/lib/copy/interview.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
-import { PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { answerWith, evaluateAtRest, openAtRest, withSite, skipReason } from "./browser-walk.js";
+import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
+import { evaluateAtRest, fieldOnScreen, openAtRest, withSite, skipReason } from "./browser-walk.js";
 import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
@@ -45,11 +45,14 @@ const halfDone: Profile = {
   destination: "fr", citizenship: "TR", situation: "offer", situation_country: "fr",
 };
 
-const seed = (profile: Profile | null): string =>
-  profile
-    ? `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
-      JSON.stringify(serialize(profile, Object.keys(profile)))})`
-    : "localStorage.clear()";
+/** Opens the interview on a record of `profile`, unfinished, or cold where there is none, once it is at rest. */
+async function openOnRecord(site: PageOnSite, profile: Profile | null): Promise<InterviewPage> {
+  const interview = new InterviewPage(site);
+  if (profile) await interview.seed(profile);
+  await interview.open();
+  await site.page.waitUntilAtRest();
+  return interview;
+}
 
 describe("the resumed line, as copy and as markup", () => {
   it("counts the answers kept, in the copy module", () => {
@@ -98,39 +101,41 @@ if (skipped)
   ].join(String.fromCharCode(10)));
 
 /**
- * Where the reader is, read the way a reader would read it: the card's top
- * edge against the viewport, and what holds the focus. The first control is
- * whatever the card offers first — a button for a choice, the box for a
- * search — and the card's heading where there is neither.
+ * In the page: where the reader is, read the way a reader would read it: the
+ * card's top edge against the viewport, and what holds the focus, as JSON. The
+ * first control is whatever the card offers first — a button for a choice,
+ * the box for a search — and the card's heading where there is neither.
  */
-const WHERE = `JSON.stringify((() => {
+function readWhere(): string {
   const card = document.querySelector("#main .qcard");
   const first = card && (card.querySelector(".opt, #cfilter") || card.querySelector(".qlabel"));
   const head = document.querySelector(".masthead-with-stamps");
   const h1 = document.getElementById("headline");
   const active = document.activeElement;
-  const name = (el) => !el ? "" : el.id ? "#" + el.id : el.tagName + "." + (el.className || "").split(" ")[0];
-  return {
-    state: document.getElementById("app").dataset.state,
+  const nameOf = (el: Element) => (el.id ? "#" + el.id : el.tagName + "." + (el.className || "").split(" ")[0]);
+  const resumed = document.querySelector("#main .resumed");
+  const resumedRestart = document.querySelector<HTMLElement>("#main .resumed #restart");
+  return JSON.stringify({
+    state: document.getElementById("app")!.dataset.state,
     scrollY: Math.round(window.scrollY),
     viewport: window.innerHeight,
     cardTop: card ? Math.round(card.getBoundingClientRect().top) : null,
     headTop: head ? Math.round(head.getBoundingClientRect().top) : null,
     h1Bottom: h1 ? Math.round(h1.getBoundingClientRect().bottom) : null,
-    headline: h1 ? h1.textContent.trim() : "",
-    live: (document.getElementById("cstatus").textContent || "").trim(),
-    active: name(active),
+    headline: h1 ? (h1.textContent ?? "").trim() : "",
+    live: (document.getElementById("cstatus")!.textContent || "").trim(),
+    active: active ? nameOf(active) : "",
     firstShown: !!first && getComputedStyle(first).visibility === "visible",
     activeIsFirst: !!first && active === first,
     activeInCard: !!card && !!active && card.contains(active),
-    resumed: (() => { const p = document.querySelector("#main .resumed"); return p ? p.textContent.trim() : null; })(),
-    resumedRestart: (() => {
-      const a = document.querySelector("#main .resumed #restart");
-      return a ? !a.hidden && getComputedStyle(a).display !== "none" : false;
-    })(),
+    resumed: resumed ? (resumed.textContent ?? "").trim() : null,
+    resumedRestart: resumedRestart ? !resumedRestart.hidden && getComputedStyle(resumedRestart).display !== "none" : false,
     restartsOnPage: document.querySelectorAll("#restart").length,
-  };
-})())`;
+  });
+}
+
+/** Where the reader is, read in the page. */
+const where = async (page: BrowserPage): Promise<Where> => JSON.parse(await page.evaluate(`(${readWhere})()`)) as Where;
 
 interface Where {
   state: string;
@@ -153,33 +158,41 @@ interface Where {
 }
 
 /**
- * The critique's walk: on a result, open the panel, scroll to the salary
- * row, tap its ✎, answer a different band. The row is found by its field,
- * never by its words.
+ * In the page: the critique's walk, on a result: the panel opened, the salary
+ * row scrolled to and its ✎ tapped. The row is found by its field, never by
+ * its words.
  */
-const TAP_SALARY = `(() => {
-  document.getElementById("decl").open = true;
-  const row = document.querySelector('#decl-list [data-field="salary_eur_year"]');
+function tapSalary(): string {
+  (document.getElementById("decl") as HTMLDetailsElement).open = true;
+  const row = document.querySelector<HTMLElement>('#decl-list [data-field="salary_eur_year"]')!;
   row.scrollIntoView({ block: "center" });
   row.click();
   return "tapped";
-})()`;
-// The walk's last step: a band other than the one held, so the verdict it returns to must change.
-const ANSWER_ANOTHER_BAND = `(() => {
-  const other = document.querySelector("#main .qcard .opt:not(.sel)");
-  other.click();
-  return other.textContent.trim();
-})()`;
+}
+/** The walk's last step: the first band the salary question offers other than the one held, so the verdict it
+ * returns to must change. */
+const ANOTHER_BAND = firstOptionOf("salary_eur_year", finished.salary_eur_year);
 
-async function correction(page: BrowserPage, origin: (p: string) => string) {
-  await page.goto(origin("/404.html"));
-  await page.evaluate(seed(finished));
-  await openAtRest(page, origin("/"));
-  const result = JSON.parse(await page.evaluate(WHERE)) as Where;
-  await evaluateAtRest(page, TAP_SALARY);
-  const onQuestion = JSON.parse(await page.evaluate(WHERE)) as Where;
-  await answerWith(page, ANSWER_ANOTHER_BAND);
-  const back = JSON.parse(await page.evaluate(WHERE)) as Where;
+/** The first answer the question on `field` offers, other than `held` where one is held. */
+function firstOptionOf(field: string, held?: string): string {
+  return deriveQuestions(ds).find((q) => q.field === field)!.options.find((o) => o.value !== held)!.value;
+}
+
+/** Answers the question on the screen with the first answer it offers: a choice, never the country search. */
+async function answerFirstOption(interview: InterviewPage, page: BrowserPage): Promise<void> {
+  const field = await fieldOnScreen(page);
+  await interview.answer(field, firstOptionOf(field));
+}
+
+/** The critique's walk: on a result, the salary row's ✎ tapped, and a different band answered. */
+async function correction(site: PageOnSite) {
+  const { page } = site;
+  const interview = await openOnRecord(site, finished);
+  const result = await where(page);
+  await evaluateAtRest(page, `(${tapSalary})()`);
+  const onQuestion = await where(page);
+  await interview.answer("salary_eur_year", ANOTHER_BAND);
+  const back = await where(page);
   return { result, onQuestion, back };
 }
 
@@ -189,7 +202,7 @@ describe.skipIf(skipped !== null)("✎ on a result lands on the question and the
     ["1240x900, where the panel is a sidebar", { width: 1240, height: 900 }, false],
   ] as const)
     it(`at ${name}`, async () => {
-      const seen = await withSite(({ page, url }) => correction(page, url), { viewport, mobile });
+      const seen = await withSite(correction, { viewport, mobile });
       expect(seen.result.state, "the finished record did not restore to a result").toBe("results");
 
       // After ✎: the question is on the screen, from its top, and its first
@@ -223,17 +236,16 @@ describe.skipIf(skipped !== null)("✎ on a result lands on the question and the
 
 describe.skipIf(skipped !== null)("every answer moves the focus to the next question's first control (F6)", () => {
   it("three questions in a row, from a cold /", async () => {
-    const seen = await withSite(async ({ page, url }) => {
-      await page.goto(url("/404.html"));
-      await page.evaluate(seed(null));
-      await openAtRest(page, url("/"));
-      const steps: Where[] = [JSON.parse(await page.evaluate(WHERE))];
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      const interview = await openOnRecord(site, null);
+      const steps: Where[] = [await where(page)];
       for (let i = 0; i < 3; i++) {
         // A choice: its first button. The country search does not come this
         // early on any path, and the focus rule for it is v0.7's (the caret in
         // the box, its text selected).
-        await answerWith(page, 'document.querySelector("#main .qcard .opt").click()');
-        steps.push(JSON.parse(await page.evaluate(WHERE)));
+        await answerFirstOption(interview, page);
+        steps.push(await where(page));
       }
       return { steps };
     }, { viewport: { width: 1240, height: 900 }, mobile: false });
@@ -259,11 +271,9 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
     ["a finished record, which restores to the verdict", finished, "results", true],
   ] as const)
     it(`is ${resumes ? "there, with the one Start over control," : "absent"} on ${name}`, async () => {
-      const seen = await withSite(async ({ page, url }) => {
-        await page.goto(url("/404.html"));
-        await page.evaluate(seed(record));
-        await openAtRest(page, url("/"));
-        return JSON.parse(await page.evaluate(WHERE)) as Where;
+      const seen = await withSite(async (site) => {
+        await openOnRecord(site, record);
+        return where(site.page);
       }, PHONE);
       expect(seen.state).toBe(state);
       expect(seen.resumed !== null, `the resumed line is ${seen.resumed === null ? "missing" : "there"}`).toBe(resumes);
@@ -274,19 +284,18 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
 
 /** Checks that a half-done record arrives with the resumed line and its count, which go after one answer, and its Start over clears the record. */
 async function expectHalfDoneRecordSaysResumed(): Promise<void> {
-  const seen = await withSite(async ({ page, url }) => {
-    await page.goto(url("/404.html"));
-    await page.evaluate(seed(halfDone));
-    await openAtRest(page, url("/"));
-    const resumed = JSON.parse(await page.evaluate(WHERE)) as Where;
+  const seen = await withSite(async (site) => {
+    const { page, url } = site;
+    const interview = await openOnRecord(site, halfDone);
+    const resumed = await where(page);
     // One answer on: the line was for the arrival, not for the screen after it.
-    await answerWith(page, 'document.querySelector("#main .qcard .opt").click()');
-    const next = JSON.parse(await page.evaluate(WHERE)) as Where;
+    await answerFirstOption(interview, page);
+    const next = await where(page);
     // Start over from the resumed line: the same control the panel carries.
     await openAtRest(page, url("/"));
     await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
-    const restarted = JSON.parse(await page.evaluate(WHERE)) as Where;
-    const stored = await page.evaluate(`localStorage.getItem(${JSON.stringify(STORAGE_KEY)})`);
+    const restarted = await where(page);
+    const stored = await interview.readRecord();
     return { resumed, next, restarted, stored };
   }, PHONE);
   expect(seen.resumed.state).toBe("questions");

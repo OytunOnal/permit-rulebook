@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, shortLabelOf, type Dataset, type Profile } from "permit-rulebook-data";
-import { STORAGE_KEY } from "../src/lib/record.js";
 import { DESK, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { InterviewPage } from "../scripts/interview-page.mjs";
 import {
   QLABEL, answer, middleBandOf, skipReason, walkTo, warnNotWalked, withSite,
 } from "./browser-walk.js";
@@ -51,8 +51,11 @@ const readerFor = (destination: "de" | "nl"): Profile => ({
   german: "a1", english: "b2", age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
 });
 
-const RECORDED = (field: string) =>
-  `(JSON.parse(localStorage.getItem(${JSON.stringify(STORAGE_KEY)}) || "{}").answers || {})[${JSON.stringify(field)}] ?? ""`;
+/** The answer the device's record holds for `field`, or "" where it holds none. */
+async function recordedFor(page: BrowserPage, field: string): Promise<string> {
+  const record = await new InterviewPage({ page }).readRecord();
+  return record?.answers[field] ?? "";
+}
 
 /**
  * From a cold start, answers whatever question is on the screen from the
@@ -66,28 +69,29 @@ async function walkToUnknown(site: PageOnSite, reader: Profile, target: string):
   return [...asked, target];
 }
 
-/** The declared panel's row for a field, found by the short label the
- * dataset gives it, and what state it is drawn in. */
-const ROW_OF = (field: string) => `JSON.stringify((() => {
-  const short = ${JSON.stringify(shortLabelOf(ds, field))};
-  const row = [...document.querySelectorAll("#decl-list > div")]
+/** In the page: the declared panel's row found by `short`, the short label
+ * the dataset gives its field, scrolled to the screen's middle, and what state
+ * it is drawn in, as JSON; null where there is none. */
+function readRow(short: string): string {
+  const row = [...document.querySelectorAll<HTMLElement>("#decl-list > div")]
     .find((r) => (r.querySelector("dt")?.textContent || "").trim() === short);
-  if (!row) return null;
+  if (!row) return JSON.stringify(null);
   row.scrollIntoView({ block: "center" });
   const box = row.getBoundingClientRect();
-  return {
+  return JSON.stringify({
     field: row.dataset.field ?? null,
     editable: row.getAttribute("role") === "button" && row.tabIndex === 0,
     pencil: !!row.querySelector(".pen"),
     unanswered: !!row.querySelector(".pending"),
     at: { x: Math.round(box.left + box.width / 2), y: Math.round(box.top + box.height / 2) },
-  };
-})())`;
+  });
+}
 
 interface Row { field: string | null; editable: boolean; pencil: boolean; unanswered: boolean; at: { x: number; y: number } }
 
+/** The declared panel's row for a field, and what state it is drawn in. */
 const rowOf = async (page: BrowserPage, field: string): Promise<Row | null> =>
-  JSON.parse(await page.evaluate(ROW_OF(field))) as Row | null;
+  JSON.parse(await page.evaluate(`(${readRow})(${JSON.stringify(shortLabelOf(ds, field))})`)) as Row | null;
 
 /** The precondition, then the state: the row is in the panel, answered, with
  * its pencil, and it is the row the page wires as an edit point. */
@@ -102,13 +106,17 @@ function expectAnsweredWithItsPencil(row: Row | null, field: string): asserts ro
 /** The question on the screen once the pencil has drawn one other than
  * `before`, read when it is there and the page is at rest. */
 async function questionAfter(page: BrowserPage, before: string): Promise<string> {
-  const drawn = `(() => { const now = ${QLABEL}; return now && now !== ${JSON.stringify(before)} ? now : false; })()`;
-  const now = String(await page.waitUntil(drawn, `the pencil drew no question other than "${before}"`));
+  await page.waitUntil(`${QLABEL} !== "" && ${QLABEL} !== ${JSON.stringify(before)}`,
+    `the pencil drew no question other than "${before}"`);
   await page.waitUntilAtRest();
-  return now;
+  return (await new InterviewPage({ page }).readScreen()).question;
 }
 
-const CHOSEN = '(() => { const o = document.querySelector("#main .qcard .opt.sel"); return o ? o.dataset.value : ""; })()';
+/** In the page: the answer the question on the screen holds as chosen, or "" where it holds none. */
+function readChosen(): string {
+  const chosen = document.querySelector<HTMLElement>("#main .qcard .opt.sel");
+  return chosen ? (chosen.dataset.value ?? "") : "";
+}
 
 const WALKS = [
   { field: "funds_eur_month", destination: "de" },
@@ -122,7 +130,7 @@ describe.skipIf(skipped !== null)("a money row answered with its open unknown is
       const seen = await withSite(async (site) => {
         const { page } = site;
         await walkToUnknown(site, readerFor(destination), field);
-        return { recorded: await page.evaluate(RECORDED(field)), row: await rowOf(page, field) };
+        return { recorded: await recordedFor(page, field), row: await rowOf(page, field) };
       }, DESK) as { recorded: string; row: Row | null };
       expect(seen.recorded, `${field} was not recorded as the open unknown`).toBe(UNKNOWN);
       expectAnsweredWithItsPencil(seen.row, field);
@@ -137,14 +145,15 @@ describe.skipIf(skipped !== null)("a money row answered with its open unknown is
         // A row with no pencil is no edit point: the case stops on its
         // state rather than on a click that reopens nothing.
         if (!before?.pencil) return { before, reopened: "", chosen: "", recorded: "", after: null };
-        const next = await page.evaluate(QLABEL);
+        const interview = new InterviewPage(site);
+        const { question: next } = await interview.readScreen();
         await page.clickAt(before.at.x, before.at.y);
         const reopened = await questionAfter(page, next);
-        const chosen = await page.evaluate(CHOSEN);
-        await answer(page, field, band);
+        const chosen = await page.evaluate(`(${readChosen})()`);
+        await interview.answer(field, band);
         return {
           before, reopened, chosen,
-          recorded: await page.evaluate(RECORDED(field)), after: await rowOf(page, field),
+          recorded: await recordedFor(page, field), after: await rowOf(page, field),
         };
       }, DESK) as { before: Row | null; reopened: string; chosen: string; recorded: string; after: Row | null };
       expectAnsweredWithItsPencil(seen.before, field);

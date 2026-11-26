@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import rawDataset from "permit-rulebook-data/data/dataset.json";
+import { deriveQuestions, type Dataset } from "permit-rulebook-data";
 import { RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { holdLineHtml } from "../src/lib/question.js";
-import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { answerWith, openAtRest, withSite, skipReason } from "./browser-walk.js";
+import { InterviewPage } from "../scripts/interview-page.mjs";
+import { withSite, skipReason } from "./browser-walk.js";
 import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 
 /**
@@ -31,6 +33,7 @@ import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
  * held back where the hold state is the question, and with the platform's
  * scrollbars drawn where the gutter is.
  */
+const ds = rawDataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 /** Why the built page cannot be read here, or null when it can. */
 const noBuild = whyNoBuild("dist/");
@@ -56,40 +59,35 @@ const finished = {
   occupation_shortage: "yes", recognition_de: "recognized", experience_5y: "lt2", experience_7y: "lt3",
   salary_eur_year: "band_4", german: "none", english: "none", funds_eur_month: "band_0",
 };
-/** Seeded the way the product writes it: a record that reached a verdict
- * carries the bit that says so (s22). */
-const SEED_FINISHED = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
-  JSON.stringify(serialize(finished, Object.keys(finished), true))})`;
-
 /**
- * What is on the screen, read as a reader reads it: which elements have any
- * room on the page, where the eyebrow and the line are, and what — if
- * anything — is painted below the line. An element "takes room" when the
- * browser has a box for it at all: `display: none` has none, `visibility:
- * hidden` still does, and the difference is the whole of point 1.
+ * In the page: what is on the screen, read as a reader reads it: which
+ * elements have any room on the page, where the eyebrow and the line are, and
+ * what — if anything — is painted below the line, as JSON. An element "takes
+ * room" when the browser has a box for it at all: `display: none` has none,
+ * `visibility: hidden` still does, and the difference is the whole of point 1.
  */
-const HOLD = `JSON.stringify((() => {
-  const head = document.querySelector(".site-head");
-  const brand = document.querySelector(".masthead-with-stamps .brand");
+function readHold(): string {
+  const head = document.querySelector(".site-head")!;
+  const brand = document.querySelector(".masthead-with-stamps .brand")!;
   // Painted, as the browser knows it: a box, no display or visibility
   // hiding it, and no closed <details> above it — Chrome lays the header's
   // folded country list out under content-visibility: hidden, so its items
   // have boxes on the page a reader cannot see.
-  const shown = (el) => !!el && el.getClientRects().length > 0
+  const shown = (el: Element | null) => !!el && el.getClientRects().length > 0
     && el.checkVisibility({ visibilityProperty: true });
   const lines = [...document.querySelectorAll(".stand-in")].filter(shown);
   const line = lines[0] ?? null;
-  const box = (el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, height: r.height }; };
-  const takesRoom = (sel) => { const el = document.querySelector(sel); return !!el && el.getClientRects().length > 0; };
+  const box = (el: Element) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, height: r.height }; };
+  const takesRoom = (sel: string) => { const el = document.querySelector(sel); return !!el && el.getClientRects().length > 0; };
   // Everything visible whose top is below the line's bottom — the line's
   // own ancestors start above it, so they are not in this list.
   const below = !line ? [] : [...document.body.querySelectorAll("*")]
     .filter((el) => shown(el) && !el.classList.contains("visually-hidden"))
     .filter((el) => { const r = el.getBoundingClientRect(); return r.height > 0 && r.top >= box(line).bottom - 1; })
     .map((el) => el.id ? "#" + el.id : el.tagName + "." + (el.className || "").split(" ")[0]);
-  return {
+  return JSON.stringify({
     cover: document.documentElement.dataset.cover ?? "",
-    state: document.getElementById("app").dataset.state,
+    state: document.getElementById("app")!.dataset.state,
     headerShown: shown(head),
     brandShown: shown(brand),
     brand: box(brand),
@@ -102,12 +100,15 @@ const HOLD = `JSON.stringify((() => {
       app: takesRoom("#app"), footer: takesRoom("footer.site-foot"),
     },
     headlineShown: shown(document.getElementById("headline")),
-    headline: box(document.getElementById("headline")),
+    headline: box(document.getElementById("headline")!),
     below,
     docHeight: document.documentElement.scrollHeight,
     scrollY: window.scrollY,
-  };
-})())`;
+  });
+}
+
+/** The read of what is on the screen: the expression the walk evaluates. */
+const HOLD = `(${readHold})()`;
 
 interface Hold {
   cover: string;
@@ -169,9 +170,9 @@ describe.skipIf(skipped !== null)("the hold state is one line under the eyebrow 
 
 /** Opens a finished record with the module held, and returns the page read while held and once drawn. */
 async function walkHeldThenDrawn(viewport: { width: number; height: number }, mobile: boolean): Promise<{ held: Hold; drawn: Hold }> {
-  return (await walkSite({ site: { folder: dist, delayJsMs: HELD_MS }, screen: { viewport, mobile } }, async ({ page, url }) => {
-    await page.goto(url("/404.html"));
-    await page.evaluate(SEED_FINISHED);
+  return (await walkSite({ site: { folder: dist, delayJsMs: HELD_MS }, screen: { viewport, mobile } }, async (site) => {
+    const { page, url } = site;
+    await new InterviewPage(site).seed(finished, { done: true });
     await page.navigate(url("/"));
     // The build's paint, before the module runs: the cover on, the
     // document parsed, every stylesheet in.
@@ -222,24 +223,28 @@ function expectDrawnVerdictUnderTheEyebrow(d: Hold): void {
 }
 
 /**
- * Where the focus is, and what the live region says — read after the
- * gesture, or after the arrival, the way s20 reads them.
+ * In the page: where the focus is, and what the live region says — read after
+ * the gesture, or after the arrival, the way s20 reads them — as JSON.
  */
-const FOCUS = `JSON.stringify((() => {
+function readFocus(): string {
   const active = document.activeElement;
-  const h1 = document.getElementById("headline");
-  return {
-    state: document.getElementById("app").dataset.state,
-    active: !active ? "" : active.id ? "#" + active.id : active.tagName.toLowerCase(),
+  const h1 = document.getElementById("headline")!;
+  const nameOf = (el: Element) => (el.id ? "#" + el.id : el.tagName.toLowerCase());
+  return JSON.stringify({
+    state: document.getElementById("app")!.dataset.state,
+    active: active ? nameOf(active) : "",
     headline: (h1.textContent || "").trim(),
     tabindex: h1.getAttribute("tabindex"),
-    live: (document.getElementById("cstatus").textContent || "").trim(),
+    live: (document.getElementById("cstatus")!.textContent || "").trim(),
     scrollY: Math.round(window.scrollY),
     h1Top: Math.round(h1.getBoundingClientRect().top),
     h1Bottom: Math.round(h1.getBoundingClientRect().bottom),
     viewport: window.innerHeight,
-  };
-})())`;
+  });
+}
+
+/** The read of the focus and the live region: the expression a case evaluates. */
+const FOCUS = `(${readFocus})()`;
 
 interface Focus {
   state: string;
@@ -253,21 +258,19 @@ interface Focus {
   viewport: number;
 }
 
-/** s20's walk: on the verdict, open the ledger, tap the salary row's ✎,
- * answer another band. The row is found by its field, never by its words. */
-const TAP_SALARY = `(() => {
-  document.getElementById("decl").open = true;
-  const row = document.querySelector('#decl-list [data-field="salary_eur_year"]');
+/** In the page: s20's walk, on the verdict: the ledger opened, and the
+ * salary row's ✎ tapped. The row is found by its field, never by its words. */
+function tapSalary(): string {
+  (document.getElementById("decl") as HTMLDetailsElement).open = true;
+  const row = document.querySelector<HTMLElement>('#decl-list [data-field="salary_eur_year"]')!;
   row.scrollIntoView({ block: "center" });
   row.click();
   return "tapped";
-})()`;
-// The walk's last step: a band other than the one held, so the verdict it returns to is a new one.
-const ANSWER_ANOTHER_BAND = `(() => {
-  const other = document.querySelector("#main .qcard .opt:not(.sel)");
-  other.click();
-  return other.textContent.trim();
-})()`;
+}
+/** The walk's last step: the first band the salary question offers other than the one held, so the verdict it
+ * returns to is a new one. */
+const ANOTHER_BAND = deriveQuestions(ds).find((q) => q.field === "salary_eur_year")!
+  .options.find((o) => o.value !== finished.salary_eur_year)!.value;
 
 describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
   for (const [name, viewport, mobile] of [
@@ -278,17 +281,18 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
       await expectCorrectionFocusesTheHeadline(viewport, mobile);
     }, 180000);
 
-  for (const [name, path, seed] of [
-    ["a cold /", "/", "localStorage.clear()"],
-    ["a country page's link", "/?country=fr", "localStorage.clear()"],
-    ["a finished record", "/", SEED_FINISHED],
+  for (const [name, path, record] of [
+    ["a cold /", "/", null],
+    ["a country page's link", "/?country=fr", null],
+    ["a finished record", "/", finished],
   ] as const)
     it(`a first arrival takes no focus: ${name}`, async () => {
-      const seen = await withSite(async ({ page, url }) => {
-        await page.goto(url("/404.html"));
-        await page.evaluate(seed);
-        await openAtRest(page, url(path));
-        return { at: JSON.parse(await page.evaluate(FOCUS)) as Focus };
+      const seen = await withSite(async (site) => {
+        const interview = new InterviewPage(site);
+        if (record) await interview.seed(record, { done: true });
+        await interview.open(path);
+        await site.page.waitUntilAtRest();
+        return { at: JSON.parse(await site.page.evaluate(FOCUS)) as Focus };
       }, PHONE);
       expect(seen.at.active, `the arrival focused ${seen.at.active}`).toBe("body");
     }, 180000);
@@ -296,15 +300,17 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
 
 /** Checks that after s20's correction the headline holds the focus, says what the live region says, and is on the screen. */
 async function expectCorrectionFocusesTheHeadline(viewport: { width: number; height: number }, mobile: boolean): Promise<void> {
-  const seen = await withSite(async ({ page, url }) => {
-    await page.goto(url("/404.html"));
-    await page.evaluate(SEED_FINISHED);
-    await openAtRest(page, url("/"));
+  const seen = await withSite(async (site) => {
+    const { page } = site;
+    const interview = new InterviewPage(site);
+    await interview.seed(finished, { done: true });
+    await interview.open();
+    await page.waitUntilAtRest();
     const arrived = JSON.parse(await page.evaluate(FOCUS)) as Focus;
-    await page.evaluate(TAP_SALARY);
+    await page.evaluate(`(${tapSalary})()`);
     await page.waitUntilAtRest();
     const onQuestion = JSON.parse(await page.evaluate(FOCUS)) as Focus;
-    await answerWith(page, ANSWER_ANOTHER_BAND);
+    await interview.answer("salary_eur_year", ANOTHER_BAND);
     const back = JSON.parse(await page.evaluate(FOCUS)) as Focus;
     return { arrived, onQuestion, back };
   }, { viewport, mobile });
@@ -367,14 +373,15 @@ describe.skipIf(skipped !== null)("the gutter is stable (point 3)", () => {
     ["1280x1400, where the question page fits without a scrollbar", { width: 1280, height: 1400 }],
   ] as const)
     it(`at ${name}: the column's left edge is the same before and after the verdict`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile: false }, scrollbars: true }, async ({ page, url }) => {
-        await page.goto(url("/404.html"));
-        await page.evaluate("localStorage.clear()");
-        await openAtRest(page, url("/"));
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile: false }, scrollbars: true }, async (site) => {
+        const { page } = site;
+        const interview = new InterviewPage(site);
+        await interview.open();
+        await page.waitUntilAtRest();
         const question = JSON.parse(await page.evaluate(EDGE)) as Edge;
-        await page.goto(url("/404.html"));
-        await page.evaluate(SEED_FINISHED);
-        await openAtRest(page, url("/"));
+        await interview.seed(finished, { done: true });
+        await interview.open();
+        await page.waitUntilAtRest();
         const verdict = JSON.parse(await page.evaluate(EDGE)) as Edge;
         return { question, verdict };
       })).returned;
