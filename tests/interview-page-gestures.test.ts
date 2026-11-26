@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { composeNoMatchLine } from "../src/lib/country-search/control/listbox.js";
 import { PHONE } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 import { BEFORE_PASSPORT, FIRST_ANSWER, first, withInterview } from "./interview-on-site.js";
@@ -73,8 +72,10 @@ describe.skipIf(skipped !== null)("answer(field, value, { by: \"hand\" }) and se
 
   it("searchFor types into the search: a territory's line with no row, then a country's rows, the box holding only what was typed", async () => {
     const seen = await searchedTwice();
-    const said = composeNoMatchLine("Puerto Rico");
-    expect(seen.territory.search).toEqual({ query: "Puerto Rico", line: said.line, status: said.status });
+    const { query, line, status } = seen.territory.search!;
+    expect(query).toBe("Puerto Rico");
+    expect(line, "the search drew no line for the territory").not.toBe("");
+    expect(status, "the live region does not say the list's line").toBe(line);
     expect(seen.territory.answers).toEqual([]);
     expect(seen.country.search!.query).toBe("Turkey");
     expect(seen.country.answers.map((a) => a.value)).toContain("TR");

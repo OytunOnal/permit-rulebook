@@ -4771,11 +4771,6 @@
   },
   {
    "from": "tests/interview-page-gestures.test.ts",
-   "to": "src/lib/country-search/control/listbox.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/interview-page-gestures.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
@@ -12620,5 +12615,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "0b768bc078c50c2f3b780acb08a6ad4bf302062160012c3fe0fe2a8e045f3bdf"
+ "digest": "04927be780ec48f7f6a327ddd162d03c8546ed6abc1de9daf5f2e6f1b4f45845"
 }
