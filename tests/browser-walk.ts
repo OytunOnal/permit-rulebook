@@ -2,7 +2,6 @@ import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, fillRouteSlots, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
-import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { chromePath, walkSite, type BrowserPage, type PageOnSite, type Screen } from "../scripts/browser/browser.mjs";
 import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { whyNoBuild } from "./why-no-build.js";
@@ -88,24 +87,6 @@ export async function evaluateAtRest(page: GesturedPage, expression: string): Pr
   return value;
 }
 
-/** An answer, tapped once the card's beat is over, returned once the page is at rest. */
-export async function answerWith(page: GesturedPage, expression: string): Promise<string> {
-  await waitUntilPastTheBeat(page);
-  return evaluateAtRest(page, expression);
-}
-
-/** In the page: the label of the question on the screen, or "" where none is. */
-function readQuestionLabel(): string {
-  const label = document.querySelector("#main .qcard .qlabel");
-  return label ? (label.textContent ?? "").trim() : "";
-}
-
-/** The label of the question on the screen, or "" where none is: the expression a case evaluates or writes into
- * its own probe. */
-export const QLABEL = `(${readQuestionLabel})()`;
-/** Which screen the interview is on. */
-const STATE = 'document.getElementById("app").dataset.state';
-
 /** A band in the middle of a money field's ladder, for a reader who knows. */
 export const middleBandOf = (field: string): string => {
   const bands = deriveBands(ds, field);
@@ -117,50 +98,15 @@ export const topBandOf = (field: string): string => {
   return bands[bands.length - 1]!.id;
 };
 
-/** The screen as a reader tells one from the next: which screen, and its question. */
-export const SCREEN_SHOWN = `${STATE} + " " + ${QLABEL}`;
-
 /** The page as an answer drives it: a gesture's page, the address it opens, and the reader's own gestures
  * `InterviewPage` may make on it. */
 type AnsweringPage = GesturedPage & Pick<BrowserPage, "goto" | "tapOn" | "type" | "pressEnter">;
-
-/**
- * Answers the question on the screen by `pickExpression` once its beat is
- * over, and returns once the screen has moved on and the page is at rest.
- * `pickExpression` says "opt" or "row" for what it tapped, or why it tapped
- * nothing. A pick that takes moves the screen in its own task, so a screen
- * still where it was is a refused pick. A refused answer throws, named by
- * `what`.
- */
-export async function answerOnce(page: AnsweringPage, pickExpression: string, what: string): Promise<void> {
-  await waitUntilPastTheBeat(page);
-  const interview = new InterviewPage({ page });
-  const before = await interview.readScreen();
-  const how = await page.evaluate(pickExpression);
-  if (how !== "opt" && how !== "row") throw new Error(`${what}: ${how}`);
-  const after = await interview.readScreen();
-  const isStill = after.screen === before.screen && after.question === before.question;
-  if (isStill) throw new Error(`${what}: the tap was refused after the beat`);
-  await page.waitUntilAtRest();
-}
 
 /** Answers the question on the screen with `value` once its beat is over,
  * and returns once the screen has moved on and the page is at rest. */
 export async function answer(page: AnsweringPage, field: string, value: string): Promise<void> {
   await new InterviewPage({ page }).answer(field, value);
 }
-
-/** In the page: "Turkey" typed into the passport search, as its `input` event commits it, and the first row it
- * draws picked. */
-function pickTurkey(): void {
-  const search = document.querySelector<HTMLInputElement>("#cfilter")!;
-  search.value = "Turkey";
-  search.dispatchEvent(new Event("input", { bubbles: true }));
-  document.querySelector<HTMLElement>(".clist [role=option]")!.click();
-}
-
-/** "Turkey" picked on the passport search: the expression a case answers with. */
-export const PICK_TURKEY = `(${pickTurkey})()`;
 
 /** The field of the question on the screen, from its label as the card draws
  * it: the first words on the card, glossed on the card's own memory (#156),
@@ -171,12 +117,6 @@ export async function fieldOnScreen(page: BrowserPage): Promise<string> {
   if (!field) throw new Error(`no field for the question "${label}"`);
   return field;
 }
-
-/** The script that puts a record of `answers` on the device, asked in the
- * order `history` gives (the answers' own order by default), as the page
- * writes one. */
-export const recordSeedScript = (answers: Profile, history: string[] = Object.keys(answers)): string =>
-  `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(serialize(answers, history))})`;
 
 /** The interview's first screen, with nothing on the record. */
 export async function openCold(site: PageOnSite): Promise<void> {

@@ -3646,11 +3646,6 @@
   },
   {
    "from": "tests/browser-walk.ts",
-   "to": "src/lib/record.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/browser-walk.ts",
    "to": "tests/why-no-build.ts",
    "kind": "dependency"
   },
@@ -6975,11 +6970,6 @@
    "kind": "type-only"
   },
   {
-   "from": "tests/seed-finished-record.ts",
-   "to": "tests/browser-walk.ts",
-   "kind": "dependency"
-  },
-  {
    "from": "tests/served-folder.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -8343,6 +8333,61 @@
    },
    {
     "name": "noIndexFile",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "THE_INTERVIEW_MODULE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "THE_RECORDS_TEST",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "THROUGH_INTERVIEW_PAGE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "SPELLED_KEY",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "CARD_SELECTORS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "FUNCTION_BODY_OPENING",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "REFUSED_STRINGS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "RECORD_MODULE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "UNREAD_IMPORT_PATH",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "IMPORT_PATH_UNREAD",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "STRING_PROBE",
     "kind": "const",
     "exported": false
    },
@@ -12595,5 +12640,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "1ab635e8333662cc444ce279d10c298d207fd898918d96b6136b51270cd97504"
+ "digest": "06c9dd26dc77733db3fc69604f6b9b12744ddce33e6ff44a979e4267601b3991"
 }

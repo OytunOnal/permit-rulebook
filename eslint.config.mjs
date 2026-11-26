@@ -171,6 +171,47 @@ const noIndexFile = {
   }),
 };
 
+/** `InterviewPage`, the one place in tests and scripts that knows the record and the question card (#475, Q437). */
+const THE_INTERVIEW_MODULE = "scripts/interview-page/**";
+
+/** The record's unit test, which reads the record's constants on purpose (Q396). */
+const THE_RECORDS_TEST = "tests/record.test.ts";
+
+/** What a refused record or card says to write instead. */
+const THROUGH_INTERVIEW_PAGE =
+  "goes through InterviewPage (scripts/interview-page/interview-page.mjs): seed, open, answer, readScreen, readRecord, clearRecord";
+
+/** The record's storage key, spelled (Q396). */
+const SPELLED_KEY = String.raw`/permit-rulebook\.record\.v1/`;
+/** The question card's selectors (Q396). */
+const CARD_SELECTORS = String.raw`/#cfilter(?![\w-])|\.qcard(?![\w-])|\.qlabel(?![\w-])/`;
+/** A string opening with an arrow or function body: `(() =>`, `((…) =>`, `(async (`, `(function` (Q397, Q415). */
+const FUNCTION_BODY_OPENING = String.raw`/^\s*\((\([^()]*\)\s*=>|async\s*\(|function\b)/`;
+
+/** Each refused string, in a literal and in a template, with what it says. */
+const REFUSED_STRINGS = [
+  [SPELLED_KEY, `the record's storage key ${THROUGH_INTERVIEW_PAGE}`],
+  [CARD_SELECTORS, `the question card's markup ${THROUGH_INTERVIEW_PAGE}`],
+].flatMap(([pattern, message]) => [
+  { selector: `Literal[value=${pattern}]`, message },
+  { selector: `TemplateElement[value.raw=${pattern}]`, message },
+]);
+
+/** The record module's path as an `import()` names it; a selector's pattern cannot hold a slash, so it is written `\x2f` (Q443). */
+const RECORD_MODULE = String.raw`/(^|\x2f)src\x2flib\x2frecord(\.[jt]s)?$/`;
+
+/** An `import()` whose path is not written out: a template with an expression, or any other value (Q445). */
+const UNREAD_IMPORT_PATH =
+  'ImportExpression:not([source.type="Literal"]):not([source.type="TemplateLiteral"][source.expressions.length=0])';
+
+/** What a refused `import()` of an unwritten path says instead. */
+const IMPORT_PATH_UNREAD =
+  "an import() whose path is not a plain string: write the path out, so the lint can read what it imports";
+
+/** A probe written as a string: the lint cannot read inside it. */
+const STRING_PROBE =
+  "an in-page probe written as a string: write it as a real function and serialise it into the page, `(${fn})(args)`";
+
 /** @type {import("eslint").Linter.Config[]} */
 export default [
   { ignores: IGNORED },
@@ -210,5 +251,30 @@ export default [
     files: FILES_NAMED_FOR_THEIR_EXPORT,
     plugins: { names: { rules: { "no-index-file": noIndexFile } } },
     rules: { "names/no-index-file": "error" },
+  },
+  // Tests and scripts reach the record and the question card only through InterviewPage; src/ spells its own markup.
+  {
+    files: ["tests/**", "scripts/**"],
+    ignores: [THE_INTERVIEW_MODULE, THE_RECORDS_TEST],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [{
+          regex: String.raw`(^|/)src/lib/record(\.[jt]s)?$`,
+          importNames: ["STORAGE_KEY", "RECORD_VERSION"],
+          message: `the record is built and read ${THROUGH_INTERVIEW_PAGE}`,
+        }],
+      }],
+      "no-restricted-syntax": ["error",
+        ...REFUSED_STRINGS,
+        { selector: `ImportExpression[source.value=${RECORD_MODULE}]`, message: `the record is built and read ${THROUGH_INTERVIEW_PAGE}` },
+        {
+          selector: `ImportExpression > TemplateLiteral[expressions.length=0] > TemplateElement[value.raw=${RECORD_MODULE}]`,
+          message: `the record is built and read ${THROUGH_INTERVIEW_PAGE}`,
+        },
+        { selector: UNREAD_IMPORT_PATH, message: IMPORT_PATH_UNREAD },
+        { selector: `Literal[value=${FUNCTION_BODY_OPENING}]`, message: STRING_PROBE },
+        { selector: `TemplateLiteral[quasis.0.value.raw=${FUNCTION_BODY_OPENING}]`, message: STRING_PROBE },
+      ],
+    },
   },
 ];
