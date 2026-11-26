@@ -231,14 +231,6 @@
       "count": 1
     }
   },
-  "tests/beat.test.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
   "tests/card.test.ts": {
     "max-lines-per-function": {
       "count": 4
