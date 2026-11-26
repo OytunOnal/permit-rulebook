@@ -4691,18 +4691,23 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/interview-page.test.ts",
+   "from": "tests/interview-on-site.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
-   "from": "tests/interview-page.test.ts",
+   "from": "tests/interview-on-site.ts",
    "to": "scripts/interview-page.mjs",
    "kind": "dependency"
   },
   {
    "from": "tests/interview-page.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page.test.ts",
+   "to": "tests/interview-on-site.ts",
    "kind": "dependency"
   },
   {
@@ -8816,8 +8821,38 @@
     "exported": false
    },
    {
+    "name": "textOfInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readAskedForInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readAnswerInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readCardWordsInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "readScreenInPage",
     "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "SCREEN_READERS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "SCREEN_NOW",
+    "kind": "const",
     "exported": false
    },
    {
@@ -12532,5 +12567,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "c8787e7c6c9df7617c49ab0b11673eeae6294421da9fe7b6de1d4bb10659777d"
+ "digest": "f822078cb95c35c9b94340530ef7ec8a9de0fd86c24a5c0adcafe96710fd7150"
 }

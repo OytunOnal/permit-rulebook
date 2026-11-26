@@ -1,10 +1,6 @@
-import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import rawDataset from "permit-rulebook-data/data/dataset.json";
-import { remainingQuestions, type Dataset, type Profile } from "permit-rulebook-data";
-import { DESK, walkSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
+import { FIRST_ANSWER, first, withInterview } from "./interview-on-site.js";
 
 /**
  * `InterviewPage` on the built site (#475, seam 1): a record seeded, the
@@ -13,20 +9,6 @@ import { skipReason, warnNotWalked } from "./browser-walk.js";
  */
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE INTERVIEW PAGE", skipped);
-
-const ds = rawDataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
-
-/** The question a cold interview asks first. */
-const first = remainingQuestions(ds, {})[0]!;
-/** The first answer that question offers, as a record holds it: a real answer the dataset gives. */
-const FIRST_ANSWER: Profile = { [first.field]: first.options[0]!.value };
-
-/** Walks the built site at the desk, handing `run` an interview on its page. */
-async function withInterview<T>(run: (interview: InterviewPage) => Promise<T>): Promise<T> {
-  const { returned } = await walkSite({ site: { folder: dist }, screen: DESK }, (site) => run(new InterviewPage(site)));
-  return returned;
-}
 
 /** The screen answering the first question from a cold start reaches, and the one a record of that answer opens on. */
 const answeredAndSeeded = () => withInterview(async (interview) => {
