@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
 import { answerWith, skipReason } from "./browser-walk.js";
 import { expectNothingLeft } from "./wire.js";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
   PHONE, TRAFFIC_COUNTER_REPORTS, TRAFFIC_COUNTER_SCRIPT, walkSite, type PageOnSite, type SentRequest,
 } from "../scripts/browser/browser.mjs";

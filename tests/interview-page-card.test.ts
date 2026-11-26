@@ -5,7 +5,7 @@ import { EDIT_LINE, countriesToSearchLine, questionCounter } from "../src/lib/co
 import { arrivalOf } from "../src/lib/scope.js";
 import { url } from "../src/lib/site.js";
 import { DESK } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { BEFORE_PASSPORT, FIRST_ANSWER, ds, first, labelOf, withInterview } from "./interview-on-site.js";
 import { plainTextOf } from "./reader-pages.js";

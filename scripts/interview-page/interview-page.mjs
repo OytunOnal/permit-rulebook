@@ -1,8 +1,8 @@
 // @level infrastructure
 import rawDataset from "permit-rulebook-data/data/dataset.json" with { type: "json" };
 import { fieldOptions } from "permit-rulebook-data";
-import { STORAGE_KEY, serialize } from "../src/lib/record.ts";
-import { questionCardProbes } from "./question-card-probes.mjs";
+import { STORAGE_KEY, serialize } from "../../src/lib/record.ts";
+import { questionCardProbes } from "./probes/question-card-probes.mjs";
 
 /**
  * The interview as tests and scripts drive it: `new InterviewPage(site)` takes
@@ -13,7 +13,7 @@ import { questionCardProbes } from "./question-card-probes.mjs";
  * probes `question-card-probes.mjs` holds for it, so a change to any of them
  * is made there alone.
  *
- * @typedef {import("./browser/browser.mjs").BrowserPage} BrowserPage
+ * @typedef {import("../browser/browser.mjs").BrowserPage} BrowserPage
  * @typedef {import("permit-rulebook-data").Profile} Profile
  */
 

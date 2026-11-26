@@ -4,7 +4,7 @@ import { optionMeans, type Dataset, type Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, stepsIn, verdictFor } from "./verdict-cards.js";
 import { withSite, skipReason } from "./browser-walk.js";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 
 /**
  * The human's walk, 2026-09-08.

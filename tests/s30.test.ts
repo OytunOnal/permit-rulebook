@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, type Dataset, type Profile } from "permit-rulebook-data";
 import { DESK, PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { QLABEL, answerWith, evaluateAtRest, fieldOnScreen, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { TAP_FIRST_AND_READ, expectLanded, where, type Where } from "./question-landing.js";
 

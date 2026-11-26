@@ -30,7 +30,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PHONE, walkSite } from "./browser/browser.mjs";
 import { startDev } from "./dev-server.mjs";
-import { InterviewPage } from "./interview-page.mjs";
+import { InterviewPage } from "./interview-page/interview-page.mjs";
 import { siteBase } from "./site-base.mjs";
 import { PAGE_LOAD_KINDS, SMOKE_REASONS, SmokeRefusal } from "./smoke-reasons.mjs";
 

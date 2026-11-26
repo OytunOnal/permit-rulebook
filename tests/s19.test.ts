@@ -22,7 +22,7 @@ import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
 } from "./verdict-cards.js";
 import { withSite, skipReason } from "./browser-walk.js";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { marksOn, situationScreen, unscoredOf } from "./situation-marks.js";
 import { watchStateAt } from "./watch-state-at.js";
 

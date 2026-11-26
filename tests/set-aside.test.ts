@@ -4,7 +4,7 @@ import { remainingQuestions, shortLabelOf, type Dataset, type Profile } from "pe
 import { EDIT_LINE } from "../src/lib/copy/interview.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { skipReason, waitUntilPastTheBeat, warnNotWalked, withSite } from "./browser-walk.js";
 import { shiftScoreSince } from "./layout-shifts.js";
 

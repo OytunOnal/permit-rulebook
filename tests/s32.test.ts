@@ -6,7 +6,7 @@ import {
 } from "permit-rulebook-data";
 import { NOT_CHECKED_HEADING, STATUS_LABEL, askedHeading } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import {
   PAINTED_AS_COMPOSED, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, placed, verdictOn, withoutGlosses,
 } from "./verdict-cards.js";

@@ -47,7 +47,7 @@ import { PHONE, walkSite } from "./browser/browser.mjs";
 // The interview's own door, not a copy of its record: a seed written by hand
 // goes stale the day the format moves, and this script would then measure a
 // screen the reader never sees.
-import { InterviewPage } from "./interview-page.mjs";
+import { InterviewPage } from "./interview-page/interview-page.mjs";
 import {
   DUTCH_OFFER_ON_FOUR, FRENCH_OFFER_NO_STEPS, FRENCH_OFFER_TWO_STEPS, GERMAN_OFFER_ON_FOUR, GERMAN_OFFER_ON_ONE,
 } from "./seeded-results.mjs";

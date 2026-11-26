@@ -1,7 +1,7 @@
 import { expect } from "vitest";
 import { WIDE_QUERY } from "../src/lib/first-paint.js";
 import type { BrowserPage } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 
 /**
  * Where the reader stands as s30 reads it — the card's top against the

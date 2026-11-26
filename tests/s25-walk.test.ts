@@ -5,7 +5,7 @@ import { resumedLine } from "../src/lib/copy/interview.js";
 import { glossed } from "../src/lib/gloss.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
 import { type PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { withSite, skipReason } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, paintedAsComposedScript, placed, verdictFor,

@@ -6,7 +6,7 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, type Dataset } from "permit-rulebook-data";
 import { RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { holdLineHtml } from "../src/lib/question.js";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { withSite, skipReason } from "./browser-walk.js";
 import { warnBuildNotTested, whyNoBuild } from "./why-no-build.js";
 

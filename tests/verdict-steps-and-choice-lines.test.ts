@@ -6,7 +6,7 @@ import {
   stepsThatWouldUnlockMore,
 } from "../src/lib/copy/verdict.js";
 import type { Verdict } from "../src/lib/verdict/verdict.js";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import {
   DUTCH_OFFER_ON_FOUR, FRENCH_OFFER_NO_STEPS, FRENCH_OFFER_TWO_STEPS, GERMAN_OFFER_ON_FOUR,

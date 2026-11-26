@@ -9,7 +9,7 @@ import {
 } from "./verdict-cards.js";
 import { expectNothingLeft } from "./wire.js";
 import { walkSite, type BrowserPage, type PageOnSite, type SentRequest } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { fieldOnScreen, skipReason } from "./browser-walk.js";
 import { WALKED_TO_A_GERMAN_ROUTE, WALKED_TO_NOTHING_OPEN } from "./s26-walks.js";
 

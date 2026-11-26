@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset, Profile } from "permit-rulebook-data";
 import type { PageOnSite } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 import { skipReason, withSite } from "./browser-walk.js";
 import { FALLBACK_STACK } from "./fallback-stack.js";
 import { WIDE_FROM_PX } from "../src/lib/first-paint.js";

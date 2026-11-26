@@ -16,7 +16,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { walkSite } from "./browser/browser.mjs";
-import { InterviewPage } from "./interview-page.mjs";
+import { InterviewPage } from "./interview-page/interview-page.mjs";
 
 const root = dirname(fileURLToPath(new URL("../package.json", import.meta.url)));
 

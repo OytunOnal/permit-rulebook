@@ -2,7 +2,7 @@ import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { remainingQuestions, type Dataset, type Profile } from "permit-rulebook-data";
 import { DESK, walkSite, type BrowserPage, type Screen } from "../scripts/browser/browser.mjs";
-import { InterviewPage } from "../scripts/interview-page.mjs";
+import { InterviewPage } from "../scripts/interview-page/interview-page.mjs";
 
 /**
  * What `InterviewPage`'s suites share: the built site walked with an
