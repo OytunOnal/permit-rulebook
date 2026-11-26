@@ -59,6 +59,10 @@ const REFUSED: readonly (readonly [string, (filePath: string) => string])[] = [
   ["a string opening with ((x) =>", () => 'export const probe = "((link) => link.href)(document.links[0])";'],
   ["a template opening with (async (", () => "export const probe = `(async () => document.title)()`;"],
   ["a string opening with (function", () => 'export const probe = "(function () { return document.title; })()";'],
+  ["a dynamic import of the record module", (filePath) => {
+    const up = "../".repeat(filePath.split("/").length - 1);
+    return `export const load = () => import("${up}src/lib/record.${filePath.endsWith(".ts") ? "js" : "ts"}");`;
+  }],
 ];
 
 describe("the guard refuses, in a test file and in a script file", () => {
