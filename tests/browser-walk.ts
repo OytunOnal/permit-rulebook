@@ -120,8 +120,9 @@ export const topBandOf = (field: string): string => {
 /** The screen as a reader tells one from the next: which screen, and its question. */
 export const SCREEN_SHOWN = `${STATE} + " " + ${QLABEL}`;
 
-/** The page as an answer drives it: a gesture's page, and the address it opens. */
-type AnsweringPage = GesturedPage & Pick<BrowserPage, "goto">;
+/** The page as an answer drives it: a gesture's page, the address it opens, and the reader's own gestures
+ * `InterviewPage` may make on it. */
+type AnsweringPage = GesturedPage & Pick<BrowserPage, "goto" | "tapOn" | "type" | "pressEnter">;
 
 /**
  * Answers the question on the screen by `pickExpression` once its beat is
