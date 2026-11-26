@@ -52,6 +52,9 @@ const answeredByHand = () => withInterview(async (interview) => {
   return { unknownGesture, tapped, typed: await interview.readRecord() };
 }, PHONE);
 
+// What the search's list says to "Puerto Rico", a territory with no passport of its own, read once from the built page.
+const PUERTO_RICO_LINE = "Puerto Rico is not on this list: people from Puerto Rico hold a passport of the United States. Choose United States.";
+
 /** The search for a territory with no passport of its own, then for a country, each as the screen shows it. */
 const searchedTwice = () => withInterview(async (interview) => {
   await interview.seed(BEFORE_PASSPORT);
@@ -74,7 +77,7 @@ describe.skipIf(skipped !== null)("answer(field, value, { by: \"hand\" }) and se
     const seen = await searchedTwice();
     const { query, line, status } = seen.territory.search!;
     expect(query).toBe("Puerto Rico");
-    expect(line, "the search drew no line for the territory").not.toBe("");
+    expect(line).toBe(PUERTO_RICO_LINE);
     expect(status, "the live region does not say the list's line").toBe(line);
     expect(seen.territory.answers).toEqual([]);
     expect(seen.country.search!.query).toBe("Turkey");
