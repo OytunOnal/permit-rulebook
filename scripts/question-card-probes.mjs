@@ -158,6 +158,52 @@ function pickInPage(value, searchFor) {
   return "row";
 }
 
+/** In the page: taps the first answer the question on the screen offers, its first button or, on the search, the
+ * first row it lists; says what it tapped and its id, or why it tapped nothing. */
+function pickFirstInPage() {
+  const option = document.querySelector("#main .qcard .opts .opt");
+  if (option) { option.click(); return { how: "opt", value: option.dataset.value }; }
+  const search = document.querySelector("#main .qcard #cfilter");
+  if (!search) return { how: "the screen offered no answer" };
+  if (!document.querySelector("#clist .copt")) {
+    // An untouched search lists no row; one letter, which nearly every country's name holds, lists them.
+    search.value = "a";
+    search.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  const row = document.querySelector("#clist .copt");
+  if (!row) return { how: "the search listed no row" };
+  const { value } = row.dataset;
+  row.click();
+  return { how: "row", value };
+}
+
+/** In the page: `pickFirst` tapped, then, in the same task, before the browser draws a frame, the card's layout as
+ * `readCardLayout` reads it and the caller's `readAlso` (null for none), as JSON. */
+function pickFirstAndReadInPage(pickFirst, readCardLayout, readAlso) {
+  const picked = pickFirst();
+  const read = readAlso === null ? null : readAlso.probe(...readAlso.args);
+  return JSON.stringify({ ...picked, layout: JSON.parse(readCardLayout()), read });
+}
+
+/** In the page: the search's box focused, where it was not, and what it holds selected, so typing replaces it;
+ * false where the screen shows no search. */
+function focusSearchInPage() {
+  const box = document.querySelector("#main .qcard #cfilter");
+  if (!box) return false;
+  if (document.activeElement !== box) box.focus();
+  box.select();
+  return true;
+}
+
+/** In the page: whether the search holds `typed` and its list has drawn for it, a row or its line. */
+function isSearchListedForInPage(typed) {
+  const box = document.querySelector("#main .qcard #cfilter");
+  return box !== null && box.value === typed && document.querySelector("#clist .copt, #clist .cnone") !== null;
+}
+
+// Where the question card is laid out, read in the page, as `readCardLayoutInPage` is handed its reader.
+const CARD_LAYOUT_NOW = `(${readCardLayoutInPage})(${readAskedForBoxInPage})`;
+
 /** Each probe as the expression `InterviewPage` evaluates in the page. */
 export const questionCardProbes = {
   /** The beat in milliseconds. */
@@ -168,7 +214,16 @@ export const questionCardProbes = {
   screenOnceChangedFrom: ({ screen, question }) =>
     `(${readScreenOnceChangedInPage})(${JSON.stringify({ screen, question })}, () => (${readScreenInPage})(${SCREEN_READERS}))`,
   /** Where the question card and its parts sit, and the focus, as JSON. */
-  cardLayoutNow: `(${readCardLayoutInPage})(${readAskedForBoxInPage})`,
+  cardLayoutNow: CARD_LAYOUT_NOW,
+  /** The first answer offered tapped, and read in the same task with `readAtOnce`, a probe and its arguments. */
+  firstPickedAndRead: (readAtOnce) => `(${pickFirstAndReadInPage})(${pickFirstInPage}, () => ${CARD_LAYOUT_NOW}, ${
+    readAtOnce ? `{ probe: ${readAtOnce.probe}, args: ${JSON.stringify(readAtOnce.args ?? [])} }` : "null"})`,
+  /** The search's box focused and its words selected; false where there is no search. */
+  searchFocused: `(${focusSearchInPage})()`,
+  /** Whether the search holds `typed` and has listed for it. */
+  searchListedFor: (typed) => `(${isSearchListedForInPage})(${JSON.stringify(typed)})`,
+  /** Where a real tap lands on the button of `value`. */
+  buttonOf: (value) => `#main .qcard .opt[data-value='${value}']`,
   /** The answer under `point`. */
   answerAt: (point) => `(${readAnswerAtInPage})(${JSON.stringify(point)})`,
   /** The tap of `value` on the question on the screen, or on the search the row `searchFor` finds. */

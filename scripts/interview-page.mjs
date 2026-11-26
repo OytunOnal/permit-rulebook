@@ -22,7 +22,7 @@ import { questionCardProbes } from "./question-card-probes.mjs";
  * which makes the site's address of a path. Without `url` the interview
  * answers and reads the page it is on, and cannot seed or open one.
  *
- * @typedef {{ page: Pick<BrowserPage, "goto" | "evaluate" | "waitUntil" | "waitUntilAtRest">, url?: (path: string) => string }} PageOfInterview
+ * @typedef {{ page: Pick<BrowserPage, "goto" | "evaluate" | "waitUntil" | "waitUntilAtRest" | "tapOn" | "type" | "pressEnter">, url?: (path: string) => string }} PageOfInterview
  */
 
 /**
@@ -175,9 +175,15 @@ export class InterviewPage {
 
   /**
    * Answers the question on the screen, `field`, with `value`, once the
-   * card's beat is over: its button, or on the search the row its name
-   * finds. Returns once the screen has moved on and the page is at rest; a
-   * refused answer throws, naming the field and the value.
+   * card's beat is over, by the gesture the option `by` names:
+   *
+   * - `"script"` (the default): a click dispatched in the page on its
+   *   button, or on the search on the row its name finds;
+   * - `"hand"`: as a reader does, a real tap on its button, or on the search
+   *   its name typed with the keyboard and Enter pressed.
+   *
+   * Returns once the screen has moved on and the page is at rest; a refused
+   * answer throws, naming the field and the value.
    *
    * Where an answer's id comes from: it is `fields[].options[].value` in the
    * data package's `data/dataset.json`; a money question's ids are `band_<i>`,
@@ -186,14 +192,70 @@ export class InterviewPage {
    *
    * @param {string} field
    * @param {string} value
+   * @param {{ by?: "script" | "hand" }} [options]
    */
-  async answer(field, value) {
+  async answer(field, value, { by = "script" } = {}) {
+    if (by !== "script" && by !== "hand") throw new Error(`precondition: an answer is made by "script" or "hand", not "${by}"`);
     await this.#waitUntilPastTheBeat();
     const before = await this.readScreen();
-    const how = await this.#page.evaluate(questionCardProbes.pickOf(value, nameOf(field, value)));
+    const how = by === "hand"
+      ? await this.#pickByHand(field, value, before)
+      : await this.#page.evaluate(questionCardProbes.pickOf(value, nameOf(field, value)));
     const refusal = refusalOf(how, before, await this.readScreen());
     if (refusal !== null) throw new Error(`${field} = ${value}: ${refusal}`);
     await this.#page.waitUntilAtRest();
+  }
+
+  /**
+   * Answers the question on the screen with the first answer it offers, once
+   * the card's beat is over: a click dispatched in the page on its first
+   * button, or on the search on the first row it lists once a letter is
+   * typed. With the option `readAtOnce`, a function serialised into the page
+   * (closing over nothing) and its `args`, the page runs it in the tap's own
+   * task, before the browser draws a frame; the card's layout is read in that
+   * task too. Returns the id answered, that layout and what `readAtOnce`
+   * returned (null without it), once the screen has moved on and the page is
+   * at rest; a refused answer throws.
+   *
+   * @param {{ readAtOnce?: { probe: (...args: any[]) => unknown, args?: unknown[] } }} [options]
+   * @returns {Promise<{ value: string, layoutAtOnce: CardLayout | null, readAtOnce: unknown }>}
+   */
+  async answerFirstOffered({ readAtOnce } = {}) {
+    await this.#waitUntilPastTheBeat();
+    const before = await this.readScreen();
+    const { how, value, layout, read } = JSON.parse(await this.#page.evaluate(questionCardProbes.firstPickedAndRead(readAtOnce)));
+    const refusal = refusalOf(how, before, await this.readScreen());
+    if (refusal !== null) throw new Error(`the first answer offered${value ? ` (${value})` : ""}: ${refusal}`);
+    await this.#page.waitUntilAtRest();
+    return { value, layoutAtOnce: layout, readAtOnce: read };
+  }
+
+  /**
+   * Types `text` into the search on the screen with the keyboard, in place of
+   * what its box held, and returns once its list has drawn for it: the rows
+   * it finds, or its line. Throws where the screen shows no search.
+   *
+   * @param {string} text
+   */
+  async searchFor(text) {
+    if (!(await this.#page.evaluate(questionCardProbes.searchFocused))) throw new Error(`searchFor: no search on the screen to type "${text}" into`);
+    await this.#page.type(text);
+    await this.#page.waitUntil(questionCardProbes.searchListedFor(text), `the search listed nothing for "${text}"`);
+  }
+
+  /** A reader's own answer of `value` to `field` on the screen `before` showed: a real tap on its button, or its
+   * name searched for and Enter pressed; says "opt" or "row" for what it answered, or why it answered nothing. */
+  async #pickByHand(field, value, { answers, search }) {
+    if (search !== null) {
+      await this.searchFor(nameOf(field, value));
+      await this.#page.pressEnter();
+      await this.#page.waitUntilAtRest();
+      return "row";
+    }
+    if (!answers.some((a) => a.value === value)) return "no option";
+    await this.#page.tapOn(questionCardProbes.buttonOf(value));
+    await this.#page.waitUntilAtRest();
+    return "opt";
   }
 
   /** Which screen the interview is on, and the question card as a reader sees it; throws, naming the page's

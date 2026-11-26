@@ -4753,6 +4753,16 @@
   },
   {
    "from": "tests/interview-page-gestures.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page-gestures.test.ts",
+   "to": "src/lib/country-search/control/listbox.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page-gestures.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
@@ -9169,6 +9179,31 @@
     "exported": false
    },
    {
+    "name": "pickFirstInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pickFirstAndReadInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "focusSearchInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "isSearchListedForInPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "CARD_LAYOUT_NOW",
+    "kind": "const",
+    "exported": false
+   },
+   {
     "name": "questionCardProbes",
     "kind": "const",
     "exported": true
@@ -12666,5 +12701,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "bc7ab95612b3dd9c76503445719c7f3f4bc1a27dcec507d4a423a236c74e8b16"
+ "digest": "28b941fda29fd811c788fb4fea7520918170f2a0ab4bd0cb503c6840ad2754f4"
 }
