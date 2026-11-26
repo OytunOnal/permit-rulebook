@@ -209,17 +209,17 @@ async function measureAtRest(page, name, kind) {
  * What a drawn screen shows of the interview `interview` drives on `page`:
  * `isResult`, whether it is the result screen; `isAnsweredByNotice`, whether
  * that result is one a notice answers outright; and `questionAskedIfAny`, the
- * question it shows instead, else null.
+ * question it shows instead, its progress line before it, else null.
  */
 async function readDrawnScreen(page, interview) {
-  const { screen, question } = await interview.readScreen();
+  const { screen, question, meta } = await interview.readScreen();
   const { drawsNotice, drawsFeedbackLine } = JSON.parse(await page.evaluate(callInPage(readResultBodyInPage)));
   const isResult = screen === "results";
   return {
     isResult,
     isAnsweredByNotice: isResult && drawsNotice && !drawsFeedbackLine,
     // 120 characters name the question on one failure line; a long label's rest adds nothing.
-    questionAskedIfAny: question === "" ? null : question.slice(0, 120),
+    questionAskedIfAny: question === "" ? null : [meta, question].filter(Boolean).join(" ").slice(0, 120),
   };
 }
 
