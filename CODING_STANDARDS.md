@@ -80,6 +80,11 @@ pull request.
   script reads its words from `data-` attributes the template renders. No
   country name, route name or dataset value inside an inline script.
 - Naming: files and ids are kebab-case.
+- A command's refusal is a typed error carrying a reason from the declared
+  set its module names; the command prints it as one structured line on
+  stderr (and an `::error::` line under GitHub Actions), with the remedy only
+  where the remedy is a command, and never echoes the refused value. Only
+  declared refusals are caught; anything else keeps its stack.
 
 ## Tests
 
