@@ -24,11 +24,57 @@ import { STORAGE_KEY, serialize } from "../src/lib/record.ts";
  */
 
 /**
- * The screen as a reader tells one from the next: which screen the interview
- * is on (`questions` or `results`), and the label of the question on it, or
- * "" where none is shown: absent, or hidden from the reader.
+ * The screen as a reader sees it: which screen the interview is on
+ * (`questions` or `results`), and the question card's words where a question
+ * is shown. Off a shown question every word is "", every list empty and
+ * every part null.
  *
- * @typedef {{ screen: string, question: string }} ScreenShown
+ * - `question`: the question's label; "" where none is shown, absent or
+ *   hidden from the reader.
+ * - `meta`: the line over the question, "Question N of about M", or the edit
+ *   line on a reopened question.
+ * - `arrival`: the lines above the question that say what was put on the
+ *   record: an arrival from a country or route page, or the passport the
+ *   search just recorded.
+ * - `chosen`: the id of the answer the card holds as chosen.
+ * - `askedFor`: the line naming the routes that ask the question.
+ * - `answers`: what the reader can pick, in order: the buttons, or on the
+ *   search the rows it lists now (none until something is typed).
+ * - `search`: the search, where the question is one.
+ *
+ * @typedef {{ screen: string, question: string, meta: string, arrival: string, chosen: string, askedFor: AskedFor | null, answers: AnswerOffered[], search: SearchShown | null }} ScreenShown
+ */
+
+/**
+ * An answer the card offers: its id, its words, the line under it saying what
+ * it means (null where it has none), the mark under it (null where it has
+ * none), and the element `aria-describedby` names, which a reader who Tabs to
+ * it hears, with whether that element is on the page (null where it names
+ * none).
+ *
+ * @typedef {{ value: string, label: string, means: string | null, mark: AnswerMark | null, describedBy: { id: string, resolves: boolean } | null }} AnswerOffered
+ */
+
+/**
+ * The mark under an answer: its element's id, its words, where its link
+ * leads, and the glyph the stylesheet draws after the link (null without a
+ * link).
+ *
+ * @typedef {{ id: string, text: string, href: string | null, glyph: string | null }} AnswerMark
+ */
+
+/**
+ * The asked-for line: each route it names, with its country and its words,
+ * and each country it counts the routes of, with how many.
+ *
+ * @typedef {{ named: { route: string, country: string, text: string }[], counted: { country: string, routes: number }[] }} AskedFor
+ */
+
+/**
+ * The search as a reader sees it: what is typed in its box, the line its list
+ * shows where it lists no row (else ""), and what its live region says.
+ *
+ * @typedef {{ query: string, line: string, status: string }} SearchShown
  */
 
 /**
@@ -49,15 +95,77 @@ function readBeatMsInPage() {
   return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
 }
 
-/** In the page: which screen the interview is on, and its question's label where a reader can see it, as JSON. */
-function readScreenInPage() {
+// The functions below, up to `SCREEN_NOW`, run in the page, not here: each reads nothing from this module, and
+// takes the others it calls as arguments.
+
+/** In the page: the words of `el`, trimmed; "" where there is no `el`. */
+function textOfInPage(el) {
+  return el ? (el.textContent ?? "").trim() : "";
+}
+
+/** In the page: the asked-for line `line` as a reader reads its marks; null where there is no line. */
+function readAskedForInPage(line) {
+  if (line === null) return null;
+  return {
+    named: [...line.querySelectorAll("[data-route]")].map((el) => ({ route: el.dataset.route, country: el.dataset.country, text: el.textContent })),
+    counted: [...line.querySelectorAll("[data-routes]")].map((el) => ({ country: el.dataset.country, routes: Number(el.dataset.routes) })),
+  };
+}
+
+/** In the page: `el`, a button or a search's row on `card`, as the answer a reader sees. */
+function readAnswerInPage(el, card, textOf) {
+  const words = el.querySelector(".opt-label") ?? el.querySelector("span");
+  const label = [...words.childNodes].filter((n) => !n.classList?.contains("tick")).map((n) => n.textContent).join("").trim();
+  const means = el.querySelector(".opt-means");
+  const mark = card.querySelector(`.opt-mark[data-for="${CSS.escape(el.dataset.value)}"]`);
+  const link = mark && mark.querySelector("a");
+  const describedBy = el.getAttribute("aria-describedby");
+  return {
+    value: el.dataset.value,
+    label,
+    means: means ? textOf(means) : null,
+    mark: mark && { id: mark.id, text: textOf(mark), href: link && link.getAttribute("href"), glyph: link && getComputedStyle(link, "::after").content },
+    describedBy: describedBy === null ? null : { id: describedBy, resolves: document.getElementById(describedBy) !== null },
+  };
+}
+
+/** In the page: the words of `card`, a question card shown to the reader, its question aside. */
+function readCardWordsInPage(card, { textOf, readAnswer, readAskedFor }) {
+  const box = card.querySelector("#cfilter");
+  const linesAbove = [];
+  for (const el of card.children) {
+    if (el.classList.contains("qlabel")) break;
+    if (el.matches("p.recorded")) linesAbove.push(textOf(el));
+  }
+  return {
+    meta: textOf(card.querySelector(".qmeta")),
+    arrival: linesAbove.join(" "),
+    chosen: card.querySelector(".opt.sel, .copt.sel")?.dataset.value ?? "",
+    askedFor: readAskedFor(card.querySelector("[data-asked-for]")),
+    answers: [...card.querySelectorAll(".opts .opt, #clist .copt")].map((el) => readAnswer(el, card, textOf)),
+    search: box && { query: box.value, line: textOf(card.querySelector("#clist .cnone")), status: textOf(document.getElementById("cstatus")) },
+  };
+}
+
+/** In the page: which screen the interview is on, and the question card shown to the reader as `kit`'s readers read
+ * it, as JSON; `{ offTheInterview }`, naming the page's address, on a page with no interview. */
+function readScreenInPage(kit) {
   const app = document.getElementById("app");
   if (app === null) return JSON.stringify({ offTheInterview: location.href });
-  const label = document.querySelector("#main .qcard .qlabel");
+  const card = document.querySelector("#main .qcard");
+  const label = card && card.querySelector(".qlabel");
   const style = label && getComputedStyle(label);
   const isShown = style !== null && style.visibility === "visible" && style.display !== "none" && label.offsetParent !== null;
-  return JSON.stringify({ screen: app.dataset.state, question: isShown ? label.textContent.trim() : "" });
+  const words = isShown
+    ? kit.readCardWords(card, kit)
+    : { meta: "", arrival: "", chosen: "", askedFor: null, answers: [], search: null };
+  return JSON.stringify({ screen: app.dataset.state, question: isShown ? kit.textOf(label) : "", ...words });
 }
+
+// The readers `readScreenInPage` is handed in the page, each carried there as its source text.
+const SCREEN_READERS = `{ textOf: ${textOfInPage}, readCardWords: ${readCardWordsInPage}, readAnswer: ${readAnswerInPage}, readAskedFor: ${readAskedForInPage} }`;
+// The screen as a reader sees it, read in the page.
+const SCREEN_NOW = `(${readScreenInPage})(${SCREEN_READERS})`;
 
 /** In the page: taps `value` on the question on the screen, its button or, on the search, the row `searchFor`
  * finds; says "opt" or "row" for what it tapped, or why it tapped nothing. */
@@ -157,10 +265,10 @@ export class InterviewPage {
     await this.#page.waitUntilAtRest();
   }
 
-  /** Which screen the interview is on, and its question; throws, naming the page's address, on a page that holds
-   * no interview. @returns {Promise<ScreenShown>} */
+  /** Which screen the interview is on, and the question card as a reader sees it; throws, naming the page's
+   * address, on a page that holds no interview. @returns {Promise<ScreenShown>} */
   async readScreen() {
-    const { offTheInterview, ...shown } = JSON.parse(await this.#page.evaluate(`(${readScreenInPage})()`));
+    const { offTheInterview, ...shown } = JSON.parse(await this.#page.evaluate(SCREEN_NOW));
     if (offTheInterview !== undefined) throw new Error(`readScreen: no interview on ${offTheInterview}`);
     return shown;
   }

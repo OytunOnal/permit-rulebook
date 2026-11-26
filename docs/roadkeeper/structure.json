@@ -4701,6 +4701,51 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/interview-page-card.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page-card.test.ts",
+   "to": "scripts/interview-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page-card.test.ts",
+   "to": "src/lib/arrival-line.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page-card.test.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page-card.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page-card.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page-card.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page-card.test.ts",
+   "to": "tests/interview-on-site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview-page-card.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/interview-page.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
@@ -12567,5 +12612,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "f822078cb95c35c9b94340530ef7ec8a9de0fd86c24a5c0adcafe96710fd7150"
+ "digest": "f4be92476392f87c3a95c83f86f2552823847ddf8ca67d22167a14e36870ca88"
 }

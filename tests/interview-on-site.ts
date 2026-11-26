@@ -15,6 +15,11 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
 export const first = remainingQuestions(ds, {})[0]!;
 /** The first answer that question offers, as a record holds it: a real answer the dataset gives. */
 export const FIRST_ANSWER: Profile = { [first.field]: first.options[0]!.value };
+/** Answers that bring the passport question next: the search. */
+export const BEFORE_PASSPORT: Profile = { destination: "de", situation: "offer", qualification: "degree", occupation_it: "no" };
+
+/** The label of `field`'s question, as the dataset words it. */
+export const labelOf = (field: string): string => ds.fields.find((f) => f.id === field)!.label;
 
 /** Walks the built site on `screen` (the desk by default), handing `run` an interview on its page. */
 export async function withInterview<T>(run: (interview: InterviewPage) => Promise<T>, screen: Screen = DESK): Promise<T> {
