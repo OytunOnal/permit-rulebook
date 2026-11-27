@@ -153,6 +153,14 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   change to that markup touches the module and the cases that assert it, not
   every results suite (#474, from the grill of #360, ruling Q405, 2026-11-25).
   — `untested`
+- **A40 — the run module's subcommands reach every lock rule that matters.**
+  With the lock's rules inside the run module and tested only through its
+  subcommands, no behaviour a deploy or a hand run relies on goes untested
+  (#488, Q474, the human's word 2026-11-27). — `untested`
+- **A41 — the interview's entry reaches every verdict a reader can be shown.**
+  With the verdict inside the interview and tested only through its entry, no
+  case that guards a reader is lost (#489, Q475, the human's word 2026-11-27).
+  — `untested`
 
 ## The journey beyond the first permit (candidate bets, human's idea 2026-09-11)
 
